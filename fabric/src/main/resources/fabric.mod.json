@@ -11,7 +11,10 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "com.barnyardromance.fabric.BarnyardRomanceFabric"
+            "net.modcrafters.minecraft.barnyardromance.fabric.BarnyardRomanceFabric"
+        ],
+        "client": [
+            "net.modcrafters.minecraft.barnyardromance.fabric.client.BarnyardRomanceFabricClient"
         ]
     },
     "mixins": [

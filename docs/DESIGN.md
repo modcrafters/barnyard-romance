@@ -7,8 +7,11 @@
 
 ## 2. Size (Milestone 1)
 - Uses vanilla `minecraft:scale` attribute (1.20.5+), so hitbox, rendering and riding follow automatically. No new models needed.
-- Defaults: female ~0.90, male ~1.10, plus small random variation (e.g. ±0.05). Per-species overrides in config.
-- Babies: once grown, they use their own sex/size roll (later: inherited from parents, see Traits).
+- Defaults: females span 0.70 to 0.90, males span 1.10 to 1.30. The stored value is that scale. The tooltip shows S / M / L / XL. Per-species overrides in config.
+- Natural spawns, spawn eggs, and summoned animals roll only the S–M half of their sex. L and XL come from breeding.
+- A baby starts at the average of the parents' positions in their own ranges. There is a 35% chance to step up one band. Full nutrition raises that chance to 80%. Food is not tracked yet, so births use the 35% chance.
+- Meat drops follow the actual scale. A 0.70 animal drops 2–3 meat, a 1.30 animal drops 8–9. Looting still adds on top. Leather, feathers, and wool stay on the vanilla table.
+- Babies keep their rolled scale, and the adult size is applied when they grow up.
 - Test in vanilla: `/attribute @e[type=cow,limit=1,sort=nearest] minecraft:scale base set 1.15`
 
 ## 3. Breeding rules

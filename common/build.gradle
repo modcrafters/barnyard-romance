@@ -12,6 +12,10 @@ neoForge {
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     // Fabric and NeoForge both bundle Fabric Mixin, so it is safe to use it in common
     // If you need to update, check what version they are using to see what is compatible
@@ -21,6 +25,14 @@ dependencies {
     // Fabric and NeoForge both bundle MixinExtras, so it is safe to use it in common
     compileOnly(annotationProcessor('io.github.llamalad7:mixinextras-common:0.5.3'))
 
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.google.code.gson:gson:2.14.0'
+    testRuntimeOnly 'org.slf4j:slf4j-nop:2.0.17'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 configurations {
