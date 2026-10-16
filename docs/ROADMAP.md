@@ -1,19 +1,19 @@
 # Barnyard Romance: Roadmap
 
 ## Milestone 1: Skeleton + Sex + Size
-- [ ] Multi-loader Gradle project (common / fabric / neoforge), IntelliJ-ready, run configs for both loaders.
-- [ ] Persistent synced `sex` attachment on all `Animal`s, random on spawn, lazy for old worlds.
-- [ ] Apply `minecraft:scale` by sex with small random variation; per-species config.
-- [ ] Debug command: `/barnyard info` on the looked-at animal (sex, scale).
+- [x] Multi-loader Gradle project (common / fabric / neoforge), IntelliJ-ready, run configs for both loaders.
+- [x] Persistent synced `sex` attachment on all `Animal`s, random on spawn, lazy for old worlds.
+- [x] Apply `minecraft:scale` by sex with small random variation; per-species config.
+- [x] Debug command: `/barnyard info` on the looked-at animal (sex, scale).
 
 ## Milestone 2: Breeding rules + Herd book
-- [ ] Only male + female can mate (mixin in common).
+- [x] Only male + female can mate (mixin in common).
 - [ ] Per-species enable/exclude list.
 - [ ] Herd book item showing sex, age, scale.
 
 ## Milestone 3: Pregnancy
-- [ ] Pregnancy state, progress, catch-up after unload, birth, litter size.
-- [ ] Father info stored on mother.
+- [x] Pregnancy state, progress, catch-up after unload, birth, litter size.
+- [x] Father info stored on mother.
 - [ ] Optional visual size bump.
 
 ## Milestone 4: Food-driven pregnancy
