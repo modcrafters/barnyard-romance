@@ -16,6 +16,8 @@
 
 ## 3. Breeding rules
 - Hook vanilla breeding (`Animal#canMate` / love mode) via mixin: only MALE + FEMALE of the same species can mate, and only when both are at least 30% familiar. A feed that crosses that line puts an adult into love mode. Below 30%, pregnancy cannot start.
+- Horses, donkeys, llamas, camels, and wolves override `canMate` without calling `Animal#canMate`, so they get the same check through their own overrides. A horse and a donkey of opposite sexes still make a mule.
+- If a same-sex pair reaches breeding anyway (a modded override), love mode ends with no baby and no XP.
 - Optional: cooldowns, fertility (see Ideas).
 - Config: per-species enable/disable; species with custom breeding code can be excluded or patched with compat.
 
