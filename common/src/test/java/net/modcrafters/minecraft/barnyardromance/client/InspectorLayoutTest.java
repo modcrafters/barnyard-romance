@@ -29,9 +29,19 @@ class InspectorLayoutTest {
 
     @Test
     void theStatColumnStaysInsideThePanel() {
-        int valueStart = InspectorLayout.barX() + InspectorLayout.BAR_W + 6;
         assertTrue(InspectorLayout.barX() > InspectorLayout.STATS_X);
-        assertTrue(valueStart + 40 < InspectorLayout.WIDTH - 8);
-        assertTrue(InspectorLayout.NAME_Y > InspectorLayout.PORTRAIT_Y + InspectorLayout.PORTRAIT);
+        assertTrue(InspectorLayout.valueX() + 40 < InspectorLayout.WIDTH - InspectorLayout.BORDER);
+        assertTrue(InspectorLayout.PORTRAIT_X + InspectorLayout.PORTRAIT < InspectorLayout.STATS_X);
+    }
+
+    @Test
+    void everythingFitsInsideThePanelBorder() {
+        int lastLine = InspectorLayout.ROW_BREEDING + InspectorLayout.DETAIL_OFFSET + 3 + 9;
+        int twoHeartRows = InspectorLayout.ROW_HEALTH + 2 + 10 + 9;
+
+        assertTrue(lastLine <= InspectorLayout.HEIGHT - InspectorLayout.BORDER);
+        assertTrue(InspectorLayout.PORTRAIT_Y + InspectorLayout.PORTRAIT + 1 <= InspectorLayout.HEIGHT - InspectorLayout.BORDER);
+        assertTrue(twoHeartRows < InspectorLayout.ROW_BREEDING);
+        assertTrue(InspectorLayout.TITLE_Y + 9 < InspectorLayout.PORTRAIT_Y);
     }
 }
