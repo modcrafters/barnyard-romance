@@ -38,6 +38,10 @@ public final class Familiarity {
         return Response.ACCEPT;
     }
 
+    public static boolean tames(boolean tamed, double familiarity) {
+        return !tamed && ready(familiarity);
+    }
+
     public static boolean allowsLove(double familiarity, boolean pregnant) {
         return ready(familiarity) && !pregnant;
     }

@@ -78,4 +78,12 @@ class FamiliarityTest {
         assertEquals(Familiarity.Click.WAIT, Familiarity.click(false, true, Familiarity.Response.REJECT));
         assertEquals(Familiarity.Click.SCARE, Familiarity.click(false, false, Familiarity.Response.REJECT));
     }
+
+    @Test
+    void familiarityTamesAWildHorseOnceItCanBreed() {
+        assertFalse(Familiarity.tames(false, Familiarity.gain(0.0)));
+        assertTrue(Familiarity.tames(false, Familiarity.THRESHOLD));
+        assertTrue(Familiarity.tames(false, 1.0));
+        assertFalse(Familiarity.tames(true, 1.0));
+    }
 }
