@@ -20,21 +20,25 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 import java.util.Optional;
 
 public class InspectorScreen extends Screen {
-    private static final int CREAM = 0xFFF4E4C4;
-    private static final int CREAM_DIM = 0xFFD9C7A4;
-    private static final int LABEL = 0xFFF0E2C4;
-    private static final int VALUE = 0xFFF6EBD2;
-    private static final int SCALE = 0xFFE7D7B0;
-    private static final int HINT = 0xFFCDB892;
-    private static final int ESC = 0xFFB89A62;
-    private static final int INK = 0xFF3A2412;
-    private static final int FATHER = 0xFFE4D2AE;
-    private static final int FLOOR = 0xFF1A120C;
+    // Vanilla container colors: the classic panel, its title text, and the inventory's sunken entity box.
+    private static final int TEXT = 0xFF404040;
+    private static final int MUTED = 0xFF707070;
+    private static final int GOOD = 0xFF2F6B1F;
+    private static final int BAD = 0xFF8B2020;
+    private static final int SHADE = 0xFF373737;
+    private static final int LIGHT = 0xFFFFFFFF;
+    private static final int FLOOR = 0xFF000000;
+    private static final Identifier PANEL = Identifier.withDefaultNamespace("textures/gui/demo_background.png");
+    private static final int PANEL_W = 248;
+    private static final int PANEL_H = 166;
+    private static final int PANEL_TEXTURE = 256;
     private static final Identifier HEART_CONTAINER = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
     private static final Identifier HEART_HALF = Identifier.withDefaultNamespace("hud/heart/half");
@@ -65,42 +69,73 @@ public class InspectorScreen extends Screen {
         InspectorSheet sheet = sheet();
         int x = (this.width - InspectorLayout.WIDTH) / 2;
         int y = (this.height - InspectorLayout.HEIGHT) / 2;
-        graphics.blitSprite(
-                RenderPipelines.GUI_TEXTURED,
-                Identifier.withDefaultNamespace("popup/background"),
-                x,
-                y,
-                InspectorLayout.WIDTH,
-                InspectorLayout.HEIGHT
-        );
+        panel(graphics, x, y, InspectorLayout.WIDTH, InspectorLayout.HEIGHT);
+        title(graphics, x, y, sheet);
         portrait(graphics, x, y);
-        nameplate(graphics, x, y, sheet);
         if (sheet.known()) {
             header(graphics, x, y, sheet);
             meter(graphics, x, y, InspectorLayout.ROW_FAMILIAR, "heart", "Familiar", sheet.familiarity(), "fill_familiar", sheet.familiarityText());
             meter(graphics, x, y, InspectorLayout.ROW_FEED, "wheat", "Feed", sheet.feed(), "fill_feed", sheet.feedText());
             growth(graphics, x, y, sheet);
             health(graphics, x, y, sheet);
-            if (sheet.showPregnancy()) {
-                pregnancy(graphics, x, y, sheet);
+            if (sheet.showBreeding()) {
+                breeding(graphics, x, y, sheet);
             }
         } else {
-            graphics.text(this.font, "No barnyard traits yet", x + InspectorLayout.STATS_X, y + InspectorLayout.HEADER_Y + 4, CREAM);
+            text(graphics, "No barnyard traits yet", x + InspectorLayout.STATS_X, y + InspectorLayout.HEADER_Y + 3, MUTED);
             health(graphics, x, y, sheet);
         }
-        graphics.centeredText(this.font, "Esc to close", x + InspectorLayout.WIDTH / 2, y + InspectorLayout.ESC_Y, ESC);
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
+    // Nine-slices vanilla's classic panel so it stretches to any size and follows resource packs.
+    private static void panel(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
+        int b = InspectorLayout.BORDER;
+        int innerW = width - 2 * b;
+        int innerH = height - 2 * b;
+        int srcW = PANEL_W - 2 * b;
+        int srcH = PANEL_H - 2 * b;
+        int right = PANEL_W - b;
+        int bottom = PANEL_H - b;
+        slice(graphics, x, y, 0, 0, b, b, b, b);
+        slice(graphics, x + b, y, b, 0, innerW, b, srcW, b);
+        slice(graphics, x + width - b, y, right, 0, b, b, b, b);
+        slice(graphics, x, y + b, 0, b, b, innerH, b, srcH);
+        slice(graphics, x + b, y + b, b, b, innerW, innerH, srcW, srcH);
+        slice(graphics, x + width - b, y + b, right, b, b, innerH, b, srcH);
+        slice(graphics, x, y + height - b, 0, bottom, b, b, b, b);
+        slice(graphics, x + b, y + height - b, b, bottom, innerW, b, srcW, b);
+        slice(graphics, x + width - b, y + height - b, right, bottom, b, b, b, b);
+    }
+
+    private static void slice(GuiGraphicsExtractor graphics, int x, int y, int u, int v, int width, int height, int srcW, int srcH) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, PANEL, x, y, u, v, width, height, srcW, srcH, PANEL_TEXTURE, PANEL_TEXTURE);
+    }
+
+    private void title(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
+        int titleX = x + InspectorLayout.TITLE_X;
+        int titleY = y + InspectorLayout.TITLE_Y;
+        text(graphics, sheet.title(), titleX, titleY, TEXT);
+        if (!sheet.subtitle().isEmpty()) {
+            text(graphics, sheet.subtitle(), titleX + this.font.width(sheet.title()) + 6, titleY, MUTED);
+        }
+        if (!sheet.scaleText().isEmpty()) {
+            int scaleX = x + InspectorLayout.WIDTH - InspectorLayout.TITLE_X - this.font.width(sheet.scaleText());
+            text(graphics, sheet.scaleText(), scaleX, titleY, MUTED);
+        }
+    }
+
     private void portrait(GuiGraphicsExtractor graphics, int x, int y) {
-        int frameX = x + InspectorLayout.PORTRAIT_X;
-        int frameY = y + InspectorLayout.PORTRAIT_Y;
-        int x0 = frameX + InspectorLayout.PORTRAIT_INSET;
-        int y0 = frameY + InspectorLayout.PORTRAIT_INSET;
-        int x1 = frameX + InspectorLayout.PORTRAIT - InspectorLayout.PORTRAIT_INSET;
-        int y1 = frameY + InspectorLayout.PORTRAIT - InspectorLayout.PORTRAIT_INSET;
+        int x0 = x + InspectorLayout.PORTRAIT_X;
+        int y0 = y + InspectorLayout.PORTRAIT_Y;
+        int x1 = x0 + InspectorLayout.PORTRAIT;
+        int y1 = y0 + InspectorLayout.PORTRAIT;
+        graphics.fill(x0 - 1, y0 - 1, x1, y0, SHADE);
+        graphics.fill(x0 - 1, y0, x0, y1, SHADE);
+        graphics.fill(x0, y1, x1 + 1, y1 + 1, LIGHT);
+        graphics.fill(x1, y0, x1 + 1, y1, LIGHT);
         graphics.fill(x0, y0, x1, y1, FLOOR);
-        int entityScale = InspectorLayout.portraitScale(y1 - y0, this.animal.getBbHeight(), this.animal.getBbWidth());
+        int entityScale = InspectorLayout.portraitScale(InspectorLayout.PORTRAIT, this.animal.getBbHeight(), this.animal.getBbWidth());
         graphics.enableScissor(x0, y0, x1, y1);
         try {
             float centerX = (x0 + x1) / 2.0F;
@@ -118,23 +153,7 @@ public class InspectorScreen extends Screen {
                     this.animal
             );
         } catch (RuntimeException ignored) {
-            // A modded renderer that cannot draw in a GUI leaves the empty frame.
-        }
-        graphics.disableScissor();
-        sprite(graphics, "portrait", frameX, frameY, InspectorLayout.PORTRAIT, InspectorLayout.PORTRAIT);
-    }
-
-    private void nameplate(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
-        int plateX = x + InspectorLayout.NAME_X;
-        int plateY = y + InspectorLayout.NAME_Y;
-        sprite(graphics, "nameplate", plateX, plateY, InspectorLayout.NAME_W, InspectorLayout.NAME_H);
-        int center = plateX + InspectorLayout.NAME_W / 2;
-        graphics.enableScissor(plateX + 12, plateY + 4, plateX + InspectorLayout.NAME_W - 12, plateY + InspectorLayout.NAME_H - 4);
-        if (sheet.subtitle().isEmpty()) {
-            graphics.centeredText(this.font, sheet.title(), center, plateY + 16, CREAM);
-        } else {
-            graphics.centeredText(this.font, sheet.title(), center, plateY + 8, CREAM);
-            graphics.centeredText(this.font, sheet.subtitle(), center, plateY + 20, CREAM_DIM);
+            // A modded renderer that cannot draw in a GUI leaves the empty box.
         }
         graphics.disableScissor();
     }
@@ -142,15 +161,9 @@ public class InspectorScreen extends Screen {
     private void header(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
         int rowX = x + InspectorLayout.STATS_X;
         int rowY = y + InspectorLayout.HEADER_Y;
-        sprite(graphics, sheet.female() ? "female" : "male", rowX, rowY + 1, InspectorLayout.ICON, InspectorLayout.ICON);
-        int badgeX = rowX + 18;
-        sprite(graphics, "badge", badgeX, rowY, 28, 16);
-        graphics.centeredText(this.font, sheet.sizeLetter(), badgeX + 14, rowY + 4, INK);
-        int plaqueX = badgeX + 32;
-        sprite(graphics, "plaque", plaqueX, rowY, 56, 16);
-        graphics.centeredText(this.font, sheet.life(), plaqueX + 28, rowY + 4, CREAM);
-        int scaleX = x + InspectorLayout.WIDTH - 14 - this.font.width(sheet.scaleText());
-        graphics.text(this.font, sheet.scaleText(), scaleX, rowY + 4, SCALE);
+        sprite(graphics, sheet.female() ? "female" : "male", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
+        String line = sheet.sexText() + "  ·  Size " + sheet.sizeLetter() + "  ·  " + sheet.life();
+        text(graphics, line, rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
     }
 
     private void meter(
@@ -167,7 +180,7 @@ public class InspectorScreen extends Screen {
         int rowX = x + InspectorLayout.STATS_X;
         int rowY = y + row;
         sprite(graphics, icon, rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        graphics.text(this.font, label, rowX + 18, rowY + 3, LABEL);
+        text(graphics, label, rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         int barX = x + InspectorLayout.barX();
         int barY = rowY + 4;
         sprite(graphics, "bar", barX, barY, InspectorLayout.BAR_W, 6);
@@ -175,7 +188,7 @@ public class InspectorScreen extends Screen {
         if (filled > 0) {
             sprite(graphics, fillSprite, barX + 1, barY + 1, filled, 4);
         }
-        graphics.text(this.font, value, barX + InspectorLayout.BAR_W + 6, rowY + 3, VALUE);
+        text(graphics, value, x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
     private void growth(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
@@ -184,15 +197,15 @@ public class InspectorScreen extends Screen {
         int barY = y + InspectorLayout.ROW_GROWTH + 2;
         sprite(graphics, "marker", InspectorLayout.markerX(barX, InspectorLayout.BAR_W, sheet.growth()), barY, InspectorLayout.MARKER_W, 10);
         int labelY = y + InspectorLayout.ROW_GROWTH + 14;
-        graphics.text(this.font, "Slow", barX, labelY, HINT);
-        graphics.text(this.font, "Fast", barX + InspectorLayout.BAR_W - this.font.width("Fast"), labelY, HINT);
+        text(graphics, "Slow", barX, labelY, MUTED);
+        text(graphics, "Fast", barX + InspectorLayout.BAR_W - this.font.width("Fast"), labelY, MUTED);
     }
 
     private void health(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
         int rowX = x + InspectorLayout.STATS_X;
         int rowY = y + InspectorLayout.ROW_HEALTH;
         sprite(graphics, "gold_heart", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        graphics.text(this.font, "Health", rowX + 18, rowY + 3, LABEL);
+        text(graphics, "Health", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         int count = HerdCardLayout.hearts(sheet.maxHealth());
         int heartsX = x + InspectorLayout.barX();
         for (int i = 0; i < count; i++) {
@@ -206,16 +219,21 @@ public class InspectorScreen extends Screen {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_HALF, hx, hy, 9, 9);
             }
         }
-        graphics.text(this.font, sheet.healthText(), heartsX + InspectorLayout.BAR_W + 6, rowY + 3, VALUE);
+        text(graphics, sheet.healthText(), x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
-    private void pregnancy(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
-        String value = sheet.pregnant() ? sheet.pregnancyText() : "None";
-        meter(graphics, x, y, InspectorLayout.ROW_PREGNANT, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", value);
-        if (!sheet.fatherText().isEmpty()) {
-            int barX = x + InspectorLayout.barX();
-            int fatherX = barX + (InspectorLayout.BAR_W - this.font.width(sheet.fatherText())) / 2;
-            graphics.text(this.font, sheet.fatherText(), fatherX, y + InspectorLayout.ROW_PREGNANT + 14, FATHER);
+    private void breeding(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
+        int row = InspectorLayout.ROW_BREEDING;
+        if (sheet.pregnant()) {
+            meter(graphics, x, y, row, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
+        } else {
+            int rowX = x + InspectorLayout.STATS_X;
+            sprite(graphics, "gold_heart", rowX, y + row, InspectorLayout.ICON, InspectorLayout.ICON);
+            text(graphics, "Breeding", rowX + InspectorLayout.ICON + 4, y + row + 3, TEXT);
+            text(graphics, sheet.breedingText(), x + InspectorLayout.barX(), y + row + 3, sheet.breedingReady() ? GOOD : BAD);
+        }
+        if (!sheet.detailText().isEmpty()) {
+            text(graphics, sheet.detailText(), x + InspectorLayout.barX(), y + row + InspectorLayout.DETAIL_OFFSET + 3, MUTED);
         }
     }
 
@@ -236,6 +254,13 @@ public class InspectorScreen extends Screen {
                 SizeClass.of(Sex.MALE, current.fatherScale(), BarnyardConfig.current().sizeFor(current.fatherSpecies())).name(),
                 current.fatherSpecies()
         )).orElse("");
+        boolean needsTaming = this.animal instanceof AbstractHorse;
+        boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
+        String breeding = InspectorSheet.breeding(needsTaming, tamed, value.familiarity());
+        Identifier offspringId = Identifier.tryParse(value.lastBirthSpecies());
+        String offspring = offspringId == null || value.lastBirthSpecies().isBlank() ? "" : BuiltInRegistries.ENTITY_TYPE.getOptional(offspringId)
+                .map(type -> type.getDescription().getString())
+                .orElse("");
         return new InspectorSheet(
                 named ? name : typeName,
                 named ? typeName : "",
@@ -255,8 +280,15 @@ public class InspectorScreen extends Screen {
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current.conceivedAt(), current.durationTicks())).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current.conceivedAt(), current.durationTicks()))).orElse(""),
-                father
+                father,
+                InspectorSheet.READY.equals(breeding),
+                breeding,
+                InspectorSheet.lastBirth(offspring, value.lastBirthTick(), now)
         );
+    }
+
+    private void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
+        graphics.text(this.font, value, x, y, color, false);
     }
 
     private static void sprite(GuiGraphicsExtractor graphics, String name, int x, int y, int width, int height) {

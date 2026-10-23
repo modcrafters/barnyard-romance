@@ -24,8 +24,14 @@ public record InspectorSheet(
         boolean pregnant,
         double pregnancy,
         String pregnancyText,
-        String fatherText
+        String fatherText,
+        boolean breedingReady,
+        String breedingText,
+        String lastBirthText
 ) {
+    public static final String READY = "Ready";
+    public static final String NOT_TAMED = "Not tamed";
+
     public static InspectorSheet unknown(String name, String typeName, boolean named, boolean baby, float health, float maxHealth) {
         return new InspectorSheet(
                 named ? name : typeName,
@@ -45,6 +51,9 @@ public record InspectorSheet(
                 maxHealth,
                 false,
                 0.0,
+                "",
+                "",
+                false,
                 "",
                 ""
         );
@@ -88,12 +97,53 @@ public record InspectorSheet(
         };
     }
 
+    public static String breeding(boolean needsTaming, boolean tamed, double familiarity) {
+        if (needsTaming && !tamed) {
+            return NOT_TAMED;
+        }
+        if (!Familiarity.ready(familiarity)) {
+            return "Needs " + Familiarity.percent(Familiarity.THRESHOLD) + " familiarity";
+        }
+        return READY;
+    }
+
+    public static String lastBirth(String offspringName, long lastBirthTick, long now) {
+        if (lastBirthTick < 0L || offspringName == null || offspringName.isBlank()) {
+            return "";
+        }
+        return "Last birth: " + offspringName + ", " + ago(now - lastBirthTick);
+    }
+
+    public static String ago(long ticks) {
+        long seconds = Math.max(0L, ticks) / 20L;
+        if (seconds < 60L) {
+            return "just now";
+        }
+        long minutes = seconds / 60L;
+        if (minutes < 60L) {
+            return minutes + "m ago";
+        }
+        long hours = minutes / 60L;
+        if (hours < 24L) {
+            return hours + "h ago";
+        }
+        return hours / 24L + "d ago";
+    }
+
+    public String sexText() {
+        return female ? "Female" : "Male";
+    }
+
     public String healthText() {
         return hp(health) + "/" + hp(maxHealth);
     }
 
-    public boolean showPregnancy() {
-        return known && (pregnant || ("Adult".equals(life) && female));
+    public boolean showBreeding() {
+        return known && (pregnant || "Adult".equals(life));
+    }
+
+    public String detailText() {
+        return pregnant ? fatherText : lastBirthText;
     }
 
     private static String hp(float value) {

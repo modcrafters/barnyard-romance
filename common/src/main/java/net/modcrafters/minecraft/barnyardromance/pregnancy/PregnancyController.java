@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
@@ -89,6 +90,7 @@ public final class PregnancyController {
 
     private static void giveBirth(Animal mother, ServerLevel level, Pregnancy pregnancy) {
         int count = Math.max(1, pregnancy.litterSize());
+        String bornSpecies = null;
         for (int i = 0; i < count; i++) {
             try {
                 AgeableMob baby = Litter.deliver(mother, level, pregnancy.litter(), i).orElse(null);
@@ -102,9 +104,16 @@ public final class PregnancyController {
                     baby.setAge(-rememberParents(mother, child, pregnancy));
                 }
                 level.addFreshEntityWithPassengers(baby);
+                if (bornSpecies == null) {
+                    bornSpecies = EntityType.getKey(baby.getType()).toString();
+                }
             } catch (RuntimeException exception) {
                 Constants.LOG.warn("Failed to birth a {} offspring", AnimalSex.speciesId(mother), exception);
             }
+        }
+        if (bornSpecies != null) {
+            String species = bornSpecies;
+            Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(mother, traits.gaveBirth(level.getGameTime(), species)));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
     }
