@@ -54,7 +54,7 @@
 - **Inherited traits:** babies get size, color, milk/wool yield between parents with random variation.
 - **Age stages:** baby → young → adult → old. Old animals breed less and produce less.
 - **Fertility & cooldown:** fertility drops if bred too often (TFC "worn out").
-- **Familiarity:** feed an animal its normal food once per Minecraft day for +20%, up to 100%. A click and a sneak-click are the same feed. Below 30% familiarity, only a sneak-click is accepted; a normal click scares the animal away and does not feed it. At 30%, feeding starts love mode, and milking, shearing, and breeding all open. A dispenser with shears follows the same rule. There is no decay.
+- **Familiarity:** feed an animal its normal food once per Minecraft day for +20%, up to 100%. A click and a sneak-click are the same feed. Below 30% familiarity, only a sneak-click is accepted; a normal click scares the animal away and does not feed it. At 30%, feeding starts love mode, and milking, shearing, and breeding all open. A dispenser with shears follows the same rule. There is no decay. Horses, donkeys, mules, llamas, and camels only breed when tamed, so reaching 30% also tames them to the player who fed them; riding to tame still works.
 - **Seasonal breeding:** optional integration with Serene Seasons (some species breed only in spring).
 - **Herd book item:** right-click an animal to view sex, age, pregnancy progress, parents, traits.
 - **Name tag lineage:** named animals keep a family tree viewable in the herd book.

@@ -12,6 +12,7 @@ import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.cow.AbstractCow;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -64,10 +65,18 @@ public final class FamiliarityActions {
         if (animal instanceof AnimalEating eating) {
             eating.barnyardromance$playEatingSound();
         }
+        tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
             animal.setInLove(player);
         }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    // Horses, donkeys, mules, llamas, and camels only breed when tamed, so familiarity tames them.
+    public static void tameIfFamiliar(Animal animal, Player player, double familiarity) {
+        if (animal instanceof AbstractHorse horse && Familiarity.tames(horse.isTamed(), familiarity)) {
+            horse.tameWithName(player);
+        }
     }
 
     private static void scare(Animal animal, Player player) {

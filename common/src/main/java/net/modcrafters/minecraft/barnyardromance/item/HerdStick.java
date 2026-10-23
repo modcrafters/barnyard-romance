@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.command.HerdToolRules;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
@@ -54,7 +55,7 @@ public class HerdStick extends Item {
             player.sendSystemMessage(Component.literal(HerdToolRules.CREATIVE_ONLY));
             return InteractionResult.CONSUME;
         }
-        Outcome outcome = apply(animal, tool);
+        Outcome outcome = apply(animal, tool, player);
         if (outcome.message != null) {
             player.sendSystemMessage(Component.literal(outcome.message));
         }
@@ -67,7 +68,7 @@ public class HerdStick extends Item {
     private record Outcome(boolean applied, String message) {
     }
 
-    private static Outcome apply(Animal animal, HerdTool tool) {
+    private static Outcome apply(Animal animal, HerdTool tool, Player player) {
         if (tool.kind() == HerdTool.Kind.INFO) {
             String text = AnimalInfoText.format(
                     animal.getName().getString(),
@@ -89,6 +90,7 @@ public class HerdStick extends Item {
                     ? DebugSteps.familiarityAt(tool.percent())
                     : DebugSteps.familiarity(traits.familiarity(), tool.direction());
             Services.DATA.set(animal, traits.fed(next, traits.lastFedTick()));
+            FamiliarityActions.tameIfFamiliar(animal, player, next);
             return new Outcome(true, "Familiarity " + Familiarity.percent(traits.familiarity()) + " → " + Familiarity.percent(next) + ".");
         }
         Pregnancy current = Services.DATA.getPregnancy(animal).orElse(null);
