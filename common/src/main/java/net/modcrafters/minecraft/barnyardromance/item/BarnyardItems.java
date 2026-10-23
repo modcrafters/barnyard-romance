@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
 public final class BarnyardItems {
@@ -20,5 +21,9 @@ public final class BarnyardItems {
     public static final Item INSPECTOR = new BarnyardInspector(new Item.Properties().setId(INSPECTOR_ID).stacksTo(1).rarity(Rarity.UNCOMMON));
 
     private BarnyardItems() {
+    }
+
+    public static boolean isTool(ItemStack stack) {
+        return stack.is(HERD_STICK) || stack.is(INSPECTOR);
     }
 }
