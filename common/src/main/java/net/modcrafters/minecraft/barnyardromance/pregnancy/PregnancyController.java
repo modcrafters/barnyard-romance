@@ -58,7 +58,8 @@ public final class PregnancyController {
             return false;
         }
         if (selfTraits.get().sex() == partnerTraits.get().sex()) {
-            self.finalizeSpawnChildFromBreeding(level, partner, null);
+            self.resetLove();
+            partner.resetLove();
             return true;
         }
         if (!config.pregnancyEnabled()) {
