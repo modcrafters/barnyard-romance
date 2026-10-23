@@ -70,14 +70,16 @@ public final class PregnancyController {
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
         if (Services.DATA.getPregnancy(mother).isEmpty()) {
             String speciesId = AnimalSex.speciesId(mother);
+            int litterSize = config.litterSize(speciesId);
             Services.DATA.setPregnancy(mother, new Pregnancy(
                     level.getGameTime(),
                     config.pregnancyTicks(speciesId),
                     AnimalSex.speciesId(father),
                     fatherTraits.scale(),
-                    config.litterSize(speciesId),
+                    litterSize,
                     motherTraits.familiarity(),
-                    fatherTraits.growthTicks()
+                    fatherTraits.growthTicks(),
+                    Litter.conceive(mother, father, level, Math.max(1, litterSize))
             ));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
@@ -88,7 +90,7 @@ public final class PregnancyController {
         int count = Math.max(1, pregnancy.litterSize());
         for (int i = 0; i < count; i++) {
             try {
-                AgeableMob baby = mother.getBreedOffspring(level, mother);
+                AgeableMob baby = Litter.deliver(mother, level, pregnancy.litter(), i).orElse(null);
                 if (baby == null) {
                     Constants.LOG.warn("Skipped a {} birth because no offspring was created", AnimalSex.speciesId(mother));
                     continue;
