@@ -8,7 +8,14 @@ public final class MatingRules {
     private MatingRules() {
     }
 
-    public static boolean canMate(Optional<Sex> self, Optional<Sex> partner, boolean selfPregnant, boolean partnerPregnant) {
+    public static boolean canMate(
+            Optional<Sex> self,
+            Optional<Sex> partner,
+            boolean selfPregnant,
+            boolean partnerPregnant,
+            boolean selfFamiliar,
+            boolean partnerFamiliar
+    ) {
         if (self.isEmpty() || partner.isEmpty()) {
             return true;
         }
@@ -21,6 +28,6 @@ public final class MatingRules {
         if (partner.get() == Sex.FEMALE && partnerPregnant) {
             return false;
         }
-        return true;
+        return selfFamiliar && partnerFamiliar;
     }
 }

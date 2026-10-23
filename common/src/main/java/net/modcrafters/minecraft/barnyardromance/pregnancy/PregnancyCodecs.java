@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -13,7 +14,9 @@ public final class PregnancyCodecs {
             Codec.LONG.fieldOf("durationTicks").forGetter(Pregnancy::durationTicks),
             Codec.STRING.fieldOf("fatherSpecies").forGetter(Pregnancy::fatherSpecies),
             Codec.DOUBLE.fieldOf("fatherScale").forGetter(Pregnancy::fatherScale),
-            Codec.INT.fieldOf("litterSize").forGetter(Pregnancy::litterSize)
+            Codec.INT.fieldOf("litterSize").forGetter(Pregnancy::litterSize),
+            Codec.DOUBLE.optionalFieldOf("motherFamiliarity", 0.0).forGetter(Pregnancy::motherFamiliarity),
+            Codec.INT.optionalFieldOf("fatherGrowthTicks", Growth.DEFAULT).forGetter(Pregnancy::fatherGrowthTicks)
     ).apply(instance, Pregnancy::new));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
     public static final StreamCodec<ByteBuf, Pregnancy> STREAM_CODEC = StreamCodec.composite(
@@ -27,6 +30,10 @@ public final class PregnancyCodecs {
             Pregnancy::fatherScale,
             ByteBufCodecs.VAR_INT,
             Pregnancy::litterSize,
+            ByteBufCodecs.DOUBLE,
+            Pregnancy::motherFamiliarity,
+            ByteBufCodecs.VAR_INT,
+            Pregnancy::fatherGrowthTicks,
             Pregnancy::new
     );
 

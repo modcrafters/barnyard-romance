@@ -24,7 +24,7 @@ class HoverTooltipTest {
                 size
         );
 
-        assertEquals(List.of("Cow", "XL female, adult"), lines);
+        assertEquals(List.of("Cow", "XL female, adult, growth 20m 0s"), lines);
     }
 
     @Test
@@ -36,7 +36,7 @@ class HoverTooltipTest {
                 size
         );
 
-        assertEquals(List.of("Pig", "S male, baby"), lines);
+        assertEquals(List.of("Pig", "S male, baby, growth 20m 0s"), lines);
     }
 
     @Test

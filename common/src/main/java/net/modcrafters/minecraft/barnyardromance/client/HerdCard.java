@@ -1,8 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
@@ -14,8 +12,6 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 public final class HerdCard {
     private static final int GOLD = 0xFFE0B15A;
@@ -28,25 +24,27 @@ public final class HerdCard {
     private static final int WHITE = 0xFFFFFFFF;
     private static final int FEMALE = 0xFFF27BB0;
     private static final int MALE = 0xFF7EB6F2;
-    private static final int PREGNANCY = 0xFFF27BB0;
-    private static final Identifier HEART = Identifier.withDefaultNamespace("hud/heart/full");
-    private static final String[] FEMALE_MARK = {
-            "..##..",
-            ".#..#.",
-            ".#..#.",
-            "..##..",
-            "...#..",
-            "..###.",
-            "...#.."
+    private static final int FAMILIAR = 0xFFE07A6A;
+    private static final int FEED = 0xFF8FCB6B;
+    private static final Identifier HEART_CONTAINER = Identifier.withDefaultNamespace("hud/heart/container");
+    private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
+    private static final Identifier HEART_HALF = Identifier.withDefaultNamespace("hud/heart/half");
+    private static final String FEMALE_MARK = "\u2640";
+    private static final String MALE_MARK = "\u2642";
+    private static final String[] TRUST_HEART = {
+            ".##.##.",
+            "#######",
+            ".#####.",
+            "..###..",
+            "...#..."
     };
-    private static final String[] MALE_MARK = {
-            "..##..",
-            ".#..#.",
-            "..##.#",
-            ".#...#",
-            ".##...",
-            ".#....",
-            ".#...."
+    private static final String[] FEED_MARK = {
+            "#..#..#",
+            ".#.#.#.",
+            "..#.#..",
+            "...#...",
+            "...#...",
+            "..###.."
     };
 
     private HerdCard() {
@@ -57,26 +55,25 @@ public final class HerdCard {
             Font font,
             Animal animal,
             AnimalTraits traits,
-            Pregnancy pregnancy,
             long gameTime,
             SizeSettings size,
             ScreenPoint anchor,
             int screenWidth,
             int screenHeight
     ) {
-        boolean pregnant = pregnancy != null;
-        String name = animal.getName().getString();
+        String sign = traits.sex() == Sex.FEMALE ? FEMALE_MARK : MALE_MARK;
         String letter = SizeClass.of(traits.sex(), traits.scale(), size).name();
-        String life = animal.isBaby() ? "Baby" : "Adult";
-        String time = pregnant
-                ? PregnancyText.clock(PregnancyClock.remainingTicks(gameTime, pregnancy.conceivedAt(), pregnancy.durationTicks()))
-                : "";
-        int sizeRow = 8 + 3 + HerdCardLayout.BAR_WIDTH + 3 + 12 + 4 + font.width(letter);
-        int pregnancyRow = pregnant ? 9 + 4 + HerdCardLayout.BAR_WIDTH + 4 + 16 + 2 + font.width(time) : 0;
-        int cardWidth = HerdCardLayout.width(font.width(name), sizeRow, pregnancyRow, pregnant);
-        int cardHeight = HerdCardLayout.height(pregnant);
+        String name = animal.getName().getString();
+        int titleWidth = font.width(sign) + 3 + font.width(letter) + 4 + font.width(name);
+        int barRow = 8 + 3 + HerdCardLayout.BAR_WIDTH;
+        int heartCount = HerdCardLayout.hearts(animal.getMaxHealth());
+        int heartsOnRow = Math.min(heartCount, HerdCardLayout.HEARTS_PER_ROW);
+        int heartRow = heartsOnRow * HerdCardLayout.HEART_STEP + 1;
+        int rows = HerdCardLayout.heartRows(heartCount);
+        int cardWidth = HerdCardLayout.width(titleWidth, barRow, heartRow);
+        int cardHeight = HerdCardLayout.height(rows);
         ScreenPoint origin = TooltipPlacement.place(anchor.x(), anchor.y(), cardWidth, cardHeight, screenWidth, screenHeight);
-        paint(graphics, font, animal, traits, pregnancy, gameTime, size, origin.x(), origin.y(), cardWidth, cardHeight, name, letter, life, time);
+        paint(graphics, font, animal, traits, gameTime, origin.x(), origin.y(), cardWidth, cardHeight, sign, letter, name);
     }
 
     private static void paint(
@@ -84,41 +81,47 @@ public final class HerdCard {
             Font font,
             Animal animal,
             AnimalTraits traits,
-            Pregnancy pregnancy,
             long gameTime,
-            SizeSettings size,
             int x,
             int y,
             int width,
             int height,
-            String name,
+            String sign,
             String letter,
-            String life,
-            String time
+            String name
     ) {
         frame(graphics, x, y, width, height);
-        int portraitX = x + HerdCardLayout.PAD;
-        int portraitY = y + HerdCardLayout.PAD;
-        portrait(graphics, animal, portraitX, portraitY);
+        portrait(graphics, animal, x + HerdCardLayout.PAD, y + HerdCardLayout.PAD);
         int textX = HerdCardLayout.textX(x);
-        int textY = y + HerdCardLayout.PAD + 1;
-        graphics.text(font, name, textX, textY, NAME);
-        mark(graphics, textX, textY + 12, traits.sex() == Sex.FEMALE ? FEMALE_MARK : MALE_MARK, traits.sex() == Sex.FEMALE ? FEMALE : MALE);
-        graphics.text(font, life, textX + 10, textY + 12, WHITE);
-        int sizeY = textY + 26;
-        beast(graphics, textX, sizeY + 2, 1, 0xFF5C4636);
-        bar(graphics, textX + 11, sizeY + 3, HerdCardLayout.BAR_WIDTH, 6, ScaleRoll.percent(traits.sex(), traits.scale(), size), GOLD);
-        beast(graphics, textX + 14 + HerdCardLayout.BAR_WIDTH, sizeY, 2, 0xFF5C4636);
-        graphics.text(font, letter, textX + 30 + HerdCardLayout.BAR_WIDTH, sizeY, NAME);
-        if (pregnancy == null) {
-            return;
+        int textY = y + HerdCardLayout.PAD;
+        int signColor = traits.sex() == Sex.FEMALE ? FEMALE : MALE;
+        graphics.text(font, sign, textX, textY, signColor);
+        int letterX = textX + font.width(sign) + 3;
+        graphics.text(font, letter, letterX, textY, NAME);
+        graphics.text(font, name, letterX + font.width(letter) + 4, textY, WHITE);
+        int rowY = textY + 12;
+        mark(graphics, textX, rowY + 1, TRUST_HEART, FAMILIAR);
+        bar(graphics, textX + 11, rowY + 2, HerdCardLayout.BAR_WIDTH, 6, traits.familiarity(), FAMILIAR);
+        rowY += 12;
+        mark(graphics, textX, rowY, FEED_MARK, FEED);
+        bar(graphics, textX + 11, rowY + 1, HerdCardLayout.BAR_WIDTH, 6, Familiarity.feedReady(traits.lastFedTick(), gameTime), FEED);
+        int heartsY = y + height - HerdCardLayout.PAD - HerdCardLayout.heartRows(HerdCardLayout.hearts(animal.getMaxHealth())) * 10;
+        hearts(graphics, x + HerdCardLayout.PAD, heartsY, animal.getHealth(), animal.getMaxHealth());
+    }
+
+    private static void hearts(GuiGraphicsExtractor graphics, int x, int y, float health, float maxHealth) {
+        int count = HerdCardLayout.hearts(maxHealth);
+        for (int i = 0; i < count; i++) {
+            int hx = x + (i % HerdCardLayout.HEARTS_PER_ROW) * HerdCardLayout.HEART_STEP;
+            int hy = y + (i / HerdCardLayout.HEARTS_PER_ROW) * 10;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_CONTAINER, hx, hy, 9, 9);
+            float remaining = health - i * 2.0F;
+            if (remaining >= 2.0F) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_FULL, hx, hy, 9, 9);
+            } else if (remaining >= 1.0F) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_HALF, hx, hy, 9, 9);
+            }
         }
-        int rowY = sizeY + 16;
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART, textX, rowY, 9, 9);
-        double progress = PregnancyClock.progress(gameTime, pregnancy.conceivedAt(), pregnancy.durationTicks());
-        bar(graphics, textX + 13, rowY + 2, HerdCardLayout.BAR_WIDTH, 6, progress, PREGNANCY);
-        graphics.item(new ItemStack(Items.CLOCK), textX + 13 + HerdCardLayout.BAR_WIDTH + 4, rowY - 3);
-        graphics.text(font, time, textX + 13 + HerdCardLayout.BAR_WIDTH + 22, rowY, WHITE);
     }
 
     private static void frame(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
@@ -130,29 +133,19 @@ public final class HerdCard {
         for (int row = y + 6; row < y + height - 4; row += 4) {
             graphics.fill(x + 4, row, x + width - 4, row + 1, GRAIN);
         }
-        stud(graphics, x + 2, y + 2);
-        stud(graphics, x + width - 5, y + 2);
-        stud(graphics, x + 2, y + height - 5);
-        stud(graphics, x + width - 5, y + height - 5);
-    }
-
-    private static void stud(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.fill(x + 1, y, x + 2, y + 3, GOLD_LIGHT);
-        graphics.fill(x, y + 1, x + 3, y + 2, GOLD_LIGHT);
     }
 
     private static void portrait(GuiGraphicsExtractor graphics, Animal animal, int x, int y) {
         graphics.fill(x, y, x + HerdCardLayout.PORTRAIT, y + HerdCardLayout.PORTRAIT, GOLD_DARK);
         graphics.fill(x + 1, y + 1, x + HerdCardLayout.PORTRAIT - 1, y + HerdCardLayout.PORTRAIT - 1, GOLD);
-        graphics.fill(x + 2, y + 2, x + HerdCardLayout.PORTRAIT - 2, y + HerdCardLayout.PORTRAIT - 2, GOLD_LIGHT);
-        int inner = 4;
+        int inner = 2;
         int x0 = x + inner;
         int y0 = y + inner;
         int x1 = x + HerdCardLayout.PORTRAIT - inner;
         int y1 = y + HerdCardLayout.PORTRAIT - inner;
         graphics.fill(x0, y0, x1, y1, 0xFF1A100A);
         float body = Math.max(animal.getBbHeight(), 0.5F);
-        int entityScale = Math.max(10, Math.round((y1 - y0 - 4) / body));
+        int entityScale = Math.max(8, Math.round((y1 - y0 - 2) / body));
         graphics.enableScissor(x0, y0, x1, y1);
         try {
             InventoryScreen.extractEntityInInventoryFollowsMouse(
@@ -179,12 +172,6 @@ public final class HerdCard {
         if (filled > 0) {
             graphics.fill(x + 1, y + 1, x + 1 + filled, y + height - 1, color);
         }
-    }
-
-    private static void beast(GuiGraphicsExtractor graphics, int x, int y, int scale, int color) {
-        int body = 3 + scale * 2;
-        graphics.fill(x, y + 2, x + body, y + 2 + scale + 2, color);
-        graphics.fill(x + body - 2, y, x + body + 1, y + 3, color);
     }
 
     private static void mark(GuiGraphicsExtractor graphics, int x, int y, String[] rows, int color) {
