@@ -44,7 +44,6 @@ public final class AnimalHoverTooltip {
                 minecraft.font,
                 animal,
                 traits.get(),
-                Services.DATA.getPregnancy(animal).orElse(null),
                 animal.level().getGameTime(),
                 BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
                 anchor.get(),

@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 
@@ -42,7 +44,9 @@ public final class AnimalInfoText {
             text = name + " (" + speciesId + "): " + label(value, size)
                     + ", scale " + formatScale(value.scale())
                     + " (attribute " + attribute + "), "
-                    + life;
+                    + life
+                    + ", familiar " + Familiarity.percent(value.familiarity())
+                    + ", growth " + Growth.clock(value.growthTicks());
         }
         if (pregnancyLine.isEmpty()) {
             return text;
@@ -66,7 +70,7 @@ public final class AnimalInfoText {
         }
         AnimalTraits value = traits.get();
         String life = baby ? "baby" : "adult";
-        String detail = label(value, size) + ", " + life;
+        String detail = label(value, size) + ", " + life + ", growth " + Growth.clock(value.growthTicks());
         if (pregnancyLine.isEmpty()) {
             return List.of(name, detail);
         }

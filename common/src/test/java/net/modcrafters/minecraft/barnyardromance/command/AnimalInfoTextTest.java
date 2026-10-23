@@ -24,7 +24,7 @@ class AnimalInfoTextTest {
                 size
         );
 
-        assertEquals("Cow (minecraft:cow): XL female, scale 0.9000 (attribute 0.9000), adult", text);
+        assertEquals("Cow (minecraft:cow): XL female, scale 0.9000 (attribute 0.9000), adult, familiar 0%, growth 20m 0s", text);
     }
 
     @Test
@@ -47,11 +47,11 @@ class AnimalInfoTextTest {
         Optional<String> pregnancy = Optional.of("Pregnant 50% · 10m 0s");
 
         assertEquals(
-                "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, Pregnant 50% · 10m 0s",
+                "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, Pregnant 50% · 10m 0s",
                 AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, false, pregnancy, size)
         );
         assertEquals(
-                List.of("Cow", "S female, adult", "Pregnant 50% · 10m 0s"),
+                List.of("Cow", "S female, adult, growth 20m 0s", "Pregnant 50% · 10m 0s"),
                 AnimalInfoText.hoverLines("Cow", traits, false, pregnancy, size)
         );
     }

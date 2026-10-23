@@ -6,7 +6,12 @@
   "mixins": [
     "AgeableMobMixin",
     "AnimalBreedingMixin",
-    "LivingEntityDropsMixin"
+    "AnimalEating",
+    "LivingEntityDropsMixin",
+    "MobProductMixin",
+    "ShearsDispenseMixin",
+    "TemptGoalMixin",
+    "TemptingSensorMixin"
   ],
   "client": [],
   "server": [],

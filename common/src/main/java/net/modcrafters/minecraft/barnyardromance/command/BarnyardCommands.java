@@ -1,68 +1,57 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardInspector;
+import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Prediction;
+import net.minecraft.world.item.ItemStack;
 
 public final class BarnyardCommands {
-    private static final double REACH = 8.0;
-
     private BarnyardCommands() {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("barnyard")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                .then(Commands.literal("info").executes(context -> info(context.getSource()))));
+                .then(Commands.literal("info").executes(context -> inspector(context.getSource())))
+                .then(Commands.literal("familiarity")
+                        .then(Commands.literal("up").executes(context -> give(context.getSource(), HerdTool.familiarity(1))))
+                        .then(Commands.literal("down").executes(context -> give(context.getSource(), HerdTool.familiarity(-1))))
+                        .then(Commands.literal("set").then(Commands.argument("percent", IntegerArgumentType.integer(0, 100))
+                                .executes(context -> give(context.getSource(), HerdTool.familiaritySet(IntegerArgumentType.getInteger(context, "percent")))))))
+                .then(Commands.literal("pregnancy")
+                        .then(Commands.literal("up").executes(context -> give(context.getSource(), HerdTool.pregnancy(1))))
+                        .then(Commands.literal("down").executes(context -> give(context.getSource(), HerdTool.pregnancy(-1))))
+                        .then(Commands.literal("set").then(Commands.argument("percent", IntegerArgumentType.integer(0, 100))
+                                .executes(context -> give(context.getSource(), HerdTool.pregnancySet(IntegerArgumentType.getInteger(context, "percent"))))))));
     }
 
-    private static int info(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+    private static int inspector(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        Animal animal = lookAtAnimal(player);
-        if (animal == null) {
-            source.sendFailure(Component.literal("You are not looking at an animal."));
-            return 0;
-        }
-        String text = AnimalInfoText.format(
-                animal.getName().getString(),
-                AnimalSex.speciesId(animal),
-                Services.DATA.get(animal),
-                AnimalSex.currentScale(animal),
-                animal.isBaby(),
-                Services.DATA.getPregnancy(animal).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
-                BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal))
-        );
-        source.sendSuccess(() -> Component.literal(text), false);
+        give(player, BarnyardInspector.create());
+        source.sendSuccess(() -> Component.literal("Use the Barnyard Inspector on an animal."), false);
         return 1;
     }
 
-    private static Animal lookAtAnimal(ServerPlayer player) {
-        Vec3 from = player.getEyePosition();
-        Vec3 look = player.getViewVector(1.0F);
-        Vec3 to = from.add(look.scale(REACH));
-        AABB box = player.getBoundingBox().expandTowards(look.scale(REACH)).inflate(1.0);
-        EntityHitResult hit = ProjectileUtil.getEntityHitResult(
-                player,
-                from,
-                to,
-                box,
-                entity -> entity instanceof Animal && !entity.isSpectator(),
-                REACH * REACH
-        );
-        if (hit != null && hit.getEntity() instanceof Animal animal) {
-            return animal;
+    private static int give(CommandSourceStack source, HerdTool tool) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        if (!HerdToolRules.allowed(tool, player.isCreative())) {
+            source.sendFailure(Component.literal(HerdToolRules.CREATIVE_ONLY));
+            return 0;
         }
-        return null;
+        give(player, HerdStick.create(tool));
+        source.sendSuccess(() -> Component.literal("Use the " + tool.label() + " stick on an animal."), false);
+        return 1;
+    }
+
+    private static void give(ServerPlayer player, ItemStack stack) {
+        if (!player.getInventory().add(stack)) {
+            player.drop(stack, false, Prediction.SERVER_ONLY);
+        }
     }
 }

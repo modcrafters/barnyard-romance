@@ -11,7 +11,10 @@ public final class AnimalTraitCodecs {
     public static final Codec<Sex> SEX_CODEC = Codec.STRING.xmap(Sex::valueOf, Sex::name);
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
-            Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale)
+            Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale),
+            Codec.DOUBLE.optionalFieldOf("familiarity", 0.0).forGetter(AnimalTraits::familiarity),
+            Codec.LONG.optionalFieldOf("lastFedTick", -1L).forGetter(AnimalTraits::lastFedTick),
+            Codec.INT.optionalFieldOf("growthTicks", Growth.DEFAULT).forGetter(AnimalTraits::growthTicks)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.composite(
@@ -19,6 +22,12 @@ public final class AnimalTraitCodecs {
             AnimalTraits::sex,
             ByteBufCodecs.DOUBLE,
             AnimalTraits::scale,
+            ByteBufCodecs.DOUBLE,
+            AnimalTraits::familiarity,
+            ByteBufCodecs.VAR_LONG,
+            AnimalTraits::lastFedTick,
+            ByteBufCodecs.VAR_INT,
+            AnimalTraits::growthTicks,
             AnimalTraits::new
     );
 

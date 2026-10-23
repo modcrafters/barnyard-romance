@@ -4,7 +4,7 @@
 - [x] Multi-loader Gradle project (common / fabric / neoforge), IntelliJ-ready, run configs for both loaders.
 - [x] Persistent synced `sex` attachment on all `Animal`s, random on spawn, lazy for old worlds.
 - [x] Apply `minecraft:scale` by sex with small random variation; per-species config.
-- [x] Debug command: `/barnyard info` on the looked-at animal (sex, scale).
+- [x] Debug command: `/barnyard info` gives the Barnyard Inspector; use it on an animal to open the detail dialog.
 
 ## Milestone 2: Breeding rules + Herd book
 - [x] Only male + female can mate (mixin in common).
@@ -26,7 +26,8 @@
 - [ ] Optional per-sex custom models (Blockbench).
 
 ## Milestone 6: Depth
-- [ ] Inherited traits, age stages, fertility, familiarity.
+- [x] Familiarity from sneak-feeding. It gates love mode, breeding, milking, and shearing.
+- [ ] Inherited traits, age stages, fertility.
 - [ ] Product differences (milk/meat).
 - [ ] Seasons integration, lineage, male territorial behavior.
 - [ ] Compatibility presets for popular animal mods.

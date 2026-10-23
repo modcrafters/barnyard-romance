@@ -26,7 +26,7 @@ public final class NeoForgeAnimalData {
     );
     public static final Supplier<AttachmentType<Pregnancy>> PREGNANCY = ATTACHMENT_TYPES.register(
             "pregnancy",
-            () -> AttachmentType.builder(() -> new Pregnancy(0L, 1L, "", 1.0, 1))
+            () -> AttachmentType.builder(() -> new Pregnancy(0L, 1L, "", 1.0, 1, 0.0))
                     .serialize(PregnancyCodecs.MAP_CODEC)
                     .sync(PregnancyCodecs.STREAM_CODEC)
                     .build()

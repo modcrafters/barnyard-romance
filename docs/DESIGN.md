@@ -9,22 +9,23 @@
 - Uses vanilla `minecraft:scale` attribute (1.20.5+), so hitbox, rendering and riding follow automatically. No new models needed.
 - Defaults: females span 0.70 to 0.90, males span 1.10 to 1.30. The stored value is that scale. The tooltip shows S / M / L / XL. Per-species overrides in config.
 - Natural spawns, spawn eggs, and summoned animals roll only the S–M half of their sex. L and XL come from breeding.
-- A baby starts at the average of the parents' positions in their own ranges. There is a 35% chance to step up one band. Full nutrition raises that chance to 80%. Food is not tracked yet, so births use the 35% chance.
+- A baby starts at the average of the parents' positions in their own ranges. There is a 35% chance to step up one band. The mother's familiarity at conception is the nutrition value: full familiarity raises that chance to 80%.
 - Meat drops follow the actual scale. A 0.70 animal drops 2–3 meat, a 1.30 animal drops 8–9. Looting still adds on top. Leather, feathers, and wool stay on the vanilla table.
 - Babies keep their rolled scale, and the adult size is applied when they grow up.
 - Test in vanilla: `/attribute @e[type=cow,limit=1,sort=nearest] minecraft:scale base set 1.15`
 
 ## 3. Breeding rules
-- Hook vanilla breeding (`Animal#canMate` / love mode) via mixin: only MALE + FEMALE of the same species can mate.
+- Hook vanilla breeding (`Animal#canMate` / love mode) via mixin: only MALE + FEMALE of the same species can mate, and only when both are at least 30% familiar. A feed that crosses that line puts an adult into love mode. Below 30%, pregnancy cannot start.
 - Optional: cooldowns, fertility (see Ideas).
 - Config: per-species enable/disable; species with custom breeding code can be excluded or patched with compat.
 
 ## 4. Pregnancy
-- On successful mating, cancel instant baby spawn. Mark the female pregnant and store: progress (0-100%), father species, father traits, litter size.
+- On successful mating, cancel instant baby spawn. Mark the female pregnant and store: progress (0-100%), father species, father traits, litter size, and the mother's familiarity.
 - Progress ticks periodically (not every tick; e.g. every N ticks or on day time), so it's cheap and survives chunk unload (compute elapsed game time on load).
-- At 100% the female gives birth (litter size configurable per species).
+- At 100% the female gives birth (litter size configurable per species). The baby starts with half of the familiarity stored at conception.
+- Growth time is inherited. Wild animals take 24,000 ticks (20 minutes). A baby averages its parents and can step toward the fast end. The range is 15,000 to 30,000 ticks.
 - Edge cases: pregnant animal dies (no birth), chunk unloaded (catch up on load), female is moved to another dimension.
-- Visual cue: optional slight size bump on the female, plus herd book / tooltip info.
+- Visual cue: gold hearts drift up from a pregnant female. The hover card shows the portrait, sex, size letter, name, familiarity bar, feed bar, and vanilla health hearts. The Barnyard Inspector item opens the detailed dialog.
 
 ## 5. Food-driven pregnancy
 - Per-species "good" and "bad" food lists in data files, using item tags (e.g. `#c:crops/wheat`) so modded foods work.
@@ -51,7 +52,7 @@
 - **Inherited traits:** babies get size, color, milk/wool yield between parents with random variation.
 - **Age stages:** baby → young → adult → old. Old animals breed less and produce less.
 - **Fertility & cooldown:** fertility drops if bred too often (TFC "worn out").
-- **Familiarity:** feeding/petting builds trust; neglected or wild animals won't breed and may flee.
+- **Familiarity:** feed an animal its normal food once per Minecraft day for +20%, up to 100%. A click and a sneak-click are the same feed. Below 30% familiarity, only a sneak-click is accepted; a normal click scares the animal away and does not feed it. At 30%, feeding starts love mode, and milking, shearing, and breeding all open. A dispenser with shears follows the same rule. There is no decay.
 - **Seasonal breeding:** optional integration with Serene Seasons (some species breed only in spring).
 - **Herd book item:** right-click an animal to view sex, age, pregnancy progress, parents, traits.
 - **Name tag lineage:** named animals keep a family tree viewable in the herd book.

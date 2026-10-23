@@ -3,7 +3,9 @@ package net.modcrafters.minecraft.barnyardromance.pregnancy;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.OffspringScale;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
@@ -64,6 +66,7 @@ public final class PregnancyController {
         }
         Animal mother = selfTraits.get().sex() == Sex.FEMALE ? self : partner;
         Animal father = mother == self ? partner : self;
+        AnimalTraits motherTraits = mother == self ? selfTraits.get() : partnerTraits.get();
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
         if (Services.DATA.getPregnancy(mother).isEmpty()) {
             String speciesId = AnimalSex.speciesId(mother);
@@ -72,7 +75,9 @@ public final class PregnancyController {
                     config.pregnancyTicks(speciesId),
                     AnimalSex.speciesId(father),
                     fatherTraits.scale(),
-                    config.litterSize(speciesId)
+                    config.litterSize(speciesId),
+                    motherTraits.familiarity(),
+                    fatherTraits.growthTicks()
             ));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
@@ -91,7 +96,7 @@ public final class PregnancyController {
                 baby.setBaby(true);
                 baby.snapTo(mother.getX(), mother.getY(), mother.getZ(), 0.0F, 0.0F);
                 if (baby instanceof Animal child) {
-                    rememberParents(mother, child, pregnancy);
+                    baby.setAge(-rememberParents(mother, child, pregnancy));
                 }
                 level.addFreshEntityWithPassengers(baby);
             } catch (RuntimeException exception) {
@@ -101,10 +106,13 @@ public final class PregnancyController {
         level.broadcastEntityEvent(mother, (byte) 18);
     }
 
-    private static void rememberParents(Animal mother, Animal child, Pregnancy pregnancy) {
+    private static int rememberParents(Animal mother, Animal child, Pregnancy pregnancy) {
         BarnyardConfig config = BarnyardConfig.current();
         SizeSettings size = config.sizeFor(AnimalSex.speciesId(mother));
-        double motherScale = Services.DATA.get(mother).map(AnimalTraits::scale).orElse(size.smallest());
+        AnimalTraits motherTraits = Services.DATA.get(mother).orElse(null);
+        double motherScale = motherTraits == null ? size.smallest() : motherTraits.scale();
+        int motherGrowth = motherTraits == null ? Growth.DEFAULT : motherTraits.growthTicks();
+        double nutrition = pregnancy.motherFamiliarity();
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
         double scale = OffspringScale.childScale(
                 sex,
@@ -112,8 +120,10 @@ public final class PregnancyController {
                 pregnancy.fatherScale(),
                 size,
                 child.getRandom().nextDouble(),
-                0.0
+                nutrition
         );
-        Services.DATA.set(child, new AnimalTraits(sex, scale));
+        int growth = Growth.child(motherGrowth, pregnancy.fatherGrowthTicks(), child.getRandom().nextDouble(), nutrition);
+        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth));
+        return growth;
     }
 }
