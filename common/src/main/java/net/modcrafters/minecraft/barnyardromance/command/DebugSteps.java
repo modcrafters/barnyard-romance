@@ -21,29 +21,13 @@ public final class DebugSteps {
         long step = Math.max(1L, Math.round(duration * 0.1));
         long elapsed = Math.clamp(now - pregnancy.conceivedAt(), 0L, duration);
         long nextElapsed = Math.clamp(elapsed + direction * step, 0L, duration);
-        return new Pregnancy(
-                now - nextElapsed,
-                pregnancy.durationTicks(),
-                pregnancy.fatherSpecies(),
-                pregnancy.fatherScale(),
-                pregnancy.litterSize(),
-                pregnancy.motherFamiliarity(),
-                pregnancy.fatherGrowthTicks()
-        );
+        return pregnancy.withConceivedAt(now - nextElapsed);
     }
 
     public static Pregnancy pregnancyAt(Pregnancy pregnancy, long now, int percent) {
         long duration = Math.max(1L, pregnancy.durationTicks());
         long elapsed = Math.round(duration * (Math.clamp(percent, 0, 100) / 100.0));
         elapsed = Math.clamp(elapsed, 0L, duration);
-        return new Pregnancy(
-                now - elapsed,
-                pregnancy.durationTicks(),
-                pregnancy.fatherSpecies(),
-                pregnancy.fatherScale(),
-                pregnancy.litterSize(),
-                pregnancy.motherFamiliarity(),
-                pregnancy.fatherGrowthTicks()
-        );
+        return pregnancy.withConceivedAt(now - elapsed);
     }
 }

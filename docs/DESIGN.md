@@ -20,7 +20,7 @@
 - Config: per-species enable/disable; species with custom breeding code can be excluded or patched with compat.
 
 ## 4. Pregnancy
-- On successful mating, cancel instant baby spawn. Mark the female pregnant and store: progress (0-100%), father species, father traits, litter size, and the mother's familiarity.
+- On successful mating, cancel instant baby spawn. Mark the female pregnant and store: progress (0-100%), father species, father traits, litter size, and the mother's familiarity. The litter itself is made at conception, while the father is still there, so mules, mixed wool colors, horse stats, and variants come out as in vanilla even if the father is gone by the birth. The stored litter is saved but not sent to clients.
 - Progress ticks periodically (not every tick; e.g. every N ticks or on day time), so it's cheap and survives chunk unload (compute elapsed game time on load).
 - At 100% the female gives birth (litter size configurable per species). The baby starts with half of the familiarity stored at conception.
 - Growth time is inherited. Wild animals take 24,000 ticks (20 minutes). A baby averages its parents and can step toward the fast end. The range is 15,000 to 30,000 ticks.
