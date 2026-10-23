@@ -35,10 +35,6 @@ public class InspectorScreen extends Screen {
     private static final int SHADE = 0xFF373737;
     private static final int LIGHT = 0xFFFFFFFF;
     private static final int FLOOR = 0xFF000000;
-    private static final Identifier PANEL = Identifier.withDefaultNamespace("textures/gui/demo_background.png");
-    private static final int PANEL_W = 248;
-    private static final int PANEL_H = 166;
-    private static final int PANEL_TEXTURE = 256;
     private static final Identifier HEART_CONTAINER = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
     private static final Identifier HEART_HALF = Identifier.withDefaultNamespace("hud/heart/half");
@@ -88,28 +84,10 @@ public class InspectorScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
-    // Nine-slices vanilla's classic panel so it stretches to any size and follows resource packs.
     private static void panel(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
-        int b = InspectorLayout.BORDER;
-        int innerW = width - 2 * b;
-        int innerH = height - 2 * b;
-        int srcW = PANEL_W - 2 * b;
-        int srcH = PANEL_H - 2 * b;
-        int right = PANEL_W - b;
-        int bottom = PANEL_H - b;
-        slice(graphics, x, y, 0, 0, b, b, b, b);
-        slice(graphics, x + b, y, b, 0, innerW, b, srcW, b);
-        slice(graphics, x + width - b, y, right, 0, b, b, b, b);
-        slice(graphics, x, y + b, 0, b, b, innerH, b, srcH);
-        slice(graphics, x + b, y + b, b, b, innerW, innerH, srcW, srcH);
-        slice(graphics, x + width - b, y + b, right, b, b, innerH, b, srcH);
-        slice(graphics, x, y + height - b, 0, bottom, b, b, b, b);
-        slice(graphics, x + b, y + height - b, b, bottom, innerW, b, srcW, b);
-        slice(graphics, x + width - b, y + height - b, right, bottom, b, b, b, b);
-    }
-
-    private static void slice(GuiGraphicsExtractor graphics, int x, int y, int u, int v, int width, int height, int srcW, int srcH) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, PANEL, x, y, u, v, width, height, srcW, srcH, PANEL_TEXTURE, PANEL_TEXTURE);
+        for (ClassicPanel.Rect rect : ClassicPanel.rects(width, height)) {
+            graphics.fill(x + rect.x0(), y + rect.y0(), x + rect.x1(), y + rect.y1(), rect.color());
+        }
     }
 
     private void title(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
