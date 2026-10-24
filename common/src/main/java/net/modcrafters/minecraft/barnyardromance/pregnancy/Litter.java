@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -22,11 +23,26 @@ public final class Litter {
     private Litter() {
     }
 
-    public static List<CompoundTag> conceive(Animal mother, Animal father, ServerLevel level, int size) {
+    // Empty means the loader cancelled the breeding (NeoForge BabyEntitySpawnEvent), so there is no pregnancy.
+    public static Optional<List<CompoundTag>> conceive(Animal mother, Animal father, ServerLevel level, int size) {
         List<CompoundTag> litter = new ArrayList<>();
         for (int i = 0; i < size; i++) {
+            AgeableMob baby;
             try {
-                AgeableMob baby = mother.getBreedOffspring(level, father);
+                baby = mother.getBreedOffspring(level, father);
+            } catch (RuntimeException exception) {
+                Constants.LOG.warn("Failed to conceive a {} offspring, it will take after its mother", AnimalSex.speciesId(mother), exception);
+                baby = null;
+            }
+            if (i == 0) {
+                AgeableMob proposed = baby;
+                baby = Services.PLATFORM.onBabySpawn(mother, father, proposed);
+                // A listener that cancels, or swaps a real baby for nothing, stops the pregnancy.
+                if (baby == null && proposed != null) {
+                    return Optional.empty();
+                }
+            }
+            try {
                 if (baby == null) {
                     continue;
                 }
@@ -43,7 +59,7 @@ public final class Litter {
                 Constants.LOG.warn("Failed to conceive a {} offspring, it will take after its mother", AnimalSex.speciesId(mother), exception);
             }
         }
-        return litter;
+        return Optional.of(litter);
     }
 
     public static Optional<AgeableMob> deliver(Animal mother, ServerLevel level, List<CompoundTag> litter, int index) {

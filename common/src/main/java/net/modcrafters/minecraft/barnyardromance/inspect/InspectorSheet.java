@@ -31,6 +31,7 @@ public record InspectorSheet(
 ) {
     public static final String READY = "Ready";
     public static final String NOT_TAMED = "Not tamed";
+    public static final String IN_LOVE = "In love";
 
     public static InspectorSheet unknown(String name, String typeName, boolean named, boolean baby, float health, float maxHealth) {
         return new InspectorSheet(
@@ -97,14 +98,25 @@ public record InspectorSheet(
         };
     }
 
-    public static String breeding(boolean needsTaming, boolean tamed, double familiarity) {
+    // Love and rest are stored as the game tick they end, so they expire on the client without a new sync.
+    public static String breeding(boolean needsTaming, boolean tamed, double familiarity, long loveUntil, long cooldownUntil, long now) {
         if (needsTaming && !tamed) {
             return NOT_TAMED;
         }
         if (!Familiarity.ready(familiarity)) {
-            return "Needs " + Familiarity.percent(Familiarity.THRESHOLD) + " familiarity";
+            return "Needs " + Familiarity.percent(Familiarity.threshold()) + " familiarity";
+        }
+        if (cooldownUntil > now) {
+            return "Resting " + Growth.clock((int) Math.min(cooldownUntil - now, Integer.MAX_VALUE));
+        }
+        if (loveUntil > now) {
+            return IN_LOVE;
         }
         return READY;
+    }
+
+    public static boolean readyToBreed(String breedingText) {
+        return READY.equals(breedingText) || IN_LOVE.equals(breedingText);
     }
 
     public static String lastBirth(String offspringName, long lastBirthTick, long now) {

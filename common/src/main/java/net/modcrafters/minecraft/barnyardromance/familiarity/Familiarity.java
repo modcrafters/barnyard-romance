@@ -1,11 +1,21 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-public final class Familiarity {
-    public static final double GAIN = 0.2;
-    public static final double THRESHOLD = 0.3;
-    public static final long DAY_TICKS = 24_000L;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 
+public final class Familiarity {
     private Familiarity() {
+    }
+
+    public static double gain() {
+        return BarnyardConfig.current().tuning().familiarityGain();
+    }
+
+    public static double threshold() {
+        return BarnyardConfig.current().tuning().familiarityThreshold();
+    }
+
+    public static long dayTicks() {
+        return BarnyardConfig.current().tuning().feedCooldownTicks();
     }
 
     public enum Response {
@@ -21,18 +31,18 @@ public final class Familiarity {
     }
 
     public static boolean ready(double familiarity) {
-        return familiarity >= THRESHOLD;
+        return familiarity >= threshold();
     }
 
     public static double gain(double familiarity) {
-        return Math.min(1.0, familiarity + GAIN);
+        return Math.min(1.0, familiarity + gain());
     }
 
     public static Response respond(boolean food, long lastFedTick, long now) {
         if (!food) {
             return Response.IGNORE;
         }
-        if (lastFedTick >= 0L && now - lastFedTick < DAY_TICKS) {
+        if (lastFedTick >= 0L && now - lastFedTick < dayTicks()) {
             return Response.REJECT;
         }
         return Response.ACCEPT;
@@ -58,18 +68,19 @@ public final class Familiarity {
         if (wait <= 0L) {
             return 1.0;
         }
-        return 1.0 - wait / (double) DAY_TICKS;
+        return 1.0 - wait / (double) dayTicks();
     }
 
     public static long ticksUntilFeed(long lastFedTick, long now) {
         if (lastFedTick < 0L) {
             return 0L;
         }
+        long day = dayTicks();
         long elapsed = now - lastFedTick;
-        if (elapsed < 0L || elapsed >= DAY_TICKS) {
+        if (elapsed < 0L || elapsed >= day) {
             return 0L;
         }
-        return DAY_TICKS - elapsed;
+        return day - elapsed;
     }
 
     public static String nextFeed(long remainingTicks) {

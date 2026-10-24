@@ -10,6 +10,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class PregnancyCodecs {
     public static final MapCodec<Pregnancy> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -19,7 +20,7 @@ public final class PregnancyCodecs {
             Codec.DOUBLE.fieldOf("fatherScale").forGetter(Pregnancy::fatherScale),
             Codec.INT.fieldOf("litterSize").forGetter(Pregnancy::litterSize),
             Codec.DOUBLE.optionalFieldOf("motherFamiliarity", 0.0).forGetter(Pregnancy::motherFamiliarity),
-            Codec.INT.optionalFieldOf("fatherGrowthTicks", Growth.DEFAULT).forGetter(Pregnancy::fatherGrowthTicks),
+            Codec.INT.optionalFieldOf("fatherGrowthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(Pregnancy::fatherGrowthTicks),
             CompoundTag.CODEC.listOf().optionalFieldOf("litter", List.of()).forGetter(Pregnancy::litter)
     ).apply(instance, Pregnancy::new));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();

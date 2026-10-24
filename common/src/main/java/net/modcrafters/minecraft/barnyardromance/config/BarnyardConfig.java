@@ -18,10 +18,10 @@ import java.util.Map;
 
 public final class BarnyardConfig {
     private static final SizeSettings DEFAULT_SIZE = new SizeSettings(0.8, 1.2, 0.1);
-    private static final long DEFAULT_PREGNANCY_TICKS = 24_000L;
-    private static final int DEFAULT_LITTER_SIZE = 1;
+    private static final Range DEFAULT_PREGNANCY_TICKS = new Range(24_000L, 24_000L);
+    private static final Range DEFAULT_LITTER = new Range(1L, 1L);
     private static final long MAX_PREGNANCY_TICKS = 480_000L;
-    private static final int MAX_LITTER_SIZE = 8;
+    private static final long MAX_LITTER_SIZE = 8L;
 
     private static BarnyardConfig current = defaults();
 
@@ -29,30 +29,33 @@ public final class BarnyardConfig {
     private final double femaleRatio;
     private final SizeSettings defaults;
     private final boolean pregnancyEnabled;
-    private final long pregnancyTicks;
-    private final int litterSize;
+    private final Range pregnancyTicks;
+    private final Range litter;
     private final Map<String, SpeciesSettings> species;
+    private final Tuning tuning;
 
     private BarnyardConfig(
             boolean enabled,
             double femaleRatio,
             SizeSettings defaults,
             boolean pregnancyEnabled,
-            long pregnancyTicks,
-            int litterSize,
-            Map<String, SpeciesSettings> species
+            Range pregnancyTicks,
+            Range litter,
+            Map<String, SpeciesSettings> species,
+            Tuning tuning
     ) {
         this.enabled = enabled;
         this.femaleRatio = femaleRatio;
         this.defaults = defaults;
         this.pregnancyEnabled = pregnancyEnabled;
         this.pregnancyTicks = pregnancyTicks;
-        this.litterSize = litterSize;
+        this.litter = litter;
         this.species = species;
+        this.tuning = tuning;
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER_SIZE, Map.of());
+        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, Map.of(), Tuning.DEFAULTS);
     }
 
     public static BarnyardConfig current() {
@@ -93,8 +96,8 @@ public final class BarnyardConfig {
                 Math.max(0.0, number(object, "scaleVariation", DEFAULT_SIZE.variation()))
         );
         boolean pregnancyEnabled = bool(object, "pregnancyEnabled", true);
-        long pregnancyTicks = clampLong(Math.round(number(object, "pregnancyTicks", DEFAULT_PREGNANCY_TICKS)), 1L, MAX_PREGNANCY_TICKS);
-        int litterSize = (int) clampLong(Math.round(number(object, "litterSize", DEFAULT_LITTER_SIZE)), 1L, MAX_LITTER_SIZE);
+        Range pregnancyTicks = range(object, "pregnancyTicks", DEFAULT_PREGNANCY_TICKS).clamp(1L, MAX_PREGNANCY_TICKS);
+        Range litter = range(object, "litterSize", "litterMin", "litterMax", DEFAULT_LITTER).clamp(1L, MAX_LITTER_SIZE);
         Map<String, SpeciesSettings> species = new LinkedHashMap<>();
         if (object.has("species") && !object.get("species").isJsonNull()) {
             if (!object.get("species").isJsonObject()) {
@@ -113,8 +116,9 @@ public final class BarnyardConfig {
                 size,
                 pregnancyEnabled,
                 pregnancyTicks,
-                litterSize,
-                Collections.unmodifiableMap(species)
+                litter,
+                Collections.unmodifiableMap(species),
+                object.get("tuning") instanceof JsonObject tuning ? Tuning.from(tuning) : Tuning.DEFAULTS
         );
     }
 
@@ -134,8 +138,10 @@ public final class BarnyardConfig {
         object.addProperty("maleScale", defaults.maleScale());
         object.addProperty("scaleVariation", defaults.variation());
         object.addProperty("pregnancyEnabled", pregnancyEnabled);
-        object.addProperty("pregnancyTicks", pregnancyTicks);
-        object.addProperty("litterSize", litterSize);
+        object.addProperty("pregnancyTicksMin", pregnancyTicks.min());
+        object.addProperty("pregnancyTicksMax", pregnancyTicks.max());
+        object.addProperty("litterMin", litter.min());
+        object.addProperty("litterMax", litter.max());
         if (!species.isEmpty()) {
             JsonObject speciesObject = new JsonObject();
             for (Map.Entry<String, SpeciesSettings> entry : species.entrySet()) {
@@ -143,6 +149,7 @@ public final class BarnyardConfig {
             }
             object.add("species", speciesObject);
         }
+        object.add("tuning", tuning.toJson());
         StringWriter writer = new StringWriter();
         JsonWriter jsonWriter = new JsonWriter(writer);
         jsonWriter.setIndent("  ");
@@ -153,6 +160,10 @@ public final class BarnyardConfig {
 
     public double femaleRatio() {
         return femaleRatio;
+    }
+
+    public Tuning tuning() {
+        return tuning;
     }
 
     public SizeSettings defaultSize() {
@@ -171,16 +182,25 @@ public final class BarnyardConfig {
         return enabled && pregnancyEnabled;
     }
 
-    public long pregnancyTicks(String speciesId) {
+    // Each end is looked up on its own: the user's species entry, then the built-in preset, then the global value.
+    public Range pregnancyRange(String speciesId) {
         SpeciesSettings settings = species.get(speciesId);
-        long value = settings == null || settings.pregnancyTicks() == null ? pregnancyTicks : settings.pregnancyTicks();
-        return clampLong(value, 1L, MAX_PREGNANCY_TICKS);
+        SpeciesPresets.Preset preset = SpeciesPresets.get(speciesId);
+        Range fallback = preset == null ? pregnancyTicks : preset.pregnancyTicks();
+        return Range.of(
+                settings == null || settings.pregnancyTicksMin() == null ? fallback.min() : settings.pregnancyTicksMin(),
+                settings == null || settings.pregnancyTicksMax() == null ? fallback.max() : settings.pregnancyTicksMax()
+        ).clamp(1L, MAX_PREGNANCY_TICKS);
     }
 
-    public int litterSize(String speciesId) {
+    public Range litterRange(String speciesId) {
         SpeciesSettings settings = species.get(speciesId);
-        int value = settings == null || settings.litterSize() == null ? litterSize : settings.litterSize();
-        return (int) clampLong(value, 1L, MAX_LITTER_SIZE);
+        SpeciesPresets.Preset preset = SpeciesPresets.get(speciesId);
+        Range fallback = preset == null ? litter : preset.litter();
+        return Range.of(
+                settings == null || settings.litterMin() == null ? fallback.min() : settings.litterMin(),
+                settings == null || settings.litterMax() == null ? fallback.max() : settings.litterMax()
+        ).clamp(1L, MAX_LITTER_SIZE);
     }
 
     public SizeSettings sizeFor(String speciesId) {
@@ -239,11 +259,29 @@ public final class BarnyardConfig {
         return object.get(name).getAsDouble();
     }
 
-    private static double clamp(double value, double min, double max) {
-        return Math.clamp(value, min, max);
+    private static Range range(JsonObject object, String legacy, Range fallback) {
+        return range(object, legacy, legacy + "Min", legacy + "Max", fallback);
     }
 
-    private static long clampLong(long value, long min, long max) {
+    // An old single value (litterSize, pregnancyTicks) sets both ends; the min/max keys beat it.
+    private static Range range(JsonObject object, String legacy, String minName, String maxName, Range fallback) {
+        Long single = optionalLong(object, legacy);
+        Long min = optionalLong(object, minName);
+        Long max = optionalLong(object, maxName);
+        return Range.of(
+                min != null ? min : single != null ? single : fallback.min(),
+                max != null ? max : single != null ? single : fallback.max()
+        );
+    }
+
+    private static Long optionalLong(JsonObject object, String name) {
+        if (!object.has(name) || object.get(name).isJsonNull()) {
+            return null;
+        }
+        return Math.round(number(object, name, 0.0));
+    }
+
+    private static double clamp(double value, double min, double max) {
         return Math.clamp(value, min, max);
     }
 
@@ -252,17 +290,27 @@ public final class BarnyardConfig {
             Double femaleScale,
             Double maleScale,
             Double variation,
-            Long pregnancyTicks,
-            Integer litterSize
+            Long pregnancyTicksMin,
+            Long pregnancyTicksMax,
+            Long litterMin,
+            Long litterMax
     ) {
         static SpeciesSettings from(JsonObject object) {
+            Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
+            Long litterSize = optionalLong(object, "litterSize");
+            Long pregnancyTicksMin = optionalLong(object, "pregnancyTicksMin");
+            Long pregnancyTicksMax = optionalLong(object, "pregnancyTicksMax");
+            Long litterMin = optionalLong(object, "litterMin");
+            Long litterMax = optionalLong(object, "litterMax");
             return new SpeciesSettings(
                     object.has("enabled") ? bool(object, "enabled", true) : null,
                     object.has("femaleScale") ? number(object, "femaleScale", 0.0) : null,
                     object.has("maleScale") ? number(object, "maleScale", 0.0) : null,
                     object.has("scaleVariation") ? number(object, "scaleVariation", 0.0) : null,
-                    object.has("pregnancyTicks") ? Math.round(number(object, "pregnancyTicks", 0.0)) : null,
-                    object.has("litterSize") ? (int) Math.round(number(object, "litterSize", 0.0)) : null
+                    pregnancyTicksMin != null ? pregnancyTicksMin : pregnancyTicks,
+                    pregnancyTicksMax != null ? pregnancyTicksMax : pregnancyTicks,
+                    litterMin != null ? litterMin : litterSize,
+                    litterMax != null ? litterMax : litterSize
             );
         }
 
@@ -280,11 +328,17 @@ public final class BarnyardConfig {
             if (variation != null) {
                 object.addProperty("scaleVariation", variation);
             }
-            if (pregnancyTicks != null) {
-                object.addProperty("pregnancyTicks", pregnancyTicks);
+            if (pregnancyTicksMin != null) {
+                object.addProperty("pregnancyTicksMin", pregnancyTicksMin);
             }
-            if (litterSize != null) {
-                object.addProperty("litterSize", litterSize);
+            if (pregnancyTicksMax != null) {
+                object.addProperty("pregnancyTicksMax", pregnancyTicksMax);
+            }
+            if (litterMin != null) {
+                object.addProperty("litterMin", litterMin);
+            }
+            if (litterMax != null) {
+                object.addProperty("litterMax", litterMax);
             }
             return object;
         }

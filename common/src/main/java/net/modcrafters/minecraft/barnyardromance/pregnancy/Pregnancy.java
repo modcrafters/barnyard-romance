@@ -40,7 +40,7 @@ public record Pregnancy(
             int litterSize,
             double motherFamiliarity
     ) {
-        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, Growth.DEFAULT);
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, Growth.wild());
     }
 
     public Pregnancy withConceivedAt(long tick) {
