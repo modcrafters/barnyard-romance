@@ -50,11 +50,11 @@ class InspectorSheetTest {
 
     @Test
     void breedingSaysWhatIsMissing() {
-        assertEquals(InspectorSheet.NOT_TAMED, InspectorSheet.breeding(true, false, 1.0));
-        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(true, true, 0.2));
-        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0));
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 0.3));
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(true, true, 1.0));
+        assertEquals(InspectorSheet.NOT_TAMED, InspectorSheet.breeding(true, false, 1.0, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(true, true, 0.2, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0, -1, -1, 0));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 0.3, -1, -1, 0));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(true, true, 1.0, -1, -1, 0));
     }
 
     @Test
@@ -72,5 +72,25 @@ class InspectorSheetTest {
         assertEquals("2h ago", InspectorSheet.ago(2 * 60 * 60 * 20));
         assertEquals("3d ago", InspectorSheet.ago(3L * 24 * 60 * 60 * 20));
         assertEquals("just now", InspectorSheet.ago(-100));
+    }
+
+    @Test
+    void breedingShowsRestAndLove() {
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, -1, 1200, 0));
+        assertEquals(InspectorSheet.IN_LOVE, InspectorSheet.breeding(false, false, 1.0, 600, -1, 0));
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, 600, 1200, 0));
+    }
+
+    @Test
+    void breedingStatusExpiresWithTheClock() {
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 1.0, 600, 1200, 1200));
+    }
+
+    @Test
+    void onlyLoveAndReadyCountAsReady() {
+        assertTrue(InspectorSheet.readyToBreed(InspectorSheet.READY));
+        assertTrue(InspectorSheet.readyToBreed(InspectorSheet.IN_LOVE));
+        assertFalse(InspectorSheet.readyToBreed("Resting 1m 0s"));
+        assertFalse(InspectorSheet.readyToBreed(InspectorSheet.NOT_TAMED));
     }
 }

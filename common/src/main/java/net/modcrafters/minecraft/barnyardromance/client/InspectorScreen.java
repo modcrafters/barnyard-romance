@@ -234,7 +234,7 @@ public class InspectorScreen extends Screen {
         )).orElse("");
         boolean needsTaming = this.animal instanceof AbstractHorse;
         boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
-        String breeding = InspectorSheet.breeding(needsTaming, tamed, value.familiarity());
+        String breeding = InspectorSheet.breeding(needsTaming, tamed, value.familiarity(), value.loveUntil(), value.cooldownUntil(), now);
         Identifier offspringId = Identifier.tryParse(value.lastBirthSpecies());
         String offspring = offspringId == null || value.lastBirthSpecies().isBlank() ? "" : BuiltInRegistries.ENTITY_TYPE.getOptional(offspringId)
                 .map(type -> type.getDescription().getString())
@@ -259,7 +259,7 @@ public class InspectorScreen extends Screen {
                 pregnancy.map(current -> PregnancyClock.progress(now, current.conceivedAt(), current.durationTicks())).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current.conceivedAt(), current.durationTicks()))).orElse(""),
                 father,
-                InspectorSheet.READY.equals(breeding),
+                InspectorSheet.readyToBreed(breeding),
                 breeding,
                 InspectorSheet.lastBirth(offspring, value.lastBirthTick(), now)
         );

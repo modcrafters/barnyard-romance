@@ -26,8 +26,8 @@ class FamiliarityTest {
     @Test
     void feedingIsAcceptedOncePerDay() {
         assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, -1L, 0L));
-        assertEquals(Familiarity.Response.REJECT, Familiarity.respond(true, 0L, Familiarity.DAY_TICKS - 1));
-        assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, 0L, Familiarity.DAY_TICKS));
+        assertEquals(Familiarity.Response.REJECT, Familiarity.respond(true, 0L, Familiarity.dayTicks() - 1));
+        assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, 0L, Familiarity.dayTicks()));
         assertEquals(Familiarity.Response.IGNORE, Familiarity.respond(false, -1L, 0L));
     }
 
@@ -47,14 +47,14 @@ class FamiliarityTest {
     @Test
     void aFedAnimalShowsTheTimeUntilTheNextFeed() {
         assertEquals(0L, Familiarity.ticksUntilFeed(-1L, 100L));
-        assertEquals(Familiarity.DAY_TICKS, Familiarity.ticksUntilFeed(0L, 0L));
-        assertEquals(1L, Familiarity.ticksUntilFeed(0L, Familiarity.DAY_TICKS - 1));
-        assertEquals(0L, Familiarity.ticksUntilFeed(0L, Familiarity.DAY_TICKS));
-        assertEquals("Can be fed again in 20m 0s.", Familiarity.nextFeed(Familiarity.DAY_TICKS));
+        assertEquals(Familiarity.dayTicks(), Familiarity.ticksUntilFeed(0L, 0L));
+        assertEquals(1L, Familiarity.ticksUntilFeed(0L, Familiarity.dayTicks() - 1));
+        assertEquals(0L, Familiarity.ticksUntilFeed(0L, Familiarity.dayTicks()));
+        assertEquals("Can be fed again in 20m 0s.", Familiarity.nextFeed(Familiarity.dayTicks()));
         assertEquals("Can be fed again in 30s.", Familiarity.nextFeed(600L));
         assertEquals(1.0, Familiarity.feedReady(-1L, 0L), 1.0e-9);
         assertEquals(0.0, Familiarity.feedReady(0L, 0L), 1.0e-9);
-        assertEquals(0.5, Familiarity.feedReady(0L, Familiarity.DAY_TICKS / 2), 1.0e-9);
+        assertEquals(0.5, Familiarity.feedReady(0L, Familiarity.dayTicks() / 2), 1.0e-9);
     }
 
     @Test
@@ -82,7 +82,7 @@ class FamiliarityTest {
     @Test
     void familiarityTamesAWildHorseOnceItCanBreed() {
         assertFalse(Familiarity.tames(false, Familiarity.gain(0.0)));
-        assertTrue(Familiarity.tames(false, Familiarity.THRESHOLD));
+        assertTrue(Familiarity.tames(false, Familiarity.threshold()));
         assertTrue(Familiarity.tames(false, 1.0));
         assertFalse(Familiarity.tames(true, 1.0));
     }

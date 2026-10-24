@@ -69,12 +69,12 @@ class BarnyardConfigTest {
     }
 
     @Test
-    void pregnancyDefaultsToOneDayAndOneBaby() {
+    void pregnancyDefaultsToOneDayAndOneBabyForUnknownSpecies() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 
         assertTrue(config.pregnancyEnabled());
-        assertEquals(24_000, config.pregnancyTicks("minecraft:cow"));
-        assertEquals(1, config.litterSize("minecraft:cow"));
+        assertEquals(new Range(24_000, 24_000), config.pregnancyRange("mod:unknown"));
+        assertEquals(new Range(1, 1), config.litterRange("mod:unknown"));
     }
 
     @Test
@@ -87,9 +87,61 @@ class BarnyardConfigTest {
                 }
                 """);
 
-        assertEquals(12_000, config.pregnancyTicks("minecraft:chicken"));
-        assertEquals(3, config.litterSize("minecraft:chicken"));
-        assertEquals(24_000, config.pregnancyTicks("minecraft:cow"));
+        assertEquals(new Range(12_000, 12_000), config.pregnancyRange("minecraft:chicken"));
+        assertEquals(new Range(3, 3), config.litterRange("minecraft:chicken"));
+        assertEquals(new Range(60_000, 72_000), config.pregnancyRange("minecraft:cow"));
+    }
+
+    @Test
+    void legacyLitterSizeMeansAFixedLitter() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "litterSize": 3 }
+                """);
+
+        assertEquals(new Range(3, 3), config.litterRange("x:y"));
+    }
+
+    @Test
+    void invertedRangesAreSwapped() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:pig": { "litterMin": 5, "litterMax": 2 } } }
+                """);
+
+        assertEquals(new Range(2, 5), config.litterRange("minecraft:pig"));
+    }
+
+    @Test
+    void outOfRangeRangesAreClamped() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "litterMin": -4, "litterMax": 40, "pregnancyTicksMin": -10, "pregnancyTicksMax": 9000000 }
+                """);
+
+        assertEquals(new Range(1, 8), config.litterRange("mod:unknown"));
+        assertEquals(new Range(1, 480_000), config.pregnancyRange("mod:unknown"));
+    }
+
+    @Test
+    void userValueBeatsPresetBeatsGlobal() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:pig": { "litterMax": 6 } } }
+                """);
+
+        assertEquals(new Range(2, 6), config.litterRange("minecraft:pig"));
+        assertEquals(new Range(1, 1), config.litterRange("minecraft:cow"));
+        assertEquals(new Range(60_000, 72_000), config.pregnancyRange("minecraft:cow"));
+        assertEquals(new Range(1, 1), config.litterRange("mod:unknown"));
+        assertEquals(new Range(24_000, 24_000), config.pregnancyRange("mod:unknown"));
+    }
+
+    @Test
+    void rangesRoundTripThroughTheConfigFileText() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "litterMin": 2, "litterMax": 3, "species": { "minecraft:pig": { "pregnancyTicksMin": 100, "pregnancyTicksMax": 200 } } }
+                """);
+        BarnyardConfig parsed = BarnyardConfig.parse(config.toJson());
+
+        assertEquals(new Range(2, 3), parsed.litterRange("mod:unknown"));
+        assertEquals(new Range(100, 200), parsed.pregnancyRange("minecraft:pig"));
     }
 
     @Test

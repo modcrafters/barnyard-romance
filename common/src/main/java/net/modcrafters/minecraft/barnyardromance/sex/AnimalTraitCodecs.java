@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
+import java.util.Optional;
+
 public final class AnimalTraitCodecs {
     public static final Codec<Sex> SEX_CODEC = Codec.STRING.xmap(Sex::valueOf, Sex::name);
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -14,9 +16,11 @@ public final class AnimalTraitCodecs {
             Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale),
             Codec.DOUBLE.optionalFieldOf("familiarity", 0.0).forGetter(AnimalTraits::familiarity),
             Codec.LONG.optionalFieldOf("lastFedTick", -1L).forGetter(AnimalTraits::lastFedTick),
-            Codec.INT.optionalFieldOf("growthTicks", Growth.DEFAULT).forGetter(AnimalTraits::growthTicks),
+            Codec.INT.optionalFieldOf("growthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(AnimalTraits::growthTicks),
             Codec.LONG.optionalFieldOf("lastBirthTick", -1L).forGetter(AnimalTraits::lastBirthTick),
-            Codec.STRING.optionalFieldOf("lastBirthSpecies", "").forGetter(AnimalTraits::lastBirthSpecies)
+            Codec.STRING.optionalFieldOf("lastBirthSpecies", "").forGetter(AnimalTraits::lastBirthSpecies),
+            Codec.LONG.optionalFieldOf("loveUntil", -1L).forGetter(AnimalTraits::loveUntil),
+            Codec.LONG.optionalFieldOf("cooldownUntil", -1L).forGetter(AnimalTraits::cooldownUntil)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.composite(
@@ -34,6 +38,10 @@ public final class AnimalTraitCodecs {
             AnimalTraits::lastBirthTick,
             ByteBufCodecs.STRING_UTF8,
             AnimalTraits::lastBirthSpecies,
+            ByteBufCodecs.VAR_LONG,
+            AnimalTraits::loveUntil,
+            ByteBufCodecs.VAR_LONG,
+            AnimalTraits::cooldownUntil,
             AnimalTraits::new
     );
 
