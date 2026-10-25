@@ -74,19 +74,19 @@ public final class PregnancyController {
         AnimalTraits motherTraits = mother == self ? selfTraits.get() : partnerTraits.get();
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
         if (Services.DATA.getPregnancy(mother).isEmpty()) {
+            if (!Fertility.canConceive(Fertility.current(motherTraits, level.getGameTime()))) {
+                // Worn out: they mate, show hearts and rest, but nothing is conceived.
+                restWithoutPregnancy(self, partner);
+                level.broadcastEntityEvent(mother, (byte) 18);
+                return true;
+            }
             String speciesId = AnimalSex.speciesId(mother);
             double weight = motherTraits.weight();
             int litterSize = (int) LitterRoll.pick(config.litterRange(speciesId), weight, level.getRandom().nextDouble());
             long durationTicks = LitterRoll.pickTicks(config.pregnancyRange(speciesId), weight, level.getRandom().nextDouble());
             Optional<List<CompoundTag>> litter = Litter.conceive(mother, father, level, Math.max(1, litterSize));
             if (litter.isEmpty()) {
-                // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
-                self.setAge(6000);
-                partner.setAge(6000);
-                self.resetLove();
-                partner.resetLove();
-                BreedingStatus.resting(self);
-                BreedingStatus.resting(partner);
+                restWithoutPregnancy(self, partner);
                 return true;
             }
             Services.DATA.setPregnancy(mother, new Pregnancy(
@@ -103,6 +103,16 @@ public final class PregnancyController {
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
+    }
+
+    // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
+    private static void restWithoutPregnancy(Animal self, Animal partner) {
+        self.setAge(6000);
+        partner.setAge(6000);
+        self.resetLove();
+        partner.resetLove();
+        BreedingStatus.resting(self);
+        BreedingStatus.resting(partner);
     }
 
     private static void giveBirth(Animal mother, ServerLevel level, Pregnancy pregnancy) {
@@ -130,7 +140,11 @@ public final class PregnancyController {
         }
         if (bornSpecies != null) {
             String species = bornSpecies;
-            Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(mother, traits.gaveBirth(level.getGameTime(), species)));
+            long now = level.getGameTime();
+            Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
+                    mother,
+                    traits.gaveBirth(now, species).withFertility(Fertility.afterBirth(Fertility.current(traits, now)), now)
+            ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
     }
