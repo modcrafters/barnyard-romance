@@ -1,8 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 
@@ -22,7 +24,7 @@ public final class AnimalInfoText {
             boolean baby,
             SizeSettings size
     ) {
-        return format(name, speciesId, traits, attributeScale, baby, Optional.empty(), size);
+        return format(name, speciesId, traits, attributeScale, baby, Optional.empty(), size, 0L);
     }
 
     public static String format(
@@ -32,7 +34,8 @@ public final class AnimalInfoText {
             double attributeScale,
             boolean baby,
             Optional<String> pregnancyLine,
-            SizeSettings size
+            SizeSettings size,
+            long now
     ) {
         String life = baby ? "baby" : "adult";
         String attribute = formatScale(attributeScale);
@@ -46,7 +49,11 @@ public final class AnimalInfoText {
                     + " (attribute " + attribute + "), "
                     + life
                     + ", familiar " + Familiarity.percent(value.familiarity())
-                    + ", growth " + Growth.clock(value.growthTicks());
+                    + ", growth " + Growth.clock(value.growthTicks())
+                    + ", weight " + Familiarity.percent(value.weight());
+            if (value.sex() == Sex.FEMALE) {
+                text += ", fertility " + Familiarity.percent(Fertility.current(value, now));
+            }
         }
         if (pregnancyLine.isEmpty()) {
             return text;
