@@ -37,4 +37,14 @@ public class FabricBreedingGameTests {
     public void pigsInLoveBreedOnTheirOwn(GameTestHelper helper) {
         BreedingGameTests.pigsInLoveBreedOnTheirOwn(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wornOutMothersRestWithoutConceiving(GameTestHelper helper) {
+        BreedingGameTests.wornOutMothersRestWithoutConceiving(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 200)
+    public void aBirthCostsTheMotherFertility(GameTestHelper helper) {
+        BreedingGameTests.aBirthCostsTheMotherFertility(helper);
+    }
 }

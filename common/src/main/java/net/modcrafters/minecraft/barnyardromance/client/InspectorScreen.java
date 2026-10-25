@@ -3,8 +3,10 @@ package net.modcrafters.minecraft.barnyardromance.client;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
@@ -24,6 +26,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
+import java.util.List;
 import java.util.Optional;
 
 public class InspectorScreen extends Screen {
@@ -63,25 +66,36 @@ public class InspectorScreen extends Screen {
         }
         this.extractTransparentBackground(graphics);
         InspectorSheet sheet = sheet();
+        int heartRows = HerdCardLayout.heartRows(HerdCardLayout.hearts(sheet.maxHealth()));
+        List<InspectorLayout.Placed> rows = InspectorLayout.stack(sheet.rows(), heartRows);
+        int panelHeight = InspectorLayout.panelHeight(rows);
         int x = (this.width - InspectorLayout.WIDTH) / 2;
-        int y = (this.height - InspectorLayout.HEIGHT) / 2;
-        panel(graphics, x, y, InspectorLayout.WIDTH, InspectorLayout.HEIGHT);
+        int y = (this.height - panelHeight) / 2;
+        panel(graphics, x, y, InspectorLayout.WIDTH, panelHeight);
         title(graphics, x, y, sheet);
         portrait(graphics, x, y);
         if (sheet.known()) {
             header(graphics, x, y, sheet);
-            meter(graphics, x, y, InspectorLayout.ROW_FAMILIAR, "heart", "Familiar", sheet.familiarity(), "fill_familiar", sheet.familiarityText());
-            meter(graphics, x, y, InspectorLayout.ROW_FEED, "wheat", "Feed", sheet.feed(), "fill_feed", sheet.feedText());
-            growth(graphics, x, y, sheet);
-            health(graphics, x, y, sheet);
-            if (sheet.showBreeding()) {
-                breeding(graphics, x, y, sheet);
-            }
         } else {
             text(graphics, "No barnyard traits yet", x + InspectorLayout.STATS_X, y + InspectorLayout.HEADER_Y + 3, MUTED);
-            health(graphics, x, y, sheet);
+        }
+        for (InspectorLayout.Placed row : rows) {
+            row(graphics, x, y + row.y(), row.row(), sheet);
         }
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+    }
+
+    private void row(GuiGraphicsExtractor graphics, int x, int rowY, InspectorRow row, InspectorSheet sheet) {
+        switch (row) {
+            case FAMILIAR -> meter(graphics, x, rowY, "heart", "Familiar", sheet.familiarity(), "fill_familiar", sheet.familiarityText());
+            case FEED -> meter(graphics, x, rowY, "wheat", "Feed", sheet.feed(), "fill_feed", sheet.feedText());
+            case GROWTH -> growth(graphics, x, rowY, sheet);
+            case WEIGHT -> meter(graphics, x, rowY, "weight", "Weight", sheet.weight(), "fill_feed", sheet.weightText());
+            case HEALTH -> health(graphics, x, rowY, sheet);
+            case FERTILITY -> meter(graphics, x, rowY, "fertility", "Fertility", sheet.fertility(), "fill_pregnant", sheet.fertilityText());
+            case BREEDING -> breeding(graphics, x, rowY, sheet);
+            case DETAIL -> text(graphics, sheet.detailText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
+        }
     }
 
     private static void panel(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
@@ -147,8 +161,7 @@ public class InspectorScreen extends Screen {
     private void meter(
             GuiGraphicsExtractor graphics,
             int x,
-            int y,
-            int row,
+            int rowY,
             String icon,
             String label,
             double fill,
@@ -156,7 +169,6 @@ public class InspectorScreen extends Screen {
             String value
     ) {
         int rowX = x + InspectorLayout.STATS_X;
-        int rowY = y + row;
         sprite(graphics, icon, rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
         text(graphics, label, rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         int barX = x + InspectorLayout.barX();
@@ -169,19 +181,17 @@ public class InspectorScreen extends Screen {
         text(graphics, value, x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
-    private void growth(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
-        meter(graphics, x, y, InspectorLayout.ROW_GROWTH, "hourglass", "Growth", 0.0, "fill_familiar", sheet.growthText());
+    private void growth(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
+        meter(graphics, x, rowY, "hourglass", "Growth", 0.0, "fill_familiar", sheet.growthText());
         int barX = x + InspectorLayout.barX();
-        int barY = y + InspectorLayout.ROW_GROWTH + 2;
-        sprite(graphics, "marker", InspectorLayout.markerX(barX, InspectorLayout.BAR_W, sheet.growth()), barY, InspectorLayout.MARKER_W, 10);
-        int labelY = y + InspectorLayout.ROW_GROWTH + 14;
+        sprite(graphics, "marker", InspectorLayout.markerX(barX, InspectorLayout.BAR_W, sheet.growth()), rowY + 2, InspectorLayout.MARKER_W, 10);
+        int labelY = rowY + 14;
         text(graphics, "Slow", barX, labelY, MUTED);
         text(graphics, "Fast", barX + InspectorLayout.BAR_W - this.font.width("Fast"), labelY, MUTED);
     }
 
-    private void health(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
+    private void health(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         int rowX = x + InspectorLayout.STATS_X;
-        int rowY = y + InspectorLayout.ROW_HEALTH;
         sprite(graphics, "gold_heart", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
         text(graphics, "Health", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         int count = HerdCardLayout.hearts(sheet.maxHealth());
@@ -200,19 +210,15 @@ public class InspectorScreen extends Screen {
         text(graphics, sheet.healthText(), x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
-    private void breeding(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
-        int row = InspectorLayout.ROW_BREEDING;
+    private void breeding(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         if (sheet.pregnant()) {
-            meter(graphics, x, y, row, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
-        } else {
-            int rowX = x + InspectorLayout.STATS_X;
-            sprite(graphics, "gold_heart", rowX, y + row, InspectorLayout.ICON, InspectorLayout.ICON);
-            text(graphics, "Breeding", rowX + InspectorLayout.ICON + 4, y + row + 3, TEXT);
-            text(graphics, sheet.breedingText(), x + InspectorLayout.barX(), y + row + 3, sheet.breedingReady() ? GOOD : BAD);
+            meter(graphics, x, rowY, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
+            return;
         }
-        if (!sheet.detailText().isEmpty()) {
-            text(graphics, sheet.detailText(), x + InspectorLayout.barX(), y + row + InspectorLayout.DETAIL_OFFSET + 3, MUTED);
-        }
+        int rowX = x + InspectorLayout.STATS_X;
+        sprite(graphics, "gold_heart", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
+        text(graphics, "Breeding", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, sheet.breedingText(), x + InspectorLayout.barX(), rowY + 3, sheet.breedingReady() ? GOOD : BAD);
     }
 
     private InspectorSheet sheet() {
@@ -234,7 +240,17 @@ public class InspectorScreen extends Screen {
         )).orElse("");
         boolean needsTaming = this.animal instanceof AbstractHorse;
         boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
-        String breeding = InspectorSheet.breeding(needsTaming, tamed, value.familiarity(), value.loveUntil(), value.cooldownUntil(), now);
+        boolean female = value.sex() == Sex.FEMALE;
+        double fertility = Fertility.current(value, now);
+        String breeding = InspectorSheet.breeding(
+                needsTaming,
+                tamed,
+                value.familiarity(),
+                female && Fertility.wornOut(value, now),
+                value.loveUntil(),
+                value.cooldownUntil(),
+                now
+        );
         Identifier offspringId = Identifier.tryParse(value.lastBirthSpecies());
         String offspring = offspringId == null || value.lastBirthSpecies().isBlank() ? "" : BuiltInRegistries.ENTITY_TYPE.getOptional(offspringId)
                 .map(type -> type.getDescription().getString())
@@ -243,7 +259,7 @@ public class InspectorScreen extends Screen {
                 named ? name : typeName,
                 named ? typeName : "",
                 true,
-                value.sex() == Sex.FEMALE,
+                female,
                 SizeClass.of(value.sex(), value.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(this.animal))).name(),
                 this.animal.isBaby() ? "Baby" : "Adult",
                 InspectorSheet.scaleText(value.scale()),
@@ -253,8 +269,12 @@ public class InspectorScreen extends Screen {
                 InspectorSheet.feedText(value.lastFedTick(), now),
                 Growth.percent(value.growthTicks()),
                 Growth.clock(value.growthTicks()),
+                value.weight(),
+                Familiarity.percent(value.weight()),
                 health,
                 maxHealth,
+                fertility,
+                Familiarity.percent(fertility),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current.conceivedAt(), current.durationTicks())).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current.conceivedAt(), current.durationTicks()))).orElse(""),

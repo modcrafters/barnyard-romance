@@ -29,7 +29,9 @@ public final class BreedingGameTests {
             new Case("same_sex_pairs_make_nothing", 20, BreedingGameTests::sameSexPairsMakeNothing),
             new Case("unfamiliar_animals_do_not_fall_in_love", 20, BreedingGameTests::unfamiliarAnimalsDoNotFallInLove),
             new Case("hurting_an_animal_ends_its_love", 20, BreedingGameTests::hurtingAnAnimalEndsItsLove),
-            new Case("pigs_in_love_breed_on_their_own", 400, BreedingGameTests::pigsInLoveBreedOnTheirOwn)
+            new Case("pigs_in_love_breed_on_their_own", 400, BreedingGameTests::pigsInLoveBreedOnTheirOwn),
+            new Case("worn_out_mothers_rest_without_conceiving", 20, BreedingGameTests::wornOutMothersRestWithoutConceiving),
+            new Case("a_birth_costs_the_mother_fertility", 200, BreedingGameTests::aBirthCostsTheMotherFertility)
     );
 
     private BreedingGameTests() {
@@ -127,6 +129,49 @@ public final class BreedingGameTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(Services.DATA.getPregnancy(mother).isPresent(), "the pigs have not bred yet");
             helper.assertTrue(traits(helper, mother).cooldownUntil() > helper.getLevel().getGameTime(), "the mother is not resting");
+        });
+    }
+
+    // The father starts the mating, so the worn-out check has to find the mother on the other side.
+    public static void wornOutMothersRestWithoutConceiving(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.PIG);
+        Animal father = male(helper, EntityTypes.PIG);
+        long now = helper.getLevel().getGameTime();
+        Services.DATA.set(mother, traits(helper, mother).withFertility(0.1, now));
+        mother.setInLove(null);
+        father.setInLove(null);
+
+        father.spawnChildFromBreeding(helper.getLevel(), mother);
+
+        helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "a worn-out mother conceived");
+        helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a worn-out mating gave XP");
+        assertResting(helper, mother, now);
+        assertResting(helper, father, now);
+        helper.succeed();
+    }
+
+    public static void aBirthCostsTheMotherFertility(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.PIG);
+        Animal father = male(helper, EntityTypes.PIG);
+        long now = helper.getLevel().getGameTime();
+        mother.setInLove(null);
+        father.setInLove(null);
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+        Pregnancy pregnancy = pregnancy(helper, mother);
+
+        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother is still pregnant");
+            AnimalTraits traits = traits(helper, mother);
+            helper.assertTrue(Math.abs(traits.fertility() - 0.75) < 1.0e-6, "the mother's fertility is " + traits.fertility() + ", not 0.75");
+            helper.assertTrue(traits.fertilityTick() >= now, "the birth was not dated");
+            List<? extends Animal> babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
+            helper.assertTrue(!babies.isEmpty(), "no piglets were born");
+            for (Animal baby : babies) {
+                AnimalTraits child = traits(helper, baby);
+                helper.assertTrue(child.fertility() == 1.0, "a piglet was born with fertility " + child.fertility());
+                helper.assertTrue(child.weight() >= 0.0 && child.weight() <= 1.0, "a piglet was born with weight " + child.weight());
+            }
         });
     }
 

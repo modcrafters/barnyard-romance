@@ -20,7 +20,10 @@ public final class AnimalTraitCodecs {
             Codec.LONG.optionalFieldOf("lastBirthTick", -1L).forGetter(AnimalTraits::lastBirthTick),
             Codec.STRING.optionalFieldOf("lastBirthSpecies", "").forGetter(AnimalTraits::lastBirthSpecies),
             Codec.LONG.optionalFieldOf("loveUntil", -1L).forGetter(AnimalTraits::loveUntil),
-            Codec.LONG.optionalFieldOf("cooldownUntil", -1L).forGetter(AnimalTraits::cooldownUntil)
+            Codec.LONG.optionalFieldOf("cooldownUntil", -1L).forGetter(AnimalTraits::cooldownUntil),
+            Codec.DOUBLE.optionalFieldOf("weight", 0.5).forGetter(AnimalTraits::weight),
+            Codec.DOUBLE.optionalFieldOf("fertility", 1.0).forGetter(AnimalTraits::fertility),
+            Codec.LONG.optionalFieldOf("fertilityTick", -1L).forGetter(AnimalTraits::fertilityTick)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.composite(
@@ -42,6 +45,12 @@ public final class AnimalTraitCodecs {
             AnimalTraits::loveUntil,
             ByteBufCodecs.VAR_LONG,
             AnimalTraits::cooldownUntil,
+            ByteBufCodecs.DOUBLE,
+            AnimalTraits::weight,
+            ByteBufCodecs.DOUBLE,
+            AnimalTraits::fertility,
+            ByteBufCodecs.VAR_LONG,
+            AnimalTraits::fertilityTick,
             AnimalTraits::new
     );
 

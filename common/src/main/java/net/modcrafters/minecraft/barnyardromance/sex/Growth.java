@@ -1,7 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 
 public final class Growth {
     private Growth() {
@@ -34,14 +33,6 @@ public final class Growth {
         int slow = slow();
         double clamped = Math.clamp(percent, 0.0, 1.0);
         return (int) Math.round(slow - clamped * (slow - fast));
-    }
-
-    public static int child(int mother, int father, double improvementRandom, double nutrition) {
-        Tuning tuning = BarnyardConfig.current().tuning();
-        double average = (percent(mother) + percent(father)) / 2.0;
-        double chance = tuning.improveBaseChance() + tuning.improveNutritionChance() * Math.clamp(nutrition, 0.0, 1.0);
-        double next = improvementRandom < chance ? average + tuning.improveStep() : average;
-        return fromPercent(next);
     }
 
     public static String clock(int ticks) {

@@ -247,6 +247,8 @@ git commit -m "Move tuning into config, add litter and pregnancy ranges, sync lo
 
 ## Stage 2: Inherited traits, weight, fertility (#1, #10, #5)
 
+> **Done.** Detailed plan: [`2026-10-25-live-birth-stage-2.md`](2026-10-25-live-birth-stage-2.md). Fertility became a state that recovers rather than an inherited trait; see that plan's Decisions.
+
 - **New traits on `AnimalTraits`:**
   - `weight` (0–1). A heavier mother picks higher in the litter range and shorter in the pregnancy range, through `LitterRoll`'s weight argument.
   - `fertility` (0–1, starts at 1).

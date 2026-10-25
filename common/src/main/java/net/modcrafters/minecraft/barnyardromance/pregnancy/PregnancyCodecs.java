@@ -21,6 +21,7 @@ public final class PregnancyCodecs {
             Codec.INT.fieldOf("litterSize").forGetter(Pregnancy::litterSize),
             Codec.DOUBLE.optionalFieldOf("motherFamiliarity", 0.0).forGetter(Pregnancy::motherFamiliarity),
             Codec.INT.optionalFieldOf("fatherGrowthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(Pregnancy::fatherGrowthTicks),
+            Codec.DOUBLE.optionalFieldOf("fatherWeight", 0.5).forGetter(Pregnancy::fatherWeight),
             CompoundTag.CODEC.listOf().optionalFieldOf("litter", List.of()).forGetter(Pregnancy::litter)
     ).apply(instance, Pregnancy::new));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
@@ -40,6 +41,8 @@ public final class PregnancyCodecs {
             Pregnancy::motherFamiliarity,
             ByteBufCodecs.VAR_INT,
             Pregnancy::fatherGrowthTicks,
+            ByteBufCodecs.DOUBLE,
+            Pregnancy::fatherWeight,
             Pregnancy::new
     );
 

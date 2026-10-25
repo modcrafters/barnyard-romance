@@ -7,7 +7,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.OffspringScale;
+import net.modcrafters.minecraft.barnyardromance.sex.Inheritance;
+import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
@@ -73,20 +74,19 @@ public final class PregnancyController {
         AnimalTraits motherTraits = mother == self ? selfTraits.get() : partnerTraits.get();
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
         if (Services.DATA.getPregnancy(mother).isEmpty()) {
+            if (!Fertility.canConceive(Fertility.current(motherTraits, level.getGameTime()))) {
+                // Worn out: they mate, show hearts and rest, but nothing is conceived.
+                restWithoutPregnancy(self, partner);
+                level.broadcastEntityEvent(mother, (byte) 18);
+                return true;
+            }
             String speciesId = AnimalSex.speciesId(mother);
-            // Every mother weighs the same until Stage 2 gives weight its own trait.
-            double weight = 0.5;
+            double weight = motherTraits.weight();
             int litterSize = (int) LitterRoll.pick(config.litterRange(speciesId), weight, level.getRandom().nextDouble());
             long durationTicks = LitterRoll.pickTicks(config.pregnancyRange(speciesId), weight, level.getRandom().nextDouble());
             Optional<List<CompoundTag>> litter = Litter.conceive(mother, father, level, Math.max(1, litterSize));
             if (litter.isEmpty()) {
-                // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
-                self.setAge(6000);
-                partner.setAge(6000);
-                self.resetLove();
-                partner.resetLove();
-                BreedingStatus.resting(self);
-                BreedingStatus.resting(partner);
+                restWithoutPregnancy(self, partner);
                 return true;
             }
             Services.DATA.setPregnancy(mother, new Pregnancy(
@@ -97,11 +97,22 @@ public final class PregnancyController {
                     litterSize,
                     motherTraits.familiarity(),
                     fatherTraits.growthTicks(),
+                    fatherTraits.weight(),
                     litter.get()
             ));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
+    }
+
+    // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
+    private static void restWithoutPregnancy(Animal self, Animal partner) {
+        self.setAge(6000);
+        partner.setAge(6000);
+        self.resetLove();
+        partner.resetLove();
+        BreedingStatus.resting(self);
+        BreedingStatus.resting(partner);
     }
 
     private static void giveBirth(Animal mother, ServerLevel level, Pregnancy pregnancy) {
@@ -129,7 +140,11 @@ public final class PregnancyController {
         }
         if (bornSpecies != null) {
             String species = bornSpecies;
-            Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(mother, traits.gaveBirth(level.getGameTime(), species)));
+            long now = level.getGameTime();
+            Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
+                    mother,
+                    traits.gaveBirth(now, species).withFertility(Fertility.afterBirth(Fertility.current(traits, now)), now)
+            ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
     }
@@ -140,18 +155,23 @@ public final class PregnancyController {
         AnimalTraits motherTraits = Services.DATA.get(mother).orElse(null);
         double motherScale = motherTraits == null ? size.smallest() : motherTraits.scale();
         int motherGrowth = motherTraits == null ? Growth.wild() : motherTraits.growthTicks();
+        double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
         double nutrition = pregnancy.motherFamiliarity();
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
-        double scale = OffspringScale.childScale(
-                sex,
-                motherScale,
-                pregnancy.fatherScale(),
-                size,
-                child.getRandom().nextDouble(),
+        double scalePercent = inherit(
+                child,
+                ScaleRoll.percent(Sex.FEMALE, motherScale, size),
+                ScaleRoll.percent(Sex.MALE, pregnancy.fatherScale(), size),
                 nutrition
         );
-        int growth = Growth.child(motherGrowth, pregnancy.fatherGrowthTicks(), child.getRandom().nextDouble(), nutrition);
-        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth));
+        double scale = ScaleRoll.fromPercent(sex, size, scalePercent);
+        int growth = Growth.fromPercent(inherit(child, Growth.percent(motherGrowth), Growth.percent(pregnancy.fatherGrowthTicks()), nutrition));
+        double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
+        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth).withWeight(weight));
         return growth;
+    }
+
+    private static double inherit(Animal child, double mother, double father, double nutrition) {
+        return Inheritance.child(mother, father, child.getRandom().nextDouble(), child.getRandom().nextDouble(), nutrition);
     }
 }

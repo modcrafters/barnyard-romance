@@ -24,7 +24,7 @@ class AnimalInfoTextTest {
                 size
         );
 
-        assertEquals("Cow (minecraft:cow): XL female, scale 0.9000 (attribute 0.9000), adult, familiar 0%, growth 20m 0s", text);
+        assertEquals("Cow (minecraft:cow): XL female, scale 0.9000 (attribute 0.9000), adult, familiar 0%, growth 20m 0s, weight 50%, fertility 100%", text);
     }
 
     @Test
@@ -47,12 +47,32 @@ class AnimalInfoTextTest {
         Optional<String> pregnancy = Optional.of("Pregnant 50% · 10m 0s");
 
         assertEquals(
-                "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, Pregnant 50% · 10m 0s",
-                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, false, pregnancy, size)
+                "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, weight 50%, fertility 100%, Pregnant 50% · 10m 0s",
+                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, false, pregnancy, size, 0L)
         );
         assertEquals(
                 List.of("Cow", "S female, adult, growth 20m 0s", "Pregnant 50% · 10m 0s"),
                 AnimalInfoText.hoverLines("Cow", traits, false, pregnancy, size)
+        );
+    }
+
+    @Test
+    void showsWeightAndFertilityRecoveredByNow() {
+        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.FEMALE, 0.72).withWeight(0.8).withFertility(0.1, 0L));
+
+        assertEquals(
+                "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, weight 80%, fertility 30%",
+                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, false, Optional.empty(), size, 48_000L)
+        );
+    }
+
+    @Test
+    void malesShowWeightButNoFertility() {
+        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.MALE, 1.12).withWeight(0.3));
+
+        assertEquals(
+                "Bull (minecraft:cow): S male, scale 1.1200 (attribute 1.1200), adult, familiar 0%, growth 20m 0s, weight 30%",
+                AnimalInfoText.format("Bull", "minecraft:cow", traits, 1.12, false, Optional.empty(), size, 0L)
         );
     }
 }

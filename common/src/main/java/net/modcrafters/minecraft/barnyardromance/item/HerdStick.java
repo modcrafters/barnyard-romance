@@ -77,7 +77,8 @@ public class HerdStick extends Item {
                     AnimalSex.currentScale(animal),
                     animal.isBaby(),
                     Services.DATA.getPregnancy(animal).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
-                    BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal))
+                    BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
+                    animal.level().getGameTime()
             );
             return new Outcome(true, text);
         }
