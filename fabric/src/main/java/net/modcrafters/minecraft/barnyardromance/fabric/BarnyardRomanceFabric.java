@@ -33,6 +33,11 @@ public class BarnyardRomanceFabric implements ModInitializer {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pregnancy_heart"),
                 BarnyardParticles.PREGNANCY_HEART
         );
+        Registry.register(
+                BuiltInRegistries.PARTICLE_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
+                BarnyardParticles.OLD_HEART
+        );
         BarnyardRomance.init();
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (entity instanceof Animal animal) {

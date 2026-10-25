@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
@@ -20,7 +21,7 @@ class AnimalInfoTextTest {
                 "minecraft:cow",
                 Optional.of(new AnimalTraits(Sex.FEMALE, 0.90)),
                 0.90,
-                false,
+                AgeStage.ADULT,
                 size
         );
 
@@ -34,7 +35,7 @@ class AnimalInfoTextTest {
                 "minecraft:pig",
                 Optional.empty(),
                 1.0,
-                true,
+                AgeStage.BABY,
                 size
         );
 
@@ -48,11 +49,11 @@ class AnimalInfoTextTest {
 
         assertEquals(
                 "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, weight 50%, fertility 100%, Pregnant 50% · 10m 0s",
-                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, false, pregnancy, size, 0L)
+                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, AgeStage.ADULT, pregnancy, size, 0L)
         );
         assertEquals(
                 List.of("Cow", "S female, adult, growth 20m 0s", "Pregnant 50% · 10m 0s"),
-                AnimalInfoText.hoverLines("Cow", traits, false, pregnancy, size)
+                AnimalInfoText.hoverLines("Cow", traits, AgeStage.ADULT, pregnancy, size)
         );
     }
 
@@ -62,7 +63,7 @@ class AnimalInfoTextTest {
 
         assertEquals(
                 "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, weight 80%, fertility 30%",
-                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, false, Optional.empty(), size, 48_000L)
+                AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.72, AgeStage.ADULT, Optional.empty(), size, 48_000L)
         );
     }
 
@@ -72,7 +73,21 @@ class AnimalInfoTextTest {
 
         assertEquals(
                 "Bull (minecraft:cow): S male, scale 1.1200 (attribute 1.1200), adult, familiar 0%, growth 20m 0s, weight 30%",
-                AnimalInfoText.format("Bull", "minecraft:cow", traits, 1.12, false, Optional.empty(), size, 0L)
+                AnimalInfoText.format("Bull", "minecraft:cow", traits, 1.12, AgeStage.ADULT, Optional.empty(), size, 0L)
+        );
+    }
+
+    @Test
+    void namesTheAgeStage() {
+        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.MALE, 1.12));
+
+        assertEquals(
+                List.of("Bull", "S male, old, growth 20m 0s"),
+                AnimalInfoText.hoverLines("Bull", traits, AgeStage.OLD, size)
+        );
+        assertEquals(
+                List.of("Bull", "S male, young, growth 20m 0s"),
+                AnimalInfoText.hoverLines("Bull", traits, AgeStage.YOUNG, size)
         );
     }
 }

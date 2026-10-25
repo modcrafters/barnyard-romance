@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
+import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
 import net.modcrafters.minecraft.barnyardromance.command.DebugSteps;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
@@ -75,7 +76,7 @@ public class HerdStick extends Item {
                     AnimalSex.speciesId(animal),
                     Services.DATA.get(animal),
                     AnimalSex.currentScale(animal),
-                    animal.isBaby(),
+                    AgeController.stage(animal),
                     Services.DATA.getPregnancy(animal).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
                     BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
                     animal.level().getGameTime()

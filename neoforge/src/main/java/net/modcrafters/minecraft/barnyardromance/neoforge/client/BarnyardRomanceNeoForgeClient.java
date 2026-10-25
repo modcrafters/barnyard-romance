@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.neoforge.client;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
@@ -27,5 +28,6 @@ public final class BarnyardRomanceNeoForgeClient {
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(BarnyardParticles.PREGNANCY_HEART, PregnancyHeartParticle.Provider::new);
+        event.registerSpriteSet(BarnyardParticles.OLD_HEART, OldHeartParticle.Provider::new);
     }
 }

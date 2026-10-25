@@ -49,6 +49,11 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pregnancy_heart"),
                 () -> BarnyardParticles.PREGNANCY_HEART
         );
+        event.register(
+                Registries.PARTICLE_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
+                () -> BarnyardParticles.OLD_HEART
+        );
     }
 
     private static void onEntityJoin(EntityJoinLevelEvent event) {

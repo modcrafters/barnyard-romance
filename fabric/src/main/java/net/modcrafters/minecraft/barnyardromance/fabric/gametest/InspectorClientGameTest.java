@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -17,6 +18,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.level.storage.ServerLevelData;
 
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -29,6 +31,12 @@ public class InspectorClientGameTest implements FabricClientGameTest {
             world.getConnection().waitForChunksRender();
             world.getServer().runCommand("time set day");
             world.getServer().runCommand("gamerule advance_time false");
+            // A new world starts at tick 0, too early for anything to have been born a month ago.
+            world.getServer().runOnServer(server -> {
+                ((ServerLevelData) server.overworld().getLevelData()).setGameTime(1_000_000L);
+                server.forceGameTimeSynchronization();
+            });
+            world.getConnection().waitForClientboundPackets();
             long now = world.getServer().computeOnServer(server -> server.overworld().getGameTime());
 
             inspect(context, world, "inspector_worn_out_heavy_cow", Sex.FEMALE, false,
@@ -41,7 +49,42 @@ public class InspectorClientGameTest implements FabricClientGameTest {
                     traits -> traits.withWeight(0.62), false);
             inspect(context, world, "inspector_strong_stallion", EntityTypes.HORSE, Sex.MALE, false,
                     traits -> traits.withWeight(0.7), false);
+            inspect(context, world, "inspector_young_bull", Sex.MALE, false,
+                    traits -> traits.withBornTick(now - 30_000L), false);
+            inspect(context, world, "inspector_old_cow", Sex.FEMALE, false,
+                    traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
+            oldHearts(context, world, now);
         }
+    }
+
+    // Old hearts are random and rare, so a few are spawned by hand to see how they look.
+    private static void oldHearts(ClientGameTestContext context, TestSingleplayerContext world, long now) {
+        world.getServer().runCommand("tp @a ~ ~ ~ -75 5");
+        UUID id = world.getServer().computeOnServer(server -> {
+            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            Animal cow = EntityTypes.COW.create(player.level(), EntitySpawnReason.COMMAND);
+            cow.snapTo(player.getX() + 5.0, player.getY(), player.getZ(), 90.0F, 0.0F);
+            cow.setNoAi(true);
+            player.level().addFreshEntity(cow);
+            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 0.85, 1.0, -1L).withBornTick(now - 800_000L));
+            return cow.getUUID();
+        });
+        world.getConnection().waitForClientboundPackets();
+        context.waitFor(client -> client.level != null && entity(client.level.getEntity(id)) != null);
+        for (int i = 0; i < 4; i++) {
+            context.runOnClient(client -> {
+                Entity cow = client.level.getEntity(id);
+                client.level.addParticle(BarnyardParticles.OLD_HEART, cow.getRandomX(0.6), cow.getRandomY() + 0.5, cow.getRandomZ(0.6), 0.0, 0.0, 0.0);
+            });
+            context.waitTicks(4);
+        }
+        context.takeScreenshot("old_cow_hearts");
+        world.getServer().runOnServer(server -> {
+            Entity cow = server.overworld().getEntity(id);
+            if (cow != null) {
+                cow.discard();
+            }
+        });
     }
 
     private static void inspect(
