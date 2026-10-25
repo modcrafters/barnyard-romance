@@ -75,8 +75,7 @@ public final class PregnancyController {
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
         if (Services.DATA.getPregnancy(mother).isEmpty()) {
             String speciesId = AnimalSex.speciesId(mother);
-            // Every mother weighs the same until Stage 2 gives weight its own trait.
-            double weight = 0.5;
+            double weight = motherTraits.weight();
             int litterSize = (int) LitterRoll.pick(config.litterRange(speciesId), weight, level.getRandom().nextDouble());
             long durationTicks = LitterRoll.pickTicks(config.pregnancyRange(speciesId), weight, level.getRandom().nextDouble());
             Optional<List<CompoundTag>> litter = Litter.conceive(mother, father, level, Math.max(1, litterSize));
@@ -98,6 +97,7 @@ public final class PregnancyController {
                     litterSize,
                     motherTraits.familiarity(),
                     fatherTraits.growthTicks(),
+                    fatherTraits.weight(),
                     litter.get()
             ));
         }
@@ -141,6 +141,7 @@ public final class PregnancyController {
         AnimalTraits motherTraits = Services.DATA.get(mother).orElse(null);
         double motherScale = motherTraits == null ? size.smallest() : motherTraits.scale();
         int motherGrowth = motherTraits == null ? Growth.wild() : motherTraits.growthTicks();
+        double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
         double nutrition = pregnancy.motherFamiliarity();
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
         double scalePercent = inherit(
@@ -151,7 +152,8 @@ public final class PregnancyController {
         );
         double scale = ScaleRoll.fromPercent(sex, size, scalePercent);
         int growth = Growth.fromPercent(inherit(child, Growth.percent(motherGrowth), Growth.percent(pregnancy.fatherGrowthTicks()), nutrition));
-        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth));
+        double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
+        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth).withWeight(weight));
         return growth;
     }
 

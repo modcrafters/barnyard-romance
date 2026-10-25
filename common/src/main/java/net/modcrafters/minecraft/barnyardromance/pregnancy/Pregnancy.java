@@ -14,6 +14,7 @@ public record Pregnancy(
         int litterSize,
         double motherFamiliarity,
         int fatherGrowthTicks,
+        double fatherWeight,
         List<CompoundTag> litter
 ) {
     public Pregnancy {
@@ -29,7 +30,21 @@ public record Pregnancy(
             double motherFamiliarity,
             int fatherGrowthTicks
     ) {
-        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, List.of());
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, 0.5);
+    }
+
+    // What clients see: the litter stays on the server.
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, List.of());
     }
 
     public Pregnancy(
@@ -44,6 +59,6 @@ public record Pregnancy(
     }
 
     public Pregnancy withConceivedAt(long tick) {
-        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, litter);
+        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter);
     }
 }
