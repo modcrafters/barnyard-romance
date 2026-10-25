@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
+import net.modcrafters.minecraft.barnyardromance.neoforge.gametest.NeoForgeBreedingGameTests;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -26,6 +27,7 @@ public class BarnyardRomanceNeoForge {
     public BarnyardRomanceNeoForge(IEventBus modBus) {
         NeoForgeAnimalData.ATTACHMENT_TYPES.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
+        NeoForgeBreedingGameTests.register(modBus);
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
             BarnyardRomanceNeoForgeClient.register(modBus);
         }
