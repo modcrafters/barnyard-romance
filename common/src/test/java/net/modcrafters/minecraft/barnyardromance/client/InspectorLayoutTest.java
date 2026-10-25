@@ -2,6 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,16 +38,41 @@ class InspectorLayoutTest {
     }
 
     @Test
-    void everythingFitsInsideThePanelBorder() {
-        int lastLine = InspectorLayout.ROW_BREEDING + InspectorLayout.DETAIL_OFFSET + 3 + 9;
-        int twoHeartRows = InspectorLayout.ROW_HEALTH + 2 + 10 + 9;
-
-        assertTrue(lastLine <= InspectorLayout.HEIGHT - InspectorLayout.BORDER);
-        assertTrue(InspectorLayout.PORTRAIT_Y + InspectorLayout.PORTRAIT + 1 <= InspectorLayout.HEIGHT - InspectorLayout.BORDER);
-        assertTrue(twoHeartRows < InspectorLayout.ROW_FERTILITY);
-        assertTrue(InspectorLayout.ROW_GROWTH + 14 + 9 <= InspectorLayout.ROW_WEIGHT);
-        assertTrue(InspectorLayout.ROW_WEIGHT + 16 <= InspectorLayout.ROW_HEALTH);
-        assertTrue(InspectorLayout.ROW_FERTILITY + 16 <= InspectorLayout.ROW_BREEDING);
+    void everythingAboveTheListFitsInsideThePanel() {
         assertTrue(InspectorLayout.TITLE_Y + 9 < InspectorLayout.PORTRAIT_Y);
+        assertTrue(InspectorLayout.HEADER_Y + 13 < InspectorLayout.ROW_START);
+    }
+
+    @Test
+    void rowsStackWithNoGaps() {
+        List<InspectorLayout.Placed> placed = InspectorLayout.stack(List.of(FAMILIAR, GROWTH, HEALTH, BREEDING, DETAIL), 1);
+
+        assertEquals(List.of(38, 54, 80, 96, 108), placed.stream().map(InspectorLayout.Placed::y).toList());
+        assertEquals(120, InspectorLayout.bottom(placed));
+    }
+
+    @Test
+    void aHiddenRowLetsTheNextOneMoveUp() {
+        List<InspectorLayout.Placed> cow = InspectorLayout.stack(List.of(WEIGHT, HEALTH, FERTILITY, BREEDING), 1);
+        List<InspectorLayout.Placed> bull = InspectorLayout.stack(List.of(WEIGHT, HEALTH, BREEDING), 1);
+
+        assertEquals(cow.get(2).y(), bull.get(2).y());
+        assertEquals(BREEDING, bull.get(2).row());
+    }
+
+    @Test
+    void twoRowsOfHeartsPushTheRestDown() {
+        assertEquals(54, InspectorLayout.stack(List.of(HEALTH, BREEDING), 1).get(1).y());
+        assertEquals(64, InspectorLayout.stack(List.of(HEALTH, BREEDING), 2).get(1).y());
+    }
+
+    @Test
+    void thePanelFitsTheListButNeverCutsThePortrait() {
+        int portraitBottom = InspectorLayout.PORTRAIT_Y + InspectorLayout.PORTRAIT + 1;
+        List<InspectorLayout.Placed> everything = InspectorLayout.stack(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, FERTILITY, BREEDING, DETAIL), 2);
+
+        assertEquals(portraitBottom + InspectorLayout.BOTTOM_MARGIN, InspectorLayout.panelHeight(InspectorLayout.stack(List.of(HEALTH), 1)));
+        assertEquals(InspectorLayout.bottom(everything) + InspectorLayout.BOTTOM_MARGIN, InspectorLayout.panelHeight(everything));
+        assertTrue(InspectorLayout.BOTTOM_MARGIN >= InspectorLayout.BORDER);
     }
 }

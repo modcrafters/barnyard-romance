@@ -3,6 +3,8 @@ package net.modcrafters.minecraft.barnyardromance.inspect;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public record InspectorSheet(
@@ -169,6 +171,29 @@ public record InspectorSheet(
     // Fathers never wear out, so only adult females show fertility.
     public boolean showFertility() {
         return known && female && "Adult".equals(life);
+    }
+
+    public List<InspectorRow> rows() {
+        if (!known) {
+            return List.of(InspectorRow.HEALTH);
+        }
+        List<InspectorRow> rows = new ArrayList<>(List.of(
+                InspectorRow.FAMILIAR,
+                InspectorRow.FEED,
+                InspectorRow.GROWTH,
+                InspectorRow.WEIGHT,
+                InspectorRow.HEALTH
+        ));
+        if (showFertility()) {
+            rows.add(InspectorRow.FERTILITY);
+        }
+        if (showBreeding()) {
+            rows.add(InspectorRow.BREEDING);
+            if (!detailText().isEmpty()) {
+                rows.add(InspectorRow.DETAIL);
+            }
+        }
+        return List.copyOf(rows);
     }
 
     public String detailText() {

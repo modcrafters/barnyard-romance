@@ -3,6 +3,9 @@ package net.modcrafters.minecraft.barnyardromance.inspect;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
+import static net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -110,5 +113,26 @@ class InspectorSheetTest {
         assertTrue(sheet(true, "Adult", false, "", "").showFertility());
         assertFalse(sheet(false, "Adult", false, "", "").showFertility());
         assertFalse(sheet(true, "Baby", false, "", "").showFertility());
+    }
+
+    @Test
+    void aBullListsNoFertilityRow() {
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, BREEDING), sheet(false, "Adult", false, "", "").rows());
+    }
+
+    @Test
+    void aPregnantCowListsFertilityBreedingAndTheFather() {
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, FERTILITY, BREEDING, DETAIL),
+                sheet(true, "Adult", true, "Father M bull", "").rows());
+    }
+
+    @Test
+    void aCalfStopsAtHealth() {
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH), sheet(true, "Baby", false, "", "").rows());
+    }
+
+    @Test
+    void anAnimalWithoutTraitsOnlyListsHealth() {
+        assertEquals(List.of(HEALTH), InspectorSheet.unknown("Cow", "Cow", false, false, 10.0F, 10.0F).rows());
     }
 }

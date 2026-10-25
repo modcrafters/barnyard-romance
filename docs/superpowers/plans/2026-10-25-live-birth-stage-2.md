@@ -209,3 +209,7 @@
   - Update `docs/DESIGN.md` (the weight and fertility traits), tick the Stage 2 items in `docs/ROADMAP.md`, and link this plan from the Stage 2 section of the roadmap plan.
 - [ ] **Step 4:** Run `./gradlew build`. Expected: BUILD SUCCESSFUL.
 - [ ] **Step 5:** Commit: `Show weight and fertility in the inspector, and tick off Stage 2.`
+
+## Follow-up (after review)
+
+- The inspector's stats are a list. `InspectorSheet.rows()` says which rows show, in order. `InspectorLayout.stack` places each one right below the last, so a hidden row (fertility on males, breeding on babies) leaves no gap. The Health row is one or two lines tall depending on the heart rows, and the panel height follows the list but never cuts the portrait. This replaces the fixed `ROW_*` constants from Task 4.
