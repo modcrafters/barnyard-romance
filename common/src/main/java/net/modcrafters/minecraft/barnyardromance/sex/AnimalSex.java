@@ -48,7 +48,9 @@ public final class AnimalSex {
     private static AnimalTraits roll(Animal animal, BarnyardConfig config, String speciesId) {
         Sex sex = SexRoll.roll(animal.getRandom().nextDouble(), config.femaleRatio());
         double scale = ScaleRoll.rollWild(sex, config.sizeFor(speciesId), animal.getRandom().nextDouble());
-        return new AnimalTraits(sex, scale);
+        // A baby met for the first time was just born (vanilla breeding, spawn eggs); a wild adult's age is unknown.
+        long bornTick = animal.isBaby() ? animal.level().getGameTime() : -1L;
+        return new AnimalTraits(sex, scale).withBornTick(bornTick);
     }
 
     public static String speciesId(Animal animal) {

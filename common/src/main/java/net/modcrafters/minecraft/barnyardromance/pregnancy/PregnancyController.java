@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
@@ -74,7 +75,7 @@ public final class PregnancyController {
         AnimalTraits motherTraits = mother == self ? selfTraits.get() : partnerTraits.get();
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
         if (Services.DATA.getPregnancy(mother).isEmpty()) {
-            if (!Fertility.canConceive(Fertility.current(motherTraits, level.getGameTime()))) {
+            if (Fertility.wornOut(motherTraits, config.ageFor(AnimalSex.speciesId(mother)), level.getGameTime())) {
                 // Worn out: they mate, show hearts and rest, but nothing is conceived.
                 restWithoutPregnancy(self, partner);
                 level.broadcastEntityEvent(mother, (byte) 18);
@@ -141,9 +142,10 @@ public final class PregnancyController {
         if (bornSpecies != null) {
             String species = bornSpecies;
             long now = level.getGameTime();
+            AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(mother));
             Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
                     mother,
-                    traits.gaveBirth(now, species).withFertility(Fertility.afterBirth(Fertility.current(traits, now)), now)
+                    traits.gaveBirth(now, species).withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
@@ -167,7 +169,9 @@ public final class PregnancyController {
         double scale = ScaleRoll.fromPercent(sex, size, scalePercent);
         int growth = Growth.fromPercent(inherit(child, Growth.percent(motherGrowth), Growth.percent(pregnancy.fatherGrowthTicks()), nutrition));
         double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
-        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth).withWeight(weight));
+        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth)
+                .withWeight(weight)
+                .withBornTick(mother.level().getGameTime()));
         return growth;
     }
 

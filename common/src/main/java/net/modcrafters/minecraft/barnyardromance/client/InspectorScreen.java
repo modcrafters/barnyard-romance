@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow;
@@ -241,12 +242,13 @@ public class InspectorScreen extends Screen {
         boolean needsTaming = this.animal instanceof AbstractHorse;
         boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
         boolean female = value.sex() == Sex.FEMALE;
-        double fertility = Fertility.current(value, now);
+        AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(this.animal));
+        double fertility = Fertility.current(value, age, now);
         String breeding = InspectorSheet.breeding(
                 needsTaming,
                 tamed,
                 value.familiarity(),
-                female && Fertility.wornOut(value, now),
+                female && Fertility.wornOut(value, age, now),
                 value.loveUntil(),
                 value.cooldownUntil(),
                 now

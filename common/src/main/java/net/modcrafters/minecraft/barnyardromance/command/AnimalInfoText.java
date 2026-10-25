@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -52,7 +53,7 @@ public final class AnimalInfoText {
                     + ", growth " + Growth.clock(value.growthTicks())
                     + ", weight " + Familiarity.percent(value.weight());
             if (value.sex() == Sex.FEMALE) {
-                text += ", fertility " + Familiarity.percent(Fertility.current(value, now));
+                text += ", fertility " + Familiarity.percent(Fertility.current(value, BarnyardConfig.current().ageFor(speciesId), now));
             }
         }
         if (pregnancyLine.isEmpty()) {
