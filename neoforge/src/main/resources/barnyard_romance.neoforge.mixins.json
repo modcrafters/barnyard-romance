@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.barnyardromance.neoforge.mixin",
+  "package": "net.modcrafters.minecraft.barnyardromance.neoforge.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [],
   "client": [],

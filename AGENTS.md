@@ -10,7 +10,7 @@ Implement **Barnyard Romance** following `docs/DESIGN.md` and `docs/ROADMAP.md`.
   - `fabric/`: Fabric entrypoints, registration, data attachments, networking, config screen glue.
   - `neoforge/`: NeoForge entrypoints, registration, data attachments, networking, config glue.
 - Common code talks to loader features through small service interfaces (ServiceLoader pattern): e.g. `EntityDataService`, `ConfigService`, `NetworkService`.
-- Java 25 (Minecraft 26.3). Mod id: `barnyard_romance`. Package: `com.barnyardromance` (adjust if user wants).
+- Java 25 (Minecraft 26.3). Mod id: `barnyard_romance`. Package: `net.modcrafters.minecraft.barnyardromance`. Maven group: `net.modcrafters.minecraft`.
 
 ## Rules
 - Keep ~80-90% of logic in `common`.

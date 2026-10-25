@@ -1,9 +1,20 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.barnyardromance.mixin",
+  "package": "net.modcrafters.minecraft.barnyardromance.mixin",
   "compatibilityLevel": "JAVA_25",
-  "mixins": [],
+  "mixins": [
+    "AgeableMobMixin",
+    "AnimalBreedingMixin",
+    "AnimalEating",
+    "AnimalLoveMixin",
+    "LivingEntityDropsMixin",
+    "MateOverridesMixin",
+    "MobProductMixin",
+    "ShearsDispenseMixin",
+    "TemptGoalMixin",
+    "TemptingSensorMixin"
+  ],
   "client": [],
   "server": [],
   "injectors": {

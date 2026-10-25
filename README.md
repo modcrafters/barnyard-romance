@@ -4,7 +4,7 @@ A Minecraft Java mod (Fabric + NeoForge, one shared codebase) that adds male/fem
 
 See `docs/` for design, and `AGENTS.md` for implementation instructions for Cursor.
 
-This checkout is the Milestone 1 skeleton: it compiles and launches on both loaders. Sex, size, and `/barnyard info` are not implemented yet.
+Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. `/barnyard info`, while you look at an animal, still includes the exact scale. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby. The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Food-driven progress is not in yet.
 
 ## Versions
 
@@ -27,3 +27,8 @@ IDEA 2025.2 or newer is required for Java 25.
    - **NeoForge Client** or **NeoForge Server** (Application run configurations)
 
 `gradlew build` produces the loader jars under `fabric/build/libs` and `neoforge/build/libs`. The `common` jar is not a mod you install.
+
+## Tests
+
+- `gradlew :common:test` runs the unit tests for the pure rules.
+- `gradlew :fabric:runGametest` and `gradlew :neoforge:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `common/.../gametest/BreedingGameTests.java`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/build/gametest/junit.xml`.
