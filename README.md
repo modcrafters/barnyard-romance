@@ -27,3 +27,8 @@ IDEA 2025.2 or newer is required for Java 25.
    - **NeoForge Client** or **NeoForge Server** (Application run configurations)
 
 `gradlew build` produces the loader jars under `fabric/build/libs` and `neoforge/build/libs`. The `common` jar is not a mod you install.
+
+## Tests
+
+- `gradlew :common:test` runs the unit tests for the pure rules.
+- `gradlew :fabric:runGametest` and `gradlew :neoforge:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `common/.../gametest/BreedingGameTests.java`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/build/gametest/junit.xml`.
