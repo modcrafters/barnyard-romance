@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-// The numbers behind familiarity, growth and offspring improvement.
+// The numbers behind familiarity, growth, inheritance and fertility.
 public record Tuning(
         double familiarityGain,
         double familiarityThreshold,
@@ -13,9 +13,13 @@ public record Tuning(
         int growthWildTicks,
         double improveBaseChance,
         double improveNutritionChance,
-        double improveStep
+        double improveStep,
+        double inheritSpread,
+        double fertilityCostPerBirth,
+        double fertilityRecoveryPerDay,
+        double fertilityMinToConceive
 ) {
-    public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 24_000L, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25);
+    public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 24_000L, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -36,7 +40,11 @@ public record Tuning(
                 wild,
                 unit(object, "improveBaseChance", DEFAULTS.improveBaseChance),
                 unit(object, "improveNutritionChance", DEFAULTS.improveNutritionChance),
-                unit(object, "improveStep", DEFAULTS.improveStep)
+                unit(object, "improveStep", DEFAULTS.improveStep),
+                unit(object, "inheritSpread", DEFAULTS.inheritSpread),
+                unit(object, "fertilityCostPerBirth", DEFAULTS.fertilityCostPerBirth),
+                unit(object, "fertilityRecoveryPerDay", DEFAULTS.fertilityRecoveryPerDay),
+                unit(object, "fertilityMinToConceive", DEFAULTS.fertilityMinToConceive)
         );
     }
 
@@ -51,6 +59,10 @@ public record Tuning(
         object.addProperty("improveBaseChance", improveBaseChance);
         object.addProperty("improveNutritionChance", improveNutritionChance);
         object.addProperty("improveStep", improveStep);
+        object.addProperty("inheritSpread", inheritSpread);
+        object.addProperty("fertilityCostPerBirth", fertilityCostPerBirth);
+        object.addProperty("fertilityRecoveryPerDay", fertilityRecoveryPerDay);
+        object.addProperty("fertilityMinToConceive", fertilityMinToConceive);
         return object;
     }
 

@@ -71,7 +71,8 @@
 - `tuning` block (defaults are today's behavior; bad values are clamped or fall back to the default):
   - `familiarityGain` (0.2), `familiarityThreshold` (0.3), `feedCooldownTicks` (24,000)
   - `growthFastTicks` (15,000), `growthSlowTicks` (30,000), `growthWildTicks` (24,000)
-  - `improveBaseChance` (0.35), `improveNutritionChance` (0.45), `improveStep` (0.25)
+  - `improveBaseChance` (0.35), `improveNutritionChance` (0.45), `improveStep` (0.25), `inheritSpread` (0.05)
+  - `fertilityCostPerBirth` (0.25), `fertilityRecoveryPerDay` (0.1), `fertilityMinToConceive` (0.25)
 - Format: data-driven JSON per species + a main config file (use a cross-loader config lib, or a simple own JSON config in `common`).
 
 ## 9. Ideas (from brainstorming)

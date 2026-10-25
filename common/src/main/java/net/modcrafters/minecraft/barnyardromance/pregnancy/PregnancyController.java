@@ -7,7 +7,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.OffspringScale;
+import net.modcrafters.minecraft.barnyardromance.sex.Inheritance;
+import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
@@ -142,16 +143,19 @@ public final class PregnancyController {
         int motherGrowth = motherTraits == null ? Growth.wild() : motherTraits.growthTicks();
         double nutrition = pregnancy.motherFamiliarity();
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
-        double scale = OffspringScale.childScale(
-                sex,
-                motherScale,
-                pregnancy.fatherScale(),
-                size,
-                child.getRandom().nextDouble(),
+        double scalePercent = inherit(
+                child,
+                ScaleRoll.percent(Sex.FEMALE, motherScale, size),
+                ScaleRoll.percent(Sex.MALE, pregnancy.fatherScale(), size),
                 nutrition
         );
-        int growth = Growth.child(motherGrowth, pregnancy.fatherGrowthTicks(), child.getRandom().nextDouble(), nutrition);
+        double scale = ScaleRoll.fromPercent(sex, size, scalePercent);
+        int growth = Growth.fromPercent(inherit(child, Growth.percent(motherGrowth), Growth.percent(pregnancy.fatherGrowthTicks()), nutrition));
         Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth));
         return growth;
+    }
+
+    private static double inherit(Animal child, double mother, double father, double nutrition) {
+        return Inheritance.child(mother, father, child.getRandom().nextDouble(), child.getRandom().nextDouble(), nutrition);
     }
 }
