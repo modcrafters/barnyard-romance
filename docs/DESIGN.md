@@ -21,6 +21,12 @@
 - On NeoForge, `BabyEntitySpawnEvent` fires at conception (for the first baby), while both parents are present. A listener can swap that baby. If it cancels the event, or swaps a real baby for nothing, there is no pregnancy and no XP; both parents get vanilla's 6,000-tick rest and love mode ends.
 - Love mode and the breeding rest are synced to clients as the game tick they end, so the inspector shows "In love" and "Resting 4m 10s" and goes back to "Ready" by itself.
 - **Fertility:** each birth costs the mother 25% fertility, and she recovers 10% per day (24,000 ticks), up to 100%. Below 25% she still mates, with hearts and the usual rest, but nothing is conceived; the inspector shows "Worn out". Fathers never wear out. Newborns start at 100%. It is stored with the tick it was set, so it recovers with the clock and needs no ticking or extra sync.
+- **Age stages:** each animal stores its birth tick, and the stage is worked out from the clock, like fertility.
+  - Baby is vanilla's baby state.
+  - Young lasts `youngTicks` (default 1 day) past its growth time. A young animal can't fall in love; the inspector shows "Too young".
+  - Old starts `oldAfterTicks` (default 30 days) after birth. Fertility then recovers at `oldFertilityFactor` (half) the usual rate, and faint, rare dark hearts float over it (client side, about one every 12 seconds; never while pregnant or in love).
+  - Death comes `deathAfterTicks` (default 60 days) after birth, moved ±`deathSpread` (10%) by a value taken from the animal's UUID, so litter-mates don't all die on the same tick. It uses the `barnyard_romance:old_age` damage type, which bypasses armor and invulnerability, so drops and the tamed-pet death message ("died of old age") work as usual.
+  - 0 turns a step off. Animals with an unknown birth (old worlds, wild adults) are adult forever and never die. A baby without traits when it first joins (vanilla breeding with pregnancy off, spawn eggs) counts as born then.
 - Config: per-species enable/disable; species with custom breeding code can be excluded or patched with compat.
 
 ## 4. Pregnancy
@@ -65,14 +71,16 @@
 - Ship compatibility presets (configs) for popular animal mods with sensible pregnancy times and good foods.
 
 ## 8. Config
-- Global: enable mod, sex ratio, size defaults, pregnancy on/off, and the global `pregnancyTicksMin`/`pregnancyTicksMax` and `litterMin`/`litterMax`.
-- Per species: enabled, male/female size range, `pregnancyTicksMin`/`pregnancyTicksMax`, `litterMin`/`litterMax`, good/bad foods, texture/layer/model toggles.
+- Global: enable mod, sex ratio, size defaults, pregnancy on/off, the global `pregnancyTicksMin`/`pregnancyTicksMax` and `litterMin`/`litterMax`, and `youngTicks` (24,000), `oldAfterTicks` (720,000) and `deathAfterTicks` (1,440,000).
+- Per species: enabled, male/female size range, `pregnancyTicksMin`/`pregnancyTicksMax`, `litterMin`/`litterMax`, `youngTicks`/`oldAfterTicks`/`deathAfterTicks`, good/bad foods, texture/layer/model toggles.
+- Age ticks: the species entry, then the global value. Each is clamped to 0–24,000,000; 0 turns that step off.
 - Lookup order for each range end: the user's species entry, then the built-in preset, then the global value. An old single `pregnancyTicks` or `litterSize` key still works and sets both ends. An inverted pair is swapped; litters are clamped to 1–8 and pregnancies to 1–480,000 ticks.
 - `tuning` block (defaults are today's behavior; bad values are clamped or fall back to the default):
   - `familiarityGain` (0.2), `familiarityThreshold` (0.3), `feedCooldownTicks` (24,000)
   - `growthFastTicks` (15,000), `growthSlowTicks` (30,000), `growthWildTicks` (24,000)
   - `improveBaseChance` (0.35), `improveNutritionChance` (0.45), `improveStep` (0.25), `inheritSpread` (0.05)
   - `fertilityCostPerBirth` (0.25), `fertilityRecoveryPerDay` (0.1), `fertilityMinToConceive` (0.25)
+  - `oldFertilityFactor` (0.5), `deathSpread` (0.1)
 - Format: data-driven JSON per species + a main config file (use a cross-loader config lib, or a simple own JSON config in `common`).
 
 ## 9. Ideas (from brainstorming)

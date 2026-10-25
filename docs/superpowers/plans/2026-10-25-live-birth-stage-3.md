@@ -26,7 +26,7 @@
 - **Death uses its own damage type,** `barnyard_romance:old_age`. It's tagged to bypass armor, invulnerability, effects, resistance, enchantments, shields and wolf armor, with no knockback and no anger. Tamed pets tell their owner "%1$s died of old age". If the damage type is missing, `kill` is used instead.
 - **Product yield is left for Stage 5.** No product counts are scaled yet, so `oldYieldFactor` comes in with Stage 5, which also adds the sex and size factors.
 - **Fertility recovery is split at the old start.** Ticks before it recover at the full rate, ticks after it at `oldFertilityFactor` (0.5).
-- **Old hearts:** client side only, about once every 12 seconds on average (1 in 240 per tick), one heart at a time. They're dark grey, 35% alpha, slow to rise, and smaller than pregnancy hearts. They never show while the animal is pregnant or in love.
+- **Old hearts:** client side only, about once every 12 seconds on average (1 in 240 per tick), one heart at a time. They're near-black, peak at 50% alpha (35% read as light grey against the sky in the screenshot), slow to rise, and smaller than pregnancy hearts. They never show while the animal is pregnant or in love.
 - **Inspector:** the life word is now Baby, Young, Adult or Old. Young animals show "Too young" under breeding. Fertility shows for adult and old females.
 
 ## Global Constraints
@@ -66,7 +66,7 @@
 - `Aging.spreadRandom(long uuidBits)`, a 0–1 value from the UUID's bits.
 - Config ticks clamp to 0–24,000,000 (1,000 days).
 
-- [ ] Write the failing tests, then the code, then run `./gradlew :common:test`.
+- [x] Write the failing tests, then the code, then run `./gradlew :common:test`.
 
 ### Task 2: The birth tick, and fertility that slows with age
 
@@ -77,7 +77,7 @@
 - Modify: `pregnancy/Fertility.java` (`current(fertility, since, now, oldFrom)`, plus `current` and `wornOut` taking `AgeSettings`)
 - Test: `AnimalTraitsTest`, `FertilityTest`
 
-- [ ] Write the failing tests, then the code, then run `./gradlew :common:test`.
+- [x] Write the failing tests, then the code, then run `./gradlew :common:test`.
 
 ### Task 3: Young can't breed, old dies
 
@@ -88,7 +88,7 @@
 - Create: `data/barnyard_romance/damage_type/old_age.json`, the `data/minecraft/tags/damage_type/*.json` entries, and the `en_us.json` death message
 - Modify: `gametest/BreedingGameTests.java` and both loader classes. New tests: `young_animals_do_not_fall_in_love`, `old_animals_die_of_old_age` and `animals_of_unknown_age_never_die`. `a_birth_costs_the_mother_fertility` also checks the piglets' `bornTick`.
 
-- [ ] Write the code and game tests, then run `./gradlew build`, `:fabric:runGametest` and `:neoforge:runGameTestServer`.
+- [x] Write the code and game tests, then run `./gradlew build`, `:fabric:runGametest` and `:neoforge:runGameTestServer`.
 
 ### Task 4: The inspector, info text and old hearts
 
@@ -99,10 +99,10 @@
 - Modify: `client/BarnyardParticles.java`, `client/AnimalHearts.java`, and the particle registration in both loaders
 - Test: `InspectorSheetTest`, `AnimalInfoTextTest`, `HoverTooltipTest`
 
-- [ ] Write the failing tests, then the code, then run `./gradlew build` and the Fabric client game test (the inspector screenshot).
+- [x] Write the failing tests, then the code, then run `./gradlew build` and the Fabric client game test (the inspector screenshot).
 
 ### Task 5: Docs
 
-- [ ] `docs/DESIGN.md`: age stages, death, the config keys and the tuning keys.
-- [ ] `docs/ROADMAP.md`: tick off Stage 3, and move "product yield" to Stage 5.
-- [ ] The roadmap plan: note that Stage 3 replaced "nothing dies of old age".
+- [x] `docs/DESIGN.md`: age stages, death, the config keys and the tuning keys.
+- [x] `docs/ROADMAP.md`: tick off Stage 3, and move "product yield" to Stage 5.
+- [x] The roadmap plan: note that Stage 3 replaced "nothing dies of old age".
