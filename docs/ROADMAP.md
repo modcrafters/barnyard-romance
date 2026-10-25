@@ -1,6 +1,6 @@
 # Barnyard Romance: Roadmap
 
-> **Active plan:** [`docs/superpowers/plans/2026-10-24-live-birth-roadmap.md`](superpowers/plans/2026-10-24-live-birth-roadmap.md) covers the remaining work for live-birth animals in stages. Stage 1 is done. Stages 2–8 are outlined; each gets a detailed plan when it starts.
+> **Active plan:** [`docs/superpowers/plans/2026-10-24-live-birth-roadmap.md`](superpowers/plans/2026-10-24-live-birth-roadmap.md) covers the remaining work for live-birth animals in stages. Stages 1 and 2 are done. Stages 3–8 are outlined; each gets a detailed plan when it starts.
 
 ## Done
 
@@ -25,16 +25,18 @@
 - [x] Love mode and the breeding rest are synced, so the inspector shows "In love" and "Resting".
 - [x] A pregnant animal that dies loses the pregnancy (documented).
 
-## Next
-
 ### Stage 2: Inherited traits, weight, fertility
-- [ ] `weight` trait (0–1): a heavier mother picks higher in the litter range and shorter in the pregnancy range.
-- [ ] `fertility` trait (0–1, starts at 1).
-- [ ] One inheritance rule for every trait (`Inheritance.child`), folding in `Growth.child` and `OffspringScale.childScale`.
-- [ ] Father's trait percentages stored in the pregnancy at conception.
-- [ ] Fertility cost per birth, daily recovery, and a minimum to conceive, all in `tuning`.
-- [ ] Inspector: weight meter, and a fertility meter for adults.
-- [ ] Old worlds: missing weight is 0.5, missing fertility is 1.0.
+Plan: [`2026-10-25-live-birth-stage-2.md`](superpowers/plans/2026-10-25-live-birth-stage-2.md)
+
+- [x] `weight` trait (0–1): a heavier mother picks higher in the litter range and shorter in the pregnancy range.
+- [x] `fertility` (0–1, starts at 1), a state that recovers with the clock rather than an inherited trait.
+- [x] One inheritance rule for every trait (`Inheritance.child`), folding in `Growth.child` and `OffspringScale.childScale`.
+- [x] Father's traits (scale, growth, weight) stored in the pregnancy at conception.
+- [x] Fertility cost per birth, daily recovery, and a minimum to conceive, all in `tuning`.
+- [x] Inspector: weight meter, a fertility meter for adult females, and "Worn out" under breeding.
+- [x] Old worlds: missing weight is 0.5, missing fertility is 1.0.
+
+## Next
 
 ### Stage 3: Age stages
 - [ ] `bornTick` trait; unknown (-1) counts as adult.

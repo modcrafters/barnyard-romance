@@ -41,7 +41,10 @@ class InspectorLayoutTest {
 
         assertTrue(lastLine <= InspectorLayout.HEIGHT - InspectorLayout.BORDER);
         assertTrue(InspectorLayout.PORTRAIT_Y + InspectorLayout.PORTRAIT + 1 <= InspectorLayout.HEIGHT - InspectorLayout.BORDER);
-        assertTrue(twoHeartRows < InspectorLayout.ROW_BREEDING);
+        assertTrue(twoHeartRows < InspectorLayout.ROW_FERTILITY);
+        assertTrue(InspectorLayout.ROW_GROWTH + 14 + 9 <= InspectorLayout.ROW_WEIGHT);
+        assertTrue(InspectorLayout.ROW_WEIGHT + 16 <= InspectorLayout.ROW_HEALTH);
+        assertTrue(InspectorLayout.ROW_FERTILITY + 16 <= InspectorLayout.ROW_BREEDING);
         assertTrue(InspectorLayout.TITLE_Y + 9 < InspectorLayout.PORTRAIT_Y);
     }
 }

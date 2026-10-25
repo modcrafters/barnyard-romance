@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
@@ -73,7 +74,11 @@ public class InspectorScreen extends Screen {
             meter(graphics, x, y, InspectorLayout.ROW_FAMILIAR, "heart", "Familiar", sheet.familiarity(), "fill_familiar", sheet.familiarityText());
             meter(graphics, x, y, InspectorLayout.ROW_FEED, "wheat", "Feed", sheet.feed(), "fill_feed", sheet.feedText());
             growth(graphics, x, y, sheet);
+            meter(graphics, x, y, InspectorLayout.ROW_WEIGHT, "weight", "Weight", sheet.weight(), "fill_feed", sheet.weightText());
             health(graphics, x, y, sheet);
+            if (sheet.showFertility()) {
+                meter(graphics, x, y, InspectorLayout.ROW_FERTILITY, "fertility", "Fertility", sheet.fertility(), "fill_pregnant", sheet.fertilityText());
+            }
             if (sheet.showBreeding()) {
                 breeding(graphics, x, y, sheet);
             }
@@ -234,7 +239,17 @@ public class InspectorScreen extends Screen {
         )).orElse("");
         boolean needsTaming = this.animal instanceof AbstractHorse;
         boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
-        String breeding = InspectorSheet.breeding(needsTaming, tamed, value.familiarity(), value.loveUntil(), value.cooldownUntil(), now);
+        boolean female = value.sex() == Sex.FEMALE;
+        double fertility = Fertility.current(value, now);
+        String breeding = InspectorSheet.breeding(
+                needsTaming,
+                tamed,
+                value.familiarity(),
+                female && Fertility.wornOut(value, now),
+                value.loveUntil(),
+                value.cooldownUntil(),
+                now
+        );
         Identifier offspringId = Identifier.tryParse(value.lastBirthSpecies());
         String offspring = offspringId == null || value.lastBirthSpecies().isBlank() ? "" : BuiltInRegistries.ENTITY_TYPE.getOptional(offspringId)
                 .map(type -> type.getDescription().getString())
@@ -243,7 +258,7 @@ public class InspectorScreen extends Screen {
                 named ? name : typeName,
                 named ? typeName : "",
                 true,
-                value.sex() == Sex.FEMALE,
+                female,
                 SizeClass.of(value.sex(), value.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(this.animal))).name(),
                 this.animal.isBaby() ? "Baby" : "Adult",
                 InspectorSheet.scaleText(value.scale()),
@@ -253,8 +268,12 @@ public class InspectorScreen extends Screen {
                 InspectorSheet.feedText(value.lastFedTick(), now),
                 Growth.percent(value.growthTicks()),
                 Growth.clock(value.growthTicks()),
+                value.weight(),
+                Familiarity.percent(value.weight()),
                 health,
                 maxHealth,
+                fertility,
+                Familiarity.percent(fertility),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current.conceivedAt(), current.durationTicks())).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current.conceivedAt(), current.durationTicks()))).orElse(""),

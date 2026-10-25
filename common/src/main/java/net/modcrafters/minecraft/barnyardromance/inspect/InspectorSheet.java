@@ -19,8 +19,12 @@ public record InspectorSheet(
         String feedText,
         double growth,
         String growthText,
+        double weight,
+        String weightText,
         float health,
         float maxHealth,
+        double fertility,
+        String fertilityText,
         boolean pregnant,
         double pregnancy,
         String pregnancyText,
@@ -32,6 +36,7 @@ public record InspectorSheet(
     public static final String READY = "Ready";
     public static final String NOT_TAMED = "Not tamed";
     public static final String IN_LOVE = "In love";
+    public static final String WORN_OUT = "Worn out";
 
     public static InspectorSheet unknown(String name, String typeName, boolean named, boolean baby, float health, float maxHealth) {
         return new InspectorSheet(
@@ -48,8 +53,12 @@ public record InspectorSheet(
                 "",
                 0.0,
                 "",
+                0.0,
+                "",
                 health,
                 maxHealth,
+                0.0,
+                "",
                 false,
                 0.0,
                 "",
@@ -99,7 +108,7 @@ public record InspectorSheet(
     }
 
     // Love and rest are stored as the game tick they end, so they expire on the client without a new sync.
-    public static String breeding(boolean needsTaming, boolean tamed, double familiarity, long loveUntil, long cooldownUntil, long now) {
+    public static String breeding(boolean needsTaming, boolean tamed, double familiarity, boolean wornOut, long loveUntil, long cooldownUntil, long now) {
         if (needsTaming && !tamed) {
             return NOT_TAMED;
         }
@@ -108,6 +117,9 @@ public record InspectorSheet(
         }
         if (cooldownUntil > now) {
             return "Resting " + Growth.clock((int) Math.min(cooldownUntil - now, Integer.MAX_VALUE));
+        }
+        if (wornOut) {
+            return WORN_OUT;
         }
         if (loveUntil > now) {
             return IN_LOVE;
@@ -152,6 +164,11 @@ public record InspectorSheet(
 
     public boolean showBreeding() {
         return known && (pregnant || "Adult".equals(life));
+    }
+
+    // Fathers never wear out, so only adult females show fertility.
+    public boolean showFertility() {
+        return known && female && "Adult".equals(life);
     }
 
     public String detailText() {

@@ -9,7 +9,7 @@
 - Uses vanilla `minecraft:scale` attribute (1.20.5+), so hitbox, rendering and riding follow automatically. No new models needed.
 - Defaults: females span 0.70 to 0.90, males span 1.10 to 1.30. The stored value is that scale. The tooltip shows S / M / L / XL. Per-species overrides in config.
 - Natural spawns, spawn eggs, and summoned animals roll only the S–M half of their sex. L and XL come from breeding.
-- A baby starts at the average of the parents' positions in their own ranges. There is a 35% chance to step up one band. The mother's familiarity at conception is the nutrition value: full familiarity raises that chance to 80%.
+- A baby starts at the average of the parents' positions in their own ranges. There is a 35% chance to step up one band. The mother's familiarity at conception is the nutrition value: full familiarity raises that chance to 80%. A small random spread (±5%) follows. Every inherited trait (size, growth, weight) uses this same rule.
 - Meat drops follow the actual scale. A 0.70 animal drops 2–3 meat, a 1.30 animal drops 8–9. Looting still adds on top. Leather, feathers, and wool stay on the vanilla table.
 - Babies keep their rolled scale, and the adult size is applied when they grow up.
 - Test in vanilla: `/attribute @e[type=cow,limit=1,sort=nearest] minecraft:scale base set 1.15`
@@ -20,7 +20,7 @@
 - If a same-sex pair reaches breeding anyway (a modded override), love mode ends with no baby and no XP.
 - On NeoForge, `BabyEntitySpawnEvent` fires at conception (for the first baby), while both parents are present. A listener can swap that baby. If it cancels the event, or swaps a real baby for nothing, there is no pregnancy and no XP; both parents get vanilla's 6,000-tick rest and love mode ends.
 - Love mode and the breeding rest are synced to clients as the game tick they end, so the inspector shows "In love" and "Resting 4m 10s" and goes back to "Ready" by itself.
-- Optional: cooldowns, fertility (see Ideas).
+- **Fertility:** each birth costs the mother 25% fertility, and she recovers 10% per day (24,000 ticks), up to 100%. Below 25% she still mates, with hearts and the usual rest, but nothing is conceived; the inspector shows "Worn out". Fathers never wear out. Newborns start at 100%. It is stored with the tick it was set, so it recovers with the clock and needs no ticking or extra sync.
 - Config: per-species enable/disable; species with custom breeding code can be excluded or patched with compat.
 
 ## 4. Pregnancy
@@ -40,7 +40,7 @@
   | panda, polar bear | 48,000–60,000 | 1–2 |
   | hoglin | 30,000–36,000 | 2–3 |
 
-  Other species use the global range (default 24,000 ticks and one baby). Until Stage 2, every mother rolls with a neutral weight. Stage 2 adds a heritable **weight** trait: a heavier mother lands higher in the litter range and shorter in the pregnancy range.
+  Other species use the global range (default 24,000 ticks and one baby). A heritable **weight** trait (0–100%) picks where in each range a mother lands: a heavier mother has a bigger litter and a shorter pregnancy. Wild animals and old worlds weigh 50%, which is neutral. Weight is set at birth and does not change.
 - Growth time is inherited. Wild animals take 24,000 ticks (20 minutes). A baby averages its parents and can step toward the fast end. The range is 15,000 to 30,000 ticks.
 - Edge cases:
   - Pregnant animal dies: the pregnancy is lost; no birth, no message.

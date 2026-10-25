@@ -29,8 +29,8 @@ class InspectorSheetTest {
     private static InspectorSheet sheet(boolean female, String life, boolean pregnant, String father, String lastBirth) {
         return new InspectorSheet(
                 "Cow", "", true, female, "M", life, "scale 0.90",
-                0.4, "40%", Familiarity.feedReady(0L, 0L), "20m 0s", 0.4, "20m 0s",
-                8.0F, 10.0F, pregnant, 0.5, "10m 0s", father,
+                0.4, "40%", Familiarity.feedReady(0L, 0L), "20m 0s", 0.4, "20m 0s", 0.5, "50%",
+                8.0F, 10.0F, 1.0, "100%", pregnant, 0.5, "10m 0s", father,
                 true, InspectorSheet.READY, lastBirth
         );
     }
@@ -50,11 +50,11 @@ class InspectorSheetTest {
 
     @Test
     void breedingSaysWhatIsMissing() {
-        assertEquals(InspectorSheet.NOT_TAMED, InspectorSheet.breeding(true, false, 1.0, -1, -1, 0));
-        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(true, true, 0.2, -1, -1, 0));
-        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0, -1, -1, 0));
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 0.3, -1, -1, 0));
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(true, true, 1.0, -1, -1, 0));
+        assertEquals(InspectorSheet.NOT_TAMED, InspectorSheet.breeding(true, false, 1.0, false, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(true, true, 0.2, false, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0, false, -1, -1, 0));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 0.3, false, -1, -1, 0));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(true, true, 1.0, false, -1, -1, 0));
     }
 
     @Test
@@ -76,14 +76,14 @@ class InspectorSheetTest {
 
     @Test
     void breedingShowsRestAndLove() {
-        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, -1, 1200, 0));
-        assertEquals(InspectorSheet.IN_LOVE, InspectorSheet.breeding(false, false, 1.0, 600, -1, 0));
-        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, 600, 1200, 0));
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, -1, 1200, 0));
+        assertEquals(InspectorSheet.IN_LOVE, InspectorSheet.breeding(false, false, 1.0, false, 600, -1, 0));
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, 600, 1200, 0));
     }
 
     @Test
     void breedingStatusExpiresWithTheClock() {
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 1.0, 600, 1200, 1200));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 1.0, false, 600, 1200, 1200));
     }
 
     @Test
@@ -92,5 +92,23 @@ class InspectorSheetTest {
         assertTrue(InspectorSheet.readyToBreed(InspectorSheet.IN_LOVE));
         assertFalse(InspectorSheet.readyToBreed("Resting 1m 0s"));
         assertFalse(InspectorSheet.readyToBreed(InspectorSheet.NOT_TAMED));
+    }
+
+    @Test
+    void aWornOutMotherSaysSo() {
+        assertEquals(InspectorSheet.WORN_OUT, InspectorSheet.breeding(false, false, 1.0, true, -1, -1, 0));
+        assertFalse(InspectorSheet.readyToBreed(InspectorSheet.WORN_OUT));
+    }
+
+    @Test
+    void restingWinsOverWornOut() {
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, true, -1, 1200, 0));
+    }
+
+    @Test
+    void fertilityIsShownForAdultFemalesOnly() {
+        assertTrue(sheet(true, "Adult", false, "", "").showFertility());
+        assertFalse(sheet(false, "Adult", false, "", "").showFertility());
+        assertFalse(sheet(true, "Baby", false, "", "").showFertility());
     }
 }

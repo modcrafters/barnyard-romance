@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 public final class InspectorLayout {
     public static final int WIDTH = 320;
-    public static final int HEIGHT = 152;
+    public static final int HEIGHT = 184;
     public static final int BORDER = 4;
     public static final int TITLE_X = 8;
     public static final int TITLE_Y = 6;
@@ -14,8 +14,10 @@ public final class InspectorLayout {
     public static final int ROW_FAMILIAR = 38;
     public static final int ROW_FEED = 54;
     public static final int ROW_GROWTH = 70;
-    public static final int ROW_HEALTH = 96;
-    public static final int ROW_BREEDING = 122;
+    public static final int ROW_WEIGHT = 96;
+    public static final int ROW_HEALTH = 112;
+    public static final int ROW_FERTILITY = 138;
+    public static final int ROW_BREEDING = 154;
     public static final int DETAIL_OFFSET = 12;
     public static final int ICON = 13;
     public static final int LABEL_W = 50;
