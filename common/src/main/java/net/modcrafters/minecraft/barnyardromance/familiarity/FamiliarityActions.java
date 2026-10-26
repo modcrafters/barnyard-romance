@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.food.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
+import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
 import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -59,8 +60,11 @@ public final class FamiliarityActions {
             }
             return InteractionResult.CONSUME;
         }
-        if (!(feed instanceof Feed.Eaten eaten) || eaten.superfood()) {
+        if (!(feed instanceof Feed.Eaten eaten)) {
             return null;
+        }
+        if (eaten.superfood()) {
+            return PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         AnimalTraits current = traits.get();
         long now = animal.level().getGameTime();
@@ -98,6 +102,7 @@ public final class FamiliarityActions {
         if (click == Familiarity.Click.HEAL_ONLY) {
             return InteractionResult.SUCCESS_SERVER;
         }
+        PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
         double gained = Familiarity.gain(current.familiarity(), amount);
         Services.DATA.set(animal, current.fed(gained, now));

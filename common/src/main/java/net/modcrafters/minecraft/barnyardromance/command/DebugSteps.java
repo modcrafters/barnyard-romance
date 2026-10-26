@@ -19,7 +19,8 @@ public final class DebugSteps {
     public static Pregnancy pregnancy(Pregnancy pregnancy, long now, int direction) {
         long duration = Math.max(1L, pregnancy.durationTicks());
         long step = Math.max(1L, Math.round(duration * 0.1));
-        long elapsed = Math.clamp(now - pregnancy.conceivedAt(), 0L, duration);
+        // From the progress shown, which counts what food gained or lost.
+        long elapsed = Math.clamp(now - pregnancy.conceivedAt() + pregnancy.care().extraTicks(now), 0L, duration);
         long nextElapsed = Math.clamp(elapsed + direction * step, 0L, duration);
         return pregnancy.withConceivedAt(now - nextElapsed);
     }

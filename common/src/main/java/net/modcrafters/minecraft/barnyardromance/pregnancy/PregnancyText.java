@@ -27,8 +27,8 @@ public final class PregnancyText {
 
     public static String line(Pregnancy pregnancy, long now, boolean includeFather) {
         String described = describe(
-                PregnancyClock.progress(now, pregnancy.conceivedAt(), pregnancy.durationTicks()),
-                PregnancyClock.remainingTicks(now, pregnancy.conceivedAt(), pregnancy.durationTicks())
+                PregnancyClock.progress(now, pregnancy),
+                PregnancyClock.remainingTicks(now, pregnancy)
         );
         if (!includeFather) {
             return described;

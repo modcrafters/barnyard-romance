@@ -41,4 +41,14 @@ public class FabricFoodGameTests {
     public void horsesHealLikeVanilla(GameTestHelper helper) {
         FoodGameTests.horsesHealLikeVanilla(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void oldPregnancyLoadsWithoutCare(GameTestHelper helper) {
+        FoodGameTests.oldPregnancyLoadsWithoutCare(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void pregnancyCareSavesAndSyncs(GameTestHelper helper) {
+        FoodGameTests.pregnancyCareSavesAndSyncs(helper);
+    }
 }

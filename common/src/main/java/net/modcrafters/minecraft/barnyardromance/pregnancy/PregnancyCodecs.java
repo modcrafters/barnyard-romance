@@ -13,6 +13,26 @@ import java.util.List;
 import java.util.Optional;
 
 public final class PregnancyCodecs {
+    public static final Codec<PregnancyCare> CARE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.LONG.optionalFieldOf("bankedTicks", 0L).forGetter(PregnancyCare::bankedTicks),
+            Codec.LONG.optionalFieldOf("boostFrom", 0L).forGetter(PregnancyCare::boostFrom),
+            Codec.LONG.optionalFieldOf("boostUntil", 0L).forGetter(PregnancyCare::boostUntil),
+            Codec.DOUBLE.optionalFieldOf("boostFactor", 1.0).forGetter(PregnancyCare::boostFactor),
+            Codec.DOUBLE.optionalFieldOf("nutritionBonus", 0.0).forGetter(PregnancyCare::nutritionBonus)
+    ).apply(instance, PregnancyCare::new));
+    public static final StreamCodec<ByteBuf, PregnancyCare> CARE_STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_LONG,
+            PregnancyCare::bankedTicks,
+            ByteBufCodecs.VAR_LONG,
+            PregnancyCare::boostFrom,
+            ByteBufCodecs.VAR_LONG,
+            PregnancyCare::boostUntil,
+            ByteBufCodecs.DOUBLE,
+            PregnancyCare::boostFactor,
+            ByteBufCodecs.DOUBLE,
+            PregnancyCare::nutritionBonus,
+            PregnancyCare::new
+    );
     public static final MapCodec<Pregnancy> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.LONG.fieldOf("conceivedAt").forGetter(Pregnancy::conceivedAt),
             Codec.LONG.fieldOf("durationTicks").forGetter(Pregnancy::durationTicks),
@@ -22,7 +42,8 @@ public final class PregnancyCodecs {
             Codec.DOUBLE.optionalFieldOf("motherFamiliarity", 0.0).forGetter(Pregnancy::motherFamiliarity),
             Codec.INT.optionalFieldOf("fatherGrowthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(Pregnancy::fatherGrowthTicks),
             Codec.DOUBLE.optionalFieldOf("fatherWeight", 0.5).forGetter(Pregnancy::fatherWeight),
-            CompoundTag.CODEC.listOf().optionalFieldOf("litter", List.of()).forGetter(Pregnancy::litter)
+            CompoundTag.CODEC.listOf().optionalFieldOf("litter", List.of()).forGetter(Pregnancy::litter),
+            CARE_CODEC.optionalFieldOf("care", PregnancyCare.NONE).forGetter(Pregnancy::care)
     ).apply(instance, Pregnancy::new));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
     // The litter stays on the server; clients only see the fields below.
@@ -43,7 +64,10 @@ public final class PregnancyCodecs {
             Pregnancy::fatherGrowthTicks,
             ByteBufCodecs.DOUBLE,
             Pregnancy::fatherWeight,
-            Pregnancy::new
+            CARE_STREAM_CODEC,
+            Pregnancy::care,
+            (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, care) -> new Pregnancy(
+                    conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, List.of(), care)
     );
 
     private PregnancyCodecs() {

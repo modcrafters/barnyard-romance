@@ -4,9 +4,16 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -33,7 +40,9 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("diet_food_feeds", 20, FoodGameTests::dietFoodFeeds),
             new BreedingGameTests.Case("carnivores_get_little_from_salad", 20, FoodGameTests::carnivoresGetLittleFromSalad),
             new BreedingGameTests.Case("hurt_animals_heal_from_food_any_time", 20, FoodGameTests::hurtAnimalsHealFromFoodAnyTime),
-            new BreedingGameTests.Case("horses_heal_like_vanilla", 20, FoodGameTests::horsesHealLikeVanilla)
+            new BreedingGameTests.Case("horses_heal_like_vanilla", 20, FoodGameTests::horsesHealLikeVanilla),
+            new BreedingGameTests.Case("old_pregnancy_loads_without_care", 20, FoodGameTests::oldPregnancyLoadsWithoutCare),
+            new BreedingGameTests.Case("pregnancy_care_saves_and_syncs", 20, FoodGameTests::pregnancyCareSavesAndSyncs)
     );
 
     private FoodGameTests() {
@@ -129,5 +138,32 @@ public final class FoodGameTests {
     static void assertFamiliarity(GameTestHelper helper, Animal animal, double expected) {
         double familiarity = BreedingGameTests.traits(helper, animal).familiarity();
         helper.assertTrue(Math.abs(familiarity - expected) < 1.0e-6, animal.getType() + " familiarity is " + familiarity + ", not " + expected);
+    }
+
+    // A pregnancy saved before Stage 4 has no care and carries on as before.
+    public static void oldPregnancyLoadsWithoutCare(GameTestHelper helper) {
+        Pregnancy saved = new Pregnancy(10L, 24_000L, "minecraft:cow", 1.0, 1, 0.5);
+        CompoundTag tag = (CompoundTag) PregnancyCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
+        tag.remove("care");
+
+        Pregnancy loaded = PregnancyCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
+
+        helper.assertTrue(loaded.care().equals(PregnancyCare.NONE), "an old pregnancy loaded with " + loaded.care());
+        helper.assertTrue(loaded.conceivedAt() == 10L && loaded.durationTicks() == 24_000L, "an old pregnancy lost its clock");
+        helper.succeed();
+    }
+
+    public static void pregnancyCareSavesAndSyncs(GameTestHelper helper) {
+        PregnancyCare care = PregnancyCare.NONE.boost(100L, 2.0, 24_000L).progress(24_000L, -0.1).improve(0.25);
+        Pregnancy pregnancy = new Pregnancy(10L, 24_000L, "minecraft:cow", 1.0, 1, 0.5).withCare(care);
+
+        Pregnancy saved = PregnancyCodecs.CODEC.parse(NbtOps.INSTANCE, PregnancyCodecs.CODEC.encodeStart(NbtOps.INSTANCE, pregnancy).getOrThrow()).getOrThrow();
+        ByteBuf buffer = Unpooled.buffer();
+        PregnancyCodecs.STREAM_CODEC.encode(buffer, pregnancy);
+        Pregnancy synced = PregnancyCodecs.STREAM_CODEC.decode(buffer);
+
+        helper.assertTrue(saved.care().equals(care), "saved care came back as " + saved.care());
+        helper.assertTrue(synced.care().equals(care), "synced care came back as " + synced.care());
+        helper.succeed();
     }
 }
