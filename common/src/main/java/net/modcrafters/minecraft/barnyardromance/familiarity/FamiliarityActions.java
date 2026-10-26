@@ -9,6 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
 import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
+import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -16,12 +17,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.cow.AbstractCow;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.feline.Ocelot;
 import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,6 +37,7 @@ import java.util.Optional;
 public final class FamiliarityActions {
     public static final String TOO_SHY = "Sneak so you don't scare this animal.";
     public static final String WONT_EAT = "It won't eat that.";
+    public static final String WANTS_MEAT = "Feed it meat to earn its trust.";
 
     private FamiliarityActions() {
     }
@@ -124,11 +130,34 @@ public final class FamiliarityActions {
         }
     }
 
-    // Horses, donkeys, mules, llamas, and camels only breed when tamed, so familiarity tames them.
+    // Horses, donkeys, mules, llamas, camels, wolves and cats only breed when tamed, so familiarity tames them.
+    // Ocelots never become pets in vanilla; familiarity gives them the same trust their fish roll would.
     public static void tameIfFamiliar(Animal animal, Player player, double familiarity) {
         if (animal instanceof AbstractHorse horse && Familiarity.tames(horse.isTamed(), familiarity)) {
             horse.tameWithName(player);
+        } else if ((animal instanceof Wolf || animal instanceof Cat) && animal instanceof TamableAnimal pet
+                && Familiarity.tames(pet.isTame(), familiarity)) {
+            pet.tame(player);
+            pet.getNavigation().stop();
+            pet.setTarget(null);
+            pet.setOrderedToSit(true);
+            pet.level().broadcastEntityEvent(pet, (byte) 7);
+        } else if (animal instanceof Ocelot ocelot && ocelot instanceof OcelotAccessor trust
+                && Familiarity.tames(trust.barnyardromance$isTrusting(), familiarity)) {
+            trust.barnyardromance$setTrusting(true);
+            ocelot.level().broadcastEntityEvent(ocelot, (byte) 41);
         }
+    }
+
+    // Bones would tame a wolf behind familiarity's back, so a tracked wild wolf turns them down.
+    public static InteractionResult blocksVanillaTaming(Animal animal, Player player, ItemStack stack) {
+        if (!(animal instanceof Wolf wolf) || wolf.isTame() || !stack.is(Items.BONE) || tracked(animal).isEmpty()) {
+            return null;
+        }
+        if (!animal.level().isClientSide()) {
+            player.sendOverlayMessage(Component.literal(WANTS_MEAT));
+        }
+        return InteractionResult.CONSUME;
     }
 
     private static void scare(Animal animal, Player player) {

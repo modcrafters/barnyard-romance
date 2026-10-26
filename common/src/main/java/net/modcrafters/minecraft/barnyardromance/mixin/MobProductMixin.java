@@ -47,6 +47,11 @@ public class MobProductMixin {
             callback.setReturnValue(feeding);
             return;
         }
+        InteractionResult bone = FamiliarityActions.blocksVanillaTaming(animal, player, player.getItemInHand(hand));
+        if (bone != null) {
+            callback.setReturnValue(bone);
+            return;
+        }
         if (FamiliarityActions.deniesProduct(animal, player.getItemInHand(hand))) {
             callback.setReturnValue(InteractionResult.FAIL);
             return;

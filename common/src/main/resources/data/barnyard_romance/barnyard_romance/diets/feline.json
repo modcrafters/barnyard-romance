@@ -1,0 +1,25 @@
+{
+  "species": [
+    "minecraft:cat",
+    "minecraft:ocelot"
+  ],
+  "eats": [
+    {
+      "items": "#barnyard_romance:contains_fish",
+      "factor": 1.0
+    },
+    {
+      "items": "#barnyard_romance:contains_meat",
+      "factor": 0.5
+    },
+    {
+      "items": "#c:foods/vegetable",
+      "factor": 0.25
+    },
+    {
+      "items": "#c:foods/fruit",
+      "factor": 0.25
+    }
+  ],
+  "refuses": []
+}

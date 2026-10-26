@@ -52,15 +52,11 @@ public final class FoodScanRunner {
         return server.getServerDirectory().resolve("barnyard_romance").resolve("scan");
     }
 
-    // Every tag a loaded diet refuses, with its members today.
+    // Every group tag the loaded diets name (see FoodScan.groupTags), with its members today.
     public static Map<String, Set<String>> liveGroups() {
         Map<String, Set<String>> groups = new TreeMap<>();
-        for (Diet diet : FoodData.diets().values()) {
-            for (ItemMatch refused : diet.refuses()) {
-                if (refused.tag()) {
-                    groups.computeIfAbsent(refused.id(), FoodScanRunner::members);
-                }
-            }
+        for (String group : FoodScan.groupTags(FoodData.diets().values())) {
+            groups.put(group, members(group));
         }
         return groups;
     }

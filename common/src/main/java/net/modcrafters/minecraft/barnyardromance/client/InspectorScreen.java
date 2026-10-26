@@ -27,7 +27,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.List;
 import java.util.Optional;
@@ -241,8 +244,10 @@ public class InspectorScreen extends Screen {
                 SizeClass.of(Sex.MALE, current.fatherScale(), BarnyardConfig.current().sizeFor(current.fatherSpecies())).name(),
                 current.fatherSpecies()
         )).orElse("");
-        boolean needsTaming = this.animal instanceof AbstractHorse;
-        boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
+        // These only breed when tamed; ocelots trust instead, which never blocks breeding.
+        boolean needsTaming = this.animal instanceof AbstractHorse || this.animal instanceof Wolf || this.animal instanceof Cat;
+        boolean tamed = this.animal instanceof AbstractHorse horse ? horse.isTamed()
+                : this.animal instanceof TamableAnimal pet && pet.isTame();
         boolean female = value.sex() == Sex.FEMALE;
         AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(this.animal));
         AgeStage stage = AgeController.stage(this.animal, value);

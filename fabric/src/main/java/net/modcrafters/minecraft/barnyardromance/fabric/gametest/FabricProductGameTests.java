@@ -81,4 +81,29 @@ public class FabricProductGameTests {
     public void bigSheepShearMoreWool(GameTestHelper helper) {
         ProductGameTests.bigSheepShearMoreWool(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wolfTamedByFamiliarity(GameTestHelper helper) {
+        ProductGameTests.wolfTamedByFamiliarity(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void catTamedByFamiliarity(GameTestHelper helper) {
+        ProductGameTests.catTamedByFamiliarity(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void ocelotTrustsByFamiliarity(GameTestHelper helper) {
+        ProductGameTests.ocelotTrustsByFamiliarity(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void bonesNoLongerTameWolves(GameTestHelper helper) {
+        ProductGameTests.bonesNoLongerTameWolves(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void felinesEatMeatForLess(GameTestHelper helper) {
+        ProductGameTests.felinesEatMeatForLess(helper);
+    }
 }

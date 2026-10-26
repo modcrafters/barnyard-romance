@@ -48,6 +48,7 @@ import java.util.stream.Stream;
 // In-game checks for diets, food files and superfoods, run by each loader's game test server.
 public final class FoodGameTests {
     private static final TagKey<Item> CONTAINS_MEAT = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "contains_meat"));
+    private static final TagKey<Item> CONTAINS_FISH = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "contains_fish"));
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("built_in_diets_load", 20, FoodGameTests::builtInDietsLoad),
@@ -73,8 +74,10 @@ public final class FoodGameTests {
     public static void builtInDietsLoad(GameTestHelper helper) {
         String cow = FoodData.dietFor("minecraft:cow").map(Map.Entry::getKey).orElse("none");
         String wolf = FoodData.dietFor("minecraft:wolf").map(Map.Entry::getKey).orElse("none");
+        String cat = FoodData.dietFor("minecraft:cat").map(Map.Entry::getKey).orElse("none");
         helper.assertTrue(cow.equals("barnyard_romance:grazer"), "a cow eats as " + cow);
         helper.assertTrue(wolf.equals("barnyard_romance:carnivore"), "a wolf eats as " + wolf);
+        helper.assertTrue(cat.equals("barnyard_romance:feline"), "a cat eats as " + cat);
         helper.succeed();
     }
 
@@ -83,6 +86,8 @@ public final class FoodGameTests {
             helper.assertTrue(new ItemStack(item).is(CONTAINS_MEAT), item + " is not in contains_meat");
         }
         helper.assertTrue(!new ItemStack(Items.WHEAT).is(CONTAINS_MEAT), "wheat is in contains_meat");
+        helper.assertTrue(new ItemStack(Items.COD).is(CONTAINS_FISH), "cod is not in contains_fish");
+        helper.assertTrue(!new ItemStack(Items.BEEF).is(CONTAINS_FISH), "beef is in contains_fish");
         helper.succeed();
     }
 

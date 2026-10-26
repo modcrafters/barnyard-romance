@@ -1,8 +1,6 @@
 {
   "species": [
-    "minecraft:wolf",
-    "minecraft:cat",
-    "minecraft:ocelot"
+    "minecraft:wolf"
   ],
   "eats": [
     {

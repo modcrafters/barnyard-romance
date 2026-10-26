@@ -17,6 +17,23 @@ class FoodScanTest {
     private static final Predicate<String> ALL_FOOD = item -> true;
 
     @Test
+    void scansRefusedAndEatenGroupTags() {
+        Diet grazer = new Diet(List.of("minecraft:cow"), List.of(), List.of(ItemMatch.parse("#barnyard_romance:contains_meat")));
+        Diet feline = new Diet(
+                List.of("minecraft:cat"),
+                List.of(
+                        new DietEntry(List.of(ItemMatch.parse("#barnyard_romance:contains_fish")), 1.0),
+                        new DietEntry(List.of(ItemMatch.parse("#c:foods/fruit")), 0.25),
+                        new DietEntry(List.of(ItemMatch.parse("minecraft:carrot")), 0.25)
+                ),
+                List.of()
+        );
+
+        assertEquals(new TreeSet<>(List.of("barnyard_romance:contains_fish", "barnyard_romance:contains_meat")),
+                FoodScan.groupTags(List.of(grazer, feline)));
+    }
+
+    @Test
     void sugarCarriesIntoCake() {
         FoodScan.ScanResult result = FoodScan.run(
                 List.of(recipe("cake", Set.of("sugar"), Set.of("milk_bucket"), Set.of("egg"), Set.of("wheat"))),

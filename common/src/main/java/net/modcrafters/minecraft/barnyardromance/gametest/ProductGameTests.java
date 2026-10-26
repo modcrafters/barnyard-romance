@@ -3,8 +3,10 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.drops.MeatDrop;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
+import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -27,6 +29,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -63,7 +66,12 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("mooshroom_bowl_stays_vanilla", 20, ProductGameTests::mooshroomBowlStaysVanilla),
             new BreedingGameTests.Case("sized_drops_follow_the_rule", 20, ProductGameTests::sizedDropsFollowTheRule),
             new BreedingGameTests.Case("meat_keeps_its_curve", 20, ProductGameTests::meatKeepsItsCurve),
-            new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool)
+            new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool),
+            new BreedingGameTests.Case("wolf_tamed_by_familiarity", 20, ProductGameTests::wolfTamedByFamiliarity),
+            new BreedingGameTests.Case("cat_tamed_by_familiarity", 20, ProductGameTests::catTamedByFamiliarity),
+            new BreedingGameTests.Case("ocelot_trusts_by_familiarity", 20, ProductGameTests::ocelotTrustsByFamiliarity),
+            new BreedingGameTests.Case("bones_no_longer_tame_wolves", 20, ProductGameTests::bonesNoLongerTameWolves),
+            new BreedingGameTests.Case("felines_eat_meat_for_less", 20, ProductGameTests::felinesEatMeatForLess)
     );
 
     private ProductGameTests() {
@@ -271,5 +279,65 @@ public final class ProductGameTests {
                 .sum();
         helper.assertTrue(wool >= 4, "a sheep of four times her base scale gave " + wool + " wool");
         helper.succeed();
+    }
+
+    public static void wolfTamedByFamiliarity(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.WOLF), 0.25);
+        Player player = sneaking(helper, Items.BEEF);
+
+        FamiliarityActions.interact(wolf, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(wolf.isTame() && wolf.isOwnedBy(player), "a familiar wolf was not tamed by its feeder");
+        helper.succeed();
+    }
+
+    // Below the threshold cod never tames a cat, so the one-in-three vanilla roll is gone; past it, it always does.
+    public static void catTamedByFamiliarity(GameTestHelper helper) {
+        TamableAnimal cat = (TamableAnimal) FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.CAT), 0.0);
+        FamiliarityActions.interact(cat, sneaking(helper, Items.COD), InteractionHand.MAIN_HAND);
+        helper.assertTrue(!cat.isTame(), "a cat at 20% familiarity was tamed");
+
+        FoodGameTests.withFamiliarity(helper, cat, 0.25);
+        Player player = sneaking(helper, Items.COD);
+        FamiliarityActions.interact(cat, player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(cat.isTame() && cat.isOwnedBy(player), "a familiar cat was not tamed by its feeder");
+        helper.succeed();
+    }
+
+    public static void ocelotTrustsByFamiliarity(GameTestHelper helper) {
+        Animal ocelot = FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.OCELOT), 0.25);
+
+        FamiliarityActions.interact(ocelot, sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(((OcelotAccessor) ocelot).barnyardromance$isTrusting(), "a familiar ocelot does not trust its feeder");
+        helper.succeed();
+    }
+
+    // Vanilla tames on one bone in three, so ten bones would almost surely have tamed it.
+    public static void bonesNoLongerTameWolves(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) BreedingGameTests.female(helper, EntityTypes.WOLF);
+        for (int i = 0; i < 10; i++) {
+            Player player = FoodGameTests.holding(helper, Items.BONE);
+            wolf.interact(player, InteractionHand.MAIN_HAND, wolf.position());
+            helper.assertTrue(player.getMainHandItem().is(Items.BONE), "a wolf took a bone");
+        }
+        helper.assertTrue(!wolf.isTame(), "bones tamed a wolf");
+        helper.succeed();
+    }
+
+    // Felines take meat at half the value of fish: 0.2 x 0.5.
+    public static void felinesEatMeatForLess(GameTestHelper helper) {
+        Animal cat = FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.CAT), 0.4);
+
+        FamiliarityActions.interact(cat, FoodGameTests.holding(helper, Items.BEEF), InteractionHand.MAIN_HAND);
+
+        FoodGameTests.assertFamiliarity(helper, cat, 0.5);
+        helper.succeed();
+    }
+
+    static Player sneaking(GameTestHelper helper, Item item) {
+        Player player = FoodGameTests.holding(helper, item);
+        player.setShiftKeyDown(true);
+        return player;
     }
 }
