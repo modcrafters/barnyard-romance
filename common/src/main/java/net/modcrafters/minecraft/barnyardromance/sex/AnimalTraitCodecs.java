@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -11,6 +12,27 @@ import java.util.Optional;
 
 public final class AnimalTraitCodecs {
     public static final Codec<Sex> SEX_CODEC = Codec.STRING.xmap(Sex::valueOf, Sex::name);
+    // Lactation's codecs live here, so the record stays free of DFU classes for unit tests.
+    public static final Codec<Lactation> LACTATION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.LONG.optionalFieldOf("milkUntil", -1L).forGetter(Lactation::milkUntil),
+            Codec.LONG.optionalFieldOf("youngUntil", -1L).forGetter(Lactation::youngUntil),
+            Codec.LONG.optionalFieldOf("windowStart", -1L).forGetter(Lactation::windowStart),
+            Codec.INT.optionalFieldOf("milkedInWindow", 0).forGetter(Lactation::milkedInWindow),
+            Codec.BOOL.optionalFieldOf("graceGiven", false).forGetter(Lactation::graceGiven)
+    ).apply(instance, Lactation::new));
+    public static final StreamCodec<ByteBuf, Lactation> LACTATION_STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_LONG,
+            Lactation::milkUntil,
+            ByteBufCodecs.VAR_LONG,
+            Lactation::youngUntil,
+            ByteBufCodecs.VAR_LONG,
+            Lactation::windowStart,
+            ByteBufCodecs.VAR_INT,
+            Lactation::milkedInWindow,
+            ByteBufCodecs.BOOL,
+            Lactation::graceGiven,
+            Lactation::new
+    );
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
             Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale),
@@ -24,7 +46,8 @@ public final class AnimalTraitCodecs {
             Codec.DOUBLE.optionalFieldOf("weight", 0.5).forGetter(AnimalTraits::weight),
             Codec.DOUBLE.optionalFieldOf("fertility", 1.0).forGetter(AnimalTraits::fertility),
             Codec.LONG.optionalFieldOf("fertilityTick", -1L).forGetter(AnimalTraits::fertilityTick),
-            Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick)
+            Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
+            LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.composite(
@@ -54,6 +77,8 @@ public final class AnimalTraitCodecs {
             AnimalTraits::fertilityTick,
             ByteBufCodecs.VAR_LONG,
             AnimalTraits::bornTick,
+            LACTATION_STREAM_CODEC,
+            AnimalTraits::lactation,
             AnimalTraits::new
     );
 
