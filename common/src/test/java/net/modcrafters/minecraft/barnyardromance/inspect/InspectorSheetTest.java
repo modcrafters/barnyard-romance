@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.inspect;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -30,12 +31,35 @@ class InspectorSheetTest {
     }
 
     private static InspectorSheet sheet(boolean female, String life, boolean pregnant, String father, String lastBirth) {
+        return sheet(female, life, pregnant, father, lastBirth, "");
+    }
+
+    private static InspectorSheet sheet(boolean female, String life, boolean pregnant, String father, String lastBirth, String milk) {
         return new InspectorSheet(
                 "Cow", "", true, female, "M", life, "scale 0.90",
                 0.4, "40%", Familiarity.feedReady(0L, 0L), "20m 0s", 0.4, "20m 0s", 0.5, "50%",
-                8.0F, 10.0F, 1.0, "100%", pregnant, 0.5, "10m 0s", father,
+                8.0F, 10.0F, 1.0, "100%", milk, pregnant, 0.5, "10m 0s", father,
                 true, InspectorSheet.READY, lastBirth
         );
+    }
+
+    @Test
+    void milkTextWhileNursing() {
+        assertEquals("Flowing, 1/2 today", InspectorSheet.milkText(new MilkStatus(true, 100_000L, 1, 2)));
+    }
+
+    @Test
+    void milkTextCountsDown() {
+        assertEquals("2d left, 1/2 today", InspectorSheet.milkText(new MilkStatus(false, 2 * 24_000L + 500L, 1, 2)));
+        assertEquals("5h left, 0/1 today", InspectorSheet.milkText(new MilkStatus(false, 5 * 1_000L + 10L, 0, 1)));
+        assertEquals("<1h left, 1/1 today", InspectorSheet.milkText(new MilkStatus(false, 100L, 1, 1)));
+    }
+
+    @Test
+    void noMilkRowForMales() {
+        assertFalse(sheet(false, "Adult", false, "", "", "").rows().contains(MILK));
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, FERTILITY, MILK, BREEDING),
+                sheet(true, "Adult", false, "", "", "Flowing, 1/2 today").rows());
     }
 
     @Test

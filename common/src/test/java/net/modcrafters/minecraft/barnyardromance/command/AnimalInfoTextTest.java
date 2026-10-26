@@ -29,6 +29,15 @@ class AnimalInfoTextTest {
     }
 
     @Test
+    void milkIsListedWhileItFlows() {
+        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.FEMALE, 0.90));
+
+        String text = AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.90, AgeStage.ADULT, Optional.empty(), size, 0L, "2d left, 1/2 today");
+
+        assertEquals("Cow (minecraft:cow): XL female, scale 0.9000 (attribute 0.9000), adult, familiar 0%, growth 20m 0s, weight 50%, fertility 100%, milk 2d left, 1/2 today", text);
+    }
+
+    @Test
     void describesAnAnimalThatHasNotBeenAssignedYet() {
         String text = AnimalInfoText.format(
                 "Pig",

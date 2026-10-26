@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -59,6 +60,8 @@ public class InspectorClientGameTest implements FabricClientGameTest {
                     traits -> traits.withBornTick(now - 30_000L), false);
             inspect(context, world, "inspector_old_cow", Sex.FEMALE, false,
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
+            inspect(context, world, "inspector_milking_cow", Sex.FEMALE, false,
+                    traits -> traits.withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)), false);
             oldHearts(context, world, now);
             superfoods(context, world);
             creativeTab(context, world);

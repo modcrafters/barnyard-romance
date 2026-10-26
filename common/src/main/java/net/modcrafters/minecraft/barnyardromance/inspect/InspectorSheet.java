@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.inspect;
 
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public record InspectorSheet(
         float maxHealth,
         double fertility,
         String fertilityText,
+        String milkText,
         boolean pregnant,
         double pregnancy,
         String pregnancyText,
@@ -62,6 +64,7 @@ public record InspectorSheet(
                 health,
                 maxHealth,
                 0.0,
+                "",
                 "",
                 false,
                 0.0,
@@ -154,6 +157,23 @@ public record InspectorSheet(
         return "Last birth: " + offspringName + ", " + ago(now - lastBirthTick);
     }
 
+    // Milk is counted in Minecraft days and hours, the way its three unmilked days are.
+    public static String milkText(MilkStatus status) {
+        String time = status.nursing() ? "Flowing" : gameTime(status.ticksLeft()) + " left";
+        return time + ", " + status.left() + "/" + status.perDay() + " today";
+    }
+
+    private static String gameTime(long ticks) {
+        long hours = Math.max(0L, ticks) / 1_000L;
+        if (hours < 1L) {
+            return "<1h";
+        }
+        if (hours < 24L) {
+            return hours + "h";
+        }
+        return hours / 24L + "d";
+    }
+
     public static String ago(long ticks) {
         long seconds = Math.max(0L, ticks) / 20L;
         if (seconds < 60L) {
@@ -200,6 +220,9 @@ public record InspectorSheet(
         ));
         if (showFertility()) {
             rows.add(InspectorRow.FERTILITY);
+        }
+        if (!milkText.isEmpty()) {
+            rows.add(InspectorRow.MILK);
         }
         if (showBreeding()) {
             rows.add(InspectorRow.BREEDING);

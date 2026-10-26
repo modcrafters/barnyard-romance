@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -99,6 +100,7 @@ public class InspectorScreen extends Screen {
             case WEIGHT -> meter(graphics, x, rowY, "weight", "Weight", sheet.weight(), "fill_feed", sheet.weightText());
             case HEALTH -> health(graphics, x, rowY, sheet);
             case FERTILITY -> meter(graphics, x, rowY, "fertility", "Fertility", sheet.fertility(), "fill_pregnant", sheet.fertilityText());
+            case MILK -> milk(graphics, x, rowY, sheet);
             case BREEDING -> breeding(graphics, x, rowY, sheet);
             case DETAIL -> text(graphics, sheet.detailText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
         }
@@ -216,6 +218,13 @@ public class InspectorScreen extends Screen {
         text(graphics, sheet.healthText(), x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
+    private void milk(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
+        int rowX = x + InspectorLayout.STATS_X;
+        sprite(graphics, "milk", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
+        text(graphics, "Milk", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, sheet.milkText(), x + InspectorLayout.barX(), rowY + 3, TEXT);
+    }
+
     private void breeding(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         if (sheet.pregnant()) {
             meter(graphics, x, rowY, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
@@ -286,6 +295,7 @@ public class InspectorScreen extends Screen {
                 maxHealth,
                 fertility,
                 Familiarity.percent(fertility),
+                MilkActions.status(this.animal, value, now).map(InspectorSheet::milkText).orElse(""),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current))).orElse(""),
