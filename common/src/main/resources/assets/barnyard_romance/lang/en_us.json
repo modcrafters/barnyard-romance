@@ -1,5 +1,12 @@
 {
   "item.barnyard_romance.herd_stick": "Herd Stick",
   "item.barnyard_romance.inspector": "Barnyard Inspector",
-  "death.attack.barnyard_romance.old_age": "%1$s died of old age"
+  "death.attack.barnyard_romance.old_age": "%1$s died of old age",
+  "item.barnyard_romance.breeders_mash": "Breeder's Mash",
+  "item.barnyard_romance.golden_bran": "Golden Bran",
+  "itemGroup.barnyard_romance": "Barnyard Romance",
+  "item.barnyard_romance.breeders_mash.use": "Feed to a pregnant mother",
+  "item.barnyard_romance.breeders_mash.effect": "Her pregnancy goes twice as fast for a day",
+  "item.barnyard_romance.golden_bran.use": "Feed to a pregnant mother",
+  "item.barnyard_romance.golden_bran.effect": "Her litter is born better fed"
 }

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.animal.Animal;
@@ -19,6 +20,14 @@ public class TemptGoalMixin {
     private void barnyardromance$ignoreFood(CallbackInfoReturnable<Boolean> callback) {
         if (this.mob instanceof Animal animal && FamiliarityActions.ignoresFood(animal)) {
             callback.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "shouldFollow", at = @At("RETURN"), cancellable = true)
+    private void barnyardromance$dietFood(LivingEntity entity, CallbackInfoReturnable<Boolean> callback) {
+        if (!callback.getReturnValue() && this.mob instanceof Animal animal
+                && (FamiliarityActions.tempts(animal, entity.getMainHandItem()) || FamiliarityActions.tempts(animal, entity.getOffhandItem()))) {
+            callback.setReturnValue(true);
         }
     }
 }

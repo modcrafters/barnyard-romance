@@ -41,7 +41,7 @@ public final class PregnancyController {
             return;
         }
         Pregnancy current = pregnancy.get();
-        if (!PregnancyClock.ready(level.getGameTime(), current.conceivedAt(), current.durationTicks())) {
+        if (!PregnancyClock.ready(level.getGameTime(), current)) {
             return;
         }
         try {
@@ -158,7 +158,8 @@ public final class PregnancyController {
         double motherScale = motherTraits == null ? size.smallest() : motherTraits.scale();
         int motherGrowth = motherTraits == null ? Growth.wild() : motherTraits.growthTicks();
         double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
-        double nutrition = pregnancy.motherFamiliarity();
+        // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
+        double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
         double scalePercent = inherit(
                 child,

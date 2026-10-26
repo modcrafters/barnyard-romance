@@ -1,0 +1,22 @@
+{
+  "species": [
+    "minecraft:panda"
+  ],
+  "eats": [
+    {
+      "items": "minecraft:bamboo",
+      "factor": 1.0
+    },
+    {
+      "items": "minecraft:cake",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:foods/fruit",
+      "factor": 0.25
+    }
+  ],
+  "refuses": [
+    "#barnyard_romance:contains_meat"
+  ]
+}

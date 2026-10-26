@@ -1,0 +1,18 @@
+{
+  "species": [
+    "minecraft:hoglin"
+  ],
+  "eats": [
+    {
+      "items": "minecraft:crimson_fungus",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:crops",
+      "factor": 0.25
+    }
+  ],
+  "refuses": [
+    "#barnyard_romance:contains_meat"
+  ]
+}

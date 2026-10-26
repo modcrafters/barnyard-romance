@@ -2,8 +2,6 @@
 
 A Minecraft Java mod (Fabric + NeoForge, one shared codebase) that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla and (most) modded animals.
 
-See `docs/` for design, and `AGENTS.md` for implementation instructions for Cursor.
-
 Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. `/barnyard info`, while you look at an animal, still includes the exact scale. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby. The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Food-driven progress is not in yet.
 
 ## Versions

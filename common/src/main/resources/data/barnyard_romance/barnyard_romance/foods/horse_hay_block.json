@@ -1,0 +1,12 @@
+{
+  "species": [
+    "minecraft:horse",
+    "minecraft:donkey"
+  ],
+  "items": [
+    "minecraft:hay_block"
+  ],
+  "effects": {
+    "heal": 20
+  }
+}

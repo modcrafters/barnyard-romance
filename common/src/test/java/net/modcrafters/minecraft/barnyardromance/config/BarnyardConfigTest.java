@@ -26,6 +26,20 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void dietOverrideReadsAndWrites() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:pig": { "diet": "barnyard_romance:grazer" } } }
+                """);
+
+        assertEquals("barnyard_romance:grazer", config.dietOverride("minecraft:pig"));
+        assertEquals(null, config.dietOverride("minecraft:cow"));
+        assertEquals("barnyard_romance:grazer", BarnyardConfig.parse(config.toJson()).dietOverride("minecraft:pig"));
+        assertThrows(IllegalArgumentException.class, () -> BarnyardConfig.parse("""
+                { "species": { "minecraft:pig": { "diet": 3 } } }
+                """));
+    }
+
+    @Test
     void speciesEntriesOverrideOnlyTheFieldsTheySet() {
         BarnyardConfig config = BarnyardConfig.parse("""
                 {

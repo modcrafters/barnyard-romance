@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-// The numbers behind familiarity, growth, inheritance, fertility and old age.
+// The numbers behind familiarity, growth, inheritance, fertility, old age and food healing.
 public record Tuning(
         double familiarityGain,
         double familiarityThreshold,
@@ -19,9 +19,13 @@ public record Tuning(
         double fertilityRecoveryPerDay,
         double fertilityMinToConceive,
         double oldFertilityFactor,
-        double deathSpread
+        double deathSpread,
+        double foodHealFactor,
+        double foodHealDefault
 ) {
-    public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 24_000L, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1);
+    private static final double MAX_FOOD_HEAL = 20.0;
+
+    public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 24_000L, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -48,7 +52,9 @@ public record Tuning(
                 unit(object, "fertilityRecoveryPerDay", DEFAULTS.fertilityRecoveryPerDay),
                 unit(object, "fertilityMinToConceive", DEFAULTS.fertilityMinToConceive),
                 unit(object, "oldFertilityFactor", DEFAULTS.oldFertilityFactor),
-                unit(object, "deathSpread", DEFAULTS.deathSpread)
+                unit(object, "deathSpread", DEFAULTS.deathSpread),
+                unit(object, "foodHealFactor", DEFAULTS.foodHealFactor),
+                Math.clamp(number(object, "foodHealDefault", DEFAULTS.foodHealDefault), 0.0, MAX_FOOD_HEAL)
         );
     }
 
@@ -69,6 +75,8 @@ public record Tuning(
         object.addProperty("fertilityMinToConceive", fertilityMinToConceive);
         object.addProperty("oldFertilityFactor", oldFertilityFactor);
         object.addProperty("deathSpread", deathSpread);
+        object.addProperty("foodHealFactor", foodHealFactor);
+        object.addProperty("foodHealDefault", foodHealDefault);
         return object;
     }
 

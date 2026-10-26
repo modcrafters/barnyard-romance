@@ -15,10 +15,25 @@ public record Pregnancy(
         double motherFamiliarity,
         int fatherGrowthTicks,
         double fatherWeight,
-        List<CompoundTag> litter
+        List<CompoundTag> litter,
+        PregnancyCare care
 ) {
     public Pregnancy {
         litter = List.copyOf(litter);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, PregnancyCare.NONE);
     }
 
     public Pregnancy(
@@ -58,7 +73,12 @@ public record Pregnancy(
         this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, Growth.wild());
     }
 
+    // Debug steps set an exact elapsed time, so food's gained or lost ticks are dropped.
     public Pregnancy withConceivedAt(long tick) {
-        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter);
+        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care.withoutTicks());
+    }
+
+    public Pregnancy withCare(PregnancyCare next) {
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, next);
     }
 }

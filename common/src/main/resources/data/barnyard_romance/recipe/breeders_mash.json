@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#barnyard_romance:superfood/grains",
+    "#barnyard_romance:superfood/grains",
+    "#barnyard_romance:superfood/roots",
+    "#barnyard_romance:superfood/roots"
+  ],
+  "result": {
+    "id": "barnyard_romance:breeders_mash",
+    "count": 2
+  }
+}

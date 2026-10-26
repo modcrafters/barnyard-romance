@@ -108,8 +108,8 @@ public class HerdStick extends Item {
     }
 
     private static String progress(Pregnancy pregnancy, long now) {
-        int percent = (int) Math.round(PregnancyClock.progress(now, pregnancy.conceivedAt(), pregnancy.durationTicks()) * 100.0);
-        String time = PregnancyText.clock(PregnancyClock.remainingTicks(now, pregnancy.conceivedAt(), pregnancy.durationTicks()));
+        int percent = (int) Math.round(PregnancyClock.progress(now, pregnancy) * 100.0);
+        String time = PregnancyText.clock(PregnancyClock.remainingTicks(now, pregnancy));
         return percent + "%, " + ("due".equals(time) ? "due" : time + " left");
     }
 }

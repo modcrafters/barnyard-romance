@@ -1,0 +1,12 @@
+{
+  "species": [
+    "minecraft:llama",
+    "minecraft:trader_llama"
+  ],
+  "items": [
+    "minecraft:wheat"
+  ],
+  "effects": {
+    "heal": 2
+  }
+}

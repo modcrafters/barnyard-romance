@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,5 +52,15 @@ class DebugStepsTest {
         assertEquals(5_500L, DebugSteps.pregnancyAt(pregnancy, 8_000L, 25).conceivedAt());
         assertEquals(-2_000L, DebugSteps.pregnancyAt(pregnancy, 8_000L, 100).conceivedAt());
         assertEquals(pregnancy.litterSize(), DebugSteps.pregnancyAt(pregnancy, 8_000L, 25).litterSize());
+    }
+
+    @Test
+    void pregnancyStepsFromTheProgressShown() {
+        Pregnancy fed = new Pregnancy(0L, 10_000L, "minecraft:cow", 1.0, 1, 0.0)
+                .withCare(PregnancyCare.NONE.progress(10_000L, 0.3));
+
+        Pregnancy next = DebugSteps.pregnancy(fed, 2_000L, 1);
+
+        assertEquals(0.6, PregnancyClock.progress(2_000L, next), 1.0e-9);
     }
 }

@@ -1,14 +1,19 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 
+import net.fabricmc.fabric.api.client.creativetab.v1.FabricCreativeModeInventoryScreen;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +23,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ServerLevelData;
 
 import java.util.UUID;
@@ -54,7 +60,38 @@ public class InspectorClientGameTest implements FabricClientGameTest {
             inspect(context, world, "inspector_old_cow", Sex.FEMALE, false,
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
             oldHearts(context, world, now);
+            superfoods(context, world);
+            creativeTab(context, world);
         }
+    }
+
+    // The superfood textures in the hotbar, to catch a missing texture.
+    private static void superfoods(ClientGameTestContext context, TestSingleplayerContext world) {
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            player.getInventory().setItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH, 2));
+            player.getInventory().setItem(1, new ItemStack(BarnyardItems.GOLDEN_BRAN, 2));
+        });
+        world.getConnection().waitForClientboundPackets();
+        context.waitTicks(5);
+        context.takeScreenshot("superfoods_hotbar");
+    }
+
+    private static void creativeTab(ClientGameTestContext context, TestSingleplayerContext world) {
+        world.getServer().runCommand("gamemode creative @a");
+        world.getConnection().waitForClientboundPackets();
+        context.setScreen(() -> context.computeOnClient(client ->
+                new CreativeModeInventoryScreen(client.player, client.player.connection.enabledFeatures(), true)));
+        context.runOnClient(client -> ((FabricCreativeModeInventoryScreen) client.gui.screen())
+                .setSelectedTab(BuiltInRegistries.CREATIVE_MODE_TAB.getValue(BarnyardTab.ID)));
+        context.waitTicks(5);
+        context.takeScreenshot("creative_tab");
+        // The breeder's mash slot in the tab's first row, at the test window's size.
+        context.getInput().setCursorPos(485.0, 157.0);
+        context.waitTicks(3);
+        context.takeScreenshot("breeders_mash_tooltip");
+        context.setScreen(() -> null);
+        world.getServer().runCommand("gamemode survival @a");
     }
 
     // Old hearts are random and rare, so a few are spawned by hand to see how they look.

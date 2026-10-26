@@ -80,6 +80,28 @@ class FamiliarityTest {
     }
 
     @Test
+    void hurtAnimalsHealInsideTheWait() {
+        assertEquals(Familiarity.Click.HEAL_ONLY, Familiarity.click(true, false, Familiarity.Response.REJECT, true));
+        assertEquals(Familiarity.Click.HEAL_ONLY, Familiarity.click(false, true, Familiarity.Response.REJECT, true));
+        assertEquals(Familiarity.Click.FEED, Familiarity.click(false, true, Familiarity.Response.ACCEPT, true));
+        assertEquals(Familiarity.Click.WAIT, Familiarity.click(false, true, Familiarity.Response.REJECT, false));
+    }
+
+    @Test
+    void hurtButShyStillScares() {
+        assertEquals(Familiarity.Click.SCARE, Familiarity.click(false, false, Familiarity.Response.REJECT, true));
+        assertEquals(Familiarity.Click.SCARE, Familiarity.click(false, false, Familiarity.Response.ACCEPT, true));
+    }
+
+    @Test
+    void hurtAnimalsFollowFoodInsideTheWait() {
+        long fed = 1_000L;
+        assertFalse(Familiarity.interested(true, fed, fed + 10L, true, false));
+        assertTrue(Familiarity.interested(true, fed, fed + 10L, true, true));
+        assertFalse(Familiarity.interested(true, fed, fed + 10L, false, true));
+    }
+
+    @Test
     void familiarityTamesAWildHorseOnceItCanBreed() {
         assertFalse(Familiarity.tames(false, Familiarity.gain(0.0)));
         assertTrue(Familiarity.tames(false, Familiarity.threshold()));

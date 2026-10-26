@@ -1,0 +1,26 @@
+{
+  "species": [
+    "minecraft:rabbit"
+  ],
+  "eats": [
+    {
+      "items": "#c:foods/vegetable",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:crops",
+      "factor": 1.0
+    },
+    {
+      "items": "#minecraft:small_flowers",
+      "factor": 0.75
+    },
+    {
+      "items": "#c:foods/fruit",
+      "factor": 0.75
+    }
+  ],
+  "refuses": [
+    "#barnyard_romance:contains_meat"
+  ]
+}

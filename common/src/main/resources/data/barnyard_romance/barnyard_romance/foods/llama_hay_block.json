@@ -1,0 +1,12 @@
+{
+  "species": [
+    "minecraft:llama",
+    "minecraft:trader_llama"
+  ],
+  "items": [
+    "minecraft:hay_block"
+  ],
+  "effects": {
+    "heal": 10
+  }
+}

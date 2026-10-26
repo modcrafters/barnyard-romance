@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardInspector;
 import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
 import com.mojang.brigadier.CommandDispatcher;
@@ -11,6 +13,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 
+import java.io.IOException;
+
 public final class BarnyardCommands {
     private BarnyardCommands() {
     }
@@ -19,6 +23,7 @@ public final class BarnyardCommands {
         dispatcher.register(Commands.literal("barnyard")
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("info").executes(context -> inspector(context.getSource())))
+                .then(Commands.literal("foods").then(Commands.literal("scan").executes(context -> scan(context.getSource()))))
                 .then(Commands.literal("familiarity")
                         .then(Commands.literal("up").executes(context -> give(context.getSource(), HerdTool.familiarity(1))))
                         .then(Commands.literal("down").executes(context -> give(context.getSource(), HerdTool.familiarity(-1))))
@@ -29,6 +34,18 @@ public final class BarnyardCommands {
                         .then(Commands.literal("down").executes(context -> give(context.getSource(), HerdTool.pregnancy(-1))))
                         .then(Commands.literal("set").then(Commands.argument("percent", IntegerArgumentType.integer(0, 100))
                                 .executes(context -> give(context.getSource(), HerdTool.pregnancySet(IntegerArgumentType.getInteger(context, "percent"))))))));
+    }
+
+    private static int scan(CommandSourceStack source) {
+        try {
+            FoodScanRunner.ScanSummary summary = FoodScanRunner.run(source.getServer(), FoodScanRunner.liveGroups(), FoodScanRunner.defaultFolder(source.getServer()));
+            source.sendSuccess(() -> Component.literal(FoodScanText.summary(summary.recipes(), summary.items(), summary.tags(), summary.folder().toString(), summary.skippedByType())), false);
+            return summary.items();
+        } catch (IOException | RuntimeException exception) {
+            Constants.LOG.error("The food scan failed", exception);
+            source.sendFailure(Component.literal("The food scan failed: " + exception.getMessage()));
+            return 0;
+        }
     }
 
     private static int inspector(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

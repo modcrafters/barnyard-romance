@@ -1,0 +1,12 @@
+{
+  "species": [
+    "minecraft:horse",
+    "minecraft:donkey"
+  ],
+  "items": [
+    "minecraft:sugar"
+  ],
+  "effects": {
+    "heal": 1
+  }
+}
