@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
@@ -12,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -25,6 +27,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -58,7 +61,8 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("golden_bran_feeds_the_litter", 20, FoodGameTests::goldenBranFeedsTheLitter),
             new BreedingGameTests.Case("superfoods_need_a_pregnant_mother", 20, FoodGameTests::superfoodsNeedAPregnantMother),
             new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad),
-            new BreedingGameTests.Case("food_scan_reads_real_recipes", 100, FoodGameTests::foodScanReadsRealRecipes)
+            new BreedingGameTests.Case("food_scan_reads_real_recipes", 100, FoodGameTests::foodScanReadsRealRecipes),
+            new BreedingGameTests.Case("our_creative_tab_holds_every_item", 20, FoodGameTests::ourCreativeTabHoldsEveryItem)
     );
 
     private FoodGameTests() {
@@ -260,6 +264,16 @@ public final class FoodGameTests {
             }
         } catch (IOException exception) {
             throw helper.assertionException(Component.literal("the scan could not write: " + exception.getMessage()));
+        }
+        helper.succeed();
+    }
+
+    public static void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
+        CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.getValue(BarnyardTab.ID);
+        helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
+        tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
+        for (Item item : List.of(BarnyardItems.INSPECTOR, BarnyardItems.HERD_STICK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
+            helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
         helper.succeed();
     }

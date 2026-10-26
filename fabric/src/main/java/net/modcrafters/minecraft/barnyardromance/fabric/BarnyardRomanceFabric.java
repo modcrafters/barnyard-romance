@@ -7,11 +7,13 @@ import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.fabric.data.FabricAnimalData;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.Registry;
@@ -34,6 +36,9 @@ public class BarnyardRomanceFabric implements ModInitializer {
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.INSPECTOR_ID.identifier(), BarnyardItems.INSPECTOR);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), BarnyardItems.BREEDERS_MASH);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), BarnyardItems.GOLDEN_BRAN);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, BarnyardTab.ID, BarnyardTab.titled(FabricCreativeModeTab.builder())
+                .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
+                .build());
         CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> {
             output.accept(BarnyardItems.BREEDERS_MASH);
             output.accept(BarnyardItems.GOLDEN_BRAN);

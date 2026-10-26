@@ -76,4 +76,9 @@ public class FabricFoodGameTests {
     public void foodScanReadsRealRecipes(GameTestHelper helper) {
         FoodGameTests.foodScanReadsRealRecipes(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
+        FoodGameTests.ourCreativeTabHoldsEveryItem(helper);
+    }
 }

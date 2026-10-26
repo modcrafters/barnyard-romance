@@ -3,5 +3,6 @@
   "item.barnyard_romance.inspector": "Barnyard Inspector",
   "death.attack.barnyard_romance.old_age": "%1$s died of old age",
   "item.barnyard_romance.breeders_mash": "Breeder's Mash",
-  "item.barnyard_romance.golden_bran": "Golden Bran"
+  "item.barnyard_romance.golden_bran": "Golden Bran",
+  "itemGroup.barnyard_romance": "Barnyard Romance"
 }

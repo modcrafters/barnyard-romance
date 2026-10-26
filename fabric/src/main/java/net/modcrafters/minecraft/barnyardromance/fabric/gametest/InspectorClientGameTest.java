@@ -1,15 +1,19 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 
+import net.fabricmc.fabric.api.client.creativetab.v1.FabricCreativeModeInventoryScreen;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -57,6 +61,7 @@ public class InspectorClientGameTest implements FabricClientGameTest {
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
             oldHearts(context, world, now);
             superfoods(context, world);
+            creativeTab(context, world);
         }
     }
 
@@ -70,6 +75,19 @@ public class InspectorClientGameTest implements FabricClientGameTest {
         world.getConnection().waitForClientboundPackets();
         context.waitTicks(5);
         context.takeScreenshot("superfoods_hotbar");
+    }
+
+    private static void creativeTab(ClientGameTestContext context, TestSingleplayerContext world) {
+        world.getServer().runCommand("gamemode creative @a");
+        world.getConnection().waitForClientboundPackets();
+        context.setScreen(() -> context.computeOnClient(client ->
+                new CreativeModeInventoryScreen(client.player, client.player.connection.enabledFeatures(), true)));
+        context.runOnClient(client -> ((FabricCreativeModeInventoryScreen) client.gui.screen())
+                .setSelectedTab(BuiltInRegistries.CREATIVE_MODE_TAB.getValue(BarnyardTab.ID)));
+        context.waitTicks(5);
+        context.takeScreenshot("creative_tab");
+        context.setScreen(() -> null);
+        world.getServer().runCommand("gamemode survival @a");
     }
 
     // Old hearts are random and rare, so a few are spawned by hand to see how they look.
