@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
@@ -77,22 +78,28 @@ public final class MilkActions {
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        player.playSound(milkingSound(animal), 1.0F, 1.0F);
+        // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
+        animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
         Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, tuning.milkKeepsFlowingTicks())));
         return InteractionResult.SUCCESS_SERVER;
     }
 
-    // Animals from before Stage 5 and wild spawns get one milk window; everyone else is marked so they never do.
+    // Females from before Stage 5 and wild spawns get their milk on their first join (see MilkRules.firstJoin).
     public static void onJoin(Animal animal) {
         Optional<AnimalTraits> tracked = tracked(animal);
         if (tracked.isEmpty() || tracked.get().lactation().graceGiven()) {
             return;
         }
         AnimalTraits traits = tracked.get();
-        Lactation lactation = MilkRules.getsGrace(traits.sex(), animal.isBaby(), traits.bornTick(), traits.lastBirthTick())
-                ? traits.lactation().grace(animal.level().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks())
-                : traits.lactation().withGraceGiven();
+        Lactation lactation = MilkRules.firstJoin(
+                traits.sex(),
+                animal.isBaby(),
+                traits.lastBirthTick(),
+                traits.lactation(),
+                animal.level().getGameTime(),
+                BarnyardConfig.current().tuning()
+        );
         Services.DATA.set(animal, traits.withLactation(lactation));
     }
 

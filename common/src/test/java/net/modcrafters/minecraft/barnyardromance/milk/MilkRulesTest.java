@@ -43,16 +43,43 @@ class MilkRulesTest {
         assertEquals(MilkRules.Check.NO_MILK, MilkRules.check(Sex.FEMALE, SizeClass.XL, Lactation.NONE, 100L, TUNING));
     }
 
+    // A baby is marked at its first join, so it never gets the window when it grows up.
     @Test
     void bornAnimalsGetNoGrace() {
-        assertFalse(MilkRules.getsGrace(Sex.FEMALE, false, 5_000L, -1L));
-        assertFalse(MilkRules.getsGrace(Sex.FEMALE, false, -1L, 5_000L));
+        Lactation baby = MilkRules.firstJoin(Sex.FEMALE, true, -1L, Lactation.NONE, 1_000L, TUNING);
+
+        assertTrue(baby.graceGiven());
+        assertFalse(baby.hasMilk(1_000L, TUNING.milkKeepsFlowingTicks()));
+        assertEquals(baby, MilkRules.firstJoin(Sex.FEMALE, false, -1L, baby, 50_000L, TUNING));
+    }
+
+    // Wild adults, and adults bred before Stage 5 that never calved, get one window.
+    @Test
+    void wildAdultFemalesGetGrace() {
+        Lactation wild = MilkRules.firstJoin(Sex.FEMALE, false, -1L, Lactation.NONE, 1_000L, TUNING);
+
+        assertTrue(wild.graceGiven());
+        assertTrue(wild.hasMilk(1_000L + 72_000L - 1L, TUNING.milkKeepsFlowingTicks()));
+        assertFalse(wild.hasMilk(1_000L + 72_000L, TUNING.milkKeepsFlowingTicks()));
     }
 
     @Test
-    void wildAdultFemalesGetGrace() {
-        assertTrue(MilkRules.getsGrace(Sex.FEMALE, false, -1L, -1L));
-        assertFalse(MilkRules.getsGrace(Sex.FEMALE, true, -1L, -1L));
-        assertFalse(MilkRules.getsGrace(Sex.MALE, false, -1L, -1L));
+    void malesGetNoGrace() {
+        Lactation male = MilkRules.firstJoin(Sex.MALE, false, -1L, Lactation.NONE, 1_000L, TUNING);
+
+        assertTrue(male.graceGiven());
+        assertFalse(male.hasMilk(1_000L, TUNING.milkKeepsFlowingTicks()));
+    }
+
+    // A mother from before Stage 5 has her milk worked out from her recorded birth.
+    @Test
+    void oldMothersMilkFromTheirLastBirth() {
+        Lactation recent = MilkRules.firstJoin(Sex.FEMALE, false, 90_000L, Lactation.NONE, 100_000L, TUNING);
+        Lactation longAgo = MilkRules.firstJoin(Sex.FEMALE, false, 1_000L, Lactation.NONE, 500_000L, TUNING);
+
+        assertTrue(recent.nursing(100_000L));
+        assertTrue(recent.hasMilk(100_000L, TUNING.milkKeepsFlowingTicks()));
+        assertTrue(longAgo.graceGiven());
+        assertFalse(longAgo.hasMilk(500_000L, TUNING.milkKeepsFlowingTicks()));
     }
 }

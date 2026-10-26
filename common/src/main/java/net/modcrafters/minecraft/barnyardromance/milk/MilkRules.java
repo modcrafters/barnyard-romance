@@ -36,9 +36,20 @@ public final class MilkRules {
         return size == SizeClass.L || size == SizeClass.XL ? tuning.milkingsPerDayLarge() : tuning.milkingsPerDaySmall();
     }
 
-    // Only animals from before Stage 5 or wild spawns: no known birth of their own, and no young yet.
-    public static boolean getsGrace(Sex sex, boolean baby, long bornTick, long lastBirthTick) {
-        return sex == Sex.FEMALE && !baby && bornTick < 0L && lastBirthTick < 0L;
+    // An animal's first join since Stage 5. Babies and males are only marked. An adult female from before Stage 5,
+    // or a wild one, gets one milk window so dairy farms keep working; a mother with a recorded birth instead gets
+    // the milk that birth would have started, with her young growing at the wild rate.
+    public static Lactation firstJoin(Sex sex, boolean baby, long lastBirthTick, Lactation lactation, long now, Tuning tuning) {
+        if (lactation.graceGiven()) {
+            return lactation;
+        }
+        if (sex != Sex.FEMALE || baby) {
+            return lactation.withGraceGiven();
+        }
+        if (lastBirthTick >= 0L) {
+            return lactation.afterBirth(lastBirthTick, lastBirthTick + tuning.growthWildTicks(), tuning.lactationTicks());
+        }
+        return lactation.grace(now, tuning.milkKeepsFlowingTicks());
     }
 
     public static String text(Check check) {

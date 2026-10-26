@@ -106,4 +106,9 @@ public class FabricProductGameTests {
     public void felinesEatMeatForLess(GameTestHelper helper) {
         ProductGameTests.felinesEatMeatForLess(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void befriendedFelinesStayAround(GameTestHelper helper) {
+        ProductGameTests.befriendedFelinesStayAround(helper);
+    }
 }

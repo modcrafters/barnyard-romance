@@ -100,6 +100,10 @@ public final class FamiliarityActions {
         if (!player.hasInfiniteMaterials()) {
             stack.consume(1, player);
         }
+        // Wild cats and ocelots despawn until tamed or trusting, and familiarity takes days; vanilla keeps fed ones too.
+        if (animal instanceof Cat || animal instanceof Ocelot) {
+            animal.setPersistenceRequired();
+        }
         if (hurt && heal > 0.0F) {
             animal.heal(heal);
         }

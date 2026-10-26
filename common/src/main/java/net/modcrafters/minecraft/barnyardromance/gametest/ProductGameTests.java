@@ -43,6 +43,7 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
@@ -71,7 +72,8 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("cat_tamed_by_familiarity", 20, ProductGameTests::catTamedByFamiliarity),
             new BreedingGameTests.Case("ocelot_trusts_by_familiarity", 20, ProductGameTests::ocelotTrustsByFamiliarity),
             new BreedingGameTests.Case("bones_no_longer_tame_wolves", 20, ProductGameTests::bonesNoLongerTameWolves),
-            new BreedingGameTests.Case("felines_eat_meat_for_less", 20, ProductGameTests::felinesEatMeatForLess)
+            new BreedingGameTests.Case("felines_eat_meat_for_less", 20, ProductGameTests::felinesEatMeatForLess),
+            new BreedingGameTests.Case("befriended_felines_stay_around", 20, ProductGameTests::befriendedFelinesStayAround)
     );
 
     private ProductGameTests() {
@@ -335,9 +337,33 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // Spawned like a natural mob, which may despawn, with no familiarity yet.
+    static Animal wild(GameTestHelper helper, EntityType<? extends Animal> type) {
+        Animal animal = helper.spawnEntity(type, new Vec3(3.5, 1.0, 4.5)).requirePersistence(false).spawn();
+        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, 0.0, -1L));
+        return animal;
+    }
+
     static Player sneaking(GameTestHelper helper, Item item) {
         Player player = FoodGameTests.holding(helper, item);
         player.setShiftKeyDown(true);
         return player;
+    }
+
+    // Familiarity takes days, so a stray cat or wild ocelot that has been fed must not despawn in between.
+    // Fed through Mob.interact, so the fish also never reaches vanilla taming.
+    public static void befriendedFelinesStayAround(GameTestHelper helper) {
+        TamableAnimal cat = (TamableAnimal) wild(helper, EntityTypes.CAT);
+        Animal ocelot = wild(helper, EntityTypes.OCELOT);
+        helper.assertTrue(!cat.isPersistenceRequired() && !ocelot.isPersistenceRequired(), "the test felines started out persistent");
+
+        cat.interact(sneaking(helper, Items.COD), InteractionHand.MAIN_HAND, cat.position());
+        ocelot.interact(sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND, ocelot.position());
+
+        helper.assertTrue(cat.isPersistenceRequired(), "a fed stray cat can still despawn");
+        helper.assertTrue(ocelot.isPersistenceRequired(), "a fed ocelot can still despawn");
+        helper.assertTrue(!cat.isTame(), "one cod tamed a cat at 0% familiarity");
+        helper.assertTrue(!((OcelotAccessor) ocelot).barnyardromance$isTrusting(), "one salmon won an ocelot at 0% familiarity");
+        helper.succeed();
     }
 }
