@@ -39,11 +39,25 @@ public final class MeatDrop {
         return min + (int) Math.floor(unitRandom * (max - min + 1));
     }
 
-    public static int resizedCount(String itemId, int currentCount, double scale, double smallest, double largest, double unitRandom) {
+    public static boolean isMeat(String itemId) {
+        return MEAT.contains(itemId);
+    }
+
+    // The sized curve × the sex and age factor, then looting's extra on top, unscaled.
+    public static int resizedCount(
+            String itemId,
+            int currentCount,
+            double scale,
+            double smallest,
+            double largest,
+            double factor,
+            double curveRandom,
+            double roundRandom
+    ) {
         if (currentCount <= 0 || !MEAT.contains(itemId)) {
             return currentCount;
         }
         int lootingExtra = Math.max(0, currentCount - VANILLA_MEAT_BEFORE_LOOTING);
-        return count(scale, smallest, largest, unitRandom) + lootingExtra;
+        return Yield.round(count(scale, smallest, largest, curveRandom) * factor, roundRandom) + lootingExtra;
     }
 }

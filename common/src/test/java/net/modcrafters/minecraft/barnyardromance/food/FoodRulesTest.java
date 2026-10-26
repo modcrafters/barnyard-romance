@@ -29,6 +29,25 @@ class FoodRulesTest {
     );
 
     @Test
+    void felinesPreferFish() {
+        Diet feline = new Diet(
+                List.of("minecraft:cat"),
+                List.of(
+                        new DietEntry(List.of(ItemMatch.parse("#barnyard_romance:contains_fish")), 1.0),
+                        new DietEntry(List.of(ItemMatch.parse("#barnyard_romance:contains_meat")), 0.5)
+                ),
+                List.of()
+        );
+        Feed salmon = FoodRules.resolve("minecraft:cat", "barnyard_romance:feline", feline, List.of(),
+                item(Set.of("#barnyard_romance:contains_fish", "#barnyard_romance:contains_meat"), false));
+        Feed beef = FoodRules.resolve("minecraft:cat", "barnyard_romance:feline", feline, List.of(),
+                item(Set.of("#barnyard_romance:contains_meat"), false));
+
+        assertEquals(new Feed.Eaten(FoodEffects.NONE, 1.0, false), salmon);
+        assertEquals(new Feed.Eaten(FoodEffects.NONE, 0.5, false), beef);
+    }
+
+    @Test
     void refusedBeatsEverything() {
         FoodFile file = file(List.of(COW), List.of(), "minecraft:beef");
         Feed feed = FoodRules.resolve(COW, GRAZER_ID, GRAZER, List.of(file), item(Set.of("minecraft:beef", "#barnyard_romance:contains_meat"), false));

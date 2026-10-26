@@ -23,12 +23,24 @@ class FamiliarityTest {
         assertEquals(1.0, Familiarity.gain(Familiarity.gain(Familiarity.gain(twice))), 1.0e-9);
     }
 
+    // Clock times: 0 is waking up, 18,000 is midnight, when a new day starts.
     @Test
     void feedingIsAcceptedOncePerDay() {
         assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, -1L, 0L));
-        assertEquals(Familiarity.Response.REJECT, Familiarity.respond(true, 0L, Familiarity.dayTicks() - 1));
-        assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, 0L, Familiarity.dayTicks()));
+        assertEquals(Familiarity.Response.REJECT, Familiarity.respond(true, 1_000L, 17_999L));
+        assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, 1_000L, 18_000L));
         assertEquals(Familiarity.Response.IGNORE, Familiarity.respond(false, -1L, 0L));
+    }
+
+    @Test
+    void anAnimalFedAtDuskCanBeFedAgainAfterMidnight() {
+        assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, 17_000L, 18_000L));
+        assertEquals(Familiarity.Response.REJECT, Familiarity.respond(true, 18_000L, 41_999L));
+    }
+
+    @Test
+    void settingTheClockBackStartsANewDay() {
+        assertEquals(Familiarity.Response.ACCEPT, Familiarity.respond(true, 100_000L, 1_000L));
     }
 
     @Test
@@ -47,14 +59,14 @@ class FamiliarityTest {
     @Test
     void aFedAnimalShowsTheTimeUntilTheNextFeed() {
         assertEquals(0L, Familiarity.ticksUntilFeed(-1L, 100L));
-        assertEquals(Familiarity.dayTicks(), Familiarity.ticksUntilFeed(0L, 0L));
-        assertEquals(1L, Familiarity.ticksUntilFeed(0L, Familiarity.dayTicks() - 1));
-        assertEquals(0L, Familiarity.ticksUntilFeed(0L, Familiarity.dayTicks()));
-        assertEquals("Can be fed again in 20m 0s.", Familiarity.nextFeed(Familiarity.dayTicks()));
+        assertEquals(18_000L, Familiarity.ticksUntilFeed(0L, 0L));
+        assertEquals(1L, Familiarity.ticksUntilFeed(0L, 17_999L));
+        assertEquals(0L, Familiarity.ticksUntilFeed(0L, 18_000L));
+        assertEquals("Can be fed again in 20m 0s.", Familiarity.nextFeed(24_000L));
         assertEquals("Can be fed again in 30s.", Familiarity.nextFeed(600L));
         assertEquals(1.0, Familiarity.feedReady(-1L, 0L), 1.0e-9);
-        assertEquals(0.0, Familiarity.feedReady(0L, 0L), 1.0e-9);
-        assertEquals(0.5, Familiarity.feedReady(0L, Familiarity.dayTicks() / 2), 1.0e-9);
+        assertEquals(0.25, Familiarity.feedReady(0L, 0L), 1.0e-9);
+        assertEquals(0.5, Familiarity.feedReady(0L, 6_000L), 1.0e-9);
     }
 
     @Test

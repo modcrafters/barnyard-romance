@@ -8,6 +8,8 @@ import net.modcrafters.minecraft.barnyardromance.command.HerdToolRules;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
@@ -79,7 +81,11 @@ public class HerdStick extends Item {
                     AgeController.stage(animal),
                     Services.DATA.getPregnancy(animal).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
                     BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
-                    animal.level().getGameTime()
+                    animal.level().getGameTime(),
+                    Services.DATA.get(animal)
+                            .flatMap(traits -> MilkActions.status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
+                            .map(InspectorSheet::milkText)
+                            .orElse("")
             );
             return new Outcome(true, text);
         }

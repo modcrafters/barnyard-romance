@@ -11,6 +11,8 @@
     "LivingEntityDropsMixin",
     "MateOverridesMixin",
     "MobProductMixin",
+    "OcelotAccessor",
+    "SheepShearMixin",
     "ShearsDispenseMixin",
     "TemptGoalMixin",
     "TemptingSensorMixin"

@@ -18,7 +18,8 @@
         ],
         "fabric-gametest": [
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricBreedingGameTests",
-            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricFoodGameTests"
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricFoodGameTests",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricProductGameTests"
         ],
         "fabric-client-gametest": [
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.InspectorClientGameTest"

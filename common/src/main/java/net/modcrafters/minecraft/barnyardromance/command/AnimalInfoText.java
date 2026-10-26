@@ -39,6 +39,20 @@ public final class AnimalInfoText {
             SizeSettings size,
             long now
     ) {
+        return format(name, speciesId, traits, attributeScale, stage, pregnancyLine, size, now, "");
+    }
+
+    public static String format(
+            String name,
+            String speciesId,
+            Optional<AnimalTraits> traits,
+            double attributeScale,
+            AgeStage stage,
+            Optional<String> pregnancyLine,
+            SizeSettings size,
+            long now,
+            String milkText
+    ) {
         String life = stage.label().toLowerCase(Locale.ROOT);
         String attribute = formatScale(attributeScale);
         String text;
@@ -55,6 +69,9 @@ public final class AnimalInfoText {
                     + ", weight " + Familiarity.percent(value.weight());
             if (value.sex() == Sex.FEMALE) {
                 text += ", fertility " + Familiarity.percent(Fertility.current(value, BarnyardConfig.current().ageFor(speciesId), now));
+            }
+            if (!milkText.isEmpty()) {
+                text += ", milk " + milkText;
             }
         }
         if (pregnancyLine.isEmpty()) {

@@ -8,6 +8,7 @@ public enum InspectorRow {
     WEIGHT,
     HEALTH,
     FERTILITY,
+    MILK,
     BREEDING,
     DETAIL
 }

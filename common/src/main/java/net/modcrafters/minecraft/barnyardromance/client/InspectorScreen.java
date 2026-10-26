@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -27,7 +28,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +100,7 @@ public class InspectorScreen extends Screen {
             case WEIGHT -> meter(graphics, x, rowY, "weight", "Weight", sheet.weight(), "fill_feed", sheet.weightText());
             case HEALTH -> health(graphics, x, rowY, sheet);
             case FERTILITY -> meter(graphics, x, rowY, "fertility", "Fertility", sheet.fertility(), "fill_pregnant", sheet.fertilityText());
+            case MILK -> milk(graphics, x, rowY, sheet);
             case BREEDING -> breeding(graphics, x, rowY, sheet);
             case DETAIL -> text(graphics, sheet.detailText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
         }
@@ -213,6 +218,13 @@ public class InspectorScreen extends Screen {
         text(graphics, sheet.healthText(), x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
+    private void milk(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
+        int rowX = x + InspectorLayout.STATS_X;
+        sprite(graphics, "milk", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
+        text(graphics, "Milk", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, sheet.milkText(), x + InspectorLayout.barX(), rowY + 3, TEXT);
+    }
+
     private void breeding(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         if (sheet.pregnant()) {
             meter(graphics, x, rowY, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
@@ -236,13 +248,16 @@ public class InspectorScreen extends Screen {
         }
         AnimalTraits value = traits.get();
         long now = this.animal.level().getGameTime();
+        long clock = this.animal.level().getOverworldClockTime();
         Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(this.animal);
         String father = pregnancy.map(current -> InspectorSheet.father(
                 SizeClass.of(Sex.MALE, current.fatherScale(), BarnyardConfig.current().sizeFor(current.fatherSpecies())).name(),
                 current.fatherSpecies()
         )).orElse("");
-        boolean needsTaming = this.animal instanceof AbstractHorse;
-        boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
+        // These only breed when tamed; ocelots trust instead, which never blocks breeding.
+        boolean needsTaming = this.animal instanceof AbstractHorse || this.animal instanceof Wolf || this.animal instanceof Cat;
+        boolean tamed = this.animal instanceof AbstractHorse horse ? horse.isTamed()
+                : this.animal instanceof TamableAnimal pet && pet.isTame();
         boolean female = value.sex() == Sex.FEMALE;
         AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(this.animal));
         AgeStage stage = AgeController.stage(this.animal, value);
@@ -271,8 +286,8 @@ public class InspectorScreen extends Screen {
                 InspectorSheet.scaleText(value.scale()),
                 value.familiarity(),
                 Familiarity.percent(value.familiarity()),
-                Familiarity.feedReady(value.lastFedTick(), now),
-                InspectorSheet.feedText(value.lastFedTick(), now),
+                Familiarity.feedReady(value.lastFedTick(), clock),
+                InspectorSheet.feedText(value.lastFedTick(), clock),
                 Growth.percent(value.growthTicks()),
                 Growth.clock(value.growthTicks()),
                 value.weight(),
@@ -281,6 +296,7 @@ public class InspectorScreen extends Screen {
                 maxHealth,
                 fertility,
                 Familiarity.percent(fertility),
+                MilkActions.status(this.animal, value, now, clock).map(InspectorSheet::milkText).orElse(""),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current))).orElse(""),

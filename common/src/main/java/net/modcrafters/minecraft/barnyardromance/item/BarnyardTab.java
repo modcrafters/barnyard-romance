@@ -37,7 +37,9 @@ public final class BarnyardTab {
                 HerdStick.create(HerdTool.pregnancy(1)),
                 HerdStick.create(HerdTool.pregnancy(-1)),
                 new ItemStack(BarnyardItems.BREEDERS_MASH),
-                new ItemStack(BarnyardItems.GOLDEN_BRAN)
+                new ItemStack(BarnyardItems.GOLDEN_BRAN),
+                new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET),
+                new ItemStack(BarnyardItems.GOAT_MILK_BUCKET)
         );
     }
 }

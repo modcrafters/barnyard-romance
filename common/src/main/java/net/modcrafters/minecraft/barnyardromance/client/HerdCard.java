@@ -104,7 +104,7 @@ public final class HerdCard {
         bar(graphics, textX + 11, rowY + 2, HerdCardLayout.BAR_WIDTH, 6, traits.familiarity(), FAMILIAR);
         rowY += 12;
         mark(graphics, textX, rowY, FEED_MARK, FEED);
-        bar(graphics, textX + 11, rowY + 1, HerdCardLayout.BAR_WIDTH, 6, Familiarity.feedReady(traits.lastFedTick(), gameTime), FEED);
+        bar(graphics, textX + 11, rowY + 1, HerdCardLayout.BAR_WIDTH, 6, Familiarity.feedReady(traits.lastFedTick(), animal.level().getOverworldClockTime()), FEED);
         int heartsY = y + height - HerdCardLayout.PAD - HerdCardLayout.heartRows(HerdCardLayout.hearts(animal.getMaxHealth())) * 10;
         hearts(graphics, x + HerdCardLayout.PAD, heartsY, animal.getHealth(), animal.getMaxHealth());
     }

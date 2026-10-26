@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -59,18 +60,22 @@ public class InspectorClientGameTest implements FabricClientGameTest {
                     traits -> traits.withBornTick(now - 30_000L), false);
             inspect(context, world, "inspector_old_cow", Sex.FEMALE, false,
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
+            inspect(context, world, "inspector_milking_cow", Sex.FEMALE, false,
+                    traits -> traits.withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)), false);
             oldHearts(context, world, now);
             superfoods(context, world);
             creativeTab(context, world);
         }
     }
 
-    // The superfood textures in the hotbar, to catch a missing texture.
+    // The superfood and milk bucket textures in the hotbar, to catch a missing texture.
     private static void superfoods(ClientGameTestContext context, TestSingleplayerContext world) {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
             player.getInventory().setItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH, 2));
             player.getInventory().setItem(1, new ItemStack(BarnyardItems.GOLDEN_BRAN, 2));
+            player.getInventory().setItem(2, new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET));
+            player.getInventory().setItem(3, new ItemStack(BarnyardItems.GOAT_MILK_BUCKET));
         });
         world.getConnection().waitForClientboundPackets();
         context.waitTicks(5);

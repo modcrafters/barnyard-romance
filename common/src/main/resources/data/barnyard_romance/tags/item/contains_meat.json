@@ -2,21 +2,13 @@
   "replace": false,
   "values": [
     "#minecraft:meat",
-    "#minecraft:fishes",
+    "#barnyard_romance:contains_fish",
     {
       "id": "#c:foods/raw_meat",
       "required": false
     },
     {
       "id": "#c:foods/cooked_meat",
-      "required": false
-    },
-    {
-      "id": "#c:foods/raw_fish",
-      "required": false
-    },
-    {
-      "id": "#c:foods/cooked_fish",
       "required": false
     },
     "minecraft:rabbit_stew"
