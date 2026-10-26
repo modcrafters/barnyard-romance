@@ -1,6 +1,6 @@
 # Barnyard Romance: Roadmap
 
-> **Active plan:** [`docs/superpowers/plans/2026-10-24-live-birth-roadmap.md`](superpowers/plans/2026-10-24-live-birth-roadmap.md) covers the remaining work for live-birth animals in stages. Stages 1 and 2 are done. Stages 3–8 are outlined; each gets a detailed plan when it starts.
+> **Active plan:** [`docs/superpowers/plans/2026-10-24-live-birth-roadmap.md`](superpowers/plans/2026-10-24-live-birth-roadmap.md) covers the remaining work for live-birth animals in stages. Stages 1–3 are done. Stages 4–8 are outlined; each gets a detailed plan when it starts.
 
 ## Done
 
@@ -36,13 +36,17 @@ Plan: [`2026-10-25-live-birth-stage-2.md`](superpowers/plans/2026-10-25-live-bir
 - [x] Inspector: weight meter, a fertility meter for adult females, and "Worn out" under breeding.
 - [x] Old worlds: missing weight is 0.5, missing fertility is 1.0.
 
-## Next
-
 ### Stage 3: Age stages
-- [ ] `bornTick` trait; unknown (-1) counts as adult.
-- [ ] Baby, young (can't breed yet), adult, old.
-- [ ] Old age lowers fertility recovery and product yield; nothing dies of old age.
-- [ ] Inspector shows the stage word.
+Plan: [`2026-10-25-live-birth-stage-3.md`](superpowers/plans/2026-10-25-live-birth-stage-3.md)
+
+- [x] `bornTick` trait; unknown (-1) counts as adult forever and never dies.
+- [x] Baby, young (can't breed yet), adult, old; `youngTicks`, `oldAfterTicks` and `deathAfterTicks` globally and per species.
+- [x] Old age halves fertility recovery (`oldFertilityFactor`).
+- [x] Animals die of old age after `deathAfterTicks` (default 60 days, ±10%; 0 turns it off), with their own `old_age` damage type.
+- [x] Faint, rare dark hearts float over old animals.
+- [x] Inspector shows the stage word, and "Too young" under breeding.
+
+## Next
 
 ### Stage 4: Data-driven foods and superfoods
 - [ ] Datapack food files: species, items, and effects (familiarity, heal, horse temper, pregnancy speed and progress, baby improvement, bad food).
@@ -52,7 +56,7 @@ Plan: [`2026-10-25-live-birth-stage-2.md`](superpowers/plans/2026-10-25-live-bir
 
 ### Stage 5: Products
 - [ ] Lactation: milk only after a birth, drying up after three unmilked days once the young are grown; males never give milk.
-- [ ] Drops scale with sex, size, and age for meat, leather, wool, and rabbit hide.
+- [ ] Drops scale with sex, size, and age for meat, leather, wool, and rabbit hide (old age adds `oldYieldFactor`, moved here from Stage 3).
 - [ ] Inspector shows "Milk: 2d left".
 
 ### Stage 6: Pregnancy belly

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.config;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -22,6 +23,7 @@ public final class BarnyardConfig {
     private static final Range DEFAULT_LITTER = new Range(1L, 1L);
     private static final long MAX_PREGNANCY_TICKS = 480_000L;
     private static final long MAX_LITTER_SIZE = 8L;
+    private static final long MAX_AGE_TICKS = 24_000_000L;
 
     private static BarnyardConfig current = defaults();
 
@@ -31,6 +33,7 @@ public final class BarnyardConfig {
     private final boolean pregnancyEnabled;
     private final Range pregnancyTicks;
     private final Range litter;
+    private final AgeSettings age;
     private final Map<String, SpeciesSettings> species;
     private final Tuning tuning;
 
@@ -41,6 +44,7 @@ public final class BarnyardConfig {
             boolean pregnancyEnabled,
             Range pregnancyTicks,
             Range litter,
+            AgeSettings age,
             Map<String, SpeciesSettings> species,
             Tuning tuning
     ) {
@@ -50,12 +54,13 @@ public final class BarnyardConfig {
         this.pregnancyEnabled = pregnancyEnabled;
         this.pregnancyTicks = pregnancyTicks;
         this.litter = litter;
+        this.age = age;
         this.species = species;
         this.tuning = tuning;
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, Map.of(), Tuning.DEFAULTS);
+        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, Map.of(), Tuning.DEFAULTS);
     }
 
     public static BarnyardConfig current() {
@@ -98,6 +103,11 @@ public final class BarnyardConfig {
         boolean pregnancyEnabled = bool(object, "pregnancyEnabled", true);
         Range pregnancyTicks = range(object, "pregnancyTicks", DEFAULT_PREGNANCY_TICKS).clamp(1L, MAX_PREGNANCY_TICKS);
         Range litter = range(object, "litterSize", "litterMin", "litterMax", DEFAULT_LITTER).clamp(1L, MAX_LITTER_SIZE);
+        AgeSettings age = new AgeSettings(
+                ageTicks(optionalLong(object, "youngTicks"), AgeSettings.DEFAULTS.youngTicks()),
+                ageTicks(optionalLong(object, "oldAfterTicks"), AgeSettings.DEFAULTS.oldAfterTicks()),
+                ageTicks(optionalLong(object, "deathAfterTicks"), AgeSettings.DEFAULTS.deathAfterTicks())
+        );
         Map<String, SpeciesSettings> species = new LinkedHashMap<>();
         if (object.has("species") && !object.get("species").isJsonNull()) {
             if (!object.get("species").isJsonObject()) {
@@ -117,6 +127,7 @@ public final class BarnyardConfig {
                 pregnancyEnabled,
                 pregnancyTicks,
                 litter,
+                age,
                 Collections.unmodifiableMap(species),
                 object.get("tuning") instanceof JsonObject tuning ? Tuning.from(tuning) : Tuning.DEFAULTS
         );
@@ -142,6 +153,9 @@ public final class BarnyardConfig {
         object.addProperty("pregnancyTicksMax", pregnancyTicks.max());
         object.addProperty("litterMin", litter.min());
         object.addProperty("litterMax", litter.max());
+        object.addProperty("youngTicks", age.youngTicks());
+        object.addProperty("oldAfterTicks", age.oldAfterTicks());
+        object.addProperty("deathAfterTicks", age.deathAfterTicks());
         if (!species.isEmpty()) {
             JsonObject speciesObject = new JsonObject();
             for (Map.Entry<String, SpeciesSettings> entry : species.entrySet()) {
@@ -201,6 +215,19 @@ public final class BarnyardConfig {
                 settings == null || settings.litterMin() == null ? fallback.min() : settings.litterMin(),
                 settings == null || settings.litterMax() == null ? fallback.max() : settings.litterMax()
         ).clamp(1L, MAX_LITTER_SIZE);
+    }
+
+    // The user's species entry, then the global value, for each of the three on its own.
+    public AgeSettings ageFor(String speciesId) {
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings == null) {
+            return age;
+        }
+        return new AgeSettings(
+                ageTicks(settings.youngTicks(), age.youngTicks()),
+                ageTicks(settings.oldAfterTicks(), age.oldAfterTicks()),
+                ageTicks(settings.deathAfterTicks(), age.deathAfterTicks())
+        );
     }
 
     public SizeSettings sizeFor(String speciesId) {
@@ -281,6 +308,10 @@ public final class BarnyardConfig {
         return Math.round(number(object, name, 0.0));
     }
 
+    private static long ageTicks(Long value, long fallback) {
+        return Math.clamp(value == null ? fallback : value, 0L, MAX_AGE_TICKS);
+    }
+
     private static double clamp(double value, double min, double max) {
         return Math.clamp(value, min, max);
     }
@@ -293,7 +324,10 @@ public final class BarnyardConfig {
             Long pregnancyTicksMin,
             Long pregnancyTicksMax,
             Long litterMin,
-            Long litterMax
+            Long litterMax,
+            Long youngTicks,
+            Long oldAfterTicks,
+            Long deathAfterTicks
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -310,7 +344,10 @@ public final class BarnyardConfig {
                     pregnancyTicksMin != null ? pregnancyTicksMin : pregnancyTicks,
                     pregnancyTicksMax != null ? pregnancyTicksMax : pregnancyTicks,
                     litterMin != null ? litterMin : litterSize,
-                    litterMax != null ? litterMax : litterSize
+                    litterMax != null ? litterMax : litterSize,
+                    optionalLong(object, "youngTicks"),
+                    optionalLong(object, "oldAfterTicks"),
+                    optionalLong(object, "deathAfterTicks")
             );
         }
 
@@ -339,6 +376,15 @@ public final class BarnyardConfig {
             }
             if (litterMax != null) {
                 object.addProperty("litterMax", litterMax);
+            }
+            if (youngTicks != null) {
+                object.addProperty("youngTicks", youngTicks);
+            }
+            if (oldAfterTicks != null) {
+                object.addProperty("oldAfterTicks", oldAfterTicks);
+            }
+            if (deathAfterTicks != null) {
+                object.addProperty("deathAfterTicks", deathAfterTicks);
             }
             return object;
         }

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.config;
 
+import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
@@ -152,6 +153,38 @@ class BarnyardConfigTest {
 
         assertFalse(config.pregnancyEnabled());
         assertTrue(config.speciesEnabled("minecraft:cow"));
+    }
+
+    @Test
+    void agesDefaultThenGlobalThenSpecies() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "oldAfterTicks": 500000, "species": { "minecraft:rabbit": { "youngTicks": 12000, "deathAfterTicks": 0 } } }
+                """);
+
+        assertEquals(AgeSettings.DEFAULTS, BarnyardConfig.defaults().ageFor("minecraft:cow"));
+        assertEquals(new AgeSettings(24_000L, 500_000L, 1_440_000L), config.ageFor("minecraft:cow"));
+        assertEquals(new AgeSettings(12_000L, 500_000L, 0L), config.ageFor("minecraft:rabbit"));
+    }
+
+    @Test
+    void badAgesAreClamped() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "youngTicks": -5, "deathAfterTicks": 999999999999, "species": { "minecraft:pig": { "oldAfterTicks": -1 } } }
+                """);
+
+        assertEquals(new AgeSettings(0L, 720_000L, 24_000_000L), config.ageFor("minecraft:cow"));
+        assertEquals(new AgeSettings(0L, 0L, 24_000_000L), config.ageFor("minecraft:pig"));
+    }
+
+    @Test
+    void agesRoundTripThroughTheConfigFileText() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "youngTicks": 100, "species": { "minecraft:pig": { "oldAfterTicks": 200, "deathAfterTicks": 300 } } }
+                """);
+        BarnyardConfig parsed = BarnyardConfig.parse(config.toJson());
+
+        assertEquals(new AgeSettings(100L, 720_000L, 1_440_000L), parsed.ageFor("minecraft:cow"));
+        assertEquals(new AgeSettings(100L, 200L, 300L), parsed.ageFor("minecraft:pig"));
     }
 
     @Test

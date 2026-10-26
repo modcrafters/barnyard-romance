@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.inspect;
 
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 
@@ -39,6 +40,7 @@ public record InspectorSheet(
     public static final String NOT_TAMED = "Not tamed";
     public static final String IN_LOVE = "In love";
     public static final String WORN_OUT = "Worn out";
+    public static final String TOO_YOUNG = "Too young";
 
     public static InspectorSheet unknown(String name, String typeName, boolean named, boolean baby, float health, float maxHealth) {
         return new InspectorSheet(
@@ -47,7 +49,7 @@ public record InspectorSheet(
                 false,
                 false,
                 "",
-                baby ? "Baby" : "Adult",
+                (baby ? AgeStage.BABY : AgeStage.ADULT).label(),
                 "",
                 0.0,
                 "",
@@ -110,12 +112,24 @@ public record InspectorSheet(
     }
 
     // Love and rest are stored as the game tick they end, so they expire on the client without a new sync.
-    public static String breeding(boolean needsTaming, boolean tamed, double familiarity, boolean wornOut, long loveUntil, long cooldownUntil, long now) {
+    public static String breeding(
+            boolean needsTaming,
+            boolean tamed,
+            double familiarity,
+            boolean young,
+            boolean wornOut,
+            long loveUntil,
+            long cooldownUntil,
+            long now
+    ) {
         if (needsTaming && !tamed) {
             return NOT_TAMED;
         }
         if (!Familiarity.ready(familiarity)) {
             return "Needs " + Familiarity.percent(Familiarity.threshold()) + " familiarity";
+        }
+        if (young) {
+            return TOO_YOUNG;
         }
         if (cooldownUntil > now) {
             return "Resting " + Growth.clock((int) Math.min(cooldownUntil - now, Integer.MAX_VALUE));
@@ -165,12 +179,12 @@ public record InspectorSheet(
     }
 
     public boolean showBreeding() {
-        return known && (pregnant || "Adult".equals(life));
+        return known && (pregnant || !AgeStage.BABY.label().equals(life));
     }
 
-    // Fathers never wear out, so only adult females show fertility.
+    // Fathers never wear out, and the young haven't bred yet, so only adult and old females show fertility.
     public boolean showFertility() {
-        return known && female && "Adult".equals(life);
+        return known && female && (AgeStage.ADULT.label().equals(life) || AgeStage.OLD.label().equals(life));
     }
 
     public List<InspectorRow> rows() {

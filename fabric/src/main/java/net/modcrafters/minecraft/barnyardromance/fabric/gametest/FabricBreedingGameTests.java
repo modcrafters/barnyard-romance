@@ -47,4 +47,19 @@ public class FabricBreedingGameTests {
     public void aBirthCostsTheMotherFertility(GameTestHelper helper) {
         BreedingGameTests.aBirthCostsTheMotherFertility(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void youngAnimalsDoNotFallInLove(GameTestHelper helper) {
+        BreedingGameTests.youngAnimalsDoNotFallInLove(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void oldAnimalsDieOfOldAge(GameTestHelper helper) {
+        BreedingGameTests.oldAnimalsDieOfOldAge(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void animalsOfUnknownAgeNeverDie(GameTestHelper helper) {
+        BreedingGameTests.animalsOfUnknownAgeNeverDie(helper);
+    }
 }

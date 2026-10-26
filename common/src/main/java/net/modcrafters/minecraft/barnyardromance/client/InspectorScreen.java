@@ -1,6 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow;
@@ -241,12 +244,15 @@ public class InspectorScreen extends Screen {
         boolean needsTaming = this.animal instanceof AbstractHorse;
         boolean tamed = this.animal instanceof AbstractHorse horse && horse.isTamed();
         boolean female = value.sex() == Sex.FEMALE;
-        double fertility = Fertility.current(value, now);
+        AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(this.animal));
+        AgeStage stage = AgeController.stage(this.animal, value);
+        double fertility = Fertility.current(value, age, now);
         String breeding = InspectorSheet.breeding(
                 needsTaming,
                 tamed,
                 value.familiarity(),
-                female && Fertility.wornOut(value, now),
+                stage == AgeStage.YOUNG,
+                female && Fertility.wornOut(value, age, now),
                 value.loveUntil(),
                 value.cooldownUntil(),
                 now
@@ -261,7 +267,7 @@ public class InspectorScreen extends Screen {
                 true,
                 female,
                 SizeClass.of(value.sex(), value.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(this.animal))).name(),
-                this.animal.isBaby() ? "Baby" : "Adult",
+                stage.label(),
                 InspectorSheet.scaleText(value.scale()),
                 value.familiarity(),
                 Familiarity.percent(value.familiarity()),

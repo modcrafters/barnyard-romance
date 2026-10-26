@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.fabric.client;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
@@ -15,6 +16,10 @@ public class BarnyardRomanceFabricClient implements ClientModInitializer {
         ParticleProviderRegistry.getInstance().register(
                 BarnyardParticles.PREGNANCY_HEART,
                 PregnancyHeartParticle.Provider::new
+        );
+        ParticleProviderRegistry.getInstance().register(
+                BarnyardParticles.OLD_HEART,
+                OldHeartParticle.Provider::new
         );
         HudElementRegistry.addLast(
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "animal_tooltip"),

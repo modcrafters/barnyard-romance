@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -21,10 +23,10 @@ public final class AnimalInfoText {
             String speciesId,
             Optional<AnimalTraits> traits,
             double attributeScale,
-            boolean baby,
+            AgeStage stage,
             SizeSettings size
     ) {
-        return format(name, speciesId, traits, attributeScale, baby, Optional.empty(), size, 0L);
+        return format(name, speciesId, traits, attributeScale, stage, Optional.empty(), size, 0L);
     }
 
     public static String format(
@@ -32,12 +34,12 @@ public final class AnimalInfoText {
             String speciesId,
             Optional<AnimalTraits> traits,
             double attributeScale,
-            boolean baby,
+            AgeStage stage,
             Optional<String> pregnancyLine,
             SizeSettings size,
             long now
     ) {
-        String life = baby ? "baby" : "adult";
+        String life = stage.label().toLowerCase(Locale.ROOT);
         String attribute = formatScale(attributeScale);
         String text;
         if (traits.isEmpty()) {
@@ -52,7 +54,7 @@ public final class AnimalInfoText {
                     + ", growth " + Growth.clock(value.growthTicks())
                     + ", weight " + Familiarity.percent(value.weight());
             if (value.sex() == Sex.FEMALE) {
-                text += ", fertility " + Familiarity.percent(Fertility.current(value, now));
+                text += ", fertility " + Familiarity.percent(Fertility.current(value, BarnyardConfig.current().ageFor(speciesId), now));
             }
         }
         if (pregnancyLine.isEmpty()) {
@@ -61,14 +63,14 @@ public final class AnimalInfoText {
         return text + ", " + pregnancyLine.get();
     }
 
-    public static List<String> hoverLines(String name, Optional<AnimalTraits> traits, boolean baby, SizeSettings size) {
-        return hoverLines(name, traits, baby, Optional.empty(), size);
+    public static List<String> hoverLines(String name, Optional<AnimalTraits> traits, AgeStage stage, SizeSettings size) {
+        return hoverLines(name, traits, stage, Optional.empty(), size);
     }
 
     public static List<String> hoverLines(
             String name,
             Optional<AnimalTraits> traits,
-            boolean baby,
+            AgeStage stage,
             Optional<String> pregnancyLine,
             SizeSettings size
     ) {
@@ -76,7 +78,7 @@ public final class AnimalInfoText {
             return List.of();
         }
         AnimalTraits value = traits.get();
-        String life = baby ? "baby" : "adult";
+        String life = stage.label().toLowerCase(Locale.ROOT);
         String detail = label(value, size) + ", " + life + ", growth " + Growth.clock(value.growthTicks());
         if (pregnancyLine.isEmpty()) {
             return List.of(name, detail);

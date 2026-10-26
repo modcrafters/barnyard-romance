@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -109,7 +110,8 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return true;
         }
-        return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent());
+        return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent())
+                && AgeController.allowsLove(animal);
     }
 
     public static boolean deniesProduct(Animal animal, ItemStack stack) {

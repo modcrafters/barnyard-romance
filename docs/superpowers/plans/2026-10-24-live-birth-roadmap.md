@@ -272,6 +272,8 @@ git commit -m "Move tuning into config, add litter and pregnancy ranges, sync lo
 
 ## Stage 3: Age stages (#11)
 
+> **Done** in [`2026-10-25-live-birth-stage-3.md`](2026-10-25-live-birth-stage-3.md). The user changed two things: animals now die of old age after `deathAfterTicks`, and faint dark hearts float over old animals. `oldYieldFactor` moved to Stage 5.
+
 - **Birth tick:** a `bornTick` trait. For old worlds and wild spawns it is unknown (-1), and those animals count as adults.
 - **The four stages:**
   - Baby is vanilla's baby state.

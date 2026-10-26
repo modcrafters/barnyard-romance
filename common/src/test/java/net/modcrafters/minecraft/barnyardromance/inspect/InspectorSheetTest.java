@@ -43,6 +43,8 @@ class InspectorSheetTest {
         assertTrue(sheet(true, "Adult", false, "", "").showBreeding());
         assertTrue(sheet(false, "Adult", false, "", "").showBreeding());
         assertFalse(sheet(true, "Baby", false, "", "").showBreeding());
+        assertTrue(sheet(true, "Young", false, "", "").showBreeding());
+        assertTrue(sheet(false, "Old", false, "", "").showBreeding());
     }
 
     @Test
@@ -53,11 +55,11 @@ class InspectorSheetTest {
 
     @Test
     void breedingSaysWhatIsMissing() {
-        assertEquals(InspectorSheet.NOT_TAMED, InspectorSheet.breeding(true, false, 1.0, false, -1, -1, 0));
-        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(true, true, 0.2, false, -1, -1, 0));
-        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0, false, -1, -1, 0));
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 0.3, false, -1, -1, 0));
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(true, true, 1.0, false, -1, -1, 0));
+        assertEquals(InspectorSheet.NOT_TAMED, InspectorSheet.breeding(true, false, 1.0, false, false, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(true, true, 0.2, false, false, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0, false, false, -1, -1, 0));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 0.3, false, false, -1, -1, 0));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(true, true, 1.0, false, false, -1, -1, 0));
     }
 
     @Test
@@ -79,14 +81,14 @@ class InspectorSheetTest {
 
     @Test
     void breedingShowsRestAndLove() {
-        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, -1, 1200, 0));
-        assertEquals(InspectorSheet.IN_LOVE, InspectorSheet.breeding(false, false, 1.0, false, 600, -1, 0));
-        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, 600, 1200, 0));
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, false, -1, 1200, 0));
+        assertEquals(InspectorSheet.IN_LOVE, InspectorSheet.breeding(false, false, 1.0, false, false, 600, -1, 0));
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, false, 600, 1200, 0));
     }
 
     @Test
     void breedingStatusExpiresWithTheClock() {
-        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 1.0, false, 600, 1200, 1200));
+        assertEquals(InspectorSheet.READY, InspectorSheet.breeding(false, false, 1.0, false, false, 600, 1200, 1200));
     }
 
     @Test
@@ -99,18 +101,28 @@ class InspectorSheetTest {
 
     @Test
     void aWornOutMotherSaysSo() {
-        assertEquals(InspectorSheet.WORN_OUT, InspectorSheet.breeding(false, false, 1.0, true, -1, -1, 0));
+        assertEquals(InspectorSheet.WORN_OUT, InspectorSheet.breeding(false, false, 1.0, false, true, -1, -1, 0));
         assertFalse(InspectorSheet.readyToBreed(InspectorSheet.WORN_OUT));
     }
 
     @Test
-    void restingWinsOverWornOut() {
-        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, true, -1, 1200, 0));
+    void aYoungAnimalIsTooYoungOnceItIsFamiliarEnough() {
+        assertEquals(InspectorSheet.TOO_YOUNG, InspectorSheet.breeding(false, false, 1.0, true, false, -1, -1, 0));
+        assertEquals("Needs 30% familiarity", InspectorSheet.breeding(false, false, 0.0, true, false, -1, -1, 0));
+        assertEquals(InspectorSheet.TOO_YOUNG, InspectorSheet.breeding(false, false, 1.0, true, false, 600, 1200, 0));
+        assertFalse(InspectorSheet.readyToBreed(InspectorSheet.TOO_YOUNG));
     }
 
     @Test
-    void fertilityIsShownForAdultFemalesOnly() {
+    void restingWinsOverWornOut() {
+        assertEquals("Resting 1m 0s", InspectorSheet.breeding(false, false, 1.0, false, true, -1, 1200, 0));
+    }
+
+    @Test
+    void fertilityIsShownForAdultAndOldFemalesOnly() {
         assertTrue(sheet(true, "Adult", false, "", "").showFertility());
+        assertTrue(sheet(true, "Old", false, "", "").showFertility());
+        assertFalse(sheet(true, "Young", false, "", "").showFertility());
         assertFalse(sheet(false, "Adult", false, "", "").showFertility());
         assertFalse(sheet(true, "Baby", false, "", "").showFertility());
     }

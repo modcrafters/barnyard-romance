@@ -1,6 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -8,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
@@ -31,7 +35,10 @@ public final class BreedingGameTests {
             new Case("hurting_an_animal_ends_its_love", 20, BreedingGameTests::hurtingAnAnimalEndsItsLove),
             new Case("pigs_in_love_breed_on_their_own", 400, BreedingGameTests::pigsInLoveBreedOnTheirOwn),
             new Case("worn_out_mothers_rest_without_conceiving", 20, BreedingGameTests::wornOutMothersRestWithoutConceiving),
-            new Case("a_birth_costs_the_mother_fertility", 200, BreedingGameTests::aBirthCostsTheMotherFertility)
+            new Case("a_birth_costs_the_mother_fertility", 200, BreedingGameTests::aBirthCostsTheMotherFertility),
+            new Case("young_animals_do_not_fall_in_love", 20, BreedingGameTests::youngAnimalsDoNotFallInLove),
+            new Case("old_animals_die_of_old_age", 20, BreedingGameTests::oldAnimalsDieOfOldAge),
+            new Case("animals_of_unknown_age_never_die", 20, BreedingGameTests::animalsOfUnknownAgeNeverDie)
     );
 
     private BreedingGameTests() {
@@ -171,8 +178,48 @@ public final class BreedingGameTests {
                 AnimalTraits child = traits(helper, baby);
                 helper.assertTrue(child.fertility() == 1.0, "a piglet was born with fertility " + child.fertility());
                 helper.assertTrue(child.weight() >= 0.0 && child.weight() <= 1.0, "a piglet was born with weight " + child.weight());
+                helper.assertTrue(child.bornTick() >= now, "a piglet was born with birth tick " + child.bornTick());
             }
         });
+    }
+
+    // Born this tick and already grown (spawned as an adult), so it is young for its growth time plus a day.
+    public static void youngAnimalsDoNotFallInLove(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, traits(helper, cow).withBornTick(helper.getLevel().getGameTime()));
+        helper.assertTrue(AgeController.stage(cow) == AgeStage.YOUNG, "the cow is " + AgeController.stage(cow) + ", not young");
+
+        cow.setInLove(null);
+
+        helper.assertTrue(!cow.isInLove(), "a young cow fell in love");
+        helper.assertTrue(traits(helper, cow).loveUntil() < 0L, "love was recorded on a young cow");
+        helper.succeed();
+    }
+
+    // The game clock is only a few ticks in, so the check is asked about a tick far ahead instead of waiting.
+    public static void oldAnimalsDieOfOldAge(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        long now = helper.getLevel().getGameTime();
+        Services.DATA.set(cow, traits(helper, cow).withBornTick(now));
+        long deathAfter = AgeSettings.DEFAULTS.deathAfterTicks();
+
+        helper.assertTrue(!AgeController.checkDeath(cow, helper.getLevel(), now + deathAfter / 2), "a middle-aged cow died");
+        helper.assertTrue(cow.isAlive(), "a middle-aged cow is dead");
+
+        helper.assertTrue(AgeController.checkDeath(cow, helper.getLevel(), now + deathAfter * 2), "an ancient cow did not die");
+        helper.assertTrue(!cow.isAlive(), "an ancient cow is still alive");
+        DamageSource cause = cow.getLastDamageSource();
+        helper.assertTrue(cause != null && cause.is(AgeController.OLD_AGE), "the cow died of " + cause + ", not old age");
+        helper.succeed();
+    }
+
+    public static void animalsOfUnknownAgeNeverDie(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        helper.assertTrue(traits(helper, cow).bornTick() < 0L, "a test cow has a birth tick");
+
+        helper.assertTrue(!AgeController.checkDeath(cow, helper.getLevel(), Long.MAX_VALUE / 2), "a cow of unknown age died");
+        helper.assertTrue(cow.isAlive(), "a cow of unknown age is dead");
+        helper.succeed();
     }
 
     public static Animal female(GameTestHelper helper, EntityType<? extends Animal> type) {

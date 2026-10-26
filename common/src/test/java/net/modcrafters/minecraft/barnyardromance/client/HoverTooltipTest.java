@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
@@ -20,7 +21,7 @@ class HoverTooltipTest {
         List<String> lines = AnimalInfoText.hoverLines(
                 "Cow",
                 Optional.of(new AnimalTraits(Sex.FEMALE, 0.90)),
-                false,
+                AgeStage.ADULT,
                 size
         );
 
@@ -32,7 +33,7 @@ class HoverTooltipTest {
         List<String> lines = AnimalInfoText.hoverLines(
                 "Pig",
                 Optional.of(new AnimalTraits(Sex.MALE, 1.12)),
-                true,
+                AgeStage.BABY,
                 size
         );
 
@@ -41,7 +42,7 @@ class HoverTooltipTest {
 
     @Test
     void anAnimalWithoutASexShowsNothing() {
-        assertTrue(AnimalInfoText.hoverLines("Sheep", Optional.empty(), false, size).isEmpty());
+        assertTrue(AnimalInfoText.hoverLines("Sheep", Optional.empty(), AgeStage.ADULT, size).isEmpty());
     }
 
     @Test
