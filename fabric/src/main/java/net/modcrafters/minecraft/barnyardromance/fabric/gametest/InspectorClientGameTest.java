@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -18,6 +19,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ServerLevelData;
 
 import java.util.UUID;
@@ -54,7 +56,20 @@ public class InspectorClientGameTest implements FabricClientGameTest {
             inspect(context, world, "inspector_old_cow", Sex.FEMALE, false,
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
             oldHearts(context, world, now);
+            superfoods(context, world);
         }
+    }
+
+    // The superfood textures in the hotbar, to catch a missing texture.
+    private static void superfoods(ClientGameTestContext context, TestSingleplayerContext world) {
+        world.getServer().runOnServer(server -> {
+            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            player.getInventory().setItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH, 2));
+            player.getInventory().setItem(1, new ItemStack(BarnyardItems.GOLDEN_BRAN, 2));
+        });
+        world.getConnection().waitForClientboundPackets();
+        context.waitTicks(5);
+        context.takeScreenshot("superfoods_hotbar");
     }
 
     // Old hearts are random and rare, so a few are spawned by hand to see how they look.

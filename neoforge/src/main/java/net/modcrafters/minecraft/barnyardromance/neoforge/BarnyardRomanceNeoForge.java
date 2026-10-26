@@ -20,6 +20,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -29,6 +30,7 @@ public class BarnyardRomanceNeoForge {
     public BarnyardRomanceNeoForge(IEventBus modBus) {
         NeoForgeAnimalData.ATTACHMENT_TYPES.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
+        modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         NeoForgeBreedingGameTests.register(modBus);
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
             BarnyardRomanceNeoForgeClient.register(modBus);
@@ -47,6 +49,8 @@ public class BarnyardRomanceNeoForge {
         );
         event.register(Registries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), () -> BarnyardItems.HERD_STICK);
         event.register(Registries.ITEM, BarnyardItems.INSPECTOR_ID.identifier(), () -> BarnyardItems.INSPECTOR);
+        event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);
+        event.register(Registries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), () -> BarnyardItems.GOLDEN_BRAN);
         event.register(
                 Registries.PARTICLE_TYPE,
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pregnancy_heart"),
@@ -57,6 +61,13 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
                 () -> BarnyardParticles.OLD_HEART
         );
+    }
+
+    private static void addToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == BarnyardItems.FOOD_AND_DRINKS) {
+            event.accept(BarnyardItems.BREEDERS_MASH);
+            event.accept(BarnyardItems.GOLDEN_BRAN);
+        }
     }
 
     private static void onEntityJoin(EntityJoinLevelEvent event) {

@@ -51,4 +51,24 @@ public class FabricFoodGameTests {
     public void pregnancyCareSavesAndSyncs(GameTestHelper helper) {
         FoodGameTests.pregnancyCareSavesAndSyncs(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void breedersMashSpeedsAPregnancy(GameTestHelper helper) {
+        FoodGameTests.breedersMashSpeedsAPregnancy(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void goldenBranFeedsTheLitter(GameTestHelper helper) {
+        FoodGameTests.goldenBranFeedsTheLitter(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void superfoodsNeedAPregnantMother(GameTestHelper helper) {
+        FoodGameTests.superfoodsNeedAPregnantMother(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void superfoodRecipesLoad(GameTestHelper helper) {
+        FoodGameTests.superfoodRecipesLoad(helper);
+    }
 }

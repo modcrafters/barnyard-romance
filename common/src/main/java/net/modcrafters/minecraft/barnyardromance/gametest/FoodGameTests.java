@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
@@ -15,6 +16,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 
 import java.util.List;
@@ -42,7 +45,11 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("hurt_animals_heal_from_food_any_time", 20, FoodGameTests::hurtAnimalsHealFromFoodAnyTime),
             new BreedingGameTests.Case("horses_heal_like_vanilla", 20, FoodGameTests::horsesHealLikeVanilla),
             new BreedingGameTests.Case("old_pregnancy_loads_without_care", 20, FoodGameTests::oldPregnancyLoadsWithoutCare),
-            new BreedingGameTests.Case("pregnancy_care_saves_and_syncs", 20, FoodGameTests::pregnancyCareSavesAndSyncs)
+            new BreedingGameTests.Case("pregnancy_care_saves_and_syncs", 20, FoodGameTests::pregnancyCareSavesAndSyncs),
+            new BreedingGameTests.Case("breeders_mash_speeds_a_pregnancy", 20, FoodGameTests::breedersMashSpeedsAPregnancy),
+            new BreedingGameTests.Case("golden_bran_feeds_the_litter", 20, FoodGameTests::goldenBranFeedsTheLitter),
+            new BreedingGameTests.Case("superfoods_need_a_pregnant_mother", 20, FoodGameTests::superfoodsNeedAPregnantMother),
+            new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad)
     );
 
     private FoodGameTests() {
@@ -165,5 +172,57 @@ public final class FoodGameTests {
         helper.assertTrue(saved.care().equals(care), "saved care came back as " + saved.care());
         helper.assertTrue(synced.care().equals(care), "synced care came back as " + synced.care());
         helper.succeed();
+    }
+
+    public static void breedersMashSpeedsAPregnancy(GameTestHelper helper) {
+        Animal cow = pregnantCow(helper, 0.5);
+        Player player = holding(helper, BarnyardItems.BREEDERS_MASH);
+        player.getMainHandItem().setCount(2);
+        long now = helper.getLevel().getGameTime();
+
+        InteractionResult first = FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
+        InteractionResult second = FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
+
+        PregnancyCare care = BreedingGameTests.pregnancy(helper, cow).care();
+        helper.assertTrue(first == InteractionResult.SUCCESS_SERVER, "the first mash gave " + first);
+        helper.assertTrue(care.boosting(now) && care.boostFactor() == 2.0, "the mash did not boost the pregnancy: " + care);
+        helper.assertTrue(second == InteractionResult.CONSUME, "the second mash gave " + second);
+        helper.assertTrue(player.getMainHandItem().getCount() == 1, "the second mash was eaten");
+        helper.succeed();
+    }
+
+    public static void goldenBranFeedsTheLitter(GameTestHelper helper) {
+        Animal cow = pregnantCow(helper, 0.5);
+
+        FamiliarityActions.interact(cow, holding(helper, BarnyardItems.GOLDEN_BRAN), InteractionHand.MAIN_HAND);
+
+        double bonus = BreedingGameTests.pregnancy(helper, cow).care().nutritionBonus();
+        helper.assertTrue(Math.abs(bonus - 0.25) < 1.0e-9, "golden bran gave a nutrition bonus of " + bonus);
+        helper.succeed();
+    }
+
+    public static void superfoodsNeedAPregnantMother(GameTestHelper helper) {
+        Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
+        Player player = holding(helper, BarnyardItems.BREEDERS_MASH);
+
+        InteractionResult result = FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(result == InteractionResult.CONSUME, "mash for a bull gave " + result);
+        helper.assertTrue(player.getMainHandItem().getCount() == 1, "the bull ate the mash");
+        helper.succeed();
+    }
+
+    public static void superfoodRecipesLoad(GameTestHelper helper) {
+        for (String name : List.of("breeders_mash", "golden_bran")) {
+            ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, name));
+            helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(key).isPresent(), "the " + name + " recipe is missing");
+        }
+        helper.succeed();
+    }
+
+    static Animal pregnantCow(GameTestHelper helper, double motherFamiliarity) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        Services.DATA.setPregnancy(cow, new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:cow", 1.0, 1, motherFamiliarity));
+        return cow;
     }
 }
