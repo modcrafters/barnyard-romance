@@ -230,6 +230,12 @@ public final class BarnyardConfig {
         );
     }
 
+    // The diet the user picked for this species, or null to use the diet that lists it.
+    public String dietOverride(String speciesId) {
+        SpeciesSettings settings = species.get(speciesId);
+        return settings == null ? null : settings.diet();
+    }
+
     public SizeSettings sizeFor(String speciesId) {
         SpeciesSettings settings = species.get(speciesId);
         if (settings == null) {
@@ -308,6 +314,16 @@ public final class BarnyardConfig {
         return Math.round(number(object, name, 0.0));
     }
 
+    private static String optionalString(JsonObject object, String name) {
+        if (!object.has(name) || object.get(name).isJsonNull()) {
+            return null;
+        }
+        if (!object.get(name).isJsonPrimitive() || !object.get(name).getAsJsonPrimitive().isString()) {
+            throw new IllegalArgumentException(name + " must be a string");
+        }
+        return object.get(name).getAsString();
+    }
+
     private static long ageTicks(Long value, long fallback) {
         return Math.clamp(value == null ? fallback : value, 0L, MAX_AGE_TICKS);
     }
@@ -327,7 +343,8 @@ public final class BarnyardConfig {
             Long litterMax,
             Long youngTicks,
             Long oldAfterTicks,
-            Long deathAfterTicks
+            Long deathAfterTicks,
+            String diet
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -347,7 +364,8 @@ public final class BarnyardConfig {
                     litterMax != null ? litterMax : litterSize,
                     optionalLong(object, "youngTicks"),
                     optionalLong(object, "oldAfterTicks"),
-                    optionalLong(object, "deathAfterTicks")
+                    optionalLong(object, "deathAfterTicks"),
+                    optionalString(object, "diet")
             );
         }
 
@@ -385,6 +403,9 @@ public final class BarnyardConfig {
             }
             if (deathAfterTicks != null) {
                 object.addProperty("deathAfterTicks", deathAfterTicks);
+            }
+            if (diet != null) {
+                object.addProperty("diet", diet);
             }
             return object;
         }

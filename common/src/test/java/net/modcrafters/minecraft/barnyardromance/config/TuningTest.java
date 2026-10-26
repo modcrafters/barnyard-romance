@@ -8,7 +8,7 @@ class TuningTest {
     @Test
     void defaultsMatchTodaysBehaviour() {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
-        assertEquals(new Tuning(0.2, 0.3, 24_000L, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1), Tuning.DEFAULTS);
+        assertEquals(new Tuning(0.2, 0.3, 24_000L, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0), Tuning.DEFAULTS);
     }
 
     @Test
@@ -26,7 +26,7 @@ class TuningTest {
         Tuning tuning = BarnyardConfig.parse("""
                 { "tuning": { "familiarityGain": 7, "growthFastTicks": 40000, "growthSlowTicks": 10000,
                   "fertilityCostPerBirth": -1, "fertilityRecoveryPerDay": 4, "fertilityMinToConceive": 2,
-                  "oldFertilityFactor": 3, "deathSpread": -0.5 } }
+                  "oldFertilityFactor": 3, "deathSpread": -0.5, "foodHealFactor": 2, "foodHealDefault": 99 } }
                 """).tuning();
 
         assertEquals(1.0, tuning.familiarityGain(), 1.0e-9);
@@ -38,6 +38,8 @@ class TuningTest {
         assertEquals(1.0, tuning.fertilityMinToConceive(), 1.0e-9);
         assertEquals(1.0, tuning.oldFertilityFactor(), 1.0e-9);
         assertEquals(0.0, tuning.deathSpread(), 1.0e-9);
+        assertEquals(1.0, tuning.foodHealFactor(), 1.0e-9);
+        assertEquals(20.0, tuning.foodHealDefault(), 1.0e-9);
     }
 
     @Test
