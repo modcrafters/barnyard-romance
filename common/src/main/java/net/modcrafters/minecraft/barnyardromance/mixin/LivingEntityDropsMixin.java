@@ -58,6 +58,8 @@ public class LivingEntityDropsMixin {
                     scale,
                     range.smallest(),
                     range.largest(),
+                    1.0,
+                    animal.getRandom().nextDouble(),
                     animal.getRandom().nextDouble()
             );
             stack.setCount(resized);
