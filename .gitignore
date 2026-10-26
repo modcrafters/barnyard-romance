@@ -1,3 +1,9 @@
+# private agent/design docs live in faceofcat/mod-design
+AGENTS.md
+.agent/
+docs/
+.superpowers/
+.cursor/
 # eclipse
 bin
 *.launch
