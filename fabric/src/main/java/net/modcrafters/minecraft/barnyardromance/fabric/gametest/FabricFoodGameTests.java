@@ -71,4 +71,9 @@ public class FabricFoodGameTests {
     public void superfoodRecipesLoad(GameTestHelper helper) {
         FoodGameTests.superfoodRecipesLoad(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void foodScanReadsRealRecipes(GameTestHelper helper) {
+        FoodGameTests.foodScanReadsRealRecipes(helper);
+    }
 }

@@ -15,6 +15,10 @@ import java.util.OptionalInt;
 public record MinecraftItemFacts(Animal animal, ItemStack stack) implements ItemFacts {
     @Override
     public boolean matches(ItemMatch match) {
+        return matches(stack, match);
+    }
+
+    public static boolean matches(ItemStack stack, ItemMatch match) {
         Identifier id = Identifier.parse(match.id());
         if (match.tag()) {
             return stack.is(TagKey.create(Registries.ITEM, id));

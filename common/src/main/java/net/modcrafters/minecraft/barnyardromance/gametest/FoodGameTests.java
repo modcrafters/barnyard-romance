@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -15,6 +16,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -29,8 +31,14 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 // In-game checks for diets, food files and superfoods, run by each loader's game test server.
 public final class FoodGameTests {
@@ -49,7 +57,8 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("breeders_mash_speeds_a_pregnancy", 20, FoodGameTests::breedersMashSpeedsAPregnancy),
             new BreedingGameTests.Case("golden_bran_feeds_the_litter", 20, FoodGameTests::goldenBranFeedsTheLitter),
             new BreedingGameTests.Case("superfoods_need_a_pregnant_mother", 20, FoodGameTests::superfoodsNeedAPregnantMother),
-            new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad)
+            new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad),
+            new BreedingGameTests.Case("food_scan_reads_real_recipes", 100, FoodGameTests::foodScanReadsRealRecipes)
     );
 
     private FoodGameTests() {
@@ -224,5 +233,34 @@ public final class FoodGameTests {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
         Services.DATA.setPregnancy(cow, new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:cow", 1.0, 1, motherFamiliarity));
         return cow;
+    }
+
+    // The shipped meat tag already holds vanilla's only meat dish, so a test-only sugar group checks real recipes.
+    public static void foodScanReadsRealRecipes(GameTestHelper helper) {
+        try {
+            Path folder = Files.createTempDirectory("barnyard_scan");
+            FoodScanRunner.ScanSummary summary = FoodScanRunner.run(
+                    helper.getLevel().getServer(),
+                    Map.of("barnyard_romance:test_sugar", Set.of("minecraft:sugar")),
+                    folder
+            );
+            Path tag = folder.resolve(FoodScanRunner.PACK).resolve("data/barnyard_romance/tags/item/test_sugar.json");
+            String written = Files.readString(tag);
+
+            helper.assertTrue(summary.recipes() > 1000, "only " + summary.recipes() + " recipes were read");
+            helper.assertTrue(written.contains("minecraft:cake") && written.contains("minecraft:pumpkin_pie"), "the scan missed sweet foods: " + written);
+            helper.assertTrue(!written.contains("\"minecraft:sugar\""), "the scan wrote sugar itself: " + written);
+            helper.assertTrue(!written.contains("minecraft:fermented_spider_eye"), "the scan wrote a non-food: " + written);
+            helper.assertTrue(Files.exists(folder.resolve("report.json")), "no report.json");
+            helper.assertTrue(Files.exists(folder.resolve(FoodScanRunner.PACK).resolve("pack.mcmeta")), "no pack.mcmeta");
+            try (Stream<Path> files = Files.walk(folder)) {
+                for (Path file : files.sorted(Comparator.reverseOrder()).toList()) {
+                    Files.delete(file);
+                }
+            }
+        } catch (IOException exception) {
+            throw helper.assertionException(Component.literal("the scan could not write: " + exception.getMessage()));
+        }
+        helper.succeed();
     }
 }
