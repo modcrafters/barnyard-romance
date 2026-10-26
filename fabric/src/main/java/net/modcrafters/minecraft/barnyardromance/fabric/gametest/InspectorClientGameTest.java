@@ -65,12 +65,14 @@ public class InspectorClientGameTest implements FabricClientGameTest {
         }
     }
 
-    // The superfood textures in the hotbar, to catch a missing texture.
+    // The superfood and milk bucket textures in the hotbar, to catch a missing texture.
     private static void superfoods(ClientGameTestContext context, TestSingleplayerContext world) {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
             player.getInventory().setItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH, 2));
             player.getInventory().setItem(1, new ItemStack(BarnyardItems.GOLDEN_BRAN, 2));
+            player.getInventory().setItem(2, new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET));
+            player.getInventory().setItem(3, new ItemStack(BarnyardItems.GOAT_MILK_BUCKET));
         });
         world.getConnection().waitForClientboundPackets();
         context.waitTicks(5);

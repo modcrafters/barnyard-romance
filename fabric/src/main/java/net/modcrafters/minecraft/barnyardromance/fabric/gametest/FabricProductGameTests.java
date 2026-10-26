@@ -11,4 +11,19 @@ public class FabricProductGameTests {
     public void oldTraitsLoadWithoutLactation(GameTestHelper helper) {
         ProductGameTests.oldTraitsLoadWithoutLactation(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void cakeTakesEveryMilk(GameTestHelper helper) {
+        ProductGameTests.cakeTakesEveryMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void milkBucketsAreInTheCommonTag(GameTestHelper helper) {
+        ProductGameTests.milkBucketsAreInTheCommonTag(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void goatMilkClearsEffects(GameTestHelper helper) {
+        ProductGameTests.goatMilkClearsEffects(helper);
+    }
 }
