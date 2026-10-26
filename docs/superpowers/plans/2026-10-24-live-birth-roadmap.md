@@ -22,7 +22,7 @@
 | # | Request | Stage |
 |---|---|---|
 | 1 | Pregnancy length and litter size are configurable as min–max; a heritable, improvable **weight** trait chooses where in the range an animal lands | 1 (ranges), 2 (weight) |
-| 2 | Data-driven good/bad foods; superfood recipes that speed pregnancy or improve the baby; superfoods only when Pam's HarvestCraft is present | 4 |
+| 2 | Data-driven good/bad foods; superfood recipes that speed pregnancy or improve the baby; superfood recipes from vanilla items, open to mod-pack ingredients | 4 |
 | 3 | A pregnant female gets wider, not taller or longer | 6 |
 | 4 | If a pregnant animal dies, the pregnancy is simply lost | 1 (docs only) |
 | 5 | Fertility and a "worn out" cooldown | 2 |
@@ -302,9 +302,9 @@ git commit -m "Move tuning into config, add litter and pregnancy ranges, sync lo
 - **Vanilla defaults ship in the mod's own data.** The horse family gets back vanilla's healing and temper values from `AbstractHorse.handleEating`, which closes the bypass.
 - **Superfoods:**
   - New items, e.g. a "breeder's mash" and a "golden bran".
-  - Their recipes, and the food entries that use them, sit behind a mod-loaded condition: Fabric `fabric:load_conditions` and NeoForge `neoforge:conditions`, keyed to Pam's HarvestCraft 2 mod ids.
-  - Check the exact ids when this stage starts.
-  - Without Pam's, the items exist but have no recipe, so they're creative/command only.
+  - Their recipes use only vanilla items, through the mod's own item tags (e.g. `barnyard_romance:superfood/grains`). The tags hold vanilla items by default.
+  - Mod packs customize them by adding exotic foods to those tags, or by replacing the recipes and food files in a datapack. No other mod is needed or detected.
+  - Pam's HarvestCraft 2 was dropped (decided 2026-10-26): it is NeoForge-only, with no 26.3 build yet. Its `c:` tags (e.g. `c:crops/alfalfa`) are a good fit for packs to add to our tags.
 - **Fail safe:** if a food file fails to parse, that file is skipped and logged. The rest still load.
 
 ## Stage 5: Products (#9)

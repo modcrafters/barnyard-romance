@@ -51,7 +51,7 @@ Plan: [`2026-10-25-live-birth-stage-3.md`](superpowers/plans/2026-10-25-live-bir
 ### Stage 4: Data-driven foods and superfoods
 - [ ] Datapack food files: species, items, and effects (familiarity, heal, horse temper, pregnancy speed and progress, baby improvement, bad food).
 - [ ] Vanilla defaults in the mod's own data, restoring horse healing and temper.
-- [ ] Superfood items with recipes only when Pam's HarvestCraft 2 is loaded.
+- [ ] Superfood items with vanilla-ingredient recipes built from the mod's own item tags, so mod packs can swap in exotic foods.
 - [ ] A broken food file is skipped and logged; the rest still load.
 
 ### Stage 5: Products
