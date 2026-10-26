@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -31,6 +32,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 
@@ -229,6 +231,11 @@ public final class FoodGameTests {
         for (String name : List.of("breeders_mash", "golden_bran")) {
             ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, name));
             helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(key).isPresent(), "the " + name + " recipe is missing");
+        }
+        // Crafted stacks carry the tooltip too, because it is the item's default lore.
+        for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
+            ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
+            helper.assertTrue(lore != null && lore.lines().size() == 2, item + " has no tooltip");
         }
         helper.succeed();
     }

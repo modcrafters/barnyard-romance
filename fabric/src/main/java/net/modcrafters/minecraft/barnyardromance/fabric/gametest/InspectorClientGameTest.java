@@ -86,6 +86,10 @@ public class InspectorClientGameTest implements FabricClientGameTest {
                 .setSelectedTab(BuiltInRegistries.CREATIVE_MODE_TAB.getValue(BarnyardTab.ID)));
         context.waitTicks(5);
         context.takeScreenshot("creative_tab");
+        // The breeder's mash slot in the tab's first row, at the test window's size.
+        context.getInput().setCursorPos(485.0, 157.0);
+        context.waitTicks(3);
+        context.takeScreenshot("breeders_mash_tooltip");
         context.setScreen(() -> null);
         world.getServer().runCommand("gamemode survival @a");
     }
