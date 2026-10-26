@@ -46,13 +46,19 @@ Plan: [`2026-10-25-live-birth-stage-3.md`](superpowers/plans/2026-10-25-live-bir
 - [x] Faint, rare dark hearts float over old animals.
 - [x] Inspector shows the stage word, and "Too young" under breeding.
 
-## Next
+### Stage 4: Diets, food files and superfoods
+Plan: [`2026-10-26-live-birth-stage-4.md`](superpowers/plans/2026-10-26-live-birth-stage-4.md)
 
-### Stage 4: Data-driven foods and superfoods
-- [ ] Datapack food files: species, items, and effects (familiarity, heal, horse temper, pregnancy speed and progress, baby improvement, bad food).
-- [ ] Vanilla defaults in the mod's own data, restoring horse healing and temper.
-- [ ] Superfood items with vanilla-ingredient recipes built from the mod's own item tags, so mod packs can swap in exotic foods.
-- [ ] A broken food file is skipped and logged; the rest still load.
+- [x] Reusable diet files: the species each one covers, what it eats (with factors) and what it refuses. A species' config entry can pick another diet with `diet`.
+- [x] Datapack food files: species or diets, items, and effects (familiarity, heal, pregnancy speed and progress, baby improvement). A bad food is a negative `pregnancyProgress`.
+- [x] Food heals: half a player food's hunger points, or 1 for other food. Horses, llamas and camels keep vanilla's heal values. A hurt animal eats any time, but then only heals.
+- [x] Animals follow a player holding any food they eat.
+- [x] Breeder's Mash and Golden Bran, with vanilla recipes built from the mod's own item tags so mod packs can swap in other crops. They skip the once-a-day rule and only help a pregnant mother.
+- [x] `barnyard_romance:contains_meat` (fish included), refused by grazers, herbivores, pandas and hoglins.
+- [x] `/barnyard foods scan` writes ingredient tags from the recipe graph for mod packs.
+- [x] A broken diet or food file is skipped and logged; the rest still load.
+
+## Next
 
 ### Stage 5: Products
 - [ ] Lactation: milk only after a birth, drying up after three unmilked days once the young are grown; males never give milk.

@@ -54,10 +54,58 @@
   - Female is moved to another dimension.
 - Visual cue: gold hearts drift up from a pregnant female. The hover card shows the portrait, sex, size letter, name, familiarity bar, feed bar, and vanilla health hearts. The Barnyard Inspector item opens the detailed dialog.
 
-## 5. Food-driven pregnancy
-- Per-species "good" and "bad" food lists in data files, using item tags (e.g. `#c:crops/wheat`) so modded foods work.
-- Good food: temporary speed-up buff or one-time progress bonus. Bad food / starvation: slows progress.
-- Defaults shipped for vanilla animals; datapacks can override.
+## 5. Diets, food and superfoods
+Everything about food lives in datapack files, so packs can change it without Java.
+
+- **Diets** (`data/<ns>/barnyard_romance/diets/<name>.json`) are reusable. Each lists:
+  - the species it applies to by default (`species`);
+  - what it eats, as item tags or ids, each with a `factor` (0–4) that scales the default effects;
+  - what it refuses (`refuses`).
+
+  A species' config entry can pick another diet with `diet`. A species with no diet keeps only its vanilla food.
+
+  | Diet | Species | Refuses |
+  |---|---|---|
+  | `grazer` | cow, mooshroom, sheep, goat, horse, donkey, llama, trader llama, camel | `#barnyard_romance:contains_meat` |
+  | `herbivore` | rabbit | `#barnyard_romance:contains_meat` |
+  | `omnivore` | pig, fox, polar bear | (none) |
+  | `carnivore` | wolf, cat, ocelot (plants at 0.25) | (none) |
+  | `panda` | panda | `#barnyard_romance:contains_meat` |
+  | `hoglin` | hoglin | `#barnyard_romance:contains_meat` |
+
+- **Food files** (`data/<ns>/barnyard_romance/foods/<name>.json`) name `species` and/or `diets`, plus `items`, an optional `superfood` flag and `effects`. The effects are `familiarity`, `heal`, `pregnancySpeed` (`factor`, `ticks`), `pregnancyProgress` (−1 to 1 of the pregnancy; negative slows it) and `babyImprove`. A file that fails to parse is logged and skipped.
+
+  ```json
+  { "diets": ["barnyard_romance:grazer"], "items": "barnyard_romance:breeders_mash", "superfood": true,
+    "effects": { "heal": 2.0, "pregnancySpeed": { "factor": 2.0, "ticks": 24000 } } }
+  ```
+
+- **What a feed does.** The first match wins:
+  1. A refused item: the animal turns away and the item is kept. Vanilla food is never refused.
+  2. A food file for the species or its diet: that file's effects.
+  3. The species' vanilla food: the default effects.
+  4. A diet entry: the default effects × the entry's factor.
+  5. Anything else isn't food.
+
+  The default effects are a normal familiarity gain plus healing.
+- **Healing.** A food file's `heal` wins. Otherwise a food players can eat heals `foodHealFactor` × its hunger points, and anything else heals `foodHealDefault`. The diet factor scales both. Horses, llamas and camels keep vanilla's values through food files (hay bale 20, golden apple 10, and so on). A hurt animal eats even on a day it was already fed, but then it only heals.
+- **Tempting.** An animal follows a player holding any food it eats.
+- **Superfoods** skip the once-a-day rule, never change familiarity, and only work on a pregnant mother. Only one speed boost runs at a time.
+
+  | Superfood | Recipe (vanilla, through tags) | Effect |
+  |---|---|---|
+  | Breeder's Mash | 2 × `#barnyard_romance:superfood/grains` + 2 × `superfood/roots` → 2 | Pregnancy ×2 for a day, heals 2 |
+  | Golden Bran | 2 × `superfood/grains` + 1 × `superfood/golden` → 2 | The litter's nutrition +0.25, heals 2 |
+
+  Packs widen the `superfood/*` tags to use other crops.
+- **A pregnancy's care** records food's effects: ticks gained or lost, one speed boost, and a nutrition bonus that adds to the mother's familiarity when the litter's traits are rolled at birth. It is read from the clock, so nothing ticks.
+- **Group tags.** `barnyard_romance:contains_meat` holds `#minecraft:meat`, `#minecraft:fishes`, the `c:foods` meat and fish tags, and rabbit stew. Packs add their own meat dishes to it.
+- **`/barnyard foods scan`** (op level 2) walks every recipe from each tag a diet refuses, and writes a datapack and a `report.json` to `<server dir>/barnyard_romance/scan/`. Rules:
+  - An ingredient counts only when every item it accepts is in the group.
+  - Any one recipe is enough.
+  - Only food items are written.
+
+  The report says why each item was added and which recipe types couldn't be read. Copy the `barnyard_romance_scan` folder into a world's `datapacks` and run `/reload`.
 
 ## 6. Visuals (configurable, later milestones)
 - **Textures:** renderer chooses `<animal>_male.png` / `<animal>_female.png` if present, else falls back to vanilla. Resource packs can supply them, no code needed.
@@ -72,7 +120,7 @@
 
 ## 8. Config
 - Global: enable mod, sex ratio, size defaults, pregnancy on/off, the global `pregnancyTicksMin`/`pregnancyTicksMax` and `litterMin`/`litterMax`, and `youngTicks` (24,000), `oldAfterTicks` (720,000) and `deathAfterTicks` (1,440,000).
-- Per species: enabled, male/female size range, `pregnancyTicksMin`/`pregnancyTicksMax`, `litterMin`/`litterMax`, `youngTicks`/`oldAfterTicks`/`deathAfterTicks`, good/bad foods, texture/layer/model toggles.
+- Per species: enabled, male/female size range, `pregnancyTicksMin`/`pregnancyTicksMax`, `litterMin`/`litterMax`, `youngTicks`/`oldAfterTicks`/`deathAfterTicks`, `diet` (a diet id that overrides the diet listing the species), texture/layer/model toggles.
 - Age ticks: the species entry, then the global value. Each is clamped to 0–24,000,000; 0 turns that step off.
 - Lookup order for each range end: the user's species entry, then the built-in preset, then the global value. An old single `pregnancyTicks` or `litterSize` key still works and sets both ends. An inverted pair is swapped; litters are clamped to 1–8 and pregnancies to 1–480,000 ticks.
 - `tuning` block (defaults are today's behavior; bad values are clamped or fall back to the default):
@@ -81,6 +129,7 @@
   - `improveBaseChance` (0.35), `improveNutritionChance` (0.45), `improveStep` (0.25), `inheritSpread` (0.05)
   - `fertilityCostPerBirth` (0.25), `fertilityRecoveryPerDay` (0.1), `fertilityMinToConceive` (0.25)
   - `oldFertilityFactor` (0.5), `deathSpread` (0.1)
+  - `foodHealFactor` (0.5, the share of a player food's hunger points it heals), `foodHealDefault` (1.0, clamped 0–20, for foods players can't eat)
 - Format: data-driven JSON per species + a main config file (use a cross-loader config lib, or a simple own JSON config in `common`).
 
 ## 9. Ideas (from brainstorming)

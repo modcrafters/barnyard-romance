@@ -144,7 +144,7 @@
 - `FoodRules.resolve(Identifier speciesId, Identifier dietId, Diet diet, List<FoodFile> files, ItemFacts item)`, returning a `Feed`. `diet` may be `null`; `dietId` may be `null`.
 - `FoodHeal.amount(OptionalDouble explicitHeal, OptionalInt nutrition, double factor, Tuning tuning)`, returning a `float`.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `FoodCodecsTest`:
     - `parsesTagsAndItems`
     - `oneStringOrAList`
@@ -167,10 +167,10 @@
   - `TuningTest`: defaults and clamps for the two new keys.
   - `FoodRulesTest`: `dietOverrideWins`, `dietListsItsSpecies`, `missingOverrideFallsBackToTheListingDiet`.
   - `BarnyardConfigTest`: `dietOverrideReadsAndWrites`.
-- [ ] **Step 2: Run `./gradlew :common:test`.** Expected: these tests fail to compile or fail.
-- [ ] **Step 3: Implement the files above.**
-- [ ] **Step 4: Run `./gradlew :common:test`.** Expected: PASS.
-- [ ] **Step 5: Commit** "Add diets and food files as pure rules, with the heal rule."
+- [x] **Step 2: Run `./gradlew :common:test`.** Expected: these tests fail to compile or fail.
+- [x] **Step 3: Implement the files above.**
+- [x] **Step 4: Run `./gradlew :common:test`.** Expected: PASS.
+- [x] **Step 5: Commit** "Add diets and food files as pure rules, with the heal rule."
 
 ### Task 2: Loading diets and food files, the group tags and the built-in data
 
@@ -192,12 +192,12 @@
   - `FoodData.eats(Animal animal, ItemStack stack)`, which is true for `Feed.Eaten`.
   - `FoodData.replaceDiets(Map<Identifier, Diet>)` and `FoodData.replaceFoods(List<FoodFile>)`.
 
-- [ ] **Step 1: Write the code and data.**
-- [ ] **Step 2: Add the game tests** to `gametest/BreedingGameTests.java` and the Fabric list in `FabricBreedingGameTests`:
+- [x] **Step 1: Write the code and data.**
+- [x] **Step 2: Add the game tests** to `gametest/BreedingGameTests.java` and the Fabric list in `FabricBreedingGameTests`:
   - `built_in_diets_load`: a cow resolves to the `grazer` diet, and a wolf to `carnivore`.
   - `group_tag_holds_vanilla_meat`: `rabbit_stew`, `beef` and `cod` are in `contains_meat`.
-- [ ] **Step 3: Run `./gradlew build`, `:fabric:runGametest` and `:neoforge:runGameTestServer`.** Expected: all pass.
-- [ ] **Step 4: Commit** "Load diets and food files from datapacks, with built-in diets and group tags."
+- [x] **Step 3: Run `./gradlew build`, `:fabric:runGametest` and `:neoforge:runGameTestServer`.** Expected: all pass.
+- [x] **Step 4: Commit** "Load diets and food files from datapacks, with built-in diets and group tags."
 
 ### Task 3: Feeding by diet, healing and tempting
 
@@ -218,9 +218,9 @@
 - Consumes: `FoodData.resolve`, `FoodData.eats`, `FoodHeal.amount`.
 - Produces: `Familiarity.Click.HEAL_ONLY`.
 
-- [ ] **Step 1: Write the failing unit tests, then run `./gradlew :common:test`.** Expected: FAIL.
-- [ ] **Step 2: Implement the changes above, then run `./gradlew :common:test`.** Expected: PASS.
-- [ ] **Step 3: Add the game tests:**
+- [x] **Step 1: Write the failing unit tests, then run `./gradlew :common:test`.** Expected: FAIL.
+- [x] **Step 2: Implement the changes above, then run `./gradlew :common:test`.** Expected: PASS.
+- [x] **Step 3: Add the game tests:**
   - `grazers_refuse_meat`: a cow and beef. Beef is kept, familiarity and `lastFedTick` don't change.
   - `diet_food_feeds`: a cow and a carrot (not cow food in vanilla). Familiarity rises by 0.2.
   - `carnivores_get_little_from_salad`: a wolf and a carrot. Familiarity rises by 0.05.
@@ -228,8 +228,8 @@
   - `horses_heal_like_vanilla`: a hurt horse heals 2 from wheat.
 
   For the feeding tests, use a mock player from `helper.makeMockPlayer(GameType.SURVIVAL)` with the item in hand and call `FamiliarityActions.interact` directly.
-- [ ] **Step 4: Run both loaders' game tests.** Expected: all pass.
-- [ ] **Step 5: Commit** "Feed animals by diet, heal them with food, and tempt them with any food they eat."
+- [x] **Step 4: Run both loaders' game tests.** Expected: all pass.
+- [x] **Step 5: Commit** "Feed animals by diet, heal them with food, and tempt them with any food they eat."
 
 ### Task 4: Pregnancy care: speed, progress and a better litter
 
@@ -255,7 +255,7 @@
   - if a boost runs for b more ticks and `R ≤ factor × b`, it is `ceil(R / factor)`;
   - otherwise it is `b + (R − factor × b)`.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
   - `PregnancyCareTest`:
     - `boostDoublesProgressWhileItRuns`
     - `boostStopsAtItsEnd`
@@ -268,9 +268,9 @@
   - `PregnancyTest`:
     - `oldPregnancyLoadsWithoutCare` (codec round trip of a map without `care`)
     - `settingConceivedAtClearsTheBoost`
-- [ ] **Step 2: Run `./gradlew :common:test`.** Expected: FAIL.
-- [ ] **Step 3: Implement the changes above, then run `./gradlew :common:test`.** Expected: PASS.
-- [ ] **Step 4: Commit** "Let food speed up a pregnancy and improve the litter."
+- [x] **Step 2: Run `./gradlew :common:test`.** Expected: FAIL.
+- [x] **Step 3: Implement the changes above, then run `./gradlew :common:test`.** Expected: PASS.
+- [x] **Step 4: Commit** "Let food speed up a pregnancy and improve the litter."
 
 ### Task 5: The superfood items, recipes and their tags
 
@@ -289,15 +289,15 @@
   - 16×16 textures in `textures/item/`, painted by `build/paint_superfoods.py` with PIL, as `build/paint_inspector.py` was. Breeder's mash is a brown bowl of mash with green flecks. Golden bran is a small gold-flecked sack.
   - `lang/en_us.json` entries "Breeder's Mash" and "Golden Bran".
 
-- [ ] **Step 1: Write the items, data and assets.**
-- [ ] **Step 2: Add the game tests:**
+- [x] **Step 1: Write the items, data and assets.**
+- [x] **Step 2: Add the game tests:**
   - `breeders_mash_speeds_a_pregnancy`: a pregnant cow fed mash has `care.boosting(now)`. A second mash is refused and kept.
   - `golden_bran_feeds_the_litter`: `nutritionBonus` is 0.25 after one bran.
   - `superfoods_need_a_pregnant_mother`: a male cow keeps the mash.
   - `superfood_recipes_load`: both recipe ids exist in `server.getRecipeManager()`.
-- [ ] **Step 3: Run `./gradlew build` and both loaders' game tests.** Expected: all pass.
-- [ ] **Step 4: Run the Fabric client game test,** then check its screenshot to make sure the item textures render without the missing-texture checkerboard. Use `/give` before the screenshot, or add the items to the test player's hotbar.
-- [ ] **Step 5: Commit** "Add breeder's mash and golden bran with vanilla recipes built from item tags."
+- [x] **Step 3: Run `./gradlew build` and both loaders' game tests.** Expected: all pass.
+- [x] **Step 4: Run the Fabric client game test,** then check its screenshot to make sure the item textures render without the missing-texture checkerboard. Use `/give` before the screenshot, or add the items to the test player's hotbar.
+- [x] **Step 5: Commit** "Add breeder's mash and golden bran with vanilla recipes built from item tags."
 
 ### Task 6: The recipe scan command
 
@@ -316,7 +316,7 @@
 - `FoodScanRunner.liveGroups(MinecraftServer server)`, returning `Map<String, Set<String>>`: every tag in a loaded diet's `refuses`, with its current members.
 - `pack.mcmeta` uses `min_format` and `max_format` equal to the server's current data pack version, `SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA)`.
 
-- [ ] **Step 1: Write the failing `FoodScanTest`:**
+- [x] **Step 1: Write the failing `FoodScanTest`:**
   - `sugarCarriesIntoCake`
   - `deepChainsPropagate` (sugar → dough → pie)
   - `everyOptionMustBeInTheGroup`
@@ -324,24 +324,24 @@
   - `onlyFoodIsWritten`
   - `seedsAreNotRepeated`
   - `cyclesStop`
-- [ ] **Step 2: Run `./gradlew :common:test`.** Expected: FAIL.
-- [ ] **Step 3: Implement `FoodScan`, then run `./gradlew :common:test`.** Expected: PASS.
-- [ ] **Step 4: Implement the runner and the command,** writing JSON with Gson pretty printing and UTF-8.
-- [ ] **Step 5: Add the game test `food_scan_reads_real_recipes`.** It runs `FoodScanRunner.run(server, groups, folder)` against the test server, pointing at a temp folder. The test uses an override `groups` of `{ "barnyard_romance:test_sugar": {"minecraft:sugar"} }`, because vanilla's only meat dish is already in the shipped tag. It checks three things:
+- [x] **Step 2: Run `./gradlew :common:test`.** Expected: FAIL.
+- [x] **Step 3: Implement `FoodScan`, then run `./gradlew :common:test`.** Expected: PASS.
+- [x] **Step 4: Implement the runner and the command,** writing JSON with Gson pretty printing and UTF-8.
+- [x] **Step 5: Add the game test `food_scan_reads_real_recipes`.** It runs `FoodScanRunner.run(server, groups, folder)` against the test server, pointing at a temp folder. The test uses an override `groups` of `{ "barnyard_romance:test_sugar": {"minecraft:sugar"} }`, because vanilla's only meat dish is already in the shipped tag. It checks three things:
   - `cake` and `pumpkin_pie` are added through their real recipes;
   - `sugar` itself is not written;
   - `report.json` and `pack.mcmeta` exist.
 
   The command calls the same method with the groups read from the live tags.
-- [ ] **Step 6: Run `./gradlew build` and both loaders' game tests.** Expected: all pass.
-- [ ] **Step 7: Commit** "Add /barnyard foods scan, which writes ingredient tags from the recipe graph."
+- [x] **Step 6: Run `./gradlew build` and both loaders' game tests.** Expected: all pass.
+- [x] **Step 7: Commit** "Add /barnyard foods scan, which writes ingredient tags from the recipe graph."
 
 ### Task 7: Docs
 
-- [ ] `docs/DESIGN.md`:
+- [x] `docs/DESIGN.md`:
   - replace §5 with diets, food files, the first-match order, healing, superfoods and the scan;
   - add `diet`, `foodHealFactor` and `foodHealDefault` to the config and tuning lists;
   - show both file formats with an example.
-- [ ] `docs/ROADMAP.md`: tick off Stage 4, adding lines for diets, healing and the scan command.
-- [ ] The roadmap plan: note in Stage 4 that `horseTemper` and `bad` were dropped and diets were added. Link this plan.
-- [ ] Commit "Document diets, food files, superfoods and the recipe scan, and tick off Stage 4."
+- [x] `docs/ROADMAP.md`: tick off Stage 4, adding lines for diets, healing and the scan command.
+- [x] The roadmap plan: note in Stage 4 that `horseTemper` and `bad` were dropped and diets were added. Link this plan.
+- [x] Commit "Document diets, food files, superfoods and the recipe scan, and tick off Stage 4."

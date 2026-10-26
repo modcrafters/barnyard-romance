@@ -288,6 +288,13 @@ git commit -m "Move tuning into config, add litter and pregnancy ranges, sync lo
 
 ## Stage 4: Data-driven foods and superfoods (#2, #7)
 
+> **Done** in [`2026-10-26-live-birth-stage-4.md`](2026-10-26-live-birth-stage-4.md). The user changed three things:
+> - Pam's HarvestCraft was dropped; superfood recipes use vanilla items through the mod's own tags.
+> - Reusable diets were added, with `contains_meat` as the one group tag and a `/barnyard foods scan` command.
+> - Food heals, and a hurt animal eats any time.
+>
+> `horseTemper` and `bad` were dropped: familiarity already tames horses, and a bad food is a negative `pregnancyProgress`.
+
 - **Food files:** a datapack registry `data/<ns>/barnyard_romance/foods/<name>.json`. Each file holds:
   - `species`: a list or tag.
   - `items`: an item tag or ids.
