@@ -27,6 +27,8 @@ public final class Familiarity {
     public enum Click {
         FEED,
         WAIT,
+        // A hurt animal fed today: it eats and heals, nothing else changes.
+        HEAL_ONLY,
         SCARE
     }
 
@@ -36,6 +38,10 @@ public final class Familiarity {
 
     public static double gain(double familiarity) {
         return Math.min(1.0, familiarity + gain());
+    }
+
+    public static double gain(double familiarity, double amount) {
+        return Math.clamp(familiarity + Math.max(0.0, amount), 0.0, 1.0);
     }
 
     public static Response respond(boolean food, long lastFedTick, long now) {
@@ -57,10 +63,15 @@ public final class Familiarity {
     }
 
     public static boolean interested(boolean tracked, long lastFedTick, long now, boolean familiar) {
+        return interested(tracked, lastFedTick, now, familiar, false);
+    }
+
+    // A hurt animal wants food even when it was fed today.
+    public static boolean interested(boolean tracked, long lastFedTick, long now, boolean familiar, boolean hurt) {
         if (!tracked) {
             return true;
         }
-        return familiar && ticksUntilFeed(lastFedTick, now) == 0L;
+        return familiar && (hurt || ticksUntilFeed(lastFedTick, now) == 0L);
     }
 
     public static double feedReady(long lastFedTick, long now) {
@@ -92,10 +103,17 @@ public final class Familiarity {
     }
 
     public static Click click(boolean sneaking, boolean familiar, Response response) {
+        return click(sneaking, familiar, response, false);
+    }
+
+    public static Click click(boolean sneaking, boolean familiar, Response response, boolean hurt) {
         if (!familiar && !sneaking) {
             return Click.SCARE;
         }
-        return response == Response.ACCEPT ? Click.FEED : Click.WAIT;
+        if (response == Response.ACCEPT) {
+            return Click.FEED;
+        }
+        return hurt ? Click.HEAL_ONLY : Click.WAIT;
     }
 
     public static double inherited(double mother) {

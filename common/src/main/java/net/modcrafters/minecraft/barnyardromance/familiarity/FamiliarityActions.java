@@ -1,7 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.food.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
+import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -24,23 +29,45 @@ import java.util.Optional;
 
 public final class FamiliarityActions {
     public static final String TOO_SHY = "Sneak so you don't scare this animal.";
+    public static final String WONT_EAT = "It won't eat that.";
 
     private FamiliarityActions() {
     }
 
     public static InteractionResult interact(Animal animal, Player player, InteractionHand hand) {
+        try {
+            return feed(animal, player, hand);
+        } catch (RuntimeException exception) {
+            Constants.LOG.error("Failed to feed a {}, leaving it to vanilla", AnimalSex.speciesId(animal), exception);
+            return null;
+        }
+    }
+
+    private static InteractionResult feed(Animal animal, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!animal.isFood(stack)) {
+        if (stack.isEmpty()) {
             return null;
         }
         Optional<AnimalTraits> traits = tracked(animal);
         if (traits.isEmpty()) {
             return null;
         }
+        Feed feed = FoodData.resolve(animal, stack);
+        if (feed instanceof Feed.Refused) {
+            if (!animal.level().isClientSide()) {
+                player.sendSystemMessage(Component.literal(WONT_EAT));
+            }
+            return InteractionResult.CONSUME;
+        }
+        if (!(feed instanceof Feed.Eaten eaten) || eaten.superfood()) {
+            return null;
+        }
         AnimalTraits current = traits.get();
+        long now = animal.level().getGameTime();
         boolean familiar = Familiarity.ready(current.familiarity());
-        Familiarity.Response response = Familiarity.respond(true, current.lastFedTick(), animal.level().getGameTime());
-        Familiarity.Click click = Familiarity.click(player.isShiftKeyDown(), familiar, response);
+        boolean hurt = animal.getHealth() < animal.getMaxHealth();
+        Familiarity.Response response = Familiarity.respond(true, current.lastFedTick(), now);
+        Familiarity.Click click = Familiarity.click(player.isShiftKeyDown(), familiar, response, hurt);
         if (click == Familiarity.Click.SCARE) {
             if (!animal.level().isClientSide()) {
                 player.sendSystemMessage(Component.literal(TOO_SHY));
@@ -50,7 +77,7 @@ public final class FamiliarityActions {
         }
         if (click == Familiarity.Click.WAIT) {
             if (!animal.level().isClientSide()) {
-                long remaining = Familiarity.ticksUntilFeed(current.lastFedTick(), animal.level().getGameTime());
+                long remaining = Familiarity.ticksUntilFeed(current.lastFedTick(), now);
                 player.sendSystemMessage(Component.literal(Familiarity.nextFeed(remaining)));
             }
             return InteractionResult.CONSUME;
@@ -58,19 +85,37 @@ public final class FamiliarityActions {
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
+        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), BarnyardConfig.current().tuning());
         if (!player.hasInfiniteMaterials()) {
             stack.consume(1, player);
         }
-        double gained = Familiarity.gain(current.familiarity());
-        Services.DATA.set(animal, current.fed(gained, animal.level().getGameTime()));
+        if (hurt && heal > 0.0F) {
+            animal.heal(heal);
+        }
         if (animal instanceof AnimalEating eating) {
             eating.barnyardromance$playEatingSound();
         }
+        if (click == Familiarity.Click.HEAL_ONLY) {
+            return InteractionResult.SUCCESS_SERVER;
+        }
+        double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
+        double gained = Familiarity.gain(current.familiarity(), amount);
+        Services.DATA.set(animal, current.fed(gained, now));
         tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
             animal.setInLove(player);
         }
         return InteractionResult.SUCCESS_SERVER;
+    }
+
+    // Any food the animal eats draws it after a player holding it, as its vanilla food does.
+    public static boolean tempts(Animal animal, ItemStack stack) {
+        try {
+            return !ignoresFood(animal) && FoodData.eats(animal, stack);
+        } catch (RuntimeException exception) {
+            Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
+            return false;
+        }
     }
 
     // Horses, donkeys, mules, llamas, and camels only breed when tamed, so familiarity tames them.
@@ -101,7 +146,8 @@ public final class FamiliarityActions {
                 true,
                 current.lastFedTick(),
                 animal.level().getGameTime(),
-                Familiarity.ready(current.familiarity())
+                Familiarity.ready(current.familiarity()),
+                animal.getHealth() < animal.getMaxHealth()
         );
     }
 
