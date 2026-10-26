@@ -1,0 +1,30 @@
+{
+  "species": [
+    "minecraft:pig",
+    "minecraft:fox",
+    "minecraft:polar_bear"
+  ],
+  "eats": [
+    {
+      "items": "#c:crops",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:foods/vegetable",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:foods/fruit",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:foods/bread",
+      "factor": 0.75
+    },
+    {
+      "items": "#barnyard_romance:contains_meat",
+      "factor": 0.75
+    }
+  ],
+  "refuses": []
+}

@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
+import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.fabric.data.FabricAnimalData;
@@ -11,9 +12,11 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.animal.Animal;
 
 public class BarnyardRomanceFabric implements ModInitializer {
@@ -39,6 +42,9 @@ public class BarnyardRomanceFabric implements ModInitializer {
                 BarnyardParticles.OLD_HEART
         );
         BarnyardRomance.init();
+        ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
+        data.registerReloadListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());
+        data.registerReloadListener(FoodReloadListeners.FOODS_ID, FoodReloadListeners.foods());
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (entity instanceof Animal animal) {
                 AnimalSex.onJoin(animal);

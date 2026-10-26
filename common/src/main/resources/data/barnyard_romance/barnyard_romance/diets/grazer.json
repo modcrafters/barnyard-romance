@@ -1,0 +1,42 @@
+{
+  "species": [
+    "minecraft:cow",
+    "minecraft:mooshroom",
+    "minecraft:sheep",
+    "minecraft:goat",
+    "minecraft:horse",
+    "minecraft:donkey",
+    "minecraft:llama",
+    "minecraft:trader_llama",
+    "minecraft:camel"
+  ],
+  "eats": [
+    {
+      "items": "#c:crops",
+      "factor": 1.0
+    },
+    {
+      "items": "minecraft:hay_block",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:foods/vegetable",
+      "factor": 1.0
+    },
+    {
+      "items": "#c:seeds",
+      "factor": 0.5
+    },
+    {
+      "items": "#c:foods/fruit",
+      "factor": 0.75
+    },
+    {
+      "items": "#c:foods/bread",
+      "factor": 0.5
+    }
+  ],
+  "refuses": [
+    "#barnyard_romance:contains_meat"
+  ]
+}

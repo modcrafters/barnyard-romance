@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.neoforge.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.minecraft.core.Holder;
@@ -60,6 +61,7 @@ public final class NeoForgeBreedingGameTests {
 
     private static List<BreedingGameTests.Case> cases() {
         List<BreedingGameTests.Case> cases = new ArrayList<>(BreedingGameTests.CASES);
+        cases.addAll(FoodGameTests.CASES);
         cases.add(new BreedingGameTests.Case("cancelled_baby_event_leaves_no_pregnancy", 20,
                 helper -> refusedBreeding(helper, Answer.CANCEL)));
         cases.add(new BreedingGameTests.Case("baby_swapped_for_nothing_leaves_no_pregnancy", 20,

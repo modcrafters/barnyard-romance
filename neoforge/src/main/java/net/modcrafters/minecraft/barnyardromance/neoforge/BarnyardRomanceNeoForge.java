@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
+import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
@@ -18,6 +19,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -34,6 +36,7 @@ public class BarnyardRomanceNeoForge {
         BarnyardRomance.init();
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
+        NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
     }
 
     private static void registerContent(RegisterEvent event) {
@@ -61,6 +64,11 @@ public class BarnyardRomanceNeoForge {
             return;
         }
         AnimalSex.onJoin(animal);
+    }
+
+    private static void onAddReloadListeners(AddServerReloadListenersEvent event) {
+        event.addListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());
+        event.addListener(FoodReloadListeners.FOODS_ID, FoodReloadListeners.foods());
     }
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {

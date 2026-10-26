@@ -1,0 +1,12 @@
+{
+  "species": [
+    "minecraft:horse",
+    "minecraft:donkey"
+  ],
+  "items": [
+    "minecraft:golden_carrot"
+  ],
+  "effects": {
+    "heal": 4
+  }
+}

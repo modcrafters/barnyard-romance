@@ -1,0 +1,11 @@
+{
+  "species": [
+    "minecraft:camel"
+  ],
+  "items": [
+    "minecraft:cactus"
+  ],
+  "effects": {
+    "heal": 2
+  }
+}
