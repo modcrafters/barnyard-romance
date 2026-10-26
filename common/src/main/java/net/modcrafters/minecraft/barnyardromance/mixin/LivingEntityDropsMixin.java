@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.drops.DropStacks;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -45,7 +46,9 @@ public class LivingEntityDropsMixin {
             } catch (RuntimeException exception) {
                 Constants.LOG.error("Failed to size a {} drop, leaving it to vanilla", AnimalSex.speciesId(animal), exception);
             }
-            animal.spawnAtLocation(level, sized);
+            for (int count : DropStacks.sizes(sized.getCount(), sized.getMaxStackSize())) {
+                animal.spawnAtLocation(level, sized.copyWithCount(count));
+            }
         });
     }
 }

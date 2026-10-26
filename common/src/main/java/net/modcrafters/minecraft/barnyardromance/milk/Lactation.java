@@ -1,10 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
-// A female's milk, saved with her traits. Times are game ticks, -1 when unset.
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+
+// A female's milk, saved with her traits. milkUntil and youngUntil are game ticks, milkedDay a GameDay, -1 when unset.
 // Milk flows until milkUntil, and while her youngest baby is still a baby plus the keep-flowing time after that.
-public record Lactation(long milkUntil, long youngUntil, long windowStart, int milkedInWindow, boolean graceGiven) {
+// The daily milking count resets at midnight on the overworld clock.
+public record Lactation(long milkUntil, long youngUntil, long milkedDay, int milkedToday, boolean graceGiven) {
     public static final Lactation NONE = new Lactation(-1L, -1L, -1L, 0, false);
-    public static final long WINDOW_TICKS = 24_000L;
 
     public long endsAt(long keepFlowingTicks) {
         return Math.max(milkUntil, youngUntil < 0L ? -1L : youngUntil + keepFlowingTicks);
@@ -18,20 +20,20 @@ public record Lactation(long milkUntil, long youngUntil, long windowStart, int m
         return now < youngUntil;
     }
 
-    public int milkingsLeft(long now, int perDay) {
-        if (windowOver(now)) {
+    public int milkingsLeft(long clock, int perDay) {
+        if (milkedDay != GameDay.of(clock)) {
             return perDay;
         }
-        return Math.max(0, perDay - milkedInWindow);
+        return Math.max(0, perDay - milkedToday);
     }
 
-    public Lactation milked(long now, long keepFlowingTicks) {
-        boolean fresh = windowOver(now);
+    public Lactation milked(long now, long clock, long keepFlowingTicks) {
+        long today = GameDay.of(clock);
         return new Lactation(
                 Math.max(milkUntil, now + keepFlowingTicks),
                 youngUntil,
-                fresh ? now : windowStart,
-                fresh ? 1 : milkedInWindow + 1,
+                today,
+                milkedDay == today ? milkedToday + 1 : 1,
                 graceGiven
         );
     }
@@ -40,8 +42,8 @@ public record Lactation(long milkUntil, long youngUntil, long windowStart, int m
         return new Lactation(
                 Math.max(milkUntil, now + lactationTicks),
                 Math.max(this.youngUntil, youngUntil),
-                windowStart,
-                milkedInWindow,
+                milkedDay,
+                milkedToday,
                 true
         );
     }
@@ -49,14 +51,10 @@ public record Lactation(long milkUntil, long youngUntil, long windowStart, int m
     // The one milk window an animal with no known birth gets, so dairy farms from before Stage 5 keep working.
     public Lactation grace(long now, long keepFlowingTicks) {
         long until = graceGiven ? milkUntil : Math.max(milkUntil, now + keepFlowingTicks);
-        return new Lactation(until, youngUntil, windowStart, milkedInWindow, true);
+        return new Lactation(until, youngUntil, milkedDay, milkedToday, true);
     }
 
     public Lactation withGraceGiven() {
-        return new Lactation(milkUntil, youngUntil, windowStart, milkedInWindow, true);
-    }
-
-    private boolean windowOver(long now) {
-        return windowStart < 0L || now >= windowStart + WINDOW_TICKS;
+        return new Lactation(milkUntil, youngUntil, milkedDay, milkedToday, true);
     }
 }

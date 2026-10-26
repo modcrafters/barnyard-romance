@@ -125,8 +125,8 @@ public final class FoodGameTests {
 
     public static void hurtAnimalsHealFromFoodAnyTime(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        long now = helper.getLevel().getGameTime();
-        Services.DATA.set(cow, BreedingGameTests.traits(helper, cow).fed(0.4, now));
+        long fedAt = helper.getLevel().getOverworldClockTime();
+        Services.DATA.set(cow, BreedingGameTests.traits(helper, cow).fed(0.4, fedAt));
         cow.setHealth(cow.getMaxHealth() - 4.0F);
         Player player = holding(helper, Items.CARROT);
 
@@ -136,7 +136,7 @@ public final class FoodGameTests {
         helper.assertTrue(Math.abs(cow.getHealth() - expected) < 1.0e-4F, "the cow has " + cow.getHealth() + " health, not " + expected);
         helper.assertTrue(player.getMainHandItem().isEmpty(), "the hurt cow did not eat");
         assertFamiliarity(helper, cow, 0.4);
-        helper.assertTrue(BreedingGameTests.traits(helper, cow).lastFedTick() == now, "healing reset the feed clock");
+        helper.assertTrue(BreedingGameTests.traits(helper, cow).lastFedTick() == fedAt, "healing reset the feed clock");
         helper.succeed();
     }
 

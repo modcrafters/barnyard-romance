@@ -52,8 +52,9 @@ public class MobProductMixin {
             callback.setReturnValue(bone);
             return;
         }
-        if (FamiliarityActions.deniesProduct(animal, player.getItemInHand(hand))) {
-            callback.setReturnValue(InteractionResult.FAIL);
+        InteractionResult unfamiliar = FamiliarityActions.refusesProduct(animal, player, player.getItemInHand(hand));
+        if (unfamiliar != null) {
+            callback.setReturnValue(unfamiliar);
             return;
         }
         InteractionResult milking = MilkActions.milk(animal, player, hand);

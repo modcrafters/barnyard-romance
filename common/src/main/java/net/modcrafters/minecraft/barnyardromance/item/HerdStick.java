@@ -83,7 +83,7 @@ public class HerdStick extends Item {
                     BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
                     animal.level().getGameTime(),
                     Services.DATA.get(animal)
-                            .flatMap(traits -> MilkActions.status(animal, traits, animal.level().getGameTime()))
+                            .flatMap(traits -> MilkActions.status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
                             .map(InspectorSheet::milkText)
                             .orElse("")
             );

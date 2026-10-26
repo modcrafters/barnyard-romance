@@ -68,7 +68,8 @@ public final class MilkActions {
         AnimalTraits traits = tracked.get();
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
-        MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, tuning);
+        long clock = animal.level().getOverworldClockTime();
+        MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, clock, tuning);
         if (check != MilkRules.Check.OK) {
             if (!animal.level().isClientSide()) {
                 player.sendOverlayMessage(Component.literal(MilkRules.text(check)));
@@ -81,7 +82,7 @@ public final class MilkActions {
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
-        Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, tuning.milkKeepsFlowingTicks())));
+        Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, clock, tuning.milkKeepsFlowingTicks())));
         return InteractionResult.SUCCESS_SERVER;
     }
 
@@ -103,7 +104,7 @@ public final class MilkActions {
         Services.DATA.set(animal, traits.withLactation(lactation));
     }
 
-    public static Optional<MilkStatus> status(Animal animal, AnimalTraits traits, long now) {
+    public static Optional<MilkStatus> status(Animal animal, AnimalTraits traits, long now, long clock) {
         if (traits.sex() != Sex.FEMALE || milkFor(animal).isEmpty() || tracked(animal).isEmpty()) {
             return Optional.empty();
         }
@@ -116,7 +117,7 @@ public final class MilkActions {
         return Optional.of(new MilkStatus(
                 lactation.nursing(now),
                 lactation.endsAt(tuning.milkKeepsFlowingTicks()) - now,
-                lactation.milkingsLeft(now, perDay),
+                lactation.milkingsLeft(clock, perDay),
                 perDay
         ));
     }

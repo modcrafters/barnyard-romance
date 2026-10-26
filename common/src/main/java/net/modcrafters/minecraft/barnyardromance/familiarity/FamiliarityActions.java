@@ -38,6 +38,7 @@ public final class FamiliarityActions {
     public static final String TOO_SHY = "Sneak so you don't scare this animal.";
     public static final String WONT_EAT = "It won't eat that.";
     public static final String WANTS_MEAT = "Feed it meat to earn its trust.";
+    public static final String NOT_FAMILIAR = "It doesn't know you well enough yet.";
 
     private FamiliarityActions() {
     }
@@ -74,7 +75,7 @@ public final class FamiliarityActions {
             return PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         AnimalTraits current = traits.get();
-        long now = animal.level().getGameTime();
+        long now = animal.level().getOverworldClockTime();
         boolean familiar = Familiarity.ready(current.familiarity());
         boolean hurt = animal.getHealth() < animal.getMaxHealth();
         Familiarity.Response response = Familiarity.respond(true, current.lastFedTick(), now);
@@ -184,7 +185,7 @@ public final class FamiliarityActions {
         return !Familiarity.interested(
                 true,
                 current.lastFedTick(),
-                animal.level().getGameTime(),
+                animal.level().getOverworldClockTime(),
                 Familiarity.ready(current.familiarity()),
                 animal.getHealth() < animal.getMaxHealth()
         );
@@ -197,6 +198,17 @@ public final class FamiliarityActions {
         }
         return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent())
                 && AgeController.allowsLove(animal);
+    }
+
+    // Milk, wool and stew wait for familiarity; the player is told why.
+    public static InteractionResult refusesProduct(Animal animal, Player player, ItemStack stack) {
+        if (!deniesProduct(animal, stack)) {
+            return null;
+        }
+        if (!animal.level().isClientSide()) {
+            player.sendOverlayMessage(Component.literal(NOT_FAMILIAR));
+        }
+        return InteractionResult.FAIL;
     }
 
     public static boolean deniesProduct(Animal animal, ItemStack stack) {

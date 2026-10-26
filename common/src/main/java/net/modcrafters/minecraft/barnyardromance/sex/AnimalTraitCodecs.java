@@ -16,8 +16,8 @@ public final class AnimalTraitCodecs {
     public static final Codec<Lactation> LACTATION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.LONG.optionalFieldOf("milkUntil", -1L).forGetter(Lactation::milkUntil),
             Codec.LONG.optionalFieldOf("youngUntil", -1L).forGetter(Lactation::youngUntil),
-            Codec.LONG.optionalFieldOf("windowStart", -1L).forGetter(Lactation::windowStart),
-            Codec.INT.optionalFieldOf("milkedInWindow", 0).forGetter(Lactation::milkedInWindow),
+            Codec.LONG.optionalFieldOf("milkedDay", -1L).forGetter(Lactation::milkedDay),
+            Codec.INT.optionalFieldOf("milkedToday", 0).forGetter(Lactation::milkedToday),
             Codec.BOOL.optionalFieldOf("graceGiven", false).forGetter(Lactation::graceGiven)
     ).apply(instance, Lactation::new));
     public static final StreamCodec<ByteBuf, Lactation> LACTATION_STREAM_CODEC = StreamCodec.composite(
@@ -26,9 +26,9 @@ public final class AnimalTraitCodecs {
             ByteBufCodecs.VAR_LONG,
             Lactation::youngUntil,
             ByteBufCodecs.VAR_LONG,
-            Lactation::windowStart,
+            Lactation::milkedDay,
             ByteBufCodecs.VAR_INT,
-            Lactation::milkedInWindow,
+            Lactation::milkedToday,
             ByteBufCodecs.BOOL,
             Lactation::graceGiven,
             Lactation::new

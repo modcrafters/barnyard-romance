@@ -111,4 +111,9 @@ public class FabricProductGameTests {
     public void befriendedFelinesStayAround(GameTestHelper helper) {
         ProductGameTests.befriendedFelinesStayAround(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void unfamiliarAnimalsKeepTheirProducts(GameTestHelper helper) {
+        ProductGameTests.unfamiliarAnimalsKeepTheirProducts(helper);
+    }
 }

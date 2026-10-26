@@ -24,7 +24,7 @@ class InspectorSheetTest {
     @Test
     void feedAndScaleAndFatherUseTheLedgerWords() {
         assertEquals("Ready", InspectorSheet.feedText(-1L, 0L));
-        assertEquals("20m 0s", InspectorSheet.feedText(0L, 0L));
+        assertEquals("15m 0s", InspectorSheet.feedText(0L, 0L));
         assertEquals("scale 1.24", InspectorSheet.scaleText(1.24));
         assertEquals("Father XL bull", InspectorSheet.father("XL", "minecraft:cow"));
         assertEquals("Father M stallion", InspectorSheet.father("M", "minecraft:horse"));

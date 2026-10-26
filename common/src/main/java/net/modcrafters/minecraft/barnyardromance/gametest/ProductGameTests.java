@@ -73,7 +73,8 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("ocelot_trusts_by_familiarity", 20, ProductGameTests::ocelotTrustsByFamiliarity),
             new BreedingGameTests.Case("bones_no_longer_tame_wolves", 20, ProductGameTests::bonesNoLongerTameWolves),
             new BreedingGameTests.Case("felines_eat_meat_for_less", 20, ProductGameTests::felinesEatMeatForLess),
-            new BreedingGameTests.Case("befriended_felines_stay_around", 20, ProductGameTests::befriendedFelinesStayAround)
+            new BreedingGameTests.Case("befriended_felines_stay_around", 20, ProductGameTests::befriendedFelinesStayAround),
+            new BreedingGameTests.Case("unfamiliar_animals_keep_their_products", 20, ProductGameTests::unfamiliarAnimalsKeepTheirProducts)
     );
 
     private ProductGameTests() {
@@ -160,7 +161,7 @@ public final class ProductGameTests {
         Animal dry = BreedingGameTests.female(helper, EntityTypes.COW);
         Animal small = mother(helper, EntityTypes.COW, 0.1);
         AnimalTraits smallTraits = BreedingGameTests.traits(helper, small);
-        Services.DATA.set(small, smallTraits.withLactation(smallTraits.lactation().milked(now, 72_000L)));
+        Services.DATA.set(small, smallTraits.withLactation(smallTraits.lactation().milked(now, helper.getLevel().getOverworldClockTime(), 72_000L)));
         for (Animal cow : List.of(bull, dry, small)) {
             Lactation before = BreedingGameTests.traits(helper, cow).lactation();
             Player player = FoodGameTests.holding(helper, Items.BUCKET);
@@ -364,6 +365,18 @@ public final class ProductGameTests {
         helper.assertTrue(ocelot.isPersistenceRequired(), "a fed ocelot can still despawn");
         helper.assertTrue(!cat.isTame(), "one cod tamed a cat at 0% familiarity");
         helper.assertTrue(!((OcelotAccessor) ocelot).barnyardromance$isTrusting(), "one salmon won an ocelot at 0% familiarity");
+        helper.succeed();
+    }
+
+    // Below the familiarity threshold a mother in milk still refuses the bucket, and the bucket stays empty.
+    public static void unfamiliarAnimalsKeepTheirProducts(GameTestHelper helper) {
+        Animal cow = mother(helper, EntityTypes.COW, 0.5);
+        FoodGameTests.withFamiliarity(helper, cow, 0.1);
+        Player player = FoodGameTests.holding(helper, Items.BUCKET);
+
+        cow.interact(player, InteractionHand.MAIN_HAND, cow.position());
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "an unfamiliar cow gave " + player.getMainHandItem());
         helper.succeed();
     }
 }

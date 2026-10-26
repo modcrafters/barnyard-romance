@@ -41,31 +41,40 @@ class LactationTest {
 
     @Test
     void milkingKeepsItFlowing() {
-        Lactation lactation = Lactation.NONE.afterBirth(0L, 24_000L, 1L).milked(90_000L, KEEP);
+        Lactation lactation = Lactation.NONE.afterBirth(0L, 24_000L, 1L).milked(90_000L, 90_000L, KEEP);
 
         assertTrue(lactation.hasMilk(90_000L + KEEP - 1, KEEP));
         assertFalse(lactation.hasMilk(90_000L + KEEP, KEEP));
     }
 
+    // Here game time and clock time run together; milked takes both, since sleeping moves only the clock.
     @Test
     void largeFemalesMilkTwice() {
         Lactation lactation = Lactation.NONE.afterBirth(0L, 24_000L, KEEP);
 
         assertEquals(2, lactation.milkingsLeft(100L, 2));
-        lactation = lactation.milked(100L, KEEP);
+        lactation = lactation.milked(100L, 100L, KEEP);
         assertEquals(1, lactation.milkingsLeft(200L, 2));
-        lactation = lactation.milked(200L, KEEP);
+        lactation = lactation.milked(200L, 200L, KEEP);
         assertEquals(0, lactation.milkingsLeft(300L, 2));
     }
 
     @Test
-    void windowResetsAfterADay() {
-        Lactation lactation = Lactation.NONE.afterBirth(0L, 24_000L, KEEP).milked(100L, KEEP).milked(200L, KEEP);
+    void milkingsResetAtMidnight() {
+        Lactation lactation = Lactation.NONE.afterBirth(0L, 24_000L, KEEP).milked(17_000L, 17_000L, KEEP).milked(17_500L, 17_500L, KEEP);
 
-        assertEquals(0, lactation.milkingsLeft(100L + 23_999L, 2));
-        assertEquals(2, lactation.milkingsLeft(100L + 24_000L, 2));
-        Lactation next = lactation.milked(100L + 24_000L, KEEP);
-        assertEquals(1, next.milkingsLeft(100L + 24_001L, 2));
+        assertEquals(0, lactation.milkingsLeft(17_999L, 2));
+        assertEquals(2, lactation.milkingsLeft(18_000L, 2));
+        Lactation next = lactation.milked(18_000L, 18_000L, KEEP);
+        assertEquals(1, next.milkingsLeft(18_001L, 2));
+    }
+
+    @Test
+    void sleepingThroughTheNightCountsAsANewDay() {
+        // Milked at dusk, then the clock jumps to the next morning while game time barely moves.
+        Lactation lactation = Lactation.NONE.afterBirth(0L, 24_000L, KEEP).milked(13_000L, 13_000L, KEEP);
+
+        assertEquals(1, lactation.milkingsLeft(24_000L, 1));
     }
 
     @Test

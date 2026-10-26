@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 
 public final class Familiarity {
@@ -12,10 +13,6 @@ public final class Familiarity {
 
     public static double threshold() {
         return BarnyardConfig.current().tuning().familiarityThreshold();
-    }
-
-    public static long dayTicks() {
-        return BarnyardConfig.current().tuning().feedCooldownTicks();
     }
 
     public enum Response {
@@ -44,14 +41,16 @@ public final class Familiarity {
         return Math.clamp(familiarity + Math.max(0.0, amount), 0.0, 1.0);
     }
 
+    // Feeding times are overworld clock times (see GameDay): an animal eats once per day, and the day turns over at midnight.
     public static Response respond(boolean food, long lastFedTick, long now) {
         if (!food) {
             return Response.IGNORE;
         }
-        if (lastFedTick >= 0L && now - lastFedTick < dayTicks()) {
-            return Response.REJECT;
-        }
-        return Response.ACCEPT;
+        return fedToday(lastFedTick, now) ? Response.REJECT : Response.ACCEPT;
+    }
+
+    public static boolean fedToday(long lastFedTick, long now) {
+        return lastFedTick >= 0L && GameDay.sameDay(lastFedTick, now);
     }
 
     public static boolean tames(boolean tamed, double familiarity) {
@@ -79,19 +78,11 @@ public final class Familiarity {
         if (wait <= 0L) {
             return 1.0;
         }
-        return 1.0 - wait / (double) dayTicks();
+        return 1.0 - wait / (double) GameDay.TICKS;
     }
 
     public static long ticksUntilFeed(long lastFedTick, long now) {
-        if (lastFedTick < 0L) {
-            return 0L;
-        }
-        long day = dayTicks();
-        long elapsed = now - lastFedTick;
-        if (elapsed < 0L || elapsed >= day) {
-            return 0L;
-        }
-        return day - elapsed;
+        return fedToday(lastFedTick, now) ? GameDay.ticksUntilMidnight(now) : 0L;
     }
 
     public static String nextFeed(long remainingTicks) {

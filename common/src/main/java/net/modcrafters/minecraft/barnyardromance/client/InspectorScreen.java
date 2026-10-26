@@ -248,6 +248,7 @@ public class InspectorScreen extends Screen {
         }
         AnimalTraits value = traits.get();
         long now = this.animal.level().getGameTime();
+        long clock = this.animal.level().getOverworldClockTime();
         Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(this.animal);
         String father = pregnancy.map(current -> InspectorSheet.father(
                 SizeClass.of(Sex.MALE, current.fatherScale(), BarnyardConfig.current().sizeFor(current.fatherSpecies())).name(),
@@ -285,8 +286,8 @@ public class InspectorScreen extends Screen {
                 InspectorSheet.scaleText(value.scale()),
                 value.familiarity(),
                 Familiarity.percent(value.familiarity()),
-                Familiarity.feedReady(value.lastFedTick(), now),
-                InspectorSheet.feedText(value.lastFedTick(), now),
+                Familiarity.feedReady(value.lastFedTick(), clock),
+                InspectorSheet.feedText(value.lastFedTick(), clock),
                 Growth.percent(value.growthTicks()),
                 Growth.clock(value.growthTicks()),
                 value.weight(),
@@ -295,7 +296,7 @@ public class InspectorScreen extends Screen {
                 maxHealth,
                 fertility,
                 Familiarity.percent(fertility),
-                MilkActions.status(this.animal, value, now).map(InspectorSheet::milkText).orElse(""),
+                MilkActions.status(this.animal, value, now, clock).map(InspectorSheet::milkText).orElse(""),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current))).orElse(""),
