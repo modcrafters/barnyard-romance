@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.drops.MeatDrop;
+import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -17,6 +19,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -25,6 +28,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,6 +39,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +60,10 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("large_cow_milks_twice_a_day", 20, ProductGameTests::largeCowMilksTwiceADay),
             new BreedingGameTests.Case("birth_starts_milk", 200, ProductGameTests::birthStartsMilk),
             new BreedingGameTests.Case("wild_cow_gets_one_milk_window", 20, ProductGameTests::wildCowGetsOneMilkWindow),
-            new BreedingGameTests.Case("mooshroom_bowl_stays_vanilla", 20, ProductGameTests::mooshroomBowlStaysVanilla)
+            new BreedingGameTests.Case("mooshroom_bowl_stays_vanilla", 20, ProductGameTests::mooshroomBowlStaysVanilla),
+            new BreedingGameTests.Case("sized_drops_follow_the_rule", 20, ProductGameTests::sizedDropsFollowTheRule),
+            new BreedingGameTests.Case("meat_keeps_its_curve", 20, ProductGameTests::meatKeepsItsCurve),
+            new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool)
     );
 
     private ProductGameTests() {
@@ -213,5 +222,54 @@ public final class ProductGameTests {
         Player player = FoodGameTests.holding(helper, Items.BUCKET);
         animal.interact(player, InteractionHand.MAIN_HAND, animal.position());
         helper.assertTrue(player.getMainHandItem().is(milk), animal.getType() + " gave " + player.getMainHandItem() + ", not " + milk);
+    }
+
+    // Twice the base scale doubles leather; a male of twice his base gets his quarter on top.
+    public static void sizedDropsFollowTheRule(GameTestHelper helper) {
+        SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 2.0 * size.femaleScale(), 1.0, -1L));
+        Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
+        Services.DATA.set(bull, new AnimalTraits(Sex.MALE, 2.0 * size.maleScale(), 1.0, -1L));
+
+        int cowLeather = ProductDrops.resize(cow, new ItemStack(Items.LEATHER, 2), cow.getRandom()).getCount();
+        int bullLeather = ProductDrops.resize(bull, new ItemStack(Items.LEATHER, 2), bull.getRandom()).getCount();
+        int sticks = ProductDrops.resize(cow, new ItemStack(Items.STICK, 2), cow.getRandom()).getCount();
+
+        helper.assertTrue(cowLeather == 4, "a cow of twice her base scale dropped " + cowLeather + " leather, not 4");
+        helper.assertTrue(bullLeather == 5, "a bull of twice his base scale dropped " + bullLeather + " leather, not 5");
+        helper.assertTrue(sticks == 2, "a stick drop was resized to " + sticks);
+        helper.succeed();
+    }
+
+    // Beef still follows the meat curve for a base-scale female, whose sex and age factor is 1.
+    public static void meatKeepsItsCurve(GameTestHelper helper) {
+        SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
+        SizeSettings range = BarnyardConfig.current().defaultSize();
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, size.femaleScale(), 1.0, -1L));
+        int lowest = MeatDrop.count(size.femaleScale(), range.smallest(), range.largest(), 0.0);
+        int highest = MeatDrop.count(size.femaleScale(), range.smallest(), range.largest(), 0.999);
+
+        for (int i = 0; i < 20; i++) {
+            int beef = ProductDrops.resize(cow, new ItemStack(Items.BEEF, 2), cow.getRandom()).getCount();
+            helper.assertTrue(beef >= lowest && beef <= highest, "a base-scale cow dropped " + beef + " beef, outside " + lowest + "-" + highest);
+        }
+        helper.succeed();
+    }
+
+    // Four times the base scale gives at least four wool, which vanilla's 1-3 never reaches.
+    public static void bigSheepShearMoreWool(GameTestHelper helper) {
+        SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:sheep");
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        Services.DATA.set(sheep, new AnimalTraits(Sex.FEMALE, 4.0 * size.femaleScale(), 1.0, -1L));
+
+        sheep.shear(helper.getLevel(), SoundSource.PLAYERS, new ItemStack(Items.SHEARS));
+
+        int wool = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(sheep.blockPosition()).inflate(4.0)).stream()
+                .mapToInt(entity -> entity.getItem().getCount())
+                .sum();
+        helper.assertTrue(wool >= 4, "a sheep of four times her base scale gave " + wool + " wool");
+        helper.succeed();
     }
 }

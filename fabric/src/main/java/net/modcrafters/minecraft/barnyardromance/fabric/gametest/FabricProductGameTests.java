@@ -66,4 +66,19 @@ public class FabricProductGameTests {
     public void mooshroomBowlStaysVanilla(GameTestHelper helper) {
         ProductGameTests.mooshroomBowlStaysVanilla(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void sizedDropsFollowTheRule(GameTestHelper helper) {
+        ProductGameTests.sizedDropsFollowTheRule(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void meatKeepsItsCurve(GameTestHelper helper) {
+        ProductGameTests.meatKeepsItsCurve(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void bigSheepShearMoreWool(GameTestHelper helper) {
+        ProductGameTests.bigSheepShearMoreWool(helper);
+    }
 }
