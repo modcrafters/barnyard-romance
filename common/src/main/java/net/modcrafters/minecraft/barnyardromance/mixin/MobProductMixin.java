@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
@@ -48,6 +49,11 @@ public class MobProductMixin {
         }
         if (FamiliarityActions.deniesProduct(animal, player.getItemInHand(hand))) {
             callback.setReturnValue(InteractionResult.FAIL);
+            return;
+        }
+        InteractionResult milking = MilkActions.milk(animal, player, hand);
+        if (milking != null) {
+            callback.setReturnValue(milking);
         }
     }
 }

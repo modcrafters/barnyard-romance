@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -19,6 +20,7 @@ public final class AnimalSex {
             return;
         }
         rememberAndApply(animal, true);
+        MilkActions.onJoin(animal);
     }
 
     public static void onAgeBoundary(Animal animal) {

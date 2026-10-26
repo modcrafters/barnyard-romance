@@ -26,4 +26,44 @@ public class FabricProductGameTests {
     public void goatMilkClearsEffects(GameTestHelper helper) {
         ProductGameTests.goatMilkClearsEffects(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void freshMotherCowGivesMilk(GameTestHelper helper) {
+        ProductGameTests.freshMotherCowGivesMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void goatGivesGoatMilk(GameTestHelper helper) {
+        ProductGameTests.goatGivesGoatMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void sheepGivesSheepMilk(GameTestHelper helper) {
+        ProductGameTests.sheepGivesSheepMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
+        ProductGameTests.refusedMilkingKeepsTheBucket(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void largeCowMilksTwiceADay(GameTestHelper helper) {
+        ProductGameTests.largeCowMilksTwiceADay(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 200)
+    public void birthStartsMilk(GameTestHelper helper) {
+        ProductGameTests.birthStartsMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wildCowGetsOneMilkWindow(GameTestHelper helper) {
+        ProductGameTests.wildCowGetsOneMilkWindow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void mooshroomBowlStaysVanilla(GameTestHelper helper) {
+        ProductGameTests.mooshroomBowlStaysVanilla(helper);
+    }
 }

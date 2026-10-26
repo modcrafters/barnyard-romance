@@ -21,6 +21,7 @@ import net.minecraft.world.entity.animal.cow.AbstractCow;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.goat.Goat;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -190,7 +191,7 @@ public final class FamiliarityActions {
         if (stack.is(Items.BOWL) && animal instanceof MushroomCow) {
             return true;
         }
-        return stack.is(Items.BUCKET) && (animal instanceof AbstractCow || animal instanceof Goat);
+        return stack.is(Items.BUCKET) && (animal instanceof AbstractCow || animal instanceof Goat || animal instanceof Sheep);
     }
 
     private static Optional<AnimalTraits> tracked(Animal animal) {

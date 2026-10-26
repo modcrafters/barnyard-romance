@@ -119,6 +119,7 @@ public final class PregnancyController {
     private static void giveBirth(Animal mother, ServerLevel level, Pregnancy pregnancy) {
         int count = Math.max(1, pregnancy.litterSize());
         String bornSpecies = null;
+        int youngestGrowth = 0;
         for (int i = 0; i < count; i++) {
             try {
                 AgeableMob baby = Litter.deliver(mother, level, pregnancy.litter(), i).orElse(null);
@@ -129,7 +130,9 @@ public final class PregnancyController {
                 baby.setBaby(true);
                 baby.snapTo(mother.getX(), mother.getY(), mother.getZ(), 0.0F, 0.0F);
                 if (baby instanceof Animal child) {
-                    baby.setAge(-rememberParents(mother, child, pregnancy));
+                    int growth = rememberParents(mother, child, pregnancy);
+                    youngestGrowth = Math.max(youngestGrowth, growth);
+                    baby.setAge(-growth);
                 }
                 level.addFreshEntityWithPassengers(baby);
                 if (bornSpecies == null) {
@@ -142,10 +145,15 @@ public final class PregnancyController {
         if (bornSpecies != null) {
             String species = bornSpecies;
             long now = level.getGameTime();
-            AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(mother));
+            long youngUntil = now + youngestGrowth;
+            BarnyardConfig config = BarnyardConfig.current();
+            AgeSettings age = config.ageFor(AnimalSex.speciesId(mother));
+            // A birth starts the milk, and it keeps flowing while the young are babies.
             Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
                     mother,
-                    traits.gaveBirth(now, species).withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)
+                    traits.gaveBirth(now, species)
+                            .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)
+                            .withLactation(traits.lactation().afterBirth(now, youngUntil, config.tuning().lactationTicks()))
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);

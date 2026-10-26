@@ -1,10 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
+import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.NonNullList;
@@ -14,8 +19,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +46,15 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("old_traits_load_without_lactation", 20, ProductGameTests::oldTraitsLoadWithoutLactation),
             new BreedingGameTests.Case("cake_takes_every_milk", 20, ProductGameTests::cakeTakesEveryMilk),
             new BreedingGameTests.Case("milk_buckets_are_in_the_common_tag", 20, ProductGameTests::milkBucketsAreInTheCommonTag),
-            new BreedingGameTests.Case("goat_milk_clears_effects", 20, ProductGameTests::goatMilkClearsEffects)
+            new BreedingGameTests.Case("goat_milk_clears_effects", 20, ProductGameTests::goatMilkClearsEffects),
+            new BreedingGameTests.Case("fresh_mother_cow_gives_milk", 20, ProductGameTests::freshMotherCowGivesMilk),
+            new BreedingGameTests.Case("goat_gives_goat_milk", 20, ProductGameTests::goatGivesGoatMilk),
+            new BreedingGameTests.Case("sheep_gives_sheep_milk", 20, ProductGameTests::sheepGivesSheepMilk),
+            new BreedingGameTests.Case("refused_milking_keeps_the_bucket", 20, ProductGameTests::refusedMilkingKeepsTheBucket),
+            new BreedingGameTests.Case("large_cow_milks_twice_a_day", 20, ProductGameTests::largeCowMilksTwiceADay),
+            new BreedingGameTests.Case("birth_starts_milk", 200, ProductGameTests::birthStartsMilk),
+            new BreedingGameTests.Case("wild_cow_gets_one_milk_window", 20, ProductGameTests::wildCowGetsOneMilkWindow),
+            new BreedingGameTests.Case("mooshroom_bowl_stays_vanilla", 20, ProductGameTests::mooshroomBowlStaysVanilla)
     );
 
     private ProductGameTests() {
@@ -99,5 +116,102 @@ public final class ProductGameTests {
         helper.assertTrue(player.getActiveEffects().isEmpty(), "goat milk left " + player.getActiveEffects());
         helper.assertTrue(left.is(Items.BUCKET), "goat milk left " + left + " behind");
         helper.succeed();
+    }
+
+    public static void freshMotherCowGivesMilk(GameTestHelper helper) {
+        assertMilks(helper, mother(helper, EntityTypes.COW, 0.5), Items.MILK_BUCKET);
+        helper.succeed();
+    }
+
+    public static void goatGivesGoatMilk(GameTestHelper helper) {
+        assertMilks(helper, mother(helper, EntityTypes.GOAT, 0.5), BarnyardItems.GOAT_MILK_BUCKET);
+        helper.succeed();
+    }
+
+    public static void sheepGivesSheepMilk(GameTestHelper helper) {
+        assertMilks(helper, mother(helper, EntityTypes.SHEEP, 0.5), BarnyardItems.SHEEP_MILK_BUCKET);
+        helper.succeed();
+    }
+
+    // A male, a dry female and a small female already milked today all keep the empty bucket.
+    public static void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
+        long now = helper.getLevel().getGameTime();
+        Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
+        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)));
+        Animal dry = BreedingGameTests.female(helper, EntityTypes.COW);
+        Animal small = mother(helper, EntityTypes.COW, 0.1);
+        AnimalTraits smallTraits = BreedingGameTests.traits(helper, small);
+        Services.DATA.set(small, smallTraits.withLactation(smallTraits.lactation().milked(now, 72_000L)));
+        for (Animal cow : List.of(bull, dry, small)) {
+            Lactation before = BreedingGameTests.traits(helper, cow).lactation();
+            Player player = FoodGameTests.holding(helper, Items.BUCKET);
+            cow.interact(player, InteractionHand.MAIN_HAND, cow.position());
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a refused milking left " + player.getMainHandItem());
+            helper.assertTrue(BreedingGameTests.traits(helper, cow).lactation().equals(before), "a refused milking changed the lactation");
+        }
+        helper.succeed();
+    }
+
+    public static void largeCowMilksTwiceADay(GameTestHelper helper) {
+        Animal cow = mother(helper, EntityTypes.COW, 0.7);
+        assertMilks(helper, cow, Items.MILK_BUCKET);
+        assertMilks(helper, cow, Items.MILK_BUCKET);
+        Player third = FoodGameTests.holding(helper, Items.BUCKET);
+        cow.interact(third, InteractionHand.MAIN_HAND, cow.position());
+        helper.assertTrue(third.getMainHandItem().is(Items.BUCKET), "an L cow gave a third bucket today");
+        helper.succeed();
+    }
+
+    public static void birthStartsMilk(GameTestHelper helper) {
+        Animal mother = BreedingGameTests.female(helper, EntityTypes.COW);
+        Animal father = BreedingGameTests.male(helper, EntityTypes.COW);
+        long now = helper.getLevel().getGameTime();
+        mother.setInLove(null);
+        father.setInLove(null);
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+        Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
+        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother is still pregnant");
+            Lactation lactation = BreedingGameTests.traits(helper, mother).lactation();
+            long later = helper.getLevel().getGameTime();
+            helper.assertTrue(lactation.hasMilk(later, BarnyardConfig.current().tuning().milkKeepsFlowingTicks()), "the mother has no milk after a birth");
+            helper.assertTrue(lactation.youngUntil() > later, "the calf is not counted as young");
+        });
+    }
+
+    public static void wildCowGetsOneMilkWindow(GameTestHelper helper) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        AnimalSex.onJoin(cow);
+        Lactation first = BreedingGameTests.traits(helper, cow).lactation();
+        helper.assertTrue(first.hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()), "a wild cow got no milk window");
+        AnimalSex.onJoin(cow);
+        helper.assertTrue(BreedingGameTests.traits(helper, cow).lactation().equals(first), "a wild cow got a second milk window");
+        helper.succeed();
+    }
+
+    public static void mooshroomBowlStaysVanilla(GameTestHelper helper) {
+        Animal mooshroom = BreedingGameTests.female(helper, EntityTypes.MOOSHROOM);
+        Player player = FoodGameTests.holding(helper, Items.BOWL);
+        mooshroom.interact(player, InteractionHand.MAIN_HAND, mooshroom.position());
+        helper.assertTrue(player.getMainHandItem().is(Items.MUSHROOM_STEW), "a dry mooshroom gave " + player.getMainHandItem());
+        helper.succeed();
+    }
+
+    // A female that just gave birth, sized at a point of her species range: 0 is the smallest, 1 the largest.
+    static Animal mother(GameTestHelper helper, EntityType<? extends Animal> type, double point) {
+        Animal animal = BreedingGameTests.female(helper, type);
+        SizeSettings size = BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal));
+        double scale = size.femaleScale() - size.variation() + 2.0 * size.variation() * point;
+        long now = helper.getLevel().getGameTime();
+        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, scale, 1.0, -1L)
+                .withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)));
+        return animal;
+    }
+
+    static void assertMilks(GameTestHelper helper, Animal animal, Item milk) {
+        Player player = FoodGameTests.holding(helper, Items.BUCKET);
+        animal.interact(player, InteractionHand.MAIN_HAND, animal.position());
+        helper.assertTrue(player.getMainHandItem().is(milk), animal.getType() + " gave " + player.getMainHandItem() + ", not " + milk);
     }
 }
