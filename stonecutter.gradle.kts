@@ -30,3 +30,12 @@ subprojects {
         usesService(mutex)
     }
 }
+
+// Builds every loader jar and copies them to build/libs/<mod version>/ (the common jars aren't mods).
+tasks.register<Copy>("collectJars") {
+    group = "build"
+    val jars = stonecutter.tasks.named<Jar>("jar") { branch.id.isNotEmpty() }
+    dependsOn(jars.map { it.values })
+    from(jars.map { it.values.map { jar -> jar.flatMap(Jar::getArchiveFile) } })
+    into(layout.buildDirectory.dir("libs/${project.version}"))
+}
