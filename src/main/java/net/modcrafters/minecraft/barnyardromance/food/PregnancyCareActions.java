@@ -41,7 +41,7 @@ public final class PregnancyCareActions {
         if (animal.getHealth() < animal.getMaxHealth() && heal > 0.0F) {
             animal.heal(heal);
         }
-        VersionCompat.playEatingSound(animal);
+        VersionCompat.playEatingSound(animal, stack);
         return VersionCompat.SUCCESS_SERVER;
     }
 

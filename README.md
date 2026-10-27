@@ -44,6 +44,11 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 - On 1.21.1 the same checks run with `gradlew :1.21.1:test` and `gradlew :neoforge:1.21.1:runGameTestServer` (NeoForge only). There each test runs in its own batch, and `GameTestCompat` covers the steps that differ, such as test positions counting from one block lower.
 - CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.
 
+### 1.21.1 differences
+
+- Pigs eat silently: their eating sound only came after 1.21.1.
+- The card above an animal is placed with the FOV setting and the camera, so it doesn't follow view bobbing or zoom mods.
+
 ### 1.21.1 test gaps
 
 - Every shared game test runs on 1.21.1.

@@ -53,6 +53,8 @@ public final class FoodGameTests {
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("built_in_diets_load", 20, FoodGameTests::builtInDietsLoad),
+            //? if <1.21.2
+            //new BreedingGameTests.Case("fed_animals_make_their_eating_sound", 20, FoodGameTests::fedAnimalsMakeTheirEatingSound),
             new BreedingGameTests.Case("group_tag_holds_vanilla_meat", 20, FoodGameTests::groupTagHoldsVanillaMeat),
             new BreedingGameTests.Case("grazers_refuse_meat", 20, FoodGameTests::grazersRefuseMeat),
             new BreedingGameTests.Case("diet_food_feeds", 20, FoodGameTests::dietFoodFeeds),
@@ -296,4 +298,18 @@ public final class FoodGameTests {
         }
         helper.succeed();
     }
+
+    //? if <1.21.2 {
+    /*// 1.21.1 has no shared eating sound, so VersionCompat picks the sound each animal makes when vanilla feeds it.
+    public static void fedAnimalsMakeTheirEatingSound(GameTestHelper helper) {
+        ItemStack food = new ItemStack(Items.WHEAT);
+        Animal cat = BreedingGameTests.female(helper, EntityTypes.CAT);
+        Animal fox = BreedingGameTests.male(helper, EntityTypes.FOX);
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        helper.assertTrue(VersionCompat.eatingSound(cat, food) == net.minecraft.sounds.SoundEvents.CAT_EAT, "a cat ate silently");
+        helper.assertTrue(VersionCompat.eatingSound(fox, food) == net.minecraft.sounds.SoundEvents.FOX_EAT, "a fox ate silently");
+        helper.assertTrue(VersionCompat.eatingSound(cow, food) == null, "a cow made an eating sound vanilla doesn't give it");
+        helper.succeed();
+    }
+    *///?}
 }

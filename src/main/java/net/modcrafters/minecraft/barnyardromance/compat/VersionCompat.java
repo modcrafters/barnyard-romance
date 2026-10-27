@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 // Minecraft calls that are used in many places and look different on older versions. versions/1.21.1 has
 // the same class for 1.21.1, so callers stay free of version comments.
@@ -21,7 +22,8 @@ public final class VersionCompat {
     }
 
     // The animal's own eating sound, the one vanilla plays when it feeds the animal (most animals have none).
-    public static void playEatingSound(Animal animal) {
+    // The food only matters on 1.21.1, where some animals pick their sound by it.
+    public static void playEatingSound(Animal animal, ItemStack food) {
         if (animal instanceof AnimalEating eating) {
             eating.barnyardromance$playEatingSound();
         }

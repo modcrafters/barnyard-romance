@@ -111,7 +111,7 @@ public final class FamiliarityActions {
         if (hurt && heal > 0.0F) {
             animal.heal(heal);
         }
-        VersionCompat.playEatingSound(animal);
+        VersionCompat.playEatingSound(animal, stack);
         if (click == Familiarity.Click.HEAL_ONLY) {
             return VersionCompat.SUCCESS_SERVER;
         }
