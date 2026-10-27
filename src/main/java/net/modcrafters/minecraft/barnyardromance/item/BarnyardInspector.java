@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -34,6 +35,6 @@ public class BarnyardInspector extends Item {
             InspectorScreen.open(animal);
             return InteractionResult.SUCCESS;
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return VersionCompat.SUCCESS_SERVER;
     }
 }

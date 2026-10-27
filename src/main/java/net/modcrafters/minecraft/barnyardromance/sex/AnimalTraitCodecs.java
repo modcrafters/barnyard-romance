@@ -50,36 +50,42 @@ public final class AnimalTraitCodecs {
             LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
-    public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name),
-            AnimalTraits::sex,
-            ByteBufCodecs.DOUBLE,
-            AnimalTraits::scale,
-            ByteBufCodecs.DOUBLE,
-            AnimalTraits::familiarity,
-            ByteBufCodecs.VAR_LONG,
-            AnimalTraits::lastFedTick,
-            ByteBufCodecs.VAR_INT,
-            AnimalTraits::growthTicks,
-            ByteBufCodecs.VAR_LONG,
-            AnimalTraits::lastBirthTick,
-            ByteBufCodecs.STRING_UTF8,
-            AnimalTraits::lastBirthSpecies,
-            ByteBufCodecs.VAR_LONG,
-            AnimalTraits::loveUntil,
-            ByteBufCodecs.VAR_LONG,
-            AnimalTraits::cooldownUntil,
-            ByteBufCodecs.DOUBLE,
-            AnimalTraits::weight,
-            ByteBufCodecs.DOUBLE,
-            AnimalTraits::fertility,
-            ByteBufCodecs.VAR_LONG,
-            AnimalTraits::fertilityTick,
-            ByteBufCodecs.VAR_LONG,
-            AnimalTraits::bornTick,
-            LACTATION_STREAM_CODEC,
-            AnimalTraits::lactation,
-            AnimalTraits::new
+    private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
+    // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
+    public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.of(
+            (buf, traits) -> {
+                SEX_STREAM_CODEC.encode(buf, traits.sex());
+                ByteBufCodecs.DOUBLE.encode(buf, traits.scale());
+                ByteBufCodecs.DOUBLE.encode(buf, traits.familiarity());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.lastFedTick());
+                ByteBufCodecs.VAR_INT.encode(buf, traits.growthTicks());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.lastBirthTick());
+                ByteBufCodecs.STRING_UTF8.encode(buf, traits.lastBirthSpecies());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.loveUntil());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.cooldownUntil());
+                ByteBufCodecs.DOUBLE.encode(buf, traits.weight());
+                ByteBufCodecs.DOUBLE.encode(buf, traits.fertility());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.fertilityTick());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.bornTick());
+                LACTATION_STREAM_CODEC.encode(buf, traits.lactation());
+            },
+            // Arguments are evaluated left to right, so this reads the fields in the order they were written.
+            buf -> new AnimalTraits(
+                    SEX_STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.VAR_INT.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.STRING_UTF8.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    LACTATION_STREAM_CODEC.decode(buf)
+            )
     );
 
     private AnimalTraitCodecs() {

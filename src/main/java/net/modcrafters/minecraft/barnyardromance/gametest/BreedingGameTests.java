@@ -122,7 +122,10 @@ public final class BreedingGameTests {
         cow.setInLove(null);
         helper.assertTrue(traits(helper, cow).loveUntil() > helper.getLevel().getGameTime(), "love mode was not recorded");
 
+        //? if >=1.21.2 {
         cow.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1.0F);
+        //?} else
+        //cow.hurt(helper.getLevel().damageSources().generic(), 1.0F);
 
         helper.assertTrue(traits(helper, cow).loveUntil() < 0L, "love was not cleared after the cow was hurt");
         helper.succeed();
@@ -235,11 +238,11 @@ public final class BreedingGameTests {
     }
 
     public static AnimalTraits traits(GameTestHelper helper, Animal animal) {
-        return Services.DATA.get(animal).orElseThrow(() -> helper.assertionException(Component.literal(animal.getType() + " has no traits")));
+        return Services.DATA.get(animal).orElseThrow(() -> GameTestCompat.failure(helper, animal.getType() + " has no traits"));
     }
 
     public static Pregnancy pregnancy(GameTestHelper helper, Animal mother) {
-        return Services.DATA.getPregnancy(mother).orElseThrow(() -> helper.assertionException(Component.literal("the mother did not become pregnant")));
+        return Services.DATA.getPregnancy(mother).orElseThrow(() -> GameTestCompat.failure(helper, "the mother did not become pregnant"));
     }
 
     // Vanilla's rest after breeding: the age cooldown, love cleared, and both mirrored into the synced traits.

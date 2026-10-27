@@ -16,6 +16,7 @@ import org.joml.Vector4f;
 
 import java.util.Optional;
 
+// versions/1.21.1 has its own copy: the camera can't project a point there.
 public final class AnimalHoverTooltip {
     private AnimalHoverTooltip() {
     }

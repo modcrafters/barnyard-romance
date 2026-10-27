@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -19,7 +20,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
+//? if >=1.21.5 {
 import net.minecraft.world.entity.animal.cow.AbstractCow;
+//?} else
+//import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.feline.Cat;
@@ -112,7 +116,7 @@ public final class FamiliarityActions {
             eating.barnyardromance$playEatingSound();
         }
         if (click == Familiarity.Click.HEAL_ONLY) {
-            return InteractionResult.SUCCESS_SERVER;
+            return VersionCompat.SUCCESS_SERVER;
         }
         PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
@@ -122,7 +126,7 @@ public final class FamiliarityActions {
         if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
             animal.setInLove(player);
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return VersionCompat.SUCCESS_SERVER;
     }
 
     // Any food the animal eats draws it after a player holding it, as its vanilla food does.
@@ -160,7 +164,7 @@ public final class FamiliarityActions {
             return null;
         }
         if (!animal.level().isClientSide()) {
-            player.sendOverlayMessage(Component.literal(WANTS_MEAT));
+            VersionCompat.sendOverlay(player, Component.literal(WANTS_MEAT));
         }
         return InteractionResult.CONSUME;
     }
@@ -206,7 +210,7 @@ public final class FamiliarityActions {
             return null;
         }
         if (!animal.level().isClientSide()) {
-            player.sendOverlayMessage(Component.literal(NOT_FAMILIAR));
+            VersionCompat.sendOverlay(player, Component.literal(NOT_FAMILIAR));
         }
         return InteractionResult.FAIL;
     }
@@ -236,7 +240,10 @@ public final class FamiliarityActions {
         if (stack.is(Items.BOWL) && animal instanceof MushroomCow) {
             return true;
         }
+        //? if >=1.21.5 {
         return stack.is(Items.BUCKET) && (animal instanceof AbstractCow || animal instanceof Goat || animal instanceof Sheep);
+        //?} else
+        //return stack.is(Items.BUCKET) && (animal instanceof Cow || animal instanceof Goat || animal instanceof Sheep);
     }
 
     private static Optional<AnimalTraits> tracked(Animal animal) {

@@ -5,15 +5,17 @@ import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
+//? if >=1.21.6 {
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntitySpawnRequest;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+//?}
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +49,7 @@ public final class Litter {
                     continue;
                 }
                 baby.setBaby(true);
+                //? if >=1.21.6 {
                 try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(baby.problemPath(), Constants.LOG)) {
                     TagValueOutput output = TagValueOutput.createWithContext(reporter, level.registryAccess());
                     if (baby.save(output)) {
@@ -55,6 +58,13 @@ public final class Litter {
                         litter.add(tag);
                     }
                 }
+                //?} else {
+                /*CompoundTag tag = new CompoundTag();
+                if (baby.save(tag)) {
+                    tag.remove(Entity.UUID_TAG);
+                    litter.add(tag);
+                }
+                *///?}
             } catch (RuntimeException exception) {
                 Constants.LOG.warn("Failed to conceive a {} offspring, it will take after its mother", AnimalSex.speciesId(mother), exception);
             }
@@ -74,12 +84,17 @@ public final class Litter {
     }
 
     private static Optional<AgeableMob> load(ServerLevel level, CompoundTag tag) {
+        //? if >=1.21.6 {
         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(Constants.LOG)) {
             return EntityType.create(
                             TagValueInput.create(reporter, level.registryAccess(), tag),
                             level,
                             new EntitySpawnRequest(EntitySpawnReason.BREEDING, false)
                     )
+        //?} else {
+        /*try {
+            return EntityType.create(tag, level)
+        *///?}
                     .filter(AgeableMob.class::isInstance)
                     .map(AgeableMob.class::cast);
         } catch (RuntimeException exception) {

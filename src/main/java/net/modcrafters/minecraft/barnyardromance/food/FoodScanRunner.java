@@ -12,16 +12,18 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+//? if >=1.21.2 {
+import net.minecraft.server.packs.metadata.pack.PackFormat;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+//?}
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -64,22 +66,45 @@ public final class FoodScanRunner {
     public static ScanSummary run(MinecraftServer server, Map<String, Set<String>> groups, Path folder) throws IOException {
         Map<String, Integer> skipped = new TreeMap<>();
         List<FoodScan.ScanRecipe> recipes = new ArrayList<>();
+        //? if >=1.21.2 {
         ContextMap context = SlotDisplayContext.fromLevel(server.overworld());
+        //?}
         for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
             Recipe<?> recipe = holder.value();
             String type = String.valueOf(BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()));
+            //? if >=1.21.2 {
             String result = result(recipe, context);
             if (recipe.isSpecial() || recipe.placementInfo().isImpossibleToPlace() || result == null) {
+            //?} else {
+            /*ItemStack output = recipe.getResultItem(server.registryAccess());
+            String result = output.isEmpty() ? null : BuiltInRegistries.ITEM.getKey(output.getItem()).toString();
+            if (recipe.isSpecial() || recipe.isIncomplete() || result == null) {
+            *///?}
                 skipped.merge(type, 1, Integer::sum);
                 continue;
             }
             List<Set<String>> ingredients = new ArrayList<>();
+            //? if >=1.21.2 {
             for (Ingredient ingredient : recipe.placementInfo().ingredients()) {
                 Set<String> items = new HashSet<>();
                 ingredient.items().forEach(item -> items.add(item.getRegisteredName()));
                 ingredients.add(items);
             }
             recipes.add(new FoodScan.ScanRecipe(holder.id().identifier().toString(), type, result, ingredients));
+            //?} else {
+            /*// Shaped recipes list their blank slots as empty ingredients.
+            for (Ingredient ingredient : recipe.getIngredients()) {
+                if (ingredient.isEmpty()) {
+                    continue;
+                }
+                Set<String> items = new HashSet<>();
+                for (ItemStack stack : ingredient.getItems()) {
+                    items.add(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+                }
+                ingredients.add(items);
+            }
+            recipes.add(new FoodScan.ScanRecipe(holder.id().toString(), type, result, ingredients));
+            *///?}
         }
         FoodScan.ScanResult result = FoodScan.run(recipes, groups, FoodScanRunner::isFood);
         int items = write(result, skipped, folder);
@@ -87,6 +112,7 @@ public final class FoodScanRunner {
         return new ScanSummary(recipes.size(), items, tags, skipped, folder);
     }
 
+    //? if >=1.21.2 {
     private static String result(Recipe<?> recipe, ContextMap context) {
         for (RecipeDisplay display : recipe.display()) {
             ItemStack stack = display.result().resolveForFirstStack(context);
@@ -96,10 +122,14 @@ public final class FoodScanRunner {
         }
         return null;
     }
+    //?}
 
     // Food is anything with a food component, anything tagged c:foods, or anything a diet eats.
     private static boolean isFood(String itemId) {
+        //? if >=1.21.2 {
         ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(itemId)));
+        //?} else
+        //ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(Identifier.parse(itemId)));
         if (stack.has(DataComponents.FOOD) || stack.is(FOODS)) {
             return true;
         }
@@ -126,14 +156,17 @@ public final class FoodScanRunner {
     private static int write(FoodScan.ScanResult result, Map<String, Integer> skipped, Path folder) throws IOException {
         Path pack = folder.resolve(PACK);
         Files.createDirectories(pack);
+        JsonObject meta = new JsonObject();
+        meta.addProperty("description", "Barnyard Romance food tags found by /barnyard foods scan");
+        //? if >=1.21.9 {
         PackFormat format = SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA);
         JsonArray version = new JsonArray();
         version.add(format.major());
         version.add(format.minor());
-        JsonObject meta = new JsonObject();
-        meta.addProperty("description", "Barnyard Romance food tags found by /barnyard foods scan");
         meta.add("min_format", version);
         meta.add("max_format", version);
+        //?} else
+        //meta.addProperty("pack_format", SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA));
         JsonObject mcmeta = new JsonObject();
         mcmeta.add("pack", meta);
         Files.writeString(pack.resolve("pack.mcmeta"), GSON.toJson(mcmeta), StandardCharsets.UTF_8);

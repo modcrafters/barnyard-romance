@@ -2,12 +2,16 @@ package net.modcrafters.minecraft.barnyardromance.food;
 
 import com.google.gson.JsonElement;
 import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.profiling.ProfilerFiller;
+//? if >=1.21.2 {
+import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.util.ExtraCodecs;
+//?} else
+//import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -25,7 +29,7 @@ public final class FoodReloadListeners {
     private FoodReloadListeners() {
     }
 
-    public static SimpleJsonResourceReloadListener<JsonElement> diets() {
+    public static PreparableReloadListener diets() {
         return new Listener("barnyard_romance/diets", files -> {
             Map<String, Diet> diets = new LinkedHashMap<>();
             parse(files, "diet", FoodJson::dietFrom).forEach((id, diet) -> diets.put(id.toString(), diet));
@@ -34,7 +38,7 @@ public final class FoodReloadListeners {
         });
     }
 
-    public static SimpleJsonResourceReloadListener<JsonElement> foods() {
+    public static PreparableReloadListener foods() {
         return new Listener("barnyard_romance/foods", files -> {
             List<FoodFile> foods = new ArrayList<>(parse(files, "food file", FoodJson::foodFileFrom).values());
             FoodData.replaceFoods(foods);
@@ -55,11 +59,17 @@ public final class FoodReloadListeners {
         return parsed;
     }
 
+    //? if >=1.21.2 {
     private static final class Listener extends SimpleJsonResourceReloadListener<JsonElement> {
+    //?} else
+    //private static final class Listener extends SimpleJsonResourceReloadListener {
         private final Consumer<Map<Identifier, JsonElement>> apply;
 
         Listener(String directory, Consumer<Map<Identifier, JsonElement>> apply) {
+            //? if >=1.21.2 {
             super(ExtraCodecs.JSON, FileToIdConverter.json(directory));
+            //?} else
+            //super(new Gson(), directory);
             this.apply = apply;
         }
 

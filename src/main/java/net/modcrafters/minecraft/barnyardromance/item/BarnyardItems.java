@@ -11,8 +11,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.ItemLore;
+//? if >=1.21.2 {
+import net.minecraft.world.item.component.Consumables;
+//?} else
+//import net.minecraft.world.item.MilkBucketItem;
 
 import java.util.List;
 
@@ -46,32 +49,48 @@ public final class BarnyardItems {
             Registries.CREATIVE_MODE_TAB,
             Identifier.withDefaultNamespace("food_and_drinks")
     );
-    public static final Item HERD_STICK = new HerdStick(new Item.Properties().setId(HERD_STICK_ID).stacksTo(1).rarity(Rarity.EPIC));
-    public static final Item INSPECTOR = new BarnyardInspector(new Item.Properties().setId(INSPECTOR_ID).stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final Item HERD_STICK = new HerdStick(properties(HERD_STICK_ID).stacksTo(1).rarity(Rarity.EPIC));
+    public static final Item INSPECTOR = new BarnyardInspector(properties(INSPECTOR_ID).stacksTo(1).rarity(Rarity.UNCOMMON));
     // Plain items: what they do to an animal comes from their food files. The tooltip is the default lore,
     // so crafted stacks show it too; it is translatable, so a pack that changes the food files can reword it.
     public static final Item BREEDERS_MASH = new Item(superfood(BREEDERS_MASH_ID));
     public static final Item GOLDEN_BRAN = new Item(superfood(GOLDEN_BRAN_ID));
     // Drink like cow milk; the barnyard_romance:milk_buckets tag lets them stand in for it in cake.
+    //? if >=1.21.2 {
     public static final Item SHEEP_MILK_BUCKET = new Item(milk(SHEEP_MILK_BUCKET_ID));
     public static final Item GOAT_MILK_BUCKET = new Item(milk(GOAT_MILK_BUCKET_ID));
+    //?} else {
+    /*public static final Item SHEEP_MILK_BUCKET = new MilkBucketItem(milk(SHEEP_MILK_BUCKET_ID));
+    public static final Item GOAT_MILK_BUCKET = new MilkBucketItem(milk(GOAT_MILK_BUCKET_ID));
+    *///?}
 
     private BarnyardItems() {
     }
 
+    // Items know their id from their properties since 1.21.2; before that the registry names them.
+    private static Item.Properties properties(ResourceKey<Item> id) {
+        //? if >=1.21.2 {
+        return new Item.Properties().setId(id);
+        //?} else
+        //return new Item.Properties();
+    }
+
     private static Item.Properties milk(ResourceKey<Item> id) {
-        return new Item.Properties()
-                .setId(id)
+        return properties(id)
                 .craftRemainder(Items.BUCKET)
+                //? if >=1.21.2 {
                 .component(DataComponents.CONSUMABLE, Consumables.MILK_BUCKET)
                 .usingConvertsTo(Items.BUCKET)
+                //?}
                 .stacksTo(1);
     }
 
     private static Item.Properties superfood(ResourceKey<Item> id) {
+        //? if >=1.21.2 {
         String key = "item." + Constants.MOD_ID + "." + id.identifier().getPath();
-        return new Item.Properties()
-                .setId(id)
+        //?} else
+        //String key = "item." + Constants.MOD_ID + "." + id.location().getPath();
+        return properties(id)
                 .rarity(Rarity.UNCOMMON)
                 .component(DataComponents.LORE, new ItemLore(List.of(
                         Component.translatable(key + ".use"),

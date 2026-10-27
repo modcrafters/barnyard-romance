@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
@@ -204,7 +205,7 @@ public final class FoodGameTests {
         InteractionResult second = FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
 
         PregnancyCare care = BreedingGameTests.pregnancy(helper, cow).care();
-        helper.assertTrue(first == InteractionResult.SUCCESS_SERVER, "the first mash gave " + first);
+        helper.assertTrue(first == VersionCompat.SUCCESS_SERVER, "the first mash gave " + first);
         helper.assertTrue(care.boosting(now) && care.boostFactor() == 2.0, "the mash did not boost the pregnancy: " + care);
         helper.assertTrue(second == InteractionResult.CONSUME, "the second mash gave " + second);
         helper.assertTrue(player.getMainHandItem().getCount() == 1, "the second mash was eaten");
@@ -234,7 +235,10 @@ public final class FoodGameTests {
 
     public static void superfoodRecipesLoad(GameTestHelper helper) {
         for (String name : List.of("breeders_mash", "golden_bran")) {
+            //? if >=1.21.2 {
             ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, name));
+            //?} else
+            //Identifier key = Identifier.fromNamespaceAndPath(Constants.MOD_ID, name);
             helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(key).isPresent(), "the " + name + " recipe is missing");
         }
         // Crafted stacks carry the tooltip too, because it is the item's default lore.
@@ -275,13 +279,16 @@ public final class FoodGameTests {
                 }
             }
         } catch (IOException exception) {
-            throw helper.assertionException(Component.literal("the scan could not write: " + exception.getMessage()));
+            throw GameTestCompat.failure(helper, "the scan could not write: " + exception.getMessage());
         }
         helper.succeed();
     }
 
     public static void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
+        //? if >=1.21.2 {
         CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.getValue(BarnyardTab.ID);
+        //?} else
+        //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
         for (Item item : List.of(BarnyardItems.INSPECTOR, BarnyardItems.HERD_STICK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {

@@ -128,7 +128,10 @@ public final class PregnancyController {
                     continue;
                 }
                 baby.setBaby(true);
-                baby.snapTo(mother.getX(), mother.getY(), mother.getZ(), 0.0F, 0.0F);
+                //? if >=1.21.5 {
+        baby.snapTo(mother.getX(), mother.getY(), mother.getZ(), 0.0F, 0.0F);
+        //?} else
+        //baby.moveTo(mother.getX(), mother.getY(), mother.getZ(), 0.0F, 0.0F);
                 if (baby instanceof Animal child) {
                     int growth = rememberParents(mother, child, pregnancy);
                     youngestGrowth = Math.max(youngestGrowth, growth);

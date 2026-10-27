@@ -26,10 +26,10 @@ stonecutter {
     kotlinController = true
     centralScript = "build.gradle"
     create(rootProject) {
-        versions("26.3")
+        versions("1.21.1", "26.3")
         // Each version node runs its branch's build.gradle (centralScript above).
         branch("fabric") { versions("26.3") }
-        branch("neoforge") { versions("26.3") }
+        branch("neoforge") { versions("1.21.1", "26.3") }
         vcsVersion = "26.3"
     }
 }

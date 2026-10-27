@@ -8,9 +8,34 @@ def loaderName = project.parent == rootProject ? 'common' : project.parent.name
 // stonecutter.gradle.kts gives each branch its own Gradle group; published jars keep the mod's group.
 def modGroup = rootProject.group
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Null annotations: newer Minecraft ships JSpecify, 1.21.1 doesn't.
+    compileOnly 'org.jspecify:jspecify:1.0.0'
+}
+
 base {
     archivesName = "${mod_id}-${loaderName}-${minecraft_version}"
 }
+
+// A file under versions/<mc>/src replaces the shared file at the same path, for the common code and for this
+// project's own branch. Stonecutter already drops the shared copy when it processes an inactive version, but the
+// active version compiles the shared folders as they are, so the shared copy is left out here as well.
+def versionOverrides = [rootProject.projectDir, project.parent.projectDir].unique().collectMany { branchDir ->
+    ['java', 'resources'].collect { kind ->
+        [shared: new File(branchDir, "src/main/${kind}").toPath(), local: new File(branchDir, "versions/${project.name}/src/main/${kind}")]
+    }
+}
+def overridden = { FileTreeElement element ->
+    !element.directory && versionOverrides.any { dirs ->
+        element.file.toPath().startsWith(dirs.shared) && new File(dirs.local, element.relativePath.pathString).exists()
+    }
+}
+tasks.withType(SourceTask).configureEach { exclude(overridden) }
+tasks.withType(AbstractCopyTask).configureEach { exclude(overridden) }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(java_version)
