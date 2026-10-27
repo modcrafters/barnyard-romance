@@ -5,14 +5,21 @@ import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
+import net.modcrafters.minecraft.barnyardromance.config.ClientConfig;
+import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
+import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.resources.Identifier;
 
 public class BarnyardRomanceFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        ClientConfig.load(Services.PLATFORM.configDirectory().resolve("barnyard_romance-client.json"));
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(HornShapes.ID, HornShapes.listener());
         ParticleProviderRegistry.getInstance().register(
                 BarnyardParticles.PREGNANCY_HEART,
                 PregnancyHeartParticle.Provider::new

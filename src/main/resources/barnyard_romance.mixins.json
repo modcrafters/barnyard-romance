@@ -16,7 +16,11 @@
     "TemptGoalMixin",
     "TemptingSensorMixin"
   ],
-  "client": [],
+  "client": [
+    ${extra_client_mixins}"client.LivingEntityRendererMixin",
+    "client.ModelPartAccessor",
+    "client.ModelPartMixin"
+  ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
