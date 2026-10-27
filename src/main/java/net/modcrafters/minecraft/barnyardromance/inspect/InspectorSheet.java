@@ -4,45 +4,48 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+// Title and subtitle are the game's own (already translated) names; everything else is Text for the lang file.
 public record InspectorSheet(
         String title,
         String subtitle,
         boolean known,
         boolean female,
         String sizeLetter,
-        String life,
-        String scaleText,
+        AgeStage stage,
+        Text scaleText,
         double familiarity,
-        String familiarityText,
+        Text familiarityText,
         double feed,
-        String feedText,
+        Text feedText,
         double growth,
-        String growthText,
+        Text growthText,
         double weight,
-        String weightText,
+        Text weightText,
         float health,
         float maxHealth,
         double fertility,
-        String fertilityText,
-        String milkText,
+        Text fertilityText,
+        Text milkText,
         boolean pregnant,
         double pregnancy,
-        String pregnancyText,
-        String fatherText,
+        Text pregnancyText,
+        Text fatherText,
         boolean breedingReady,
-        String breedingText,
-        String lastBirthText
+        Text breedingText,
+        Text lastBirthText
 ) {
-    public static final String READY = "Ready";
-    public static final String NOT_TAMED = "Not tamed";
-    public static final String IN_LOVE = "In love";
-    public static final String WORN_OUT = "Worn out";
-    public static final String TOO_YOUNG = "Too young";
+    public static final Text READY = Text.of("gui.barnyard_romance.inspector.ready");
+    public static final Text NOT_TAMED = Text.of("gui.barnyard_romance.inspector.not_tamed");
+    public static final Text IN_LOVE = Text.of("gui.barnyard_romance.inspector.in_love");
+    public static final Text WORN_OUT = Text.of("gui.barnyard_romance.inspector.worn_out");
+    public static final Text TOO_YOUNG = Text.of("gui.barnyard_romance.inspector.too_young");
 
     public static InspectorSheet unknown(String name, String typeName, boolean named, boolean baby, float health, float maxHealth) {
         return new InspectorSheet(
@@ -51,50 +54,50 @@ public record InspectorSheet(
                 false,
                 false,
                 "",
-                (baby ? AgeStage.BABY : AgeStage.ADULT).label(),
-                "",
+                baby ? AgeStage.BABY : AgeStage.ADULT,
+                Text.EMPTY,
                 0.0,
-                "",
+                Text.EMPTY,
                 0.0,
-                "",
+                Text.EMPTY,
                 0.0,
-                "",
+                Text.EMPTY,
                 0.0,
-                "",
+                Text.EMPTY,
                 health,
                 maxHealth,
                 0.0,
-                "",
-                "",
+                Text.EMPTY,
+                Text.EMPTY,
                 false,
                 0.0,
-                "",
-                "",
+                Text.EMPTY,
+                Text.EMPTY,
                 false,
-                "",
-                ""
+                Text.EMPTY,
+                Text.EMPTY
         );
     }
 
-    public static String scaleText(double scale) {
-        return "scale " + String.format(Locale.ROOT, "%.2f", scale);
+    public static Text scaleText(double scale) {
+        return Text.of("gui.barnyard_romance.inspector.scale", String.format(Locale.ROOT, "%.2f", scale));
     }
 
-    public static String feedText(long lastFedTick, long now) {
+    public static Text feedText(long lastFedTick, long now) {
         long wait = Familiarity.ticksUntilFeed(lastFedTick, now);
         if (wait <= 0L) {
-            return "Ready";
+            return READY;
         }
-        return Growth.clock((int) Math.min(wait, Integer.MAX_VALUE));
+        return Growth.clock(wait);
     }
 
-    public static String father(String sizeLetter, String speciesId) {
-        return "Father " + sizeLetter + " " + mate(speciesId);
+    public static Text father(String sizeLetter, String speciesId) {
+        return Text.of("gui.barnyard_romance.inspector.father", sizeLetter, mate(speciesId));
     }
 
-    public static String mate(String speciesId) {
+    public static Text mate(String speciesId) {
         if (speciesId == null || speciesId.isBlank()) {
-            return "mate";
+            return Text.of("gui.barnyard_romance.mate.unknown");
         }
         String path = speciesId;
         int colon = path.indexOf(':');
@@ -102,20 +105,20 @@ public record InspectorSheet(
             path = path.substring(colon + 1);
         }
         return switch (path) {
-            case "cow", "mooshroom" -> "bull";
-            case "pig" -> "boar";
-            case "chicken" -> "rooster";
-            case "sheep" -> "ram";
-            case "rabbit", "goat" -> "buck";
-            case "horse" -> "stallion";
-            case "donkey" -> "jack";
-            case "cat" -> "tom";
-            default -> path.replace('_', ' ');
+            case "cow", "mooshroom" -> Text.of("gui.barnyard_romance.mate.bull");
+            case "pig" -> Text.of("gui.barnyard_romance.mate.boar");
+            case "chicken" -> Text.of("gui.barnyard_romance.mate.rooster");
+            case "sheep" -> Text.of("gui.barnyard_romance.mate.ram");
+            case "rabbit", "goat" -> Text.of("gui.barnyard_romance.mate.buck");
+            case "horse" -> Text.of("gui.barnyard_romance.mate.stallion");
+            case "donkey" -> Text.of("gui.barnyard_romance.mate.jack");
+            case "cat" -> Text.of("gui.barnyard_romance.mate.tom");
+            default -> Text.plain(path.replace('_', ' '));
         };
     }
 
     // Love and rest are stored as the game tick they end, so they expire on the client without a new sync.
-    public static String breeding(
+    public static Text breeding(
             boolean needsTaming,
             boolean tamed,
             double familiarity,
@@ -129,13 +132,13 @@ public record InspectorSheet(
             return NOT_TAMED;
         }
         if (!Familiarity.ready(familiarity)) {
-            return "Needs " + Familiarity.percent(Familiarity.threshold()) + " familiarity";
+            return Text.of("gui.barnyard_romance.inspector.needs_familiarity", Familiarity.percent(Familiarity.threshold()));
         }
         if (young) {
             return TOO_YOUNG;
         }
         if (cooldownUntil > now) {
-            return "Resting " + Growth.clock((int) Math.min(cooldownUntil - now, Integer.MAX_VALUE));
+            return Text.of("gui.barnyard_romance.inspector.resting", Growth.clock(cooldownUntil - now));
         }
         if (wornOut) {
             return WORN_OUT;
@@ -146,52 +149,54 @@ public record InspectorSheet(
         return READY;
     }
 
-    public static boolean readyToBreed(String breedingText) {
+    public static boolean readyToBreed(Text breedingText) {
         return READY.equals(breedingText) || IN_LOVE.equals(breedingText);
     }
 
-    public static String lastBirth(String offspringName, long lastBirthTick, long now) {
+    public static Text lastBirth(String offspringName, long lastBirthTick, long now) {
         if (lastBirthTick < 0L || offspringName == null || offspringName.isBlank()) {
-            return "";
+            return Text.EMPTY;
         }
-        return "Last birth: " + offspringName + ", " + ago(now - lastBirthTick);
+        return Text.of("gui.barnyard_romance.inspector.last_birth", offspringName, ago(now - lastBirthTick));
     }
 
     // Milk is counted in Minecraft days and hours, the way its three unmilked days are.
-    public static String milkText(MilkStatus status) {
-        String time = status.nursing() ? "Flowing" : gameTime(status.ticksLeft()) + " left";
-        return time + ", " + status.left() + "/" + status.perDay() + " today";
+    public static Text milkText(MilkStatus status) {
+        if (status.nursing()) {
+            return Text.of("gui.barnyard_romance.inspector.milk_flowing", status.left(), status.perDay());
+        }
+        return Text.of("gui.barnyard_romance.inspector.milk_left", gameTime(status.ticksLeft()), status.left(), status.perDay());
     }
 
-    private static String gameTime(long ticks) {
+    private static Text gameTime(long ticks) {
         long hours = Math.max(0L, ticks) / 1_000L;
         if (hours < 1L) {
-            return "<1h";
+            return Text.of("gui.barnyard_romance.time.under_an_hour");
         }
         if (hours < 24L) {
-            return hours + "h";
+            return Text.of("gui.barnyard_romance.time.hours", hours);
         }
-        return hours / 24L + "d";
+        return Text.of("gui.barnyard_romance.time.days", hours / 24L);
     }
 
-    public static String ago(long ticks) {
+    public static Text ago(long ticks) {
         long seconds = Math.max(0L, ticks) / 20L;
         if (seconds < 60L) {
-            return "just now";
+            return Text.of("gui.barnyard_romance.time.just_now");
         }
         long minutes = seconds / 60L;
         if (minutes < 60L) {
-            return minutes + "m ago";
+            return Text.of("gui.barnyard_romance.time.minutes_ago", minutes);
         }
         long hours = minutes / 60L;
         if (hours < 24L) {
-            return hours + "h ago";
+            return Text.of("gui.barnyard_romance.time.hours_ago", hours);
         }
-        return hours / 24L + "d ago";
+        return Text.of("gui.barnyard_romance.time.days_ago", hours / 24L);
     }
 
-    public String sexText() {
-        return female ? "Female" : "Male";
+    public Text sexText() {
+        return (female ? Sex.FEMALE : Sex.MALE).text();
     }
 
     public String healthText() {
@@ -199,12 +204,12 @@ public record InspectorSheet(
     }
 
     public boolean showBreeding() {
-        return known && (pregnant || !AgeStage.BABY.label().equals(life));
+        return known && (pregnant || stage != AgeStage.BABY);
     }
 
     // Fathers never wear out, and the young haven't bred yet, so only adult and old females show fertility.
     public boolean showFertility() {
-        return known && female && (AgeStage.ADULT.label().equals(life) || AgeStage.OLD.label().equals(life));
+        return known && female && (stage == AgeStage.ADULT || stage == AgeStage.OLD);
     }
 
     public List<InspectorRow> rows() {
@@ -233,7 +238,7 @@ public record InspectorSheet(
         return List.copyOf(rows);
     }
 
-    public String detailText() {
+    public Text detailText() {
         return pregnant ? fatherText : lastBirthText;
     }
 

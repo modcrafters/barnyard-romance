@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,11 +27,11 @@ class HerdToolRulesTest {
 
     @Test
     void labelsDescribeTheStick() {
-        assertEquals("Inspect animal", HerdTool.info().label());
-        assertEquals("Familiarity +10%", HerdTool.familiarity(1).label());
-        assertEquals("Familiarity -10%", HerdTool.familiarity(-1).label());
-        assertEquals("Familiarity 30%", HerdTool.familiaritySet(30).label());
-        assertEquals("Pregnancy +10%", HerdTool.pregnancy(1).label());
-        assertEquals("Pregnancy 80%", HerdTool.pregnancySet(80).label());
+        assertEquals("Inspect animal", English.of(HerdTool.info().label()));
+        assertEquals("Familiarity +10%", English.of(HerdTool.familiarity(1).label()));
+        assertEquals("Familiarity -10%", English.of(HerdTool.familiarity(-1).label()));
+        assertEquals("Familiarity 30%", English.of(HerdTool.familiaritySet(30).label()));
+        assertEquals("Pregnancy +10%", English.of(HerdTool.pregnancy(1).label()));
+        assertEquals("Pregnancy 80%", English.of(HerdTool.pregnancySet(80).label()));
     }
 }

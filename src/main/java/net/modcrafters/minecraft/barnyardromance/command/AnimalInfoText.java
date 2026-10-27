@@ -9,16 +9,21 @@ import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+// The one-line summary the info stick prints. Its words are lower case mid-sentence, so it has its own keys.
 public final class AnimalInfoText {
+    private static final String SEPARATOR = ", ";
+
     private AnimalInfoText() {
     }
 
-    public static String format(
+    public static Text format(
             String name,
             String speciesId,
             Optional<AnimalTraits> traits,
@@ -29,84 +34,96 @@ public final class AnimalInfoText {
         return format(name, speciesId, traits, attributeScale, stage, Optional.empty(), size, 0L);
     }
 
-    public static String format(
+    public static Text format(
             String name,
             String speciesId,
             Optional<AnimalTraits> traits,
             double attributeScale,
             AgeStage stage,
-            Optional<String> pregnancyLine,
+            Optional<Text> pregnancyLine,
             SizeSettings size,
             long now
     ) {
-        return format(name, speciesId, traits, attributeScale, stage, pregnancyLine, size, now, "");
+        return format(name, speciesId, traits, attributeScale, stage, pregnancyLine, size, now, Text.EMPTY);
     }
 
-    public static String format(
+    public static Text format(
             String name,
             String speciesId,
             Optional<AnimalTraits> traits,
             double attributeScale,
             AgeStage stage,
-            Optional<String> pregnancyLine,
+            Optional<Text> pregnancyLine,
             SizeSettings size,
             long now,
-            String milkText
+            Text milkText
     ) {
-        String life = stage.label().toLowerCase(Locale.ROOT);
         String attribute = formatScale(attributeScale);
-        String text;
+        List<Text> parts = new ArrayList<>();
         if (traits.isEmpty()) {
-            text = name + " (" + speciesId + "): unassigned, attribute " + attribute + ", " + life;
+            parts.add(Text.of("gui.barnyard_romance.info.unassigned"));
+            parts.add(Text.of("gui.barnyard_romance.info.attribute", attribute));
+            parts.add(life(stage));
         } else {
             AnimalTraits value = traits.get();
-            text = name + " (" + speciesId + "): " + label(value, size)
-                    + ", scale " + formatScale(value.scale())
-                    + " (attribute " + attribute + "), "
-                    + life
-                    + ", familiar " + Familiarity.percent(value.familiarity())
-                    + ", growth " + Growth.clock(value.growthTicks())
-                    + ", weight " + Familiarity.percent(value.weight());
+            parts.add(label(value, size));
+            parts.add(Text.of("gui.barnyard_romance.info.scale", formatScale(value.scale()), attribute));
+            parts.add(life(stage));
+            parts.add(Text.of("gui.barnyard_romance.info.familiar", Familiarity.percent(value.familiarity())));
+            parts.add(Text.of("gui.barnyard_romance.info.growth", Growth.clock(value.growthTicks())));
+            parts.add(Text.of("gui.barnyard_romance.info.weight", Familiarity.percent(value.weight())));
             if (value.sex() == Sex.FEMALE) {
-                text += ", fertility " + Familiarity.percent(Fertility.current(value, BarnyardConfig.current().ageFor(speciesId), now));
+                double fertility = Fertility.current(value, BarnyardConfig.current().ageFor(speciesId), now);
+                parts.add(Text.of("gui.barnyard_romance.info.fertility", Familiarity.percent(fertility)));
             }
             if (!milkText.isEmpty()) {
-                text += ", milk " + milkText;
+                parts.add(Text.of("gui.barnyard_romance.info.milk", milkText));
             }
         }
-        if (pregnancyLine.isEmpty()) {
-            return text;
-        }
-        return text + ", " + pregnancyLine.get();
+        pregnancyLine.ifPresent(parts::add);
+        return Text.of("gui.barnyard_romance.info.line", name, speciesId, Text.join(SEPARATOR, parts));
     }
 
-    public static List<String> hoverLines(String name, Optional<AnimalTraits> traits, AgeStage stage, SizeSettings size) {
+    public static List<Text> hoverLines(String name, Optional<AnimalTraits> traits, AgeStage stage, SizeSettings size) {
         return hoverLines(name, traits, stage, Optional.empty(), size);
     }
 
-    public static List<String> hoverLines(
+    public static List<Text> hoverLines(
             String name,
             Optional<AnimalTraits> traits,
             AgeStage stage,
-            Optional<String> pregnancyLine,
+            Optional<Text> pregnancyLine,
             SizeSettings size
     ) {
         if (traits.isEmpty()) {
             return List.of();
         }
         AnimalTraits value = traits.get();
-        String life = stage.label().toLowerCase(Locale.ROOT);
-        String detail = label(value, size) + ", " + life + ", growth " + Growth.clock(value.growthTicks());
+        Text detail = Text.join(SEPARATOR, List.of(
+                label(value, size),
+                life(stage),
+                Text.of("gui.barnyard_romance.info.growth", Growth.clock(value.growthTicks()))
+        ));
         if (pregnancyLine.isEmpty()) {
-            return List.of(name, detail);
+            return List.of(Text.plain(name), detail);
         }
-        return List.of(name, detail, pregnancyLine.get());
+        return List.of(Text.plain(name), detail, pregnancyLine.get());
     }
 
-    private static String label(AnimalTraits traits, SizeSettings size) {
-        return SizeClass.of(traits.sex(), traits.scale(), size).name()
-                + " "
-                + traits.sex().name().toLowerCase(Locale.ROOT);
+    private static Text label(AnimalTraits traits, SizeSettings size) {
+        String letter = SizeClass.of(traits.sex(), traits.scale(), size).name();
+        return traits.sex() == Sex.FEMALE
+                ? Text.of("gui.barnyard_romance.info.female", letter)
+                : Text.of("gui.barnyard_romance.info.male", letter);
+    }
+
+    private static Text life(AgeStage stage) {
+        return switch (stage) {
+            case BABY -> Text.of("gui.barnyard_romance.info.baby");
+            case YOUNG -> Text.of("gui.barnyard_romance.info.young");
+            case ADULT -> Text.of("gui.barnyard_romance.info.adult");
+            case OLD -> Text.of("gui.barnyard_romance.info.old");
+        };
     }
 
     private static String formatScale(double scale) {

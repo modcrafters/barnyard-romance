@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.age;
 
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,6 +86,9 @@ class AgingTest {
         assertFalse(AgeStage.YOUNG.canBreed());
         assertTrue(AgeStage.ADULT.canBreed());
         assertTrue(AgeStage.OLD.canBreed());
-        assertEquals("Young", AgeStage.YOUNG.label());
+        assertEquals("Young", English.of(AgeStage.YOUNG.text()));
+        assertEquals("Baby", English.of(AgeStage.BABY.text()));
+        assertEquals("Adult", English.of(AgeStage.ADULT.text()));
+        assertEquals("Old", English.of(AgeStage.OLD.text()));
     }
 }

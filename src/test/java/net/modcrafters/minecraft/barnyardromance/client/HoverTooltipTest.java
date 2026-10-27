@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -23,7 +24,7 @@ class HoverTooltipTest {
                 Optional.of(new AnimalTraits(Sex.FEMALE, 0.90)),
                 AgeStage.ADULT,
                 size
-        );
+        ).stream().map(English::of).toList();
 
         assertEquals(List.of("Cow", "XL female, adult, growth 20m 0s"), lines);
     }
@@ -35,7 +36,7 @@ class HoverTooltipTest {
                 Optional.of(new AnimalTraits(Sex.MALE, 1.12)),
                 AgeStage.BABY,
                 size
-        );
+        ).stream().map(English::of).toList();
 
         assertEquals(List.of("Pig", "S male, baby, growth 20m 0s"), lines);
     }

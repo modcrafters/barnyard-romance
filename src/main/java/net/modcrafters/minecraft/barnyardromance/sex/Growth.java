@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 
 public final class Growth {
@@ -35,13 +36,14 @@ public final class Growth {
         return (int) Math.round(slow - clamped * (slow - fast));
     }
 
-    public static String clock(int ticks) {
-        long totalSeconds = Math.max(0, ticks) / 20L;
+    // Real minutes and seconds, the way growth, feeding and pregnancy count down.
+    public static Text clock(long ticks) {
+        long totalSeconds = Math.max(0L, ticks) / 20L;
         long minutes = totalSeconds / 60L;
         long seconds = totalSeconds % 60L;
         if (minutes > 0L) {
-            return minutes + "m " + seconds + "s";
+            return Text.of("gui.barnyard_romance.time.minutes_seconds", minutes, seconds);
         }
-        return seconds + "s";
+        return Text.of("gui.barnyard_romance.time.seconds", seconds);
     }
 }

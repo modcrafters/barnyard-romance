@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.sex.Growth;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 
@@ -85,12 +87,8 @@ public final class Familiarity {
         return fedToday(lastFedTick, now) ? GameDay.ticksUntilMidnight(now) : 0L;
     }
 
-    public static String nextFeed(long remainingTicks) {
-        long totalSeconds = Math.max(0L, remainingTicks) / 20L;
-        long minutes = totalSeconds / 60L;
-        long seconds = totalSeconds % 60L;
-        String time = minutes > 0L ? minutes + "m " + seconds + "s" : seconds + "s";
-        return "Can be fed again in " + time + ".";
+    public static Text nextFeed(long remainingTicks) {
+        return Text.of("message.barnyard_romance.fed_again_in", Growth.clock(remainingTicks));
     }
 
     public static Click click(boolean sneaking, boolean familiar, Response response) {
@@ -111,8 +109,8 @@ public final class Familiarity {
         return Math.clamp(mother, 0.0, 1.0) / 2.0;
     }
 
-    public static String percent(double familiarity) {
+    public static Text percent(double familiarity) {
         long points = Math.round(Math.clamp(familiarity, 0.0, 1.0) * 100.0);
-        return points + "%";
+        return Text.of("gui.barnyard_romance.percent", points);
     }
 }

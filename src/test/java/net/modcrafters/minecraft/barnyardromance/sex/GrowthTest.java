@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,7 +16,8 @@ class GrowthTest {
 
     @Test
     void growthTimeReadsAsAClock() {
-        assertEquals("20m 0s", Growth.clock(24_000));
-        assertEquals("12m 30s", Growth.clock(15_000));
+        assertEquals("20m 0s", English.of(Growth.clock(24_000)));
+        assertEquals("12m 30s", English.of(Growth.clock(15_000)));
+        assertEquals("45s", English.of(Growth.clock(900)));
     }
 }

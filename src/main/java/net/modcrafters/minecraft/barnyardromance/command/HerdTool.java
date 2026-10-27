@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.text.Text;
+
 public record HerdTool(Kind kind, Change change, int percent) {
     public enum Kind {
         INFO,
@@ -46,14 +48,21 @@ public record HerdTool(Kind kind, Change change, int percent) {
         return change == Change.DOWN ? -1 : 1;
     }
 
-    public String label() {
+    public Text label() {
         if (kind == Kind.INFO) {
-            return "Inspect animal";
+            return Text.of("item.barnyard_romance.herd_stick.inspect");
         }
-        String name = kind == Kind.FAMILIARITY ? "Familiarity" : "Pregnancy";
-        if (change == Change.SET) {
-            return name + " " + percent + "%";
+        if (kind == Kind.FAMILIARITY) {
+            return switch (change) {
+                case SET -> Text.of("item.barnyard_romance.herd_stick.familiarity_set", percent);
+                case DOWN -> Text.of("item.barnyard_romance.herd_stick.familiarity_down");
+                default -> Text.of("item.barnyard_romance.herd_stick.familiarity_up");
+            };
         }
-        return name + (change == Change.DOWN ? " -10%" : " +10%");
+        return switch (change) {
+            case SET -> Text.of("item.barnyard_romance.herd_stick.pregnancy_set", percent);
+            case DOWN -> Text.of("item.barnyard_romance.herd_stick.pregnancy_down");
+            default -> Text.of("item.barnyard_romance.herd_stick.pregnancy_up");
+        };
     }
 }

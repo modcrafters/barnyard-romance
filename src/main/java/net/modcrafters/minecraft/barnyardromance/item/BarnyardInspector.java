@@ -21,8 +21,8 @@ public class BarnyardInspector extends Item {
 
     public static ItemStack create() {
         ItemStack stack = new ItemStack(BarnyardItems.INSPECTOR);
-        stack.set(net.minecraft.core.component.DataComponents.ITEM_NAME, Component.literal("Barnyard Inspector"));
-        stack.set(net.minecraft.core.component.DataComponents.LORE, new ItemLore(List.of(Component.literal("Use on an animal"))));
+        stack.set(net.minecraft.core.component.DataComponents.ITEM_NAME, Component.translatable("item.barnyard_romance.inspector"));
+        stack.set(net.minecraft.core.component.DataComponents.LORE, new ItemLore(List.of(Component.translatable("item.barnyard_romance.lore.use_on_animal"))));
         return stack;
     }
 
