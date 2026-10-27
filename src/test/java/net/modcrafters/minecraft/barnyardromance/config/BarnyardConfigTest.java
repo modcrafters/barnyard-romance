@@ -211,4 +211,40 @@ class BarnyardConfigTest {
         assertEquals(new SizeSettings(0.8, 1.2, 0.1), parsed.sizeFor("minecraft:cow"));
         assertTrue(parsed.speciesEnabled("minecraft:cow"));
     }
+
+    @Test
+    void bellyDefaults() {
+        assertEquals(BellySettings.DEFAULTS, BarnyardConfig.parse("{}").bellyFor("minecraft:cow"));
+    }
+
+    @Test
+    void bellyPerSpecies() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                {"bellyMaxWiden": 0.2, "bellyStart": 0.5, "species": {"minecraft:pig": {"bellyMaxWiden": 0.3}}}
+                """);
+
+        assertEquals(new BellySettings(0.3, 0.5), config.bellyFor("minecraft:pig"));
+        assertEquals(new BellySettings(0.2, 0.5), config.bellyFor("minecraft:cow"));
+    }
+
+    @Test
+    void bellyIsClamped() {
+        assertEquals(new BellySettings(0.0, 0.99), BarnyardConfig.parse("{\"bellyMaxWiden\": -1, \"bellyStart\": 1.5}").bellyFor("minecraft:cow"));
+        assertEquals(new BellySettings(1.0, 0.0), BarnyardConfig.parse("{\"bellyMaxWiden\": 5, \"bellyStart\": -1}").bellyFor("minecraft:cow"));
+        assertEquals(new BellySettings(1.0, 0.0), BarnyardConfig.parse("""
+                {"species": {"minecraft:cow": {"bellyMaxWiden": 5, "bellyStart": -1}}}
+                """).bellyFor("minecraft:cow"));
+    }
+
+    @Test
+    void bellyRoundTrips() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                {"bellyMaxWiden": 0.2, "species": {"minecraft:pig": {"bellyStart": 0.6}}}
+                """);
+
+        BarnyardConfig parsed = BarnyardConfig.parse(config.toJson());
+
+        assertEquals(new BellySettings(0.2, 0.6), parsed.bellyFor("minecraft:pig"));
+        assertEquals(new BellySettings(0.2, 0.4), parsed.bellyFor("minecraft:cow"));
+    }
 }

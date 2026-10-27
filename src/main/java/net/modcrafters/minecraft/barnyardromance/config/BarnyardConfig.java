@@ -24,6 +24,8 @@ public final class BarnyardConfig {
     private static final long MAX_PREGNANCY_TICKS = 480_000L;
     private static final long MAX_LITTER_SIZE = 8L;
     private static final long MAX_AGE_TICKS = 24_000_000L;
+    // A belly that starts at the very end would never show.
+    private static final double MAX_BELLY_START = 0.99;
 
     private static BarnyardConfig current = defaults();
 
@@ -34,6 +36,7 @@ public final class BarnyardConfig {
     private final Range pregnancyTicks;
     private final Range litter;
     private final AgeSettings age;
+    private final BellySettings belly;
     private final Map<String, SpeciesSettings> species;
     private final Tuning tuning;
 
@@ -45,6 +48,7 @@ public final class BarnyardConfig {
             Range pregnancyTicks,
             Range litter,
             AgeSettings age,
+            BellySettings belly,
             Map<String, SpeciesSettings> species,
             Tuning tuning
     ) {
@@ -55,12 +59,13 @@ public final class BarnyardConfig {
         this.pregnancyTicks = pregnancyTicks;
         this.litter = litter;
         this.age = age;
+        this.belly = belly;
         this.species = species;
         this.tuning = tuning;
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, Map.of(), Tuning.DEFAULTS);
+        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), Tuning.DEFAULTS);
     }
 
     public static BarnyardConfig current() {
@@ -108,6 +113,10 @@ public final class BarnyardConfig {
                 ageTicks(optionalLong(object, "oldAfterTicks"), AgeSettings.DEFAULTS.oldAfterTicks()),
                 ageTicks(optionalLong(object, "deathAfterTicks"), AgeSettings.DEFAULTS.deathAfterTicks())
         );
+        BellySettings belly = new BellySettings(
+                bellyMaxWiden(optionalDouble(object, "bellyMaxWiden"), BellySettings.DEFAULTS.maxWiden()),
+                bellyStart(optionalDouble(object, "bellyStart"), BellySettings.DEFAULTS.start())
+        );
         Map<String, SpeciesSettings> species = new LinkedHashMap<>();
         if (object.has("species") && !object.get("species").isJsonNull()) {
             if (!object.get("species").isJsonObject()) {
@@ -128,6 +137,7 @@ public final class BarnyardConfig {
                 pregnancyTicks,
                 litter,
                 age,
+                belly,
                 Collections.unmodifiableMap(species),
                 object.get("tuning") instanceof JsonObject tuning ? Tuning.from(tuning) : Tuning.DEFAULTS
         );
@@ -156,6 +166,8 @@ public final class BarnyardConfig {
         object.addProperty("youngTicks", age.youngTicks());
         object.addProperty("oldAfterTicks", age.oldAfterTicks());
         object.addProperty("deathAfterTicks", age.deathAfterTicks());
+        object.addProperty("bellyMaxWiden", belly.maxWiden());
+        object.addProperty("bellyStart", belly.start());
         if (!species.isEmpty()) {
             JsonObject speciesObject = new JsonObject();
             for (Map.Entry<String, SpeciesSettings> entry : species.entrySet()) {
@@ -227,6 +239,18 @@ public final class BarnyardConfig {
                 ageTicks(settings.youngTicks(), age.youngTicks()),
                 ageTicks(settings.oldAfterTicks(), age.oldAfterTicks()),
                 ageTicks(settings.deathAfterTicks(), age.deathAfterTicks())
+        );
+    }
+
+    // The user's species entry, then the global value, for each of the two on its own.
+    public BellySettings bellyFor(String speciesId) {
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings == null) {
+            return belly;
+        }
+        return new BellySettings(
+                bellyMaxWiden(settings.bellyMaxWiden(), belly.maxWiden()),
+                bellyStart(settings.bellyStart(), belly.start())
         );
     }
 
@@ -314,6 +338,21 @@ public final class BarnyardConfig {
         return Math.round(number(object, name, 0.0));
     }
 
+    private static Double optionalDouble(JsonObject object, String name) {
+        if (!object.has(name) || object.get(name).isJsonNull()) {
+            return null;
+        }
+        return number(object, name, 0.0);
+    }
+
+    private static double bellyMaxWiden(Double value, double fallback) {
+        return Math.clamp(value == null ? fallback : value, 0.0, 1.0);
+    }
+
+    private static double bellyStart(Double value, double fallback) {
+        return Math.clamp(value == null ? fallback : value, 0.0, MAX_BELLY_START);
+    }
+
     private static String optionalString(JsonObject object, String name) {
         if (!object.has(name) || object.get(name).isJsonNull()) {
             return null;
@@ -344,7 +383,9 @@ public final class BarnyardConfig {
             Long youngTicks,
             Long oldAfterTicks,
             Long deathAfterTicks,
-            String diet
+            String diet,
+            Double bellyMaxWiden,
+            Double bellyStart
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -365,7 +406,9 @@ public final class BarnyardConfig {
                     optionalLong(object, "youngTicks"),
                     optionalLong(object, "oldAfterTicks"),
                     optionalLong(object, "deathAfterTicks"),
-                    optionalString(object, "diet")
+                    optionalString(object, "diet"),
+                    optionalDouble(object, "bellyMaxWiden"),
+                    optionalDouble(object, "bellyStart")
             );
         }
 
@@ -406,6 +449,12 @@ public final class BarnyardConfig {
             }
             if (diet != null) {
                 object.addProperty("diet", diet);
+            }
+            if (bellyMaxWiden != null) {
+                object.addProperty("bellyMaxWiden", bellyMaxWiden);
+            }
+            if (bellyStart != null) {
+                object.addProperty("bellyStart", bellyStart);
             }
             return object;
         }
