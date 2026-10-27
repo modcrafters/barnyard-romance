@@ -85,7 +85,9 @@ processResources {
             'credits'                      : credits,
             'java_version'                 : java_version,
             // Mixins only some versions have, as quoted names with a trailing comma, from versions/<mc>/gradle.properties.
-            'extra_mixins'                 : commonProject.findProperty('extra_mixins') ?: ''
+            'extra_mixins'                 : commonProject.findProperty('extra_mixins') ?: '',
+            // The same for client-only mixins.
+            'extra_client_mixins'          : commonProject.findProperty('extra_client_mixins') ?: ''
     ]
 
     var jsonExpandProps = expandProps.collectEntries {
