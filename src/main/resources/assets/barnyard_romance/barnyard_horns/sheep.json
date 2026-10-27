@@ -1,0 +1,43 @@
+{
+  "entities": ["minecraft:sheep"],
+  "attach": "head",
+  "texture": "barnyard_romance:textures/entity/horns/sheep.png",
+  "texture_size": [32, 32],
+  "female_chance": 0.25,
+  "male": [
+    {
+      "pivot": [-3.4, -3.2, -2.5], "rotation": [25, -25, 0], "side": "right", "mirror": true,
+      "cubes": [ { "from": [-1.5, -1.5, 0], "size": [3, 3, 3], "uv": [0, 0] } ],
+      "children": [
+        {
+          "pivot": [0, 0, 3], "rotation": [-75, -15, 0],
+          "cubes": [ { "from": [-1.5, -1.5, 0], "size": [3, 3, 3], "uv": [0, 6], "inflate": -0.3 } ],
+          "children": [
+            {
+              "pivot": [0, 0, 3], "rotation": [-75, -15, 0],
+              "cubes": [ { "from": [-1, -1, 0], "size": [2, 2, 3], "uv": [12, 0] } ],
+              "children": [
+                {
+                  "pivot": [0, 0, 2.6], "rotation": [-75, -15, 0],
+                  "cubes": [ { "from": [-1, -1, 0], "size": [2, 2, 2], "uv": [12, 5], "inflate": -0.2 } ],
+                  "children": [
+                    {
+                      "pivot": [0, 0, 1.8], "rotation": [-60, -10, 0],
+                      "cubes": [ { "from": [-0.5, -0.5, 0], "size": [1, 1, 2], "uv": [12, 9] } ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "female": [
+    {
+      "pivot": [-2.6, -3.8, -2], "rotation": [35, -20, 0], "side": "right", "mirror": true,
+      "cubes": [ { "from": [-1, -1, 0], "size": [2, 2, 2], "uv": [0, 12], "inflate": -0.3 } ]
+    }
+  ]
+}

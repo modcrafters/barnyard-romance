@@ -1,0 +1,39 @@
+{
+  "entities": ["minecraft:cow", "minecraft:mooshroom"],
+  "attach": "head",
+  "texture": "barnyard_romance:textures/entity/horns/cattle.png",
+  "texture_size": [32, 32],
+  "female_chance": 0.75,
+  "hide": [
+    "head/right_horn",
+    "head/left_horn",
+    { "part": "head", "size": [1, 3, 1] },
+    { "part": "head", "size": [4, 2, 2] },
+    { "part": "head", "size": [2, 2, 2] },
+    { "part": "head", "size": [1, 2, 1] }
+  ],
+  "male": [
+    {
+      "pivot": [-3.5, -3, -4], "rotation": [0, 0, 10], "side": "right", "mirror": true,
+      "cubes": [ { "from": [-4, -1, -1], "size": [4, 2, 2], "uv": [0, 0] } ],
+      "children": [
+        {
+          "pivot": [-4, 0, 0], "rotation": [0, -25, 25],
+          "cubes": [ { "from": [-3, -1, -1], "size": [3, 2, 2], "uv": [0, 4], "inflate": -0.2 } ],
+          "children": [
+            {
+              "pivot": [-3, 0, 0], "rotation": [0, -20, 35],
+              "cubes": [ { "from": [-2, -1, -1], "size": [2, 2, 2], "uv": [0, 8], "inflate": -0.45 } ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "female": [
+    {
+      "pivot": [-4, -3.5, -4.5], "rotation": [0, 0, -20], "side": "right", "mirror": true,
+      "cubes": [ { "from": [-1, -3, -1], "size": [2, 3, 2], "uv": [0, 12], "inflate": -0.45 } ]
+    }
+  ]
+}
