@@ -62,4 +62,9 @@ public class FabricBreedingGameTests {
     public void animalsOfUnknownAgeNeverDie(GameTestHelper helper) {
         BreedingGameTests.animalsOfUnknownAgeNeverDie(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void traitsSurviveSaveAndLoad(GameTestHelper helper) {
+        BreedingGameTests.traitsSurviveSaveAndLoad(helper);
+    }
 }

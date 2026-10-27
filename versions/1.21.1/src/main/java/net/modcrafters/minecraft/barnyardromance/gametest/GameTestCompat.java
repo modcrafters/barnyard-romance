@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -43,5 +44,16 @@ public final class GameTestCompat {
 
     public static <T extends Entity> T spawn(GameTestHelper helper, EntityType<T> type, int x, int y, int z) {
         return helper.spawn(type, x, y + 1, z);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Entity> T reloaded(GameTestHelper helper, T entity) {
+        CompoundTag saved = entity.saveWithoutId(new CompoundTag());
+        T copy = (T) entity.getType().create(helper.getLevel());
+        if (copy == null) {
+            throw failure(helper, "could not create a " + entity.getType());
+        }
+        copy.load(saved);
+        return copy;
     }
 }

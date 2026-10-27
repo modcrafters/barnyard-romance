@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -38,7 +39,8 @@ public final class BreedingGameTests {
             new Case("a_birth_costs_the_mother_fertility", 200, BreedingGameTests::aBirthCostsTheMotherFertility),
             new Case("young_animals_do_not_fall_in_love", 20, BreedingGameTests::youngAnimalsDoNotFallInLove),
             new Case("old_animals_die_of_old_age", 20, BreedingGameTests::oldAnimalsDieOfOldAge),
-            new Case("animals_of_unknown_age_never_die", 20, BreedingGameTests::animalsOfUnknownAgeNeverDie)
+            new Case("animals_of_unknown_age_never_die", 20, BreedingGameTests::animalsOfUnknownAgeNeverDie),
+            new Case("traits_survive_save_and_load", 20, BreedingGameTests::traitsSurviveSaveAndLoad)
     );
 
     private BreedingGameTests() {
@@ -222,6 +224,24 @@ public final class BreedingGameTests {
 
         helper.assertTrue(!AgeController.checkDeath(cow, helper.getLevel(), Long.MAX_VALUE / 2), "a cow of unknown age died");
         helper.assertTrue(cow.isAlive(), "a cow of unknown age is dead");
+        helper.succeed();
+    }
+
+    // What the loader's data attachments write into the entity's save comes back when it loads.
+    public static void traitsSurviveSaveAndLoad(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.2, 0.75, 42L));
+        Pregnancy pregnancy = new Pregnancy(100L, 72_000L, "minecraft:cow", 1.1, 2, 0.75, 24_000, 0.6, List.of(), PregnancyCare.NONE);
+        Services.DATA.setPregnancy(cow, pregnancy);
+
+        Animal loaded = GameTestCompat.reloaded(helper, cow);
+
+        AnimalTraits traits = traits(helper, loaded);
+        helper.assertTrue(traits.sex() == Sex.FEMALE && traits.scale() == 1.2, "the loaded cow is " + traits);
+        helper.assertTrue(traits.familiarity() == 0.75 && traits.lastFedTick() == 42L, "the loaded cow forgot its feeding: " + traits);
+        Pregnancy carried = pregnancy(helper, loaded);
+        helper.assertTrue(carried.conceivedAt() == 100L && carried.durationTicks() == 72_000L && carried.litterSize() == 2,
+                "the loaded pregnancy is " + carried);
         helper.succeed();
     }
 
