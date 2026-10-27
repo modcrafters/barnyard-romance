@@ -113,5 +113,12 @@
   "commands.barnyard_romance.foods.scan.done_one_tag": "Scanned %s recipes: added %s items to %s tag. Wrote %s. Copy the barnyard_romance_scan folder into your world's datapacks and run /reload.",
   "commands.barnyard_romance.foods.scan.unread": "Couldn't read: %s.",
   "commands.barnyard_romance.foods.scan.recipe_type": "%s (%s)",
-  "commands.barnyard_romance.foods.scan.failed": "The food scan failed: %s"
+  "commands.barnyard_romance.foods.scan.failed": "The food scan failed: %s",
+  "tag.item.barnyard_romance.contains_fish": "Contains Fish",
+  "tag.item.barnyard_romance.contains_meat": "Contains Meat",
+  "tag.item.barnyard_romance.milk_buckets": "Milk Buckets",
+  "tag.item.barnyard_romance.sized_drops": "Drops Scaled by Animal Size",
+  "tag.item.barnyard_romance.superfood.golden": "Superfood Golden Treats",
+  "tag.item.barnyard_romance.superfood.grains": "Superfood Grains",
+  "tag.item.barnyard_romance.superfood.roots": "Superfood Roots"
 }
