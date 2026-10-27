@@ -41,4 +41,4 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 - `gradlew :26.3:test` runs the unit tests for the pure rules.
 - `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
 - `gradlew :fabric:26.3:runClientGametest` opens a real client and screenshots the inspector.
-- CI (`.github/workflows/ci.yml`) runs all of these on every pull request. A pull request can only merge when the `all-versions` check passes.
+- CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.

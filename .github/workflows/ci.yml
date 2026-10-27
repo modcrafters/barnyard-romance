@@ -1,7 +1,7 @@
 name: CI
 
 # Every pull request must build and pass on every Minecraft version before it can merge.
-# The ruleset on main requires the `all-versions` job, which only passes when every version job did.
+# `all-versions` only passes when every version job did, so it is the one check for a ruleset on main to require.
 on:
   pull_request:
   push:
