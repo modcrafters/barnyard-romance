@@ -6,10 +6,15 @@ Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only
 
 ## Versions
 
-- Minecraft **26.3** (latest stable release with both Fabric and NeoForge)
-- Java **25**
-- Fabric Loader 0.19.5, Fabric API 0.162.0+26.3
-- NeoForge 26.3.0.76
+One codebase builds three jars:
+
+| Minecraft | Loader | Java | Loader version |
+| --- | --- | --- | --- |
+| **26.3** (latest stable release with both Fabric and NeoForge) | Fabric | 25 | Fabric Loader 0.19.5, Fabric API 0.162.0+26.3 |
+| **26.3** | NeoForge | 25 | NeoForge 26.3.0.76 |
+| **1.21.1** (where most modpacks are) | NeoForge | 21 | NeoForge 21.1.265 |
+
+Shared code keeps to Java 21. Every change must build and pass on all three before it can merge.
 
 ## Import and run in IntelliJ IDEA
 
