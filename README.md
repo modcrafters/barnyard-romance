@@ -4,6 +4,46 @@ A Minecraft Java mod (Fabric + NeoForge, one shared codebase) that adds male/fem
 
 Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. `/barnyard info`, while you look at an animal, still includes the exact scale. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby. The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Food-driven progress is not in yet.
 
+## Bellies and horns
+
+These change only how animals are drawn, on the client. Nothing new is saved or sent.
+
+- **Pregnant belly:** a pregnant female gets wider as her pregnancy goes on. Her height, length and hitbox stay the same. She starts to widen at `bellyStart` (default 0.4, so 40% of the way through) and ends `bellyMaxWiden` wider (default 0.15). Both keys go in `config/barnyard_romance.json`, either at the top level or in a species entry.
+- **Horns:** rams, bulls and billy goats have horns. Ewes, cows and nanny goats sometimes have small ones. Babies have none. Horns appear when an animal turns young and grow until it is an adult. Vanilla's own cow and goat horns are hidden on animals the mod draws horns for.
+- **Switches:** `config/barnyard_romance-client.json` has `belly` and `horns`, both `true` by default. Turning `horns` off brings back exactly what vanilla draws. Changes need a restart.
+
+### Horn files
+
+Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>.json`. The mod ships `cattle.json` (cows and mooshrooms), `sheep.json` and `goat.json`. To change one, put a file with the same namespace and name in a resource pack. To give a modded animal horns, add a new file that names it. The animal also needs to be tracked by the mod, so it must have a sex.
+
+```json
+{
+  "entities": ["examplemod:yak"],
+  "attach": "head",
+  "offset": [0, 0, 0],
+  "texture": "examplemod:textures/entity/yak_horns.png",
+  "texture_size": [32, 32],
+  "female_chance": 0.5,
+  "hide": ["head/horns", { "part": "head", "size": [1, 3, 1] }],
+  "male": [
+    {
+      "pivot": [-4, -3, -4], "rotation": [0, 0, 10], "side": "right", "mirror": true,
+      "cubes": [ { "from": [-4, -1, -1], "size": [4, 2, 2], "uv": [0, 0], "inflate": 0 } ],
+      "children": [ { "pivot": [-4, 0, 0], "rotation": [0, -25, 25], "cubes": [ { "from": [-3, -1, -1], "size": [3, 2, 2], "uv": [0, 4] } ] } ]
+    }
+  ],
+  "female": []
+}
+```
+
+- Every number is in model pixels or degrees, like vanilla model code and Blockbench.
+- `attach` is the model part the horns hang from, as a `/`-separated path from the model's root. `offset` moves the horns' centre, for heads that are not centred on x = 0 (a goat's head is at −0.5).
+- A part has a `pivot` and a `rotation` (applied Z, then Y, then X), cubes placed relative to the pivot, and optional `children` placed relative to it. Each horn part grows from its pivot.
+- `mirror: true` adds the same part mirrored onto the other side, so each pair is written once. `side` (`left` is +X, the animal's own left) lets a goat that has lost one horn skip that side.
+- A female has horns when a fixed random number from her UUID is below `female_chance`, so she keeps the same horns for life.
+- `hide` lists vanilla horns to hide whenever the mod draws this animal's horns. It takes either a part path or the cubes of one part matching `size` (and `from`, if given). Entries a model doesn't have are ignored, so one list can cover every variant on every version.
+- Models built some other way, such as GeckoLib, can't take horns from these files. A file whose `attach` part is missing logs one warning and draws nothing.
+
 ## Versions
 
 One codebase builds three jars:
@@ -45,7 +85,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 
 - `gradlew :26.3:test` runs the unit tests for the pure rules.
 - `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
-- `gradlew :fabric:26.3:runClientGametest` opens a real client and screenshots the inspector.
+- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, and of rows of animals showing horns and bellies.
 - On 1.21.1 the same checks run with `gradlew :1.21.1:test` and `gradlew :neoforge:1.21.1:runGameTestServer` (NeoForge only). There each test runs in its own batch, and `GameTestCompat` covers the steps that differ, such as test positions counting from one block lower.
 - CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.
 
@@ -57,4 +97,10 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 ### 1.21.1 test gaps
 
 - Every shared game test runs on 1.21.1.
-- The Fabric client game test (`InspectorClientGameTest`) runs on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card and tooltip are checked by hand.
+- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies and horns are checked by hand. For horns and bellies, check:
+  - a ewe or cow late in pregnancy is wider;
+  - bulls, rams and billies have horns;
+  - a billy that has lost a horn shows only one;
+  - calves and lambs have no horns;
+  - hornless cows and nannies show no vanilla horns either;
+  - with `horns` off, vanilla's horns come back.
