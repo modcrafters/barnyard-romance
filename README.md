@@ -41,4 +41,15 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 - `gradlew :26.3:test` runs the unit tests for the pure rules.
 - `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
 - `gradlew :fabric:26.3:runClientGametest` opens a real client and screenshots the inspector.
+- On 1.21.1 the same checks run with `gradlew :1.21.1:test` and `gradlew :neoforge:1.21.1:runGameTestServer` (NeoForge only). There each test runs in its own batch, and `GameTestCompat` covers the steps that differ, such as test positions counting from one block lower.
 - CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.
+
+### 1.21.1 differences
+
+- Pigs eat silently: their eating sound only came after 1.21.1.
+- The card above an animal is placed with the FOV setting and the camera, so it doesn't follow view bobbing or zoom mods.
+
+### 1.21.1 test gaps
+
+- Every shared game test runs on 1.21.1.
+- The Fabric client game test (`InspectorClientGameTest`) runs on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card and tooltip are checked by hand.

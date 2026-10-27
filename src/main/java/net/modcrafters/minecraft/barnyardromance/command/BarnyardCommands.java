@@ -10,6 +10,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+//? if >=26.1
 import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,7 +22,10 @@ public final class BarnyardCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("barnyard")
+                //? if >=1.21.11 {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                //?} else
+                //.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("info").executes(context -> inspector(context.getSource())))
                 .then(Commands.literal("foods").then(Commands.literal("scan").executes(context -> scan(context.getSource()))))
                 .then(Commands.literal("familiarity")
@@ -68,7 +72,10 @@ public final class BarnyardCommands {
 
     private static void give(ServerPlayer player, ItemStack stack) {
         if (!player.getInventory().add(stack)) {
+            //? if >=26.1 {
             player.drop(stack, false, Prediction.SERVER_ONLY);
+            //?} else
+            //player.drop(stack, false);
         }
     }
 }

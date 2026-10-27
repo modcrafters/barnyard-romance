@@ -47,27 +47,32 @@ public final class PregnancyCodecs {
     ).apply(instance, Pregnancy::new));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
     // The litter stays on the server; clients only see the fields below.
-    public static final StreamCodec<ByteBuf, Pregnancy> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_LONG,
-            Pregnancy::conceivedAt,
-            ByteBufCodecs.VAR_LONG,
-            Pregnancy::durationTicks,
-            ByteBufCodecs.STRING_UTF8,
-            Pregnancy::fatherSpecies,
-            ByteBufCodecs.DOUBLE,
-            Pregnancy::fatherScale,
-            ByteBufCodecs.VAR_INT,
-            Pregnancy::litterSize,
-            ByteBufCodecs.DOUBLE,
-            Pregnancy::motherFamiliarity,
-            ByteBufCodecs.VAR_INT,
-            Pregnancy::fatherGrowthTicks,
-            ByteBufCodecs.DOUBLE,
-            Pregnancy::fatherWeight,
-            CARE_STREAM_CODEC,
-            Pregnancy::care,
-            (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, care) -> new Pregnancy(
-                    conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, List.of(), care)
+    // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
+    public static final StreamCodec<ByteBuf, Pregnancy> STREAM_CODEC = StreamCodec.of(
+            (buf, pregnancy) -> {
+                ByteBufCodecs.VAR_LONG.encode(buf, pregnancy.conceivedAt());
+                ByteBufCodecs.VAR_LONG.encode(buf, pregnancy.durationTicks());
+                ByteBufCodecs.STRING_UTF8.encode(buf, pregnancy.fatherSpecies());
+                ByteBufCodecs.DOUBLE.encode(buf, pregnancy.fatherScale());
+                ByteBufCodecs.VAR_INT.encode(buf, pregnancy.litterSize());
+                ByteBufCodecs.DOUBLE.encode(buf, pregnancy.motherFamiliarity());
+                ByteBufCodecs.VAR_INT.encode(buf, pregnancy.fatherGrowthTicks());
+                ByteBufCodecs.DOUBLE.encode(buf, pregnancy.fatherWeight());
+                CARE_STREAM_CODEC.encode(buf, pregnancy.care());
+            },
+            // Arguments are evaluated left to right, so this reads the fields in the order they were written.
+            buf -> new Pregnancy(
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    ByteBufCodecs.STRING_UTF8.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.VAR_INT.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.VAR_INT.decode(buf),
+                    ByteBufCodecs.DOUBLE.decode(buf),
+                    List.of(),
+                    CARE_STREAM_CODEC.decode(buf)
+            )
     );
 
     private PregnancyCodecs() {

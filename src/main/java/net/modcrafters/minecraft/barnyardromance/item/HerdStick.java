@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
 import net.modcrafters.minecraft.barnyardromance.command.DebugSteps;
@@ -65,7 +66,7 @@ public class HerdStick extends Item {
         if (outcome.applied && HerdToolRules.consumed(tool, player.isCreative())) {
             stack.consume(1, player);
         }
-        return InteractionResult.SUCCESS_SERVER;
+        return VersionCompat.SUCCESS_SERVER;
     }
 
     private record Outcome(boolean applied, String message) {

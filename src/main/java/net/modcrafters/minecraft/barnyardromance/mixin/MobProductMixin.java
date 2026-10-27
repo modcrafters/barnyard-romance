@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+//? if >=1.21.11
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +20,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MobProductMixin {
     // Horses and camels act on most held items themselves (rear up, open inventory), so our tools go first.
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
+    //? if >=1.21.11 {
     private void barnyardromance$tools(Player player, InteractionHand hand, Vec3 location, CallbackInfoReturnable<InteractionResult> callback) {
+    //?} else
+    //private void barnyardromance$tools(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> callback) {
         ItemStack stack = player.getItemInHand(hand);
         if (!((Object) this instanceof Animal animal) || !BarnyardItems.isTool(stack)) {
             return;
@@ -38,7 +42,10 @@ public class MobProductMixin {
             ),
             cancellable = true
     )
+    //? if >=1.21.11 {
     private void barnyardromance$products(Player player, InteractionHand hand, Vec3 location, CallbackInfoReturnable<InteractionResult> callback) {
+    //?} else
+    //private void barnyardromance$products(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> callback) {
         if (!((Object) this instanceof Animal animal)) {
             return;
         }

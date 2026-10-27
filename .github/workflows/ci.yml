@@ -27,6 +27,14 @@ jobs:
           ./gradlew "Reset active project"
           git diff --exit-code
 
+      # Every version comment and replacement in stonecutter.gradle.kts has to turn back exactly, or switching the
+      # IDE to another version and back would rewrite code. The build itself never switches, so check it here.
+      - name: Check switching to 1.21.1 and back changes nothing
+        run: |
+          ./gradlew "Set active project to 1.21.1"
+          ./gradlew "Reset active project"
+          git diff --exit-code
+
       - name: Unit tests, jars and server game tests
         run: ./gradlew :26.3:test :fabric:26.3:build :neoforge:26.3:build :neoforge:26.3:runGameTestServer :fabric:26.3:runGametest
 
@@ -55,6 +63,27 @@ jobs:
         with:
           name: jars-26.3
           path: build/libs/*/*.jar
+
+  mc-1-21-1:
+    name: Minecraft 1.21.1 (NeoForge)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Unit tests, jar and server game tests
+        run: ./gradlew :1.21.1:test :neoforge:1.21.1:build :neoforge:1.21.1:runGameTestServer
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: jars-1.21.1
+          path: neoforge/versions/1.21.1/build/libs/barnyard_romance-neoforge-1.21.1-*.jar
 
   all-versions:
     name: all-versions

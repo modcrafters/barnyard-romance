@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
@@ -41,10 +41,8 @@ public final class PregnancyCareActions {
         if (animal.getHealth() < animal.getMaxHealth() && heal > 0.0F) {
             animal.heal(heal);
         }
-        if (animal instanceof AnimalEating eating) {
-            eating.barnyardromance$playEatingSound();
-        }
-        return InteractionResult.SUCCESS_SERVER;
+        VersionCompat.playEatingSound(animal, stack);
+        return VersionCompat.SUCCESS_SERVER;
     }
 
     // A normal food with pregnancy effects (say a bad food that slows it) works on a pregnant animal too.

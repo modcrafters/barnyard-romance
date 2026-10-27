@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 // Sizes one dropped stack, on death or from shearing: meat by its own curve, sized_drops by vanilla × size; both × sex × age.
 public final class ProductDrops {
@@ -56,5 +57,18 @@ public final class ProductDrops {
             stack.setCount(Yield.round(amount, random.nextDouble()));
         }
         return stack;
+    }
+
+    // One loot stack from a tracked animal's death: resized, then spawned in stacks that fit.
+    public static void dropSized(Animal animal, ItemStack stack, Consumer<ItemStack> spawn) {
+        ItemStack sized = stack;
+        try {
+            sized = resize(animal, stack, animal.getRandom());
+        } catch (RuntimeException exception) {
+            Constants.LOG.error("Failed to size a {} drop, leaving it to vanilla", AnimalSex.speciesId(animal), exception);
+        }
+        for (int count : DropStacks.sizes(sized.getCount(), sized.getMaxStackSize())) {
+            spawn.accept(sized.copyWithCount(count));
+        }
     }
 }

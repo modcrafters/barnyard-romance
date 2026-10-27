@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import java.util.function.BiConsumer;
 
+// versions/1.21.1 has its own copy: shearing rolled the wool count itself there.
 @Mixin(Sheep.class)
 public class SheepShearMixin {
     // Wool from shears and dispensers is sized before vanilla spawns it one at a time.

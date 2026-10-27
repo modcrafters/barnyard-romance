@@ -93,10 +93,16 @@ public final class AgeController {
     private static void dieOfOldAge(Animal animal, ServerLevel level) {
         Optional<Holder.Reference<DamageType>> type = level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).get(OLD_AGE);
         if (type.isPresent()) {
+            //? if >=1.21.2 {
             animal.hurtServer(level, new DamageSource(type.get()), Float.MAX_VALUE);
+            //?} else
+            //animal.hurt(new DamageSource(type.get()), Float.MAX_VALUE);
         }
         if (animal.isAlive()) {
+            //? if >=1.21.2 {
             animal.kill(level);
+            //?} else
+            //animal.kill();
         }
     }
 }

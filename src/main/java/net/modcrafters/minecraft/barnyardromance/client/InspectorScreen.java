@@ -23,6 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+//? if >=1.21.6
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -57,7 +58,10 @@ public class InspectorScreen extends Screen {
     }
 
     public static void open(Animal animal) {
+        //? if >=26.1 {
         Minecraft.getInstance().setScreenAndShow(new InspectorScreen(animal));
+        //?} else
+        //Minecraft.getInstance().setScreen(new InspectorScreen(animal));
     }
 
     @Override
@@ -65,13 +69,27 @@ public class InspectorScreen extends Screen {
         return false;
     }
 
+    //? if >=26.1 {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*// The default background blurs the world, which would hide the animal behind the panel.
+    @Override
+    public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderTransparentBackground(graphics);
+    }
+
+    @Override
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    *///?}
         if (this.animal.isRemoved()) {
             this.onClose();
             return;
         }
+        //? if >=26.1 {
         this.extractTransparentBackground(graphics);
+        //?} else
+        //super.render(graphics, mouseX, mouseY, partialTick);
         InspectorSheet sheet = sheet();
         int heartRows = HerdCardLayout.heartRows(HerdCardLayout.hearts(sheet.maxHealth()));
         List<InspectorLayout.Placed> rows = InspectorLayout.stack(sheet.rows(), heartRows);
@@ -89,6 +107,7 @@ public class InspectorScreen extends Screen {
         for (InspectorLayout.Placed row : rows) {
             row(graphics, x, y + row.y(), row.row(), sheet);
         }
+        //? if >=26.1
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -312,13 +331,6 @@ public class InspectorScreen extends Screen {
     }
 
     private static void sprite(GuiGraphicsExtractor graphics, String name, int x, int y, int width, int height) {
-        graphics.blitSprite(
-                RenderPipelines.GUI_TEXTURED,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/" + name),
-                x,
-                y,
-                width,
-                height
-        );
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/" + name), x, y, width, height);
     }
 }

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "tag": "barnyard_romance:superfood/grains" },
+    { "tag": "barnyard_romance:superfood/grains" },
+    { "tag": "barnyard_romance:superfood/golden" }
+  ],
+  "result": {
+    "id": "barnyard_romance:golden_bran",
+    "count": 2
+  }
+}

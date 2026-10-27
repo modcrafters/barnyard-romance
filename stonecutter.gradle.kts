@@ -11,6 +11,53 @@ stonecutter active "26.3"
 // Lets code check the loader with `//? if fabric` or `//? if neoforge`.
 stonecutter parameters {
     constants.match(branch.id.ifEmpty { "common" }, "common", "fabric", "neoforge")
+
+    // The source is written for 26.3; older versions get the old names back. Each replacement turns the
+    // first name into the second at and after its version, and back again before it. The version thresholds
+    // are only checked against 1.21.1 and 26.3: confirm them before adding a version in between.
+    replacements {
+        string(current.parsed >= "1.21.11") {
+            replace("ResourceLocation", "Identifier")
+            // ResourceKey.location() was renamed with it. Other classes still have a location() on 26.3; CI's
+            // switch round trip fails if shared code ever calls one.
+            replace(".location()", ".identifier()")
+        }
+        // The overworld clock: one day-time counter on 1.21.1 (every dimension reads the overworld's).
+        string(current.parsed >= "26.1") {
+            replace("getDayTime()", "getOverworldClockTime()")
+        }
+        // Vanilla animals moved into one package per animal.
+        string(current.parsed >= "26.1") {
+            val animal = "net.minecraft.world.entity.animal"
+            for ((type, pkg) in mapOf("Cat" to "feline", "Ocelot" to "feline", "Sheep" to "sheep", "Wolf" to "wolf", "MushroomCow" to "cow"))
+                replace("$animal.$type;", "$animal.$pkg.$type;")
+            for (type in listOf("AbstractHorse", "Donkey", "Horse", "Llama"))
+                replace("$animal.horse.$type;", "$animal.equine.$type;")
+            // The EntityType constants moved to EntityTypes. The import keeps a marker so it can turn back.
+            replace("import net.minecraft.world.entity.EntityType /* EntityTypes */;", "import net.minecraft.world.entity.EntityTypes;")
+        }
+        regex(current.parsed >= "26.1") {
+            replace(
+                // EntityType keeps its own constants (CODEC, STREAM_CODEC, NO_UPDATE_INTERVAL).
+                """\bEntityType\.(?!(?:CODEC|STREAM_CODEC|NO_UPDATE_INTERVAL)\b)([A-Z][A-Z0-9_]*)\b""", "EntityTypes.\$1",
+                """\bEntityTypes\.([A-Z][A-Z0-9_]*)\b""", "EntityType.\$1"
+            )
+            // GUI drawing: screens fill a GuiGraphicsExtractor instead of drawing into GuiGraphics.
+            replace("""\bGuiGraphics\b""", "GuiGraphicsExtractor", """\bGuiGraphicsExtractor\b""", "GuiGraphics")
+            replace("""\bgraphics\.drawString\(""", "graphics.text(", """\bgraphics\.text\(""", "graphics.drawString(")
+            replace(
+                """\brenderEntityInInventoryFollowsMouse\b""", "extractEntityInInventoryFollowsMouse",
+                """\bextractEntityInInventoryFollowsMouse\b""", "renderEntityInInventoryFollowsMouse"
+            )
+        }
+        // GUI sprites name their render pipeline.
+        regex(current.parsed >= "1.21.6") {
+            replace(
+                """\.blitSprite\((?!RenderPipelines)""", ".blitSprite(RenderPipelines.GUI_TEXTURED, ",
+                """\.blitSprite\(RenderPipelines\.GUI_TEXTURED, """, ".blitSprite("
+            )
+        }
+    }
 }
 
 // Decompiling Minecraft for several versions at once can run the machine out of memory, so MDG does one at a time.

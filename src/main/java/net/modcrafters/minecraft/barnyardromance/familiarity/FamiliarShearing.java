@@ -1,3 +1,5 @@
+// Only the shared ShearsDispenseMixin uses this; the 1.21.1 copy asks NeoForge's IShearable instead.
+//? if >=1.21.2 {
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.minecraft.core.BlockPos;
@@ -33,3 +35,4 @@ public final class FamiliarShearing {
         return false;
     }
 }
+//?}

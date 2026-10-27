@@ -31,6 +31,7 @@ public final class AnimalHearts {
         double xa = animal.getRandom().nextGaussian() * 0.02;
         double ya = animal.getRandom().nextGaussian() * 0.02;
         double za = animal.getRandom().nextGaussian() * 0.02;
+        //? if >=1.21.4 {
         level.sendParticles(
                 ParticleTypes.HEART,
                 animal.getRandomX(1.0),
@@ -44,6 +45,10 @@ public final class AnimalHearts {
                 ya,
                 za
         );
+        //?} else {
+        /*// A count of 0 sends one particle that moves by the given offsets times the speed.
+        level.sendParticles(ParticleTypes.HEART, animal.getRandomX(1.0), animal.getRandomY() + 0.5, animal.getRandomZ(1.0), 0, xa, ya, za, 1.0);
+        *///?}
     }
 
     public static void clientTick(Animal animal) {

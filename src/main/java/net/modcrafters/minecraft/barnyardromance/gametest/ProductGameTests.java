@@ -112,7 +112,10 @@ public final class ProductGameTests {
             Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
                     .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
             helper.assertTrue(recipe.isPresent(), "no recipe takes " + milk);
+            //? if >=1.21.2 {
             ItemStack result = recipe.get().value().assemble(input);
+            //?} else
+            //ItemStack result = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
             helper.assertTrue(result.is(Items.CAKE), milk + " crafts " + result);
             NonNullList<ItemStack> remaining = recipe.get().value().getRemainingItems(input);
             long buckets = remaining.stream().filter(stack -> stack.is(Items.BUCKET)).count();
@@ -165,7 +168,7 @@ public final class ProductGameTests {
         for (Animal cow : List.of(bull, dry, small)) {
             Lactation before = BreedingGameTests.traits(helper, cow).lactation();
             Player player = FoodGameTests.holding(helper, Items.BUCKET);
-            cow.interact(player, InteractionHand.MAIN_HAND, cow.position());
+            GameTestCompat.interact(cow, player);
             helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a refused milking left " + player.getMainHandItem());
             helper.assertTrue(BreedingGameTests.traits(helper, cow).lactation().equals(before), "a refused milking changed the lactation");
         }
@@ -177,7 +180,7 @@ public final class ProductGameTests {
         assertMilks(helper, cow, Items.MILK_BUCKET);
         assertMilks(helper, cow, Items.MILK_BUCKET);
         Player third = FoodGameTests.holding(helper, Items.BUCKET);
-        cow.interact(third, InteractionHand.MAIN_HAND, cow.position());
+        GameTestCompat.interact(cow, third);
         helper.assertTrue(third.getMainHandItem().is(Items.BUCKET), "an L cow gave a third bucket today");
         helper.succeed();
     }
@@ -213,7 +216,7 @@ public final class ProductGameTests {
     public static void mooshroomBowlStaysVanilla(GameTestHelper helper) {
         Animal mooshroom = BreedingGameTests.female(helper, EntityTypes.MOOSHROOM);
         Player player = FoodGameTests.holding(helper, Items.BOWL);
-        mooshroom.interact(player, InteractionHand.MAIN_HAND, mooshroom.position());
+        GameTestCompat.interact(mooshroom, player);
         helper.assertTrue(player.getMainHandItem().is(Items.MUSHROOM_STEW), "a dry mooshroom gave " + player.getMainHandItem());
         helper.succeed();
     }
@@ -231,7 +234,7 @@ public final class ProductGameTests {
 
     static void assertMilks(GameTestHelper helper, Animal animal, Item milk) {
         Player player = FoodGameTests.holding(helper, Items.BUCKET);
-        animal.interact(player, InteractionHand.MAIN_HAND, animal.position());
+        GameTestCompat.interact(animal, player);
         helper.assertTrue(player.getMainHandItem().is(milk), animal.getType() + " gave " + player.getMainHandItem() + ", not " + milk);
     }
 
@@ -275,7 +278,10 @@ public final class ProductGameTests {
         Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
         Services.DATA.set(sheep, new AnimalTraits(Sex.FEMALE, 4.0 * size.femaleScale(), 1.0, -1L));
 
+        //? if >=1.21.2 {
         sheep.shear(helper.getLevel(), SoundSource.PLAYERS, new ItemStack(Items.SHEARS));
+        //?} else
+        //sheep.shear(SoundSource.PLAYERS);
 
         int wool = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(sheep.blockPosition()).inflate(4.0)).stream()
                 .mapToInt(entity -> entity.getItem().getCount())
@@ -290,7 +296,7 @@ public final class ProductGameTests {
 
         FamiliarityActions.interact(wolf, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(wolf.isTame() && wolf.isOwnedBy(player), "a familiar wolf was not tamed by its feeder");
+        helper.assertTrue(wolf.isTame() && GameTestCompat.ownedBy(wolf, player), "a familiar wolf was not tamed by its feeder");
         helper.succeed();
     }
 
@@ -303,7 +309,7 @@ public final class ProductGameTests {
         FoodGameTests.withFamiliarity(helper, cat, 0.25);
         Player player = sneaking(helper, Items.COD);
         FamiliarityActions.interact(cat, player, InteractionHand.MAIN_HAND);
-        helper.assertTrue(cat.isTame() && cat.isOwnedBy(player), "a familiar cat was not tamed by its feeder");
+        helper.assertTrue(cat.isTame() && GameTestCompat.ownedBy(cat, player), "a familiar cat was not tamed by its feeder");
         helper.succeed();
     }
 
@@ -321,7 +327,7 @@ public final class ProductGameTests {
         TamableAnimal wolf = (TamableAnimal) BreedingGameTests.female(helper, EntityTypes.WOLF);
         for (int i = 0; i < 10; i++) {
             Player player = FoodGameTests.holding(helper, Items.BONE);
-            wolf.interact(player, InteractionHand.MAIN_HAND, wolf.position());
+            GameTestCompat.interact(wolf, player);
             helper.assertTrue(player.getMainHandItem().is(Items.BONE), "a wolf took a bone");
         }
         helper.assertTrue(!wolf.isTame(), "bones tamed a wolf");
@@ -340,7 +346,7 @@ public final class ProductGameTests {
 
     // Spawned like a natural mob, which may despawn, with no familiarity yet.
     static Animal wild(GameTestHelper helper, EntityType<? extends Animal> type) {
-        Animal animal = helper.spawnEntity(type, new Vec3(3.5, 1.0, 4.5)).requirePersistence(false).spawn();
+        Animal animal = GameTestCompat.spawnDespawnable(helper, type, new Vec3(3.5, 1.0, 4.5));
         Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, 0.0, -1L));
         return animal;
     }
@@ -358,8 +364,8 @@ public final class ProductGameTests {
         Animal ocelot = wild(helper, EntityTypes.OCELOT);
         helper.assertTrue(!cat.isPersistenceRequired() && !ocelot.isPersistenceRequired(), "the test felines started out persistent");
 
-        cat.interact(sneaking(helper, Items.COD), InteractionHand.MAIN_HAND, cat.position());
-        ocelot.interact(sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND, ocelot.position());
+        GameTestCompat.interact(cat, sneaking(helper, Items.COD));
+        GameTestCompat.interact(ocelot, sneaking(helper, Items.SALMON));
 
         helper.assertTrue(cat.isPersistenceRequired(), "a fed stray cat can still despawn");
         helper.assertTrue(ocelot.isPersistenceRequired(), "a fed ocelot can still despawn");
@@ -374,7 +380,7 @@ public final class ProductGameTests {
         FoodGameTests.withFamiliarity(helper, cow, 0.1);
         Player player = FoodGameTests.holding(helper, Items.BUCKET);
 
-        cow.interact(player, InteractionHand.MAIN_HAND, cow.position());
+        GameTestCompat.interact(cow, player);
 
         helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "an unfamiliar cow gave " + player.getMainHandItem());
         helper.succeed();

@@ -1,8 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.drops.DropStacks;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -18,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+// versions/1.21.1 has its own copy: dropFromLootTable took no loot table or item callback there.
 @Mixin(LivingEntity.class)
 public class LivingEntityDropsMixin {
     @Inject(
@@ -39,16 +38,7 @@ public class LivingEntityDropsMixin {
             return;
         }
         callback.cancel();
-        animal.dropFromLootTable(level, source, playerKilled, lootTable, (ItemStack stack) -> {
-            ItemStack sized = stack;
-            try {
-                sized = ProductDrops.resize(animal, stack, animal.getRandom());
-            } catch (RuntimeException exception) {
-                Constants.LOG.error("Failed to size a {} drop, leaving it to vanilla", AnimalSex.speciesId(animal), exception);
-            }
-            for (int count : DropStacks.sizes(sized.getCount(), sized.getMaxStackSize())) {
-                animal.spawnAtLocation(level, sized.copyWithCount(count));
-            }
-        });
+        animal.dropFromLootTable(level, source, playerKilled, lootTable,
+                (ItemStack stack) -> ProductDrops.dropSized(animal, stack, sized -> animal.spawnAtLocation(level, sized)));
     }
 }

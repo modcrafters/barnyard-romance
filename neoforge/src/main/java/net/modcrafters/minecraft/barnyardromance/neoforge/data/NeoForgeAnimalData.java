@@ -20,14 +20,20 @@ public final class NeoForgeAnimalData {
     public static final Supplier<AttachmentType<AnimalTraits>> ANIMAL_TRAITS = ATTACHMENT_TYPES.register(
             "animal_traits",
             () -> AttachmentType.builder(() -> new AnimalTraits(Sex.MALE, 1.0))
+                    //? if >=1.21.6 {
                     .serialize(AnimalTraitCodecs.MAP_CODEC)
+                    //?} else
+                    //.serialize(AnimalTraitCodecs.CODEC)
                     .sync(AnimalTraitCodecs.STREAM_CODEC)
                     .build()
     );
     public static final Supplier<AttachmentType<Pregnancy>> PREGNANCY = ATTACHMENT_TYPES.register(
             "pregnancy",
             () -> AttachmentType.builder(() -> new Pregnancy(0L, 1L, "", 1.0, 1, 0.0))
+                    //? if >=1.21.6 {
                     .serialize(PregnancyCodecs.MAP_CODEC)
+                    //?} else
+                    //.serialize(PregnancyCodecs.CODEC)
                     .sync(PregnancyCodecs.STREAM_CODEC)
                     .build()
     );

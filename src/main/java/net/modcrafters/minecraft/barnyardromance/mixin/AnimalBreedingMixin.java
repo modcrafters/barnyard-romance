@@ -38,8 +38,14 @@ public class AnimalBreedingMixin {
     }
 
     @Inject(method = "customServerAiStep", at = @At("TAIL"))
+    //? if >=1.21.2 {
     private void barnyardromance$birth(ServerLevel level, CallbackInfo callback) {
         Animal self = (Animal) (Object) this;
+    //?} else {
+    /*private void barnyardromance$birth(CallbackInfo callback) {
+        Animal self = (Animal) (Object) this;
+        ServerLevel level = (ServerLevel) self.level();
+    *///?}
         PregnancyController.catchUp(self, level);
         AnimalHearts.serverTick(self, level);
         AgeController.serverTick(self, level);

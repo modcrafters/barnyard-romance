@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
@@ -16,7 +17,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
+//? if >=1.21.5 {
 import net.minecraft.world.entity.animal.cow.AbstractCow;
+//?} else
+//import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
@@ -33,7 +37,10 @@ public final class MilkActions {
     }
 
     public static Optional<Item> milkFor(Animal animal) {
+        //? if >=1.21.5 {
         if (animal instanceof AbstractCow) {
+        //?} else
+        //if (animal instanceof Cow) {
             return Optional.of(Items.MILK_BUCKET);
         }
         if (animal instanceof Goat) {
@@ -72,7 +79,7 @@ public final class MilkActions {
         MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, clock, tuning);
         if (check != MilkRules.Check.OK) {
             if (!animal.level().isClientSide()) {
-                player.sendOverlayMessage(Component.literal(MilkRules.text(check)));
+                VersionCompat.sendOverlay(player, Component.literal(MilkRules.text(check)));
             }
             return InteractionResult.CONSUME;
         }
@@ -83,7 +90,7 @@ public final class MilkActions {
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
         Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, clock, tuning.milkKeepsFlowingTicks())));
-        return InteractionResult.SUCCESS_SERVER;
+        return VersionCompat.SUCCESS_SERVER;
     }
 
     // Females from before Stage 5 and wild spawns get their milk on their first join (see MilkRules.firstJoin).

@@ -6,15 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.gametest.framework.TestData;
-import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.neoforged.bus.api.IEventBus;
@@ -22,16 +15,35 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
 import net.neoforged.neoforge.gametest.GameTestHooks;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+//? if >=1.21.5 {
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.FunctionGameTestInstance;
+import net.minecraft.gametest.framework.TestData;
+import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
 import java.util.function.Consumer;
+//?} else {
+/*import net.minecraft.gametest.framework.GameTestGenerator;
+import net.minecraft.gametest.framework.TestFunction;
+import net.neoforged.neoforge.gametest.GameTestHolder;
+
+import java.util.Collection;
+*///?}
 
 // Registers the shared breeding tests, plus the ones that need NeoForge's BabyEntitySpawnEvent.
+// Before 1.21.5 a game test is a TestFunction made by a generator method instead of a registered test instance.
+//? if <1.21.5
+//@GameTestHolder(Constants.MOD_ID)
 public final class NeoForgeBreedingGameTests {
     private enum Answer {
         CANCEL,
@@ -51,11 +63,13 @@ public final class NeoForgeBreedingGameTests {
         if (!GameTestHooks.isGametestEnabled()) {
             return;
         }
+        //? if >=1.21.5 {
         DeferredRegister<Consumer<GameTestHelper>> functions = DeferredRegister.create(Registries.TEST_FUNCTION, Constants.MOD_ID);
         for (BreedingGameTests.Case test : CASES) {
             functions.register(test.name(), () -> test.body());
         }
         functions.register(modBus);
+        //?}
         modBus.addListener(NeoForgeBreedingGameTests::registerTests);
         NeoForge.EVENT_BUS.addListener(NeoForgeBreedingGameTests::onBabySpawn);
     }
@@ -73,6 +87,7 @@ public final class NeoForgeBreedingGameTests {
         return List.copyOf(cases);
     }
 
+    //? if >=1.21.5 {
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(id("default"));
         for (BreedingGameTests.Case test : CASES) {
@@ -82,6 +97,20 @@ public final class NeoForgeBreedingGameTests {
             ));
         }
     }
+    //?} else {
+    /*private static void registerTests(RegisterGameTestsEvent event) {
+        event.register(NeoForgeBreedingGameTests.class);
+    }
+
+    // One batch per test: a batch's tests stand side by side, and an animal in love would court a neighbour's.
+    @GameTestGenerator
+    public static Collection<TestFunction> generated() {
+        return CASES.stream()
+                .map(test -> new TestFunction(test.name(), Constants.MOD_ID + "." + test.name(), BreedingGameTests.PEN.toString(),
+                        test.maxTicks(), 0L, true, test.body()))
+                .toList();
+    }
+    *///?}
 
     private static void onBabySpawn(BabyEntitySpawnEvent event) {
         Answer answer = ANSWERS.remove(event.getParentA().getUUID());
@@ -91,7 +120,10 @@ public final class NeoForgeBreedingGameTests {
         switch (answer) {
             case CANCEL -> event.setCanceled(true);
             case NOTHING -> event.setChild(null);
+            //? if >=1.21.2 {
             case CALF -> event.setChild(EntityTypes.COW.create(event.getParentA().level(), EntitySpawnReason.BREEDING));
+            //?} else
+            //case CALF -> event.setChild(EntityTypes.COW.create(event.getParentA().level()));
         }
     }
 
@@ -123,7 +155,10 @@ public final class NeoForgeBreedingGameTests {
         mother.spawnChildFromBreeding(helper.getLevel(), father);
 
         Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
+        //? if >=1.21.5 {
         String first = pregnancy.litter().getFirst().getStringOr("id", "");
+        //?} else
+        //String first = pregnancy.litter().getFirst().getString("id");
         helper.assertTrue("minecraft:cow".equals(first), "the first baby is " + first + ", not the swapped calf");
         helper.succeed();
     }
