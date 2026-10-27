@@ -18,6 +18,8 @@ stonecutter parameters {
     replacements {
         string(current.parsed >= "1.21.11") {
             replace("ResourceLocation", "Identifier")
+            // ResourceKey.location() was renamed with it.
+            replace(".location()", ".identifier()")
         }
         // The overworld clock: one day-time counter on 1.21.1 (every dimension reads the overworld's).
         string(current.parsed >= "26.1") {

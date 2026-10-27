@@ -4,9 +4,8 @@
   "package": "net.modcrafters.minecraft.barnyardromance.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
   "mixins": [
-    "AgeableMobMixin",
+    ${extra_mixins}"AgeableMobMixin",
     "AnimalBreedingMixin",
-    "AnimalEating",
     "AnimalLoveMixin",
     "LivingEntityDropsMixin",
     "MateOverridesMixin",

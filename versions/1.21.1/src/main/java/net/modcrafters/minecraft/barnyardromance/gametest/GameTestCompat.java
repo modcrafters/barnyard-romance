@@ -4,14 +4,17 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 
-// The 1.21.1 copy of src/.../gametest/GameTestCompat.
+// The 1.21.1 copy of src/.../gametest/GameTestCompat. Test positions here count from the structure block, which
+// sits one block below the pen, so positions in the pen are one higher than the shared tests write them.
 public final class GameTestCompat {
     private GameTestCompat() {
     }
@@ -27,9 +30,18 @@ public final class GameTestCompat {
     // GameTestHelper.spawn always makes the mob persistent here, so this adds it to the level directly.
     public static <T extends Mob> T spawnDespawnable(GameTestHelper helper, EntityType<T> type, Vec3 position) {
         T mob = Objects.requireNonNull(type.create(helper.getLevel()), () -> "could not create " + type);
-        Vec3 absolute = helper.absoluteVec(position);
+        Vec3 absolute = helper.absoluteVec(position.add(0.0, 1.0, 0.0));
         mob.moveTo(absolute.x, absolute.y, absolute.z, mob.getYRot(), mob.getXRot());
         helper.getLevel().addFreshEntity(mob);
         return mob;
+    }
+
+    // isOwnedBy looks the owner up among the level's players here, and a test's mock player is not one of them.
+    public static boolean ownedBy(TamableAnimal pet, Player player) {
+        return player.getUUID().equals(pet.getOwnerUUID());
+    }
+
+    public static <T extends Entity> T spawn(GameTestHelper helper, EntityType<T> type, int x, int y, int z) {
+        return helper.spawn(type, x, y + 1, z);
     }
 }

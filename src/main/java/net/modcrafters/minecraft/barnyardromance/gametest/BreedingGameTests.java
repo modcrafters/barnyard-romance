@@ -107,7 +107,7 @@ public final class BreedingGameTests {
     }
 
     public static void unfamiliarAnimalsDoNotFallInLove(GameTestHelper helper) {
-        Animal cow = helper.spawn(EntityTypes.COW, 4, 1, 4);
+        Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 4, 1, 4);
         Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 0.0, -1L));
 
         cow.setInLove(null);
@@ -226,13 +226,13 @@ public final class BreedingGameTests {
     }
 
     public static Animal female(GameTestHelper helper, EntityType<? extends Animal> type) {
-        Animal animal = helper.spawn(type, 3, 1, 4);
+        Animal animal = GameTestCompat.spawn(helper, type, 3, 1, 4);
         Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
         return animal;
     }
 
     public static Animal male(GameTestHelper helper, EntityType<? extends Animal> type) {
-        Animal animal = helper.spawn(type, 5, 1, 4);
+        Animal animal = GameTestCompat.spawn(helper, type, 5, 1, 4);
         Services.DATA.set(animal, new AnimalTraits(Sex.MALE, 1.0, 1.0, -1L));
         return animal;
     }

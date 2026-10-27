@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": { "tag": "barnyard_romance:milk_buckets" },
+    "B": { "item": "minecraft:sugar" },
+    "C": { "item": "minecraft:wheat" },
+    "E": { "tag": "c:eggs" }
+  },
+  "pattern": [
+    "AAA",
+    "BEB",
+    "CCC"
+  ],
+  "result": {
+    "id": "minecraft:cake",
+    "count": 1
+  }
+}

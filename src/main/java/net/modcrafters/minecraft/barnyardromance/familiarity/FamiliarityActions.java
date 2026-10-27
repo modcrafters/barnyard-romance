@@ -9,7 +9,6 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
-import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -112,9 +111,7 @@ public final class FamiliarityActions {
         if (hurt && heal > 0.0F) {
             animal.heal(heal);
         }
-        if (animal instanceof AnimalEating eating) {
-            eating.barnyardromance$playEatingSound();
-        }
+        VersionCompat.playEatingSound(animal);
         if (click == Familiarity.Click.HEAL_ONLY) {
             return VersionCompat.SUCCESS_SERVER;
         }

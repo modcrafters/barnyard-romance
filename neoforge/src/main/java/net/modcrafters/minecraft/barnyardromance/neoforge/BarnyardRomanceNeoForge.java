@@ -21,7 +21,10 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
+//? if >=1.21.2 {
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+//?} else
+//import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
@@ -34,7 +37,10 @@ public class BarnyardRomanceNeoForge {
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         NeoForgeBreedingGameTests.register(modBus);
+        //? if >=1.21.9 {
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
+        //?} else
+        //if (FMLEnvironment.dist == Dist.CLIENT) {
             BarnyardRomanceNeoForgeClient.register(modBus);
         }
         BarnyardRomance.init();
@@ -84,10 +90,17 @@ public class BarnyardRomanceNeoForge {
         AnimalSex.onJoin(animal);
     }
 
+    //? if >=1.21.2 {
     private static void onAddReloadListeners(AddServerReloadListenersEvent event) {
         event.addListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());
         event.addListener(FoodReloadListeners.FOODS_ID, FoodReloadListeners.foods());
     }
+    //?} else {
+    /*private static void onAddReloadListeners(AddReloadListenerEvent event) {
+        event.addListener(FoodReloadListeners.diets());
+        event.addListener(FoodReloadListeners.foods());
+    }
+    *///?}
 
     private static void onRegisterCommands(RegisterCommandsEvent event) {
         BarnyardCommands.register(event.getDispatcher());

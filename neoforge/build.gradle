@@ -20,7 +20,8 @@ neoForge {
             gameDirectory = this.mkdir(this.file('runs/client'))
         }
         data {
-            clientData()
+            // clientData() since 1.21.4, data() before (neoforge_data_run in each version's gradle.properties).
+            "${neoforge_data_run}"()
             gameDirectory = this.mkdir(this.file('runs/data'))
             // DataGen can be run by - "./gradlew :neoforge:runData" in Terminal.
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.

@@ -16,7 +16,8 @@ config = "${mod_id}.neoforge.mixins.json"
 modId = "neoforge"
 type = "required"
 versionRange = "[${neoforge_version},)"
-ordering = "NONE"
+# After NeoForge, so our data wins where both ship a file (NeoForge 21.1 has its own minecraft:cake).
+ordering = "AFTER"
 side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "minecraft"

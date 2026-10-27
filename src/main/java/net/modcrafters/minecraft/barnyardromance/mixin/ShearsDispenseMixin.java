@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+// versions/1.21.1 has its own copy: NeoForge's IShearable decides there.
 @Mixin(ShearsDispenseItemBehavior.class)
 public class ShearsDispenseMixin {
     @Inject(method = "tryShearEntity", at = @At("HEAD"), cancellable = true)

@@ -5,6 +5,8 @@ plugins {
 
 // Version projects sit at :<mc> for the common code and :<loader>:<mc> for fabric and neoforge.
 def loaderName = project.parent == rootProject ? 'common' : project.parent.name
+// The common project for this Minecraft version, e.g. :26.3 for :fabric:26.3.
+def commonProject = loaderName == 'common' ? project : rootProject.project(":${project.name}")
 // stonecutter.gradle.kts gives each branch its own Gradle group; published jars keep the mod's group.
 def modGroup = rootProject.group
 
@@ -81,7 +83,9 @@ processResources {
             'neoforge_version'             : findProperty('neoforge_version') ?: '',
             'neoforge_loader_version_range': findProperty('neoforge_loader_version_range') ?: '',
             'credits'                      : credits,
-            'java_version'                 : java_version
+            'java_version'                 : java_version,
+            // Mixins only some versions have, as quoted names with a trailing comma, from versions/<mc>/gradle.properties.
+            'extra_mixins'                 : commonProject.findProperty('extra_mixins') ?: ''
     ]
 
     var jsonExpandProps = expandProps.collectEntries {

@@ -86,10 +86,7 @@ public final class BarnyardItems {
     }
 
     private static Item.Properties superfood(ResourceKey<Item> id) {
-        //? if >=1.21.2 {
         String key = "item." + Constants.MOD_ID + "." + id.identifier().getPath();
-        //?} else
-        //String key = "item." + Constants.MOD_ID + "." + id.location().getPath();
         return properties(id)
                 .rarity(Rarity.UNCOMMON)
                 .component(DataComponents.LORE, new ItemLore(List.of(

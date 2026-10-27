@@ -296,7 +296,7 @@ public final class ProductGameTests {
 
         FamiliarityActions.interact(wolf, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(wolf.isTame() && wolf.isOwnedBy(player), "a familiar wolf was not tamed by its feeder");
+        helper.assertTrue(wolf.isTame() && GameTestCompat.ownedBy(wolf, player), "a familiar wolf was not tamed by its feeder");
         helper.succeed();
     }
 
@@ -309,7 +309,7 @@ public final class ProductGameTests {
         FoodGameTests.withFamiliarity(helper, cat, 0.25);
         Player player = sneaking(helper, Items.COD);
         FamiliarityActions.interact(cat, player, InteractionHand.MAIN_HAND);
-        helper.assertTrue(cat.isTame() && cat.isOwnedBy(player), "a familiar cat was not tamed by its feeder");
+        helper.assertTrue(cat.isTame() && GameTestCompat.ownedBy(cat, player), "a familiar cat was not tamed by its feeder");
         helper.succeed();
     }
 

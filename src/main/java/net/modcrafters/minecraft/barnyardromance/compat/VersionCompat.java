@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.compat;
 
+import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 
 // Minecraft calls that are used in many places and look different on older versions. versions/1.21.1 has
@@ -16,5 +18,12 @@ public final class VersionCompat {
     // The action bar text above the hotbar.
     public static void sendOverlay(Player player, Component message) {
         player.sendOverlayMessage(message);
+    }
+
+    // The animal's own eating sound, the one vanilla plays when it feeds the animal (most animals have none).
+    public static void playEatingSound(Animal animal) {
+        if (animal instanceof AnimalEating eating) {
+            eating.barnyardromance$playEatingSound();
+        }
     }
 }
