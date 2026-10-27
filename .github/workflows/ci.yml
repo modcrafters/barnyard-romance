@@ -30,13 +30,13 @@ jobs:
       - name: Unit tests, jars and server game tests
         run: ./gradlew :26.3:test :fabric:26.3:build :neoforge:26.3:build :neoforge:26.3:runGameTestServer :fabric:26.3:runGametest
 
-      # A virtual 24-bit screen with Mesa's software OpenGL; the default 8-bit xvfb screen has no usable GL visual.
+      # Like Fabric API's own CI: no display, Mesa's software Vulkan driver renders the client off screen.
       - name: Fabric client game test
         timeout-minutes: 20
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgl1 libglx-mesa0 libgl1-mesa-dri
-          xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew :fabric:26.3:runClientGametest
+          sudo apt-get install -y mesa-vulkan-drivers
+          ./gradlew :fabric:26.3:runClientGametest
 
       - name: Upload the client game test's logs and screenshots
         if: always()
