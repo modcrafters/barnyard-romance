@@ -3,8 +3,13 @@ plugins {
     id 'maven-publish'
 }
 
+// Version projects sit at :<mc> for the common code and :<loader>:<mc> for fabric and neoforge.
+def loaderName = project.parent == rootProject ? 'common' : project.parent.name
+// stonecutter.gradle.kts gives each branch its own Gradle group; published jars keep the mod's group.
+def modGroup = rootProject.group
+
 base {
-    archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+    archivesName = "${mod_id}-${loaderName}-${minecraft_version}"
 }
 
 java {
@@ -37,18 +42,19 @@ jar {
 processResources {
     var expandProps = [
             'version'                      : version,
-            'group'                        : project.group, //Else we target the task's group.
+            'group'                        : modGroup, //Else we target the task's group.
             'minecraft_version'            : minecraft_version,
             'minecraft_version_range'      : minecraft_version_range,
-            'fabric_version'               : fabric_version,
-            'fabric_loader_version'        : fabric_loader_version,
+            // Only one loader's nodes define each loader's versions.
+            'fabric_version'               : findProperty('fabric_version') ?: '',
+            'fabric_loader_version'        : findProperty('fabric_loader_version') ?: '',
             'mod_name'                     : mod_name,
             'mod_author'                   : mod_author,
             'mod_id'                       : mod_id,
             'license'                      : license,
             'description'                  : project.description,
-            'neoforge_version'             : neoforge_version,
-            'neoforge_loader_version_range': neoforge_loader_version_range,
+            'neoforge_version'             : findProperty('neoforge_version') ?: '',
+            'neoforge_loader_version_range': findProperty('neoforge_loader_version_range') ?: '',
             'credits'                      : credits,
             'java_version'                 : java_version
     ]
@@ -71,6 +77,7 @@ processResources {
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
+            groupId modGroup
             artifactId base.archivesName.get()
             from components.java
         }

@@ -19,14 +19,26 @@ IDEA 2025.2 or newer is required for Java 25.
 2. Set the Project SDK and the Gradle JVM to Java 25:
    - `File > Project Structure > Project SDK`
    - `File > Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM`
-3. Refresh the Gradle project.
-4. Run one of these configurations:
+3. Install the **Stonecutter Dev** plugin (optional; it highlights the `//?` version comments).
+4. Refresh the Gradle project.
+5. Run one of these configurations:
    - **Fabric Client** or **Fabric Server** (Gradle run configurations)
    - **NeoForge Client** or **NeoForge Server** (Application run configurations)
 
-`gradlew build` produces the loader jars under `fabric/build/libs` and `neoforge/build/libs`. The `common` jar is not a mod you install.
+### How the build is laid out
+
+The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase can build for several Minecraft versions:
+
+- The common code is in `src/`. Fabric code is in `fabric/src`, and NeoForge code is in `neoforge/src`.
+- Each Minecraft version is its own Gradle project: `:26.3` (common), `:fabric:26.3` and `:neoforge:26.3`. Each one's `gradle.properties` under `versions/<mc>` holds that version's Minecraft, Java and loader versions.
+- Code that differs between versions is marked with comments such as `//? if >=1.21.6 {`. The IDE always shows one version, the *active* one.
+- Switch with the Gradle task `Set active project to <mc>`. Run `Reset active project` before you commit: git must always hold the 26.3 state, and CI checks this.
+
+`gradlew collectJars` builds every loader jar and copies them to `build/libs/<mod version>/`. Each jar's own build output is under `<loader>/versions/<mc>/build/libs`. The common jars are not mods you install.
 
 ## Tests
 
-- `gradlew :common:test` runs the unit tests for the pure rules.
-- `gradlew :fabric:runGametest` and `gradlew :neoforge:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `common/.../gametest/BreedingGameTests.java`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/build/gametest/junit.xml`.
+- `gradlew :26.3:test` runs the unit tests for the pure rules.
+- `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
+- `gradlew :fabric:26.3:runClientGametest` opens a real client and screenshots the inspector.
+- CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.

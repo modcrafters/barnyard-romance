@@ -3,23 +3,29 @@ plugins {
 }
 
 configurations {
+    // Only resolved here; the common project for the same Minecraft version provides them.
     commonJava {
         canBeResolved = true
+        canBeConsumed = false
     }
     commonResources {
         canBeResolved = true
+        canBeConsumed = false
     }
 }
 
+// The common project for this loader's Minecraft version, e.g. :26.3 for :fabric:26.3.
+def commonPath = ":${stonecutter.current.project}"
+
 dependencies {
-    compileOnly(project(':common')) {
+    compileOnly(project(commonPath)) {
         def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
         attributes {
             attribute(loaderAttribute, 'common')
         }
     }
-    commonJava(project(path: ':common', configuration: 'commonJava'))
-    commonResources(project(path: ':common', configuration: 'commonResources'))
+    commonJava(project(path: commonPath, configuration: 'commonJava'))
+    commonResources(project(path: commonPath, configuration: 'commonResources'))
 }
 
 tasks.named('compileJava', JavaCompile) {
