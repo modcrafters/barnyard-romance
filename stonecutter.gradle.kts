@@ -18,7 +18,8 @@ stonecutter parameters {
     replacements {
         string(current.parsed >= "1.21.11") {
             replace("ResourceLocation", "Identifier")
-            // ResourceKey.location() was renamed with it.
+            // ResourceKey.location() was renamed with it. Other classes still have a location() on 26.3; CI's
+            // switch round trip fails if shared code ever calls one.
             replace(".location()", ".identifier()")
         }
         // The overworld clock: one day-time counter on 1.21.1 (every dimension reads the overworld's).
@@ -37,7 +38,8 @@ stonecutter parameters {
         }
         regex(current.parsed >= "26.1") {
             replace(
-                """\bEntityType\.([A-Z][A-Z0-9_]*)\b""", "EntityTypes.\$1",
+                // EntityType keeps its own constants (CODEC, STREAM_CODEC, NO_UPDATE_INTERVAL).
+                """\bEntityType\.(?!(?:CODEC|STREAM_CODEC|NO_UPDATE_INTERVAL)\b)([A-Z][A-Z0-9_]*)\b""", "EntityTypes.\$1",
                 """\bEntityTypes\.([A-Z][A-Z0-9_]*)\b""", "EntityType.\$1"
             )
             // GUI drawing: screens fill a GuiGraphicsExtractor instead of drawing into GuiGraphics.

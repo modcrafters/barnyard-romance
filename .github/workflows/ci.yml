@@ -27,6 +27,14 @@ jobs:
           ./gradlew "Reset active project"
           git diff --exit-code
 
+      # Every version comment and replacement in stonecutter.gradle.kts has to turn back exactly, or switching the
+      # IDE to another version and back would rewrite code. The build itself never switches, so check it here.
+      - name: Check switching to 1.21.1 and back changes nothing
+        run: |
+          ./gradlew "Set active project to 1.21.1"
+          ./gradlew "Reset active project"
+          git diff --exit-code
+
       - name: Unit tests, jars and server game tests
         run: ./gradlew :26.3:test :fabric:26.3:build :neoforge:26.3:build :neoforge:26.3:runGameTestServer :fabric:26.3:runGametest
 
