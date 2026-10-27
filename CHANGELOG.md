@@ -6,6 +6,7 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- All of the mod's text can be translated: the inspector, chat and action-bar messages, commands, herd sticks and tag names all come from the lang file. Add a translation as `assets/barnyard_romance/lang/<language>.json`, in the mod or in a resource pack.
 - Pregnant females get wider as the birth gets closer. Set `bellyStart` and `bellyMaxWiden` in the config, globally or per species.
 - Bulls, rams and billy goats have horns. Some cows, ewes and nanny goats have small ones. Babies have none, and horns grow in while an animal is young.
 - Resource packs can reshape horns or give modded animals horns, using files in `assets/<namespace>/barnyard_horns/`.
