@@ -1,14 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 
 public final class MilkRules {
-    public static final String MALE_TEXT = "Only mothers give milk.";
-    public static final String NO_MILK_TEXT = "She has no milk.";
-    public static final String ENOUGH_TEXT = "Milked enough for today.";
-    public static final String DISABLED_TEXT = "Milking is turned off.";
+    public static final Text MALE_TEXT = Text.of("message.barnyard_romance.milk.male");
+    public static final Text NO_MILK_TEXT = Text.of("message.barnyard_romance.milk.none");
+    public static final Text ENOUGH_TEXT = Text.of("message.barnyard_romance.milk.enough");
+    public static final Text DISABLED_TEXT = Text.of("message.barnyard_romance.milk.disabled");
 
     public enum Check {
         OK,
@@ -58,13 +59,13 @@ public final class MilkRules {
         return lactation.grace(now, tuning.milkKeepsFlowingTicks());
     }
 
-    public static String text(Check check) {
+    public static Text text(Check check) {
         return switch (check) {
             case MALE -> MALE_TEXT;
             case DISABLED -> DISABLED_TEXT;
             case NO_MILK -> NO_MILK_TEXT;
             case ENOUGH_TODAY -> ENOUGH_TEXT;
-            case OK -> "";
+            case OK -> Text.EMPTY;
         };
     }
 }

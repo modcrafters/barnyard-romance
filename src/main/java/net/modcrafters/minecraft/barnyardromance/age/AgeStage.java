@@ -1,19 +1,21 @@
 package net.modcrafters.minecraft.barnyardromance.age;
 
+import net.modcrafters.minecraft.barnyardromance.text.Text;
+
 public enum AgeStage {
-    BABY("Baby"),
-    YOUNG("Young"),
-    ADULT("Adult"),
-    OLD("Old");
+    BABY("gui.barnyard_romance.age.baby"),
+    YOUNG("gui.barnyard_romance.age.young"),
+    ADULT("gui.barnyard_romance.age.adult"),
+    OLD("gui.barnyard_romance.age.old");
 
-    private final String label;
+    private final String key;
 
-    AgeStage(String label) {
-        this.label = label;
+    AgeStage(String key) {
+        this.key = key;
     }
 
-    public String label() {
-        return label;
+    public Text text() {
+        return Text.of(key);
     }
 
     public boolean canBreed() {

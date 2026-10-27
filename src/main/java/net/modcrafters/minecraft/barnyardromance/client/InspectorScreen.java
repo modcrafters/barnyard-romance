@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
@@ -53,7 +55,7 @@ public class InspectorScreen extends Screen {
     private final Animal animal;
 
     public InspectorScreen(Animal animal) {
-        super(Component.literal("Barnyard Inspector"));
+        super(Component.translatable("item.barnyard_romance.inspector"));
         this.animal = animal;
     }
 
@@ -102,7 +104,7 @@ public class InspectorScreen extends Screen {
         if (sheet.known()) {
             header(graphics, x, y, sheet);
         } else {
-            text(graphics, "No barnyard traits yet", x + InspectorLayout.STATS_X, y + InspectorLayout.HEADER_Y + 3, MUTED);
+            text(graphics, Text.of("gui.barnyard_romance.inspector.no_traits"), x + InspectorLayout.STATS_X, y + InspectorLayout.HEADER_Y + 3, MUTED);
         }
         for (InspectorLayout.Placed row : rows) {
             row(graphics, x, y + row.y(), row.row(), sheet);
@@ -113,12 +115,12 @@ public class InspectorScreen extends Screen {
 
     private void row(GuiGraphicsExtractor graphics, int x, int rowY, InspectorRow row, InspectorSheet sheet) {
         switch (row) {
-            case FAMILIAR -> meter(graphics, x, rowY, "heart", "Familiar", sheet.familiarity(), "fill_familiar", sheet.familiarityText());
-            case FEED -> meter(graphics, x, rowY, "wheat", "Feed", sheet.feed(), "fill_feed", sheet.feedText());
+            case FAMILIAR -> meter(graphics, x, rowY, "heart", Text.of("gui.barnyard_romance.inspector.familiar"), sheet.familiarity(), "fill_familiar", sheet.familiarityText());
+            case FEED -> meter(graphics, x, rowY, "wheat", Text.of("gui.barnyard_romance.inspector.feed"), sheet.feed(), "fill_feed", sheet.feedText());
             case GROWTH -> growth(graphics, x, rowY, sheet);
-            case WEIGHT -> meter(graphics, x, rowY, "weight", "Weight", sheet.weight(), "fill_feed", sheet.weightText());
+            case WEIGHT -> meter(graphics, x, rowY, "weight", Text.of("gui.barnyard_romance.inspector.weight"), sheet.weight(), "fill_feed", sheet.weightText());
             case HEALTH -> health(graphics, x, rowY, sheet);
-            case FERTILITY -> meter(graphics, x, rowY, "fertility", "Fertility", sheet.fertility(), "fill_pregnant", sheet.fertilityText());
+            case FERTILITY -> meter(graphics, x, rowY, "fertility", Text.of("gui.barnyard_romance.inspector.fertility"), sheet.fertility(), "fill_pregnant", sheet.fertilityText());
             case MILK -> milk(graphics, x, rowY, sheet);
             case BREEDING -> breeding(graphics, x, rowY, sheet);
             case DETAIL -> text(graphics, sheet.detailText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
@@ -134,13 +136,14 @@ public class InspectorScreen extends Screen {
     private void title(GuiGraphicsExtractor graphics, int x, int y, InspectorSheet sheet) {
         int titleX = x + InspectorLayout.TITLE_X;
         int titleY = y + InspectorLayout.TITLE_Y;
-        text(graphics, sheet.title(), titleX, titleY, TEXT);
+        text(graphics, Text.plain(sheet.title()), titleX, titleY, TEXT);
         if (!sheet.subtitle().isEmpty()) {
-            text(graphics, sheet.subtitle(), titleX + this.font.width(sheet.title()) + 6, titleY, MUTED);
+            text(graphics, Text.plain(sheet.subtitle()), titleX + this.font.width(sheet.title()) + 6, titleY, MUTED);
         }
         if (!sheet.scaleText().isEmpty()) {
-            int scaleX = x + InspectorLayout.WIDTH - InspectorLayout.TITLE_X - this.font.width(sheet.scaleText());
-            text(graphics, sheet.scaleText(), scaleX, titleY, MUTED);
+            Component scale = TextComponents.of(sheet.scaleText());
+            int scaleX = x + InspectorLayout.WIDTH - InspectorLayout.TITLE_X - this.font.width(scale);
+            text(graphics, scale, scaleX, titleY, MUTED);
         }
     }
 
@@ -181,7 +184,7 @@ public class InspectorScreen extends Screen {
         int rowX = x + InspectorLayout.STATS_X;
         int rowY = y + InspectorLayout.HEADER_Y;
         sprite(graphics, sheet.female() ? "female" : "male", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        String line = sheet.sexText() + "  ·  Size " + sheet.sizeLetter() + "  ·  " + sheet.life();
+        Text line = Text.of("gui.barnyard_romance.inspector.header", sheet.sexText(), sheet.sizeLetter(), sheet.stage().text());
         text(graphics, line, rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
     }
 
@@ -190,10 +193,10 @@ public class InspectorScreen extends Screen {
             int x,
             int rowY,
             String icon,
-            String label,
+            Text label,
             double fill,
             String fillSprite,
-            String value
+            Text value
     ) {
         int rowX = x + InspectorLayout.STATS_X;
         sprite(graphics, icon, rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
@@ -209,18 +212,19 @@ public class InspectorScreen extends Screen {
     }
 
     private void growth(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
-        meter(graphics, x, rowY, "hourglass", "Growth", 0.0, "fill_familiar", sheet.growthText());
+        meter(graphics, x, rowY, "hourglass", Text.of("gui.barnyard_romance.inspector.growth"), 0.0, "fill_familiar", sheet.growthText());
         int barX = x + InspectorLayout.barX();
         sprite(graphics, "marker", InspectorLayout.markerX(barX, InspectorLayout.BAR_W, sheet.growth()), rowY + 2, InspectorLayout.MARKER_W, 10);
         int labelY = rowY + 14;
-        text(graphics, "Slow", barX, labelY, MUTED);
-        text(graphics, "Fast", barX + InspectorLayout.BAR_W - this.font.width("Fast"), labelY, MUTED);
+        Component fast = Component.translatable("gui.barnyard_romance.inspector.fast");
+        text(graphics, Text.of("gui.barnyard_romance.inspector.slow"), barX, labelY, MUTED);
+        text(graphics, fast, barX + InspectorLayout.BAR_W - this.font.width(fast), labelY, MUTED);
     }
 
     private void health(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         int rowX = x + InspectorLayout.STATS_X;
         sprite(graphics, "gold_heart", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        text(graphics, "Health", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, Text.of("gui.barnyard_romance.inspector.health"), rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         int count = HerdCardLayout.hearts(sheet.maxHealth());
         int heartsX = x + InspectorLayout.barX();
         for (int i = 0; i < count; i++) {
@@ -234,24 +238,24 @@ public class InspectorScreen extends Screen {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_HALF, hx, hy, 9, 9);
             }
         }
-        text(graphics, sheet.healthText(), x + InspectorLayout.valueX(), rowY + 3, TEXT);
+        text(graphics, Text.plain(sheet.healthText()), x + InspectorLayout.valueX(), rowY + 3, TEXT);
     }
 
     private void milk(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         int rowX = x + InspectorLayout.STATS_X;
         sprite(graphics, "milk", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        text(graphics, "Milk", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, Text.of("gui.barnyard_romance.inspector.milk"), rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         text(graphics, sheet.milkText(), x + InspectorLayout.barX(), rowY + 3, TEXT);
     }
 
     private void breeding(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         if (sheet.pregnant()) {
-            meter(graphics, x, rowY, "gold_heart", "Pregnant", sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
+            meter(graphics, x, rowY, "gold_heart", Text.of("gui.barnyard_romance.inspector.pregnant"), sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
             return;
         }
         int rowX = x + InspectorLayout.STATS_X;
         sprite(graphics, "gold_heart", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        text(graphics, "Breeding", rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, Text.of("gui.barnyard_romance.inspector.breeding"), rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         text(graphics, sheet.breedingText(), x + InspectorLayout.barX(), rowY + 3, sheet.breedingReady() ? GOOD : BAD);
     }
 
@@ -269,10 +273,10 @@ public class InspectorScreen extends Screen {
         long now = this.animal.level().getGameTime();
         long clock = this.animal.level().getOverworldClockTime();
         Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(this.animal);
-        String father = pregnancy.map(current -> InspectorSheet.father(
+        Text father = pregnancy.map(current -> InspectorSheet.father(
                 SizeClass.of(Sex.MALE, current.fatherScale(), BarnyardConfig.current().sizeFor(current.fatherSpecies())).name(),
                 current.fatherSpecies()
-        )).orElse("");
+        )).orElse(Text.EMPTY);
         // These only breed when tamed; ocelots trust instead, which never blocks breeding.
         boolean needsTaming = this.animal instanceof AbstractHorse || this.animal instanceof Wolf || this.animal instanceof Cat;
         boolean tamed = this.animal instanceof AbstractHorse horse ? horse.isTamed()
@@ -281,7 +285,7 @@ public class InspectorScreen extends Screen {
         AgeSettings age = BarnyardConfig.current().ageFor(AnimalSex.speciesId(this.animal));
         AgeStage stage = AgeController.stage(this.animal, value);
         double fertility = Fertility.current(value, age, now);
-        String breeding = InspectorSheet.breeding(
+        Text breeding = InspectorSheet.breeding(
                 needsTaming,
                 tamed,
                 value.familiarity(),
@@ -301,7 +305,7 @@ public class InspectorScreen extends Screen {
                 true,
                 female,
                 SizeClass.of(value.sex(), value.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(this.animal))).name(),
-                stage.label(),
+                stage,
                 InspectorSheet.scaleText(value.scale()),
                 value.familiarity(),
                 Familiarity.percent(value.familiarity()),
@@ -315,10 +319,10 @@ public class InspectorScreen extends Screen {
                 maxHealth,
                 fertility,
                 Familiarity.percent(fertility),
-                MilkActions.status(this.animal, value, now, clock).map(InspectorSheet::milkText).orElse(""),
+                MilkActions.status(this.animal, value, now, clock).map(InspectorSheet::milkText).orElse(Text.EMPTY),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0),
-                pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current))).orElse(""),
+                pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current))).orElse(Text.EMPTY),
                 father,
                 InspectorSheet.readyToBreed(breeding),
                 breeding,
@@ -326,7 +330,11 @@ public class InspectorScreen extends Screen {
         );
     }
 
-    private void text(GuiGraphicsExtractor graphics, String value, int x, int y, int color) {
+    private void text(GuiGraphicsExtractor graphics, Text value, int x, int y, int color) {
+        text(graphics, TextComponents.of(value), x, y, color);
+    }
+
+    private void text(GuiGraphicsExtractor graphics, Component value, int x, int y, int color) {
         graphics.text(this.font, value, x, y, color, false);
     }
 

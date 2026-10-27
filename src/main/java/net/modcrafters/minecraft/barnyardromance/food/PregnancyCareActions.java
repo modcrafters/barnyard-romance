@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -15,9 +17,9 @@ import java.util.Optional;
 
 // What food does to a pregnancy. Superfoods skip the daily feed, never touch familiarity, and only help a pregnant mother.
 public final class PregnancyCareActions {
-    public static final String NEEDS_MOTHER = "Only a pregnant mother needs this.";
-    public static final String ALREADY_ON_MASH = "She's already on a mash.";
-    public static final String CANT_EAT_MORE = "She can't eat any more of this.";
+    public static final Text NEEDS_MOTHER = Text.of("message.barnyard_romance.superfood.needs_mother");
+    public static final Text ALREADY_ON_MASH = Text.of("message.barnyard_romance.superfood.already_on_mash");
+    public static final Text CANT_EAT_MORE = Text.of("message.barnyard_romance.superfood.cant_eat_more");
 
     private PregnancyCareActions() {
     }
@@ -28,9 +30,9 @@ public final class PregnancyCareActions {
         }
         long now = animal.level().getGameTime();
         Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(animal);
-        String refusal = refusal(pregnancy.orElse(null), eaten.effects(), now);
+        Text refusal = refusal(pregnancy.orElse(null), eaten.effects(), now);
         if (refusal != null) {
-            player.sendSystemMessage(Component.literal(refusal));
+            player.sendSystemMessage(TextComponents.of(refusal));
             return InteractionResult.CONSUME;
         }
         float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), BarnyardConfig.current().tuning());
@@ -55,7 +57,7 @@ public final class PregnancyCareActions {
                 Services.DATA.setPregnancy(animal, pregnancy.withCare(apply(pregnancy, effects, factor, now))));
     }
 
-    static String refusal(Pregnancy pregnancy, FoodEffects effects, long now) {
+    static Text refusal(Pregnancy pregnancy, FoodEffects effects, long now) {
         if (pregnancy == null) {
             return NEEDS_MOTHER;
         }

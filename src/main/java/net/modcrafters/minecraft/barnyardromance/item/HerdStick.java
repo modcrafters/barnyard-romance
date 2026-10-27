@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
@@ -38,8 +40,8 @@ public class HerdStick extends Item {
     public static ItemStack create(HerdTool tool) {
         ItemStack stack = new ItemStack(BarnyardItems.HERD_STICK);
         stack.set(BarnyardComponents.HERD_TOOL, tool);
-        stack.set(DataComponents.ITEM_NAME, Component.literal(tool.label()));
-        stack.set(DataComponents.LORE, new ItemLore(List.of(Component.literal("Use on an animal"))));
+        stack.set(DataComponents.ITEM_NAME, TextComponents.of(tool.label()));
+        stack.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable("item.barnyard_romance.lore.use_on_animal"))));
         return stack;
     }
 
@@ -56,12 +58,12 @@ public class HerdStick extends Item {
             return InteractionResult.SUCCESS;
         }
         if (!HerdToolRules.allowed(tool, player.isCreative())) {
-            player.sendSystemMessage(Component.literal(HerdToolRules.CREATIVE_ONLY));
+            player.sendSystemMessage(TextComponents.of(HerdToolRules.CREATIVE_ONLY));
             return InteractionResult.CONSUME;
         }
         Outcome outcome = apply(animal, tool, player);
         if (outcome.message != null) {
-            player.sendSystemMessage(Component.literal(outcome.message));
+            player.sendSystemMessage(TextComponents.of(outcome.message));
         }
         if (outcome.applied && HerdToolRules.consumed(tool, player.isCreative())) {
             stack.consume(1, player);
@@ -69,12 +71,12 @@ public class HerdStick extends Item {
         return VersionCompat.SUCCESS_SERVER;
     }
 
-    private record Outcome(boolean applied, String message) {
+    private record Outcome(boolean applied, Text message) {
     }
 
     private static Outcome apply(Animal animal, HerdTool tool, Player player) {
         if (tool.kind() == HerdTool.Kind.INFO) {
-            String text = AnimalInfoText.format(
+            Text text = AnimalInfoText.format(
                     animal.getName().getString(),
                     AnimalSex.speciesId(animal),
                     Services.DATA.get(animal),
@@ -86,37 +88,40 @@ public class HerdStick extends Item {
                     Services.DATA.get(animal)
                             .flatMap(traits -> MilkActions.status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
                             .map(InspectorSheet::milkText)
-                            .orElse("")
+                            .orElse(Text.EMPTY)
             );
             return new Outcome(true, text);
         }
         if (tool.kind() == HerdTool.Kind.FAMILIARITY) {
             AnimalTraits traits = Services.DATA.get(animal).orElse(null);
             if (traits == null) {
-                return new Outcome(false, "This animal has no familiarity yet.");
+                return new Outcome(false, Text.of("message.barnyard_romance.herd_stick.no_familiarity"));
             }
             double next = tool.sets()
                     ? DebugSteps.familiarityAt(tool.percent())
                     : DebugSteps.familiarity(traits.familiarity(), tool.direction());
             Services.DATA.set(animal, traits.fed(next, traits.lastFedTick()));
             FamiliarityActions.tameIfFamiliar(animal, player, next);
-            return new Outcome(true, "Familiarity " + Familiarity.percent(traits.familiarity()) + " → " + Familiarity.percent(next) + ".");
+            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(traits.familiarity()), Familiarity.percent(next)));
         }
         Pregnancy current = Services.DATA.getPregnancy(animal).orElse(null);
         if (current == null) {
-            return new Outcome(false, "This animal is not pregnant.");
+            return new Outcome(false, Text.of("message.barnyard_romance.herd_stick.not_pregnant"));
         }
         long now = animal.level().getGameTime();
         Pregnancy next = tool.sets()
                 ? DebugSteps.pregnancyAt(current, now, tool.percent())
                 : DebugSteps.pregnancy(current, now, tool.direction());
         Services.DATA.setPregnancy(animal, next);
-        return new Outcome(true, "Pregnancy " + progress(current, now) + " → " + progress(next, now) + ".");
+        return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.pregnancy", progress(current, now), progress(next, now)));
     }
 
-    private static String progress(Pregnancy pregnancy, long now) {
+    private static Text progress(Pregnancy pregnancy, long now) {
         int percent = (int) Math.round(PregnancyClock.progress(now, pregnancy) * 100.0);
-        String time = PregnancyText.clock(PregnancyClock.remainingTicks(now, pregnancy));
-        return percent + "%, " + ("due".equals(time) ? "due" : time + " left");
+        long remaining = PregnancyClock.remainingTicks(now, pregnancy);
+        if (remaining <= 0L) {
+            return Text.of("message.barnyard_romance.herd_stick.progress_due", percent);
+        }
+        return Text.of("message.barnyard_romance.herd_stick.progress", percent, PregnancyText.clock(remaining));
     }
 }

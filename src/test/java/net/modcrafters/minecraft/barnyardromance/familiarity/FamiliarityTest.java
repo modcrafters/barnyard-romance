@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,8 +63,9 @@ class FamiliarityTest {
         assertEquals(18_000L, Familiarity.ticksUntilFeed(0L, 0L));
         assertEquals(1L, Familiarity.ticksUntilFeed(0L, 17_999L));
         assertEquals(0L, Familiarity.ticksUntilFeed(0L, 18_000L));
-        assertEquals("Can be fed again in 20m 0s.", Familiarity.nextFeed(24_000L));
-        assertEquals("Can be fed again in 30s.", Familiarity.nextFeed(600L));
+        assertEquals("Can be fed again in 20m 0s.", English.of(Familiarity.nextFeed(24_000L)));
+        assertEquals("Can be fed again in 30s.", English.of(Familiarity.nextFeed(600L)));
+        assertEquals("75%", English.of(Familiarity.percent(0.75)));
         assertEquals(1.0, Familiarity.feedReady(-1L, 0L), 1.0e-9);
         assertEquals(0.25, Familiarity.feedReady(0L, 0L), 1.0e-9);
         assertEquals(0.5, Familiarity.feedReady(0L, 6_000L), 1.0e-9);

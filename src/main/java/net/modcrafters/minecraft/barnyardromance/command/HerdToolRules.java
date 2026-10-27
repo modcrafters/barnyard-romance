@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.text.Text;
+
 public final class HerdToolRules {
-    public static final String CREATIVE_ONLY = "Set is only available in creative mode.";
+    public static final Text CREATIVE_ONLY = Text.of("message.barnyard_romance.herd_stick.creative_only");
 
     private HerdToolRules() {
     }

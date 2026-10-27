@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,7 +22,11 @@ class MilkRulesTest {
                 """).tuning();
 
         assertEquals(MilkRules.Check.DISABLED, MilkRules.check(Sex.FEMALE, SizeClass.XL, MOTHER, 100L, 100L, off));
-        assertEquals("Milking is turned off.", MilkRules.text(MilkRules.Check.DISABLED));
+        assertEquals("Milking is turned off.", English.of(MilkRules.text(MilkRules.Check.DISABLED)));
+        assertEquals("Only mothers give milk.", English.of(MilkRules.text(MilkRules.Check.MALE)));
+        assertEquals("She has no milk.", English.of(MilkRules.text(MilkRules.Check.NO_MILK)));
+        assertEquals("Milked enough for today.", English.of(MilkRules.text(MilkRules.Check.ENOUGH_TODAY)));
+        assertTrue(MilkRules.text(MilkRules.Check.OK).isEmpty());
     }
 
     @Test

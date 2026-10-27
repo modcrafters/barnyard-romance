@@ -44,6 +44,10 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 - `hide` lists vanilla horns to hide whenever the mod draws this animal's horns. It takes either a part path or the cubes of one part matching `size` (and `from`, if given). Entries a model doesn't have are ignored, so one list can cover every variant on every version.
 - Models built some other way, such as GeckoLib, can't take horns from these files. A file whose `attach` part is missing logs one warning and draws nothing.
 
+## Translations
+
+All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To translate it, copy that file to your language's code (for example `de_de.json`) and translate the values. Leave the keys and the `%s` placeholders as they are. The file can go in the mod or in a resource pack. `LangFileTest` fails if the code uses a key that `en_us.json` doesn't have, or if `en_us.json` has a key nothing uses.
+
 ## Versions
 
 One codebase builds three jars:

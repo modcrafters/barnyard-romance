@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.text.English;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -13,7 +14,7 @@ class FoodScanTextTest {
         assertEquals(
                 "Scanned 1200 recipes: added 3 items to 1 tag. Wrote scan/here. "
                         + "Copy the barnyard_romance_scan folder into your world's datapacks and run /reload.",
-                FoodScanText.summary(1200, 3, 1, "scan/here", Map.of())
+                English.of(FoodScanText.summary(1200, 3, 1, "scan/here", Map.of()))
         );
     }
 
@@ -25,7 +26,7 @@ class FoodScanTextTest {
                 "Scanned 10 recipes: added 0 items to 0 tags. Wrote x. "
                         + "Copy the barnyard_romance_scan folder into your world's datapacks and run /reload. "
                         + "Couldn't read: minecraft:crafting (12), othermod:cooking_pot (40).",
-                FoodScanText.summary(10, 0, 0, "x", skipped)
+                English.of(FoodScanText.summary(10, 0, 0, "x", skipped))
         );
     }
 }

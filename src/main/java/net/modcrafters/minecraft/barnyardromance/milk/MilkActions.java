@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -79,7 +80,7 @@ public final class MilkActions {
         MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, clock, tuning);
         if (check != MilkRules.Check.OK) {
             if (!animal.level().isClientSide()) {
-                VersionCompat.sendOverlay(player, Component.literal(MilkRules.text(check)));
+                VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(check)));
             }
             return InteractionResult.CONSUME;
         }

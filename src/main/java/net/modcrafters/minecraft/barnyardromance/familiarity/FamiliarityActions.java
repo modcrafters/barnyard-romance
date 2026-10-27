@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
@@ -38,10 +40,10 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Optional;
 
 public final class FamiliarityActions {
-    public static final String TOO_SHY = "Sneak so you don't scare this animal.";
-    public static final String WONT_EAT = "It won't eat that.";
-    public static final String WANTS_MEAT = "Feed it meat to earn its trust.";
-    public static final String NOT_FAMILIAR = "It doesn't know you well enough yet.";
+    public static final Text TOO_SHY = Text.of("message.barnyard_romance.too_shy");
+    public static final Text WONT_EAT = Text.of("message.barnyard_romance.wont_eat");
+    public static final Text WANTS_MEAT = Text.of("message.barnyard_romance.wants_meat");
+    public static final Text NOT_FAMILIAR = Text.of("message.barnyard_romance.not_familiar");
 
     private FamiliarityActions() {
     }
@@ -67,7 +69,7 @@ public final class FamiliarityActions {
         Feed feed = FoodData.resolve(animal, stack);
         if (feed instanceof Feed.Refused) {
             if (!animal.level().isClientSide()) {
-                player.sendSystemMessage(Component.literal(WONT_EAT));
+                player.sendSystemMessage(TextComponents.of(WONT_EAT));
             }
             return InteractionResult.CONSUME;
         }
@@ -85,7 +87,7 @@ public final class FamiliarityActions {
         Familiarity.Click click = Familiarity.click(player.isShiftKeyDown(), familiar, response, hurt);
         if (click == Familiarity.Click.SCARE) {
             if (!animal.level().isClientSide()) {
-                player.sendSystemMessage(Component.literal(TOO_SHY));
+                player.sendSystemMessage(TextComponents.of(TOO_SHY));
                 scare(animal, player);
             }
             return InteractionResult.CONSUME;
@@ -93,7 +95,7 @@ public final class FamiliarityActions {
         if (click == Familiarity.Click.WAIT) {
             if (!animal.level().isClientSide()) {
                 long remaining = Familiarity.ticksUntilFeed(current.lastFedTick(), now);
-                player.sendSystemMessage(Component.literal(Familiarity.nextFeed(remaining)));
+                player.sendSystemMessage(TextComponents.of(Familiarity.nextFeed(remaining)));
             }
             return InteractionResult.CONSUME;
         }
@@ -161,7 +163,7 @@ public final class FamiliarityActions {
             return null;
         }
         if (!animal.level().isClientSide()) {
-            VersionCompat.sendOverlay(player, Component.literal(WANTS_MEAT));
+            VersionCompat.sendOverlay(player, TextComponents.of(WANTS_MEAT));
         }
         return InteractionResult.CONSUME;
     }
@@ -207,7 +209,7 @@ public final class FamiliarityActions {
             return null;
         }
         if (!animal.level().isClientSide()) {
-            VersionCompat.sendOverlay(player, Component.literal(NOT_FAMILIAR));
+            VersionCompat.sendOverlay(player, TextComponents.of(NOT_FAMILIAR));
         }
         return InteractionResult.FAIL;
     }

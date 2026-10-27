@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardInspector;
@@ -43,11 +44,11 @@ public final class BarnyardCommands {
     private static int scan(CommandSourceStack source) {
         try {
             FoodScanRunner.ScanSummary summary = FoodScanRunner.run(source.getServer(), FoodScanRunner.liveGroups(), FoodScanRunner.defaultFolder(source.getServer()));
-            source.sendSuccess(() -> Component.literal(FoodScanText.summary(summary.recipes(), summary.items(), summary.tags(), summary.folder().toString(), summary.skippedByType())), false);
+            source.sendSuccess(() -> TextComponents.of(FoodScanText.summary(summary.recipes(), summary.items(), summary.tags(), summary.folder().toString(), summary.skippedByType())), false);
             return summary.items();
         } catch (IOException | RuntimeException exception) {
             Constants.LOG.error("The food scan failed", exception);
-            source.sendFailure(Component.literal("The food scan failed: " + exception.getMessage()));
+            source.sendFailure(Component.translatable("commands.barnyard_romance.foods.scan.failed", String.valueOf(exception.getMessage())));
             return 0;
         }
     }
@@ -55,18 +56,18 @@ public final class BarnyardCommands {
     private static int inspector(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         give(player, BarnyardInspector.create());
-        source.sendSuccess(() -> Component.literal("Use the Barnyard Inspector on an animal."), false);
+        source.sendSuccess(() -> Component.translatable("commands.barnyard_romance.inspector.given"), false);
         return 1;
     }
 
     private static int give(CommandSourceStack source, HerdTool tool) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         if (!HerdToolRules.allowed(tool, player.isCreative())) {
-            source.sendFailure(Component.literal(HerdToolRules.CREATIVE_ONLY));
+            source.sendFailure(TextComponents.of(HerdToolRules.CREATIVE_ONLY));
             return 0;
         }
         give(player, HerdStick.create(tool));
-        source.sendSuccess(() -> Component.literal("Use the " + tool.label() + " stick on an animal."), false);
+        source.sendSuccess(() -> Component.translatable("commands.barnyard_romance.herd_stick.given", TextComponents.of(tool.label())), false);
         return 1;
     }
 
