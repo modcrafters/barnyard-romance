@@ -168,7 +168,8 @@ public record InspectorSheet(
         return Text.of("gui.barnyard_romance.inspector.milk_left", gameTime(status.ticksLeft()), status.left(), status.perDay());
     }
 
-    private static Text gameTime(long ticks) {
+    // Minecraft hours and days: under an hour, then hours, then whole days.
+    public static Text gameTime(long ticks) {
         long hours = Math.max(0L, ticks) / 1_000L;
         if (hours < 1L) {
             return Text.of("gui.barnyard_romance.time.under_an_hour");

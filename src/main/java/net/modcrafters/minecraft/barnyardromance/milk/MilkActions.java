@@ -116,12 +116,17 @@ public final class MilkActions {
         if (traits.sex() != Sex.FEMALE || milkFor(animal).isEmpty() || tracked(animal).isEmpty()) {
             return Optional.empty();
         }
+        return status(traits, sizeClass(animal, traits), now, clock);
+    }
+
+    // The same for a female whose species gives milk, from her traits alone (the herd book's records).
+    public static Optional<MilkStatus> status(AnimalTraits traits, SizeClass size, long now, long clock) {
         Tuning tuning = BarnyardConfig.current().tuning();
         Lactation lactation = traits.lactation();
         if (!lactation.hasMilk(now, tuning.milkKeepsFlowingTicks())) {
             return Optional.empty();
         }
-        int perDay = MilkRules.perDay(sizeClass(animal, traits), tuning);
+        int perDay = MilkRules.perDay(size, tuning);
         return Optional.of(new MilkStatus(
                 lactation.nursing(now),
                 lactation.endsAt(tuning.milkKeepsFlowingTicks()) - now,

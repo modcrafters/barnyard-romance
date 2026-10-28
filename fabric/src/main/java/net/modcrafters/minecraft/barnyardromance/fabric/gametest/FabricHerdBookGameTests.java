@@ -57,4 +57,24 @@ public class FabricHerdBookGameTests {
     public void herdBooksSurviveSaveAndLoad(GameTestHelper helper) {
         HerdBookGameTests.herdBooksSurviveSaveAndLoad(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void showSendsEveryLivingMember(GameTestHelper helper) {
+        HerdBookGameTests.showSendsEveryLivingMember(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void unloadedStatusIsProjected(GameTestHelper helper) {
+        HerdBookGameTests.unloadedStatusIsProjected(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void removalNeedsTheBookInHand(GameTestHelper helper) {
+        HerdBookGameTests.removalNeedsTheBookInHand(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void showBookSurvivesTheNetworkCodec(GameTestHelper helper) {
+        HerdBookGameTests.showBookSurvivesTheNetworkCodec(helper);
+    }
 }

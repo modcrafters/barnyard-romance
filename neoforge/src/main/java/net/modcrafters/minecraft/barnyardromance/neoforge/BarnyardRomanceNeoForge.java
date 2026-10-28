@@ -6,6 +6,9 @@ import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+//? if <1.21.6
+//import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
@@ -31,6 +34,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
 @Mod(Constants.MOD_ID)
@@ -39,6 +44,7 @@ public class BarnyardRomanceNeoForge {
         NeoForgeAnimalData.ATTACHMENT_TYPES.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
+        modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
         NeoForgeBreedingGameTests.register(modBus);
         //? if >=1.21.9 {
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
@@ -85,6 +91,17 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
                 () -> BarnyardParticles.OLD_HEART
         );
+    }
+
+    // From 1.21.6 on, the client registers its own handler for ShowBook (see BarnyardRomanceNeoForgeClient).
+    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        //? if >=1.21.6 {
+        registrar.playToClient(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC);
+        //?} else
+        //registrar.playToClient(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC, (payload, context) -> HerdBookClient.show(payload));
+        registrar.playToServer(HerdBookPayloads.RemoveFromBook.TYPE, HerdBookPayloads.RemoveFromBook.STREAM_CODEC,
+                (payload, context) -> HerdBooks.removeRequested(context.player(), payload));
     }
 
     private static void addToCreativeTabs(BuildCreativeModeTabContentsEvent event) {

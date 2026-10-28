@@ -41,10 +41,11 @@ public final class HerdBookData extends SavedData {
             AnimalTraitCodecs.CODEC.fieldOf("traits").forGetter(HerdRecord::traits),
             PregnancyCodecs.CODEC.optionalFieldOf("pregnancy").forGetter(record -> Optional.ofNullable(record.pregnancy())),
             Codec.BOOL.optionalFieldOf("baby", false).forGetter(HerdRecord::baby),
+            Codec.BOOL.optionalFieldOf("milkable", false).forGetter(HerdRecord::milkable),
             Codec.LONG.fieldOf("refreshedAt").forGetter(HerdRecord::refreshedAt),
             Codec.LONG.optionalFieldOf("diedAt", -1L).forGetter(HerdRecord::diedAt)
-    ).apply(instance, (species, name, traits, pregnancy, baby, refreshedAt, diedAt) ->
-            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, refreshedAt, diedAt)));
+    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, refreshedAt, diedAt) ->
+            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, refreshedAt, diedAt)));
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(entry -> entry.node().id()),
             UUIDUtil.CODEC.optionalFieldOf("motherId").forGetter(entry -> Optional.ofNullable(entry.node().mother())),

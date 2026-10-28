@@ -12,6 +12,7 @@ public record HerdRecord(
         AnimalTraits traits,
         @Nullable Pregnancy pregnancy,
         boolean baby,
+        boolean milkable,
         long refreshedAt,
         long diedAt
 ) {
@@ -20,6 +21,6 @@ public record HerdRecord(
     }
 
     public HerdRecord died(long tick) {
-        return new HerdRecord(species, name, traits, pregnancy, baby, refreshedAt, tick);
+        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, refreshedAt, tick);
     }
 }

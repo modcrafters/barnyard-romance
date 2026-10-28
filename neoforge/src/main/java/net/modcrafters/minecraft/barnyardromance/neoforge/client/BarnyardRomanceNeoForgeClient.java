@@ -3,15 +3,19 @@ package net.modcrafters.minecraft.barnyardromance.neoforge.client;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
+import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+//? if >=1.21.6
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 //? if >=1.21.2 {
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 //?} else
@@ -26,7 +30,15 @@ public final class BarnyardRomanceNeoForgeClient {
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerReloadListeners);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerLayers);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerParticles);
+        //? if >=1.21.6
+        modBus.addListener(BarnyardRomanceNeoForgeClient::registerPayloads);
     }
+
+    //? if >=1.21.6 {
+    private static void registerPayloads(RegisterClientPayloadHandlersEvent event) {
+        event.register(HerdBookPayloads.ShowBook.TYPE, (payload, context) -> HerdBookClient.show(payload));
+    }
+    //?}
 
     private static void registerLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(

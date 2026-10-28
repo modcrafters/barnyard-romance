@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
@@ -17,6 +18,8 @@ import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -78,6 +81,10 @@ public class BarnyardRomanceFabric implements ModInitializer {
             }
         });
         ServerTickEvents.END_SERVER_TICK.register(server -> HerdBooks.tick(server, server.getTickCount()));
+        PayloadTypeRegistry.clientboundPlay().register(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(HerdBookPayloads.RemoveFromBook.TYPE, HerdBookPayloads.RemoveFromBook.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(HerdBookPayloads.RemoveFromBook.TYPE,
+                (payload, context) -> HerdBooks.removeRequested(context.player(), payload));
         CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> BarnyardCommands.register(dispatcher));
     }
 }

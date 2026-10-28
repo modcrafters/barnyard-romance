@@ -8,10 +8,14 @@ import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -120,6 +124,60 @@ public final class HerdBooks {
                 refresh(data, animal, animal.level().getGameTime());
             }
         }
+    }
+
+    // Sends the whole book to the player: loaded members are recorded first, so they show as they are now.
+    public static void show(ServerPlayer player, ItemStack book) {
+        UUID id = book.get(BarnyardComponents.HERD_BOOK);
+        MinecraftServer server = player.level().getServer();
+        List<HerdEntry> entries = id == null ? List.of() : entries(server, id, player.level().getGameTime());
+        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries));
+    }
+
+    public static List<HerdEntry> entries(MinecraftServer server, UUID book, long now) {
+        HerdBookData data = HerdBookData.get(server);
+        long clock = server.overworld().getOverworldClockTime();
+        List<HerdEntry> entries = new ArrayList<>();
+        for (UUID member : List.copyOf(data.ledger().members(book))) {
+            Animal animal = find(server, member);
+            if (animal != null) {
+                refresh(data, animal, now);
+            }
+            HerdRecord record = data.record(member);
+            HerdLedger.Node node = data.ledger().node(member);
+            if (record != null && node != null) {
+                entries.add(HerdStatus.entry(record, node, now, clock, animal != null));
+            }
+        }
+        return entries;
+    }
+
+    // Only a player holding this book can take an animal out of it.
+    public static boolean removeRequested(Player player, HerdBookPayloads.RemoveFromBook request) {
+        ItemStack held = heldBook(player, request.book());
+        if (held == null || !(player.level() instanceof ServerLevel level)) {
+            return false;
+        }
+        HerdBookData data = HerdBookData.get(level.getServer());
+        if (!data.ledger().remove(request.book(), request.animal())) {
+            return false;
+        }
+        data.forgetOrphans();
+        data.setDirty();
+        if (player instanceof ServerPlayer serverPlayer) {
+            show(serverPlayer, held);
+        }
+        return true;
+    }
+
+    private static @Nullable ItemStack heldBook(Player player, UUID book) {
+        for (InteractionHand hand : InteractionHand.values()) {
+            ItemStack stack = player.getItemInHand(hand);
+            if (book.equals(stack.get(BarnyardComponents.HERD_BOOK))) {
+                return stack;
+            }
+        }
+        return null;
     }
 
     public static @Nullable Animal find(MinecraftServer server, UUID id) {
