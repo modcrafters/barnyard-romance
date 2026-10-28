@@ -81,7 +81,8 @@ public class BarnyardRomanceFabric implements ModInitializer {
             }
         });
         ServerTickEvents.END_SERVER_TICK.register(server -> HerdBooks.tick(server, server.getTickCount()));
-        PayloadTypeRegistry.clientboundPlay().register(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().registerLarge(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC,
+                HerdBookPayloads.ShowBook.MAX_BYTES);
         PayloadTypeRegistry.serverboundPlay().register(HerdBookPayloads.RemoveFromBook.TYPE, HerdBookPayloads.RemoveFromBook.STREAM_CODEC);
         ServerPlayNetworking.registerGlobalReceiver(HerdBookPayloads.RemoveFromBook.TYPE,
                 (payload, context) -> HerdBooks.removeRequested(context.player(), payload));

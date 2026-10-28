@@ -80,6 +80,11 @@ public class FabricHerdBookGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aBigBookFitsThePayloadLimit(GameTestHelper helper) {
+        HerdBookGameTests.aBigBookFitsThePayloadLimit(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void showBookSurvivesTheNetworkCodec(GameTestHelper helper) {
         HerdBookGameTests.showBookSurvivesTheNetworkCodec(helper);
     }

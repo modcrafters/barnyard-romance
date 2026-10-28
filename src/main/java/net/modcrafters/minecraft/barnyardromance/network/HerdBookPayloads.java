@@ -21,6 +21,9 @@ public final class HerdBookPayloads {
     // book is empty for a book that has never registered an animal.
     public record ShowBook(Optional<UUID> book, List<HerdEntry> entries) implements CustomPacketPayload {
         public static final Type<ShowBook> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "show_herd_book"));
+        // Books have no size limit and grow as calves are born, so a big farm's book is past vanilla's 1 MiB
+        // packet limit (about 1 KB per animal). NeoForge splits large payloads itself; Fabric registers this.
+        public static final int MAX_BYTES = 16 * 1024 * 1024;
         public static final StreamCodec<RegistryFriendlyByteBuf, ShowBook> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC).cast(),
                 ShowBook::book,

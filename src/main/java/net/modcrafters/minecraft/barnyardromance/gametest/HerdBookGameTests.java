@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -17,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import io.netty.buffer.Unpooled;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -54,7 +56,8 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("show_sends_every_living_member", 20, HerdBookGameTests::showSendsEveryLivingMember),
             new BreedingGameTests.Case("unloaded_status_is_projected", 20, HerdBookGameTests::unloadedStatusIsProjected),
             new BreedingGameTests.Case("removal_needs_the_book_in_hand", 20, HerdBookGameTests::removalNeedsTheBookInHand),
-            new BreedingGameTests.Case("show_book_survives_the_network_codec", 20, HerdBookGameTests::showBookSurvivesTheNetworkCodec)
+            new BreedingGameTests.Case("show_book_survives_the_network_codec", 20, HerdBookGameTests::showBookSurvivesTheNetworkCodec),
+            new BreedingGameTests.Case("a_big_book_fits_the_payload_limit", 20, HerdBookGameTests::aBigBookFitsThePayloadLimit)
     );
 
     private HerdBookGameTests() {
@@ -285,6 +288,29 @@ public final class HerdBookGameTests {
         HerdBookPayloads.ShowBook received = HerdBookPayloads.ShowBook.STREAM_CODEC.decode(buffer);
 
         helper.assertTrue(received.equals(sent), "the book came back as " + received);
+        helper.succeed();
+    }
+
+    // Books grow by themselves as calves are born, so a big farm's book is past vanilla's 1 MiB packet limit.
+    public static void aBigBookFitsThePayloadLimit(GameTestHelper helper) {
+        List<Component> lines = List.of(
+                Component.translatable("gui.barnyard_romance.herd_book.size_age", "XL", Component.translatable("gui.barnyard_romance.age.adult"), "17d"),
+                Component.translatable("gui.barnyard_romance.herd_book.fed_today"),
+                Component.translatable("gui.barnyard_romance.pregnancy.line", 61, Component.translatable("gui.barnyard_romance.time.minutes_seconds", 21, 40)),
+                Component.translatable("gui.barnyard_romance.herd_book.familiarity", Component.translatable("gui.barnyard_romance.percent", 80)),
+                Component.translatable("gui.barnyard_romance.herd_book.fertility", Component.translatable("gui.barnyard_romance.percent", 90)),
+                Component.translatable("gui.barnyard_romance.herd_book.seen", Component.translatable("gui.barnyard_romance.time.days", 12)));
+        List<HerdEntry> entries = new java.util.ArrayList<>();
+        for (int i = 0; i < 1_500; i++) {
+            entries.add(new HerdEntry(UUID.randomUUID(), "minecraft:cow", "Daisy the " + i + "th", true, false, true, Familiar.FAMILIAR,
+                    true, 61, false, Optional.of(UUID.randomUUID()), Optional.of(UUID.randomUUID()), lines));
+        }
+        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
+
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries));
+
+        helper.assertTrue(buffer.readableBytes() > 1_048_576, "1,500 animals took only " + buffer.readableBytes() + " bytes");
+        helper.assertTrue(buffer.readableBytes() < HerdBookPayloads.ShowBook.MAX_BYTES, "1,500 animals took " + buffer.readableBytes() + " bytes");
         helper.succeed();
     }
 
