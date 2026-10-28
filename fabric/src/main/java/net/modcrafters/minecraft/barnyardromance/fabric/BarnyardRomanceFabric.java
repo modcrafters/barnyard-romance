@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
@@ -15,6 +16,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -32,8 +34,14 @@ public class BarnyardRomanceFabric implements ModInitializer {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_tool"),
                 BarnyardComponents.HERD_TOOL
         );
+        Registry.register(
+                BuiltInRegistries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book"),
+                BarnyardComponents.HERD_BOOK
+        );
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), BarnyardItems.HERD_STICK);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.INSPECTOR_ID.identifier(), BarnyardItems.INSPECTOR);
+        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), BarnyardItems.HERD_BOOK);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), BarnyardItems.BREEDERS_MASH);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), BarnyardItems.GOLDEN_BRAN);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), BarnyardItems.SHEEP_MILK_BUCKET);
@@ -64,6 +72,12 @@ public class BarnyardRomanceFabric implements ModInitializer {
                 AnimalSex.onJoin(animal);
             }
         });
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
+            if (entity instanceof Animal animal && entity.getRemovalReason() != null) {
+                HerdBooks.leftLevel(animal, entity.getRemovalReason());
+            }
+        });
+        ServerTickEvents.END_SERVER_TICK.register(server -> HerdBooks.tick(server, server.getTickCount()));
         CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> BarnyardCommands.register(dispatcher));
     }
 }

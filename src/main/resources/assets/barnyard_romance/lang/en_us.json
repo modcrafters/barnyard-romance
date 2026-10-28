@@ -1,6 +1,7 @@
 {
   "item.barnyard_romance.herd_stick": "Herd Stick",
   "item.barnyard_romance.inspector": "Barnyard Inspector",
+  "item.barnyard_romance.herd_book": "Herd Book",
   "death.attack.barnyard_romance.old_age": "%1$s died of old age",
   "item.barnyard_romance.breeders_mash": "Breeder's Mash",
   "item.barnyard_romance.golden_bran": "Golden Bran",
@@ -100,6 +101,10 @@
   "message.barnyard_romance.superfood.needs_mother": "Only a pregnant mother needs this.",
   "message.barnyard_romance.superfood.already_on_mash": "She's already on a mash.",
   "message.barnyard_romance.superfood.cant_eat_more": "She can't eat any more of this.",
+  "message.barnyard_romance.herd_book.added": "%s was added to the herd book.",
+  "message.barnyard_romance.herd_book.already": "%s is already in this herd book.",
+  "message.barnyard_romance.herd_book.not_familiar": "%s isn't familiar enough to add to the herd book.",
+  "message.barnyard_romance.herd_book.not_tracked": "%s can't be kept in a herd book.",
   "message.barnyard_romance.herd_stick.creative_only": "Set is only available in creative mode.",
   "message.barnyard_romance.herd_stick.no_familiarity": "This animal has no familiarity yet.",
   "message.barnyard_romance.herd_stick.not_pregnant": "This animal is not pregnant.",

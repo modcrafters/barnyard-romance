@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:book",
+    "minecraft:wheat"
+  ],
+  "result": {
+    "id": "barnyard_romance:herd_book",
+    "count": 1
+  }
+}

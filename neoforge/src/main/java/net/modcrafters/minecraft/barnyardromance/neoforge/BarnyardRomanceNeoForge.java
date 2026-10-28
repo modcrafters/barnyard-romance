@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
@@ -28,6 +29,8 @@ import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
 @Mod(Constants.MOD_ID)
@@ -45,6 +48,8 @@ public class BarnyardRomanceNeoForge {
         }
         BarnyardRomance.init();
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
+        NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
     }
@@ -55,8 +60,14 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_tool"),
                 () -> BarnyardComponents.HERD_TOOL
         );
+        event.register(
+                Registries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book"),
+                () -> BarnyardComponents.HERD_BOOK
+        );
         event.register(Registries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), () -> BarnyardItems.HERD_STICK);
         event.register(Registries.ITEM, BarnyardItems.INSPECTOR_ID.identifier(), () -> BarnyardItems.INSPECTOR);
+        event.register(Registries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), () -> BarnyardItems.HERD_BOOK);
         event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);
         event.register(Registries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), () -> BarnyardItems.GOLDEN_BRAN);
         event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
@@ -88,6 +99,17 @@ public class BarnyardRomanceNeoForge {
             return;
         }
         AnimalSex.onJoin(animal);
+    }
+
+    private static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Animal animal) || animal.getRemovalReason() == null) {
+            return;
+        }
+        HerdBooks.leftLevel(animal, animal.getRemovalReason());
+    }
+
+    private static void onServerTick(ServerTickEvent.Post event) {
+        HerdBooks.tick(event.getServer(), event.getServer().getTickCount());
     }
 
     //? if >=1.21.2 {
