@@ -9,6 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Inheritance;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
@@ -100,7 +101,7 @@ public final class PregnancyController {
                     fatherTraits.growthTicks(),
                     fatherTraits.weight(),
                     litter.get()
-            ));
+            ).withFatherId(father.getUUID()));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
@@ -183,7 +184,8 @@ public final class PregnancyController {
         double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
         Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth)
                 .withWeight(weight)
-                .withBornTick(mother.level().getGameTime()));
+                .withBornTick(mother.level().getGameTime())
+                .withLineage(new Lineage(mother.getUUID(), pregnancy.fatherId())));
         return growth;
     }
 
