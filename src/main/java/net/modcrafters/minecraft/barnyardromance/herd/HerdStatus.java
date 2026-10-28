@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
@@ -68,7 +69,7 @@ public final class HerdStatus {
                 record.alive(),
                 familiar,
                 fedToday,
-                pregnancy == null ? -1 : (int) Math.floor(progress * 100.0),
+                pregnancy == null ? -1 : PregnancyText.percent(progress),
                 milk.map(status -> status.left() > 0).orElse(false),
                 Optional.ofNullable(node.mother()),
                 Optional.ofNullable(node.father()),

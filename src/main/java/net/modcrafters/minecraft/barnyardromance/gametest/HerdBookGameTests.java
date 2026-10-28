@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdLedger;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
@@ -234,7 +235,7 @@ public final class HerdBookGameTests {
 
         HerdEntry entry = HerdStatus.entry(data(helper).record(mother.getUUID()), data(helper).ledger().node(mother.getUUID()), now + 5_000L, now + 5_000L, false);
 
-        int expected = (int) Math.floor(PregnancyClock.progress(now + 5_000L, recorded) * 100.0);
+        int expected = PregnancyText.percent(PregnancyClock.progress(now + 5_000L, recorded));
         helper.assertTrue(entry.pregnancyPercent() == expected, "the projected pregnancy is " + entry.pregnancyPercent() + "%, not " + expected + "%");
         helper.succeed();
     }

@@ -24,7 +24,8 @@
         ],
         "fabric-client-gametest": [
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.InspectorClientGameTest",
-            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.LooksClientGameTest"
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.LooksClientGameTest",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.HerdBookClientGameTest"
         ]
     },
     "mixins": [
