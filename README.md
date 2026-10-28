@@ -44,6 +44,22 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 - `hide` lists vanilla horns to hide whenever the mod draws this animal's horns. It takes either a part path or the cubes of one part matching `size` (and `from`, if given). Entries a model doesn't have are ignored, so one list can cover every variant on every version.
 - Models built some other way, such as GeckoLib, can't take horns from these files. A file whose `attach` part is missing logs one warning and draws nothing.
 
+## Herd book
+
+Craft a **Herd Book** from a book and a wheat. It keeps a list of your herd that you can read from anywhere.
+
+- **Adding animals:** use the book on an animal. Only animals familiar enough to breed (`familiarityThreshold`, 30% by default) can be added. Newborns join every book their mother is in, at birth.
+- **Reading it:** use the book in the air. Bookmarks on the right pick a species. Each species lists its females, males and kids. Next to each name:
+  - a green or red dot shows whether it was fed today;
+  - a pink percentage is a pregnancy;
+  - a blue mark means milk is ready;
+  - a grey `?` means the animal isn't familiar enough, so the book stopped updating it.
+  
+  Hover an icon for the words. Click a name for the animal's page, with its family. Parents and young in the book are links; others show as unknown.
+- **Away from home:** the server keeps a short record of every animal in a book. A loaded animal shows as it is now. An unloaded one shows its record, with pregnancy, feeding and milk worked out to the present, and "Seen … ago". Births and deaths still only happen while the animal is loaded.
+- **Deaths and removing:** a dead animal leaves the lists, but its page stays while a living animal in the book descends from it. The ✕ on an animal page removes it from this book (click twice). Its young stay, and dead ancestors no longer linked to a living animal go too.
+- **Sharing:** the list belongs to the book item, so giving someone the book gives them the herd.
+
 ## Translations
 
 All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To translate it, copy that file to your language's code (for example `de_de.json`) and translate the values. Leave the keys and the `%s` placeholders as they are. The file can go in the mod or in a resource pack. `LangFileTest` fails if the code uses a key that `en_us.json` doesn't have, or if `en_us.json` has a key nothing uses.
@@ -89,7 +105,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 
 - `gradlew :26.3:test` runs the unit tests for the pure rules.
 - `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
-- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, and of rows of animals showing horns and bellies.
+- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, of rows of animals showing horns and bellies, and of the herd book's pages.
 - On 1.21.1 the same checks run with `gradlew :1.21.1:test` and `gradlew :neoforge:1.21.1:runGameTestServer` (NeoForge only). There each test runs in its own batch, and `GameTestCompat` covers the steps that differ, such as test positions counting from one block lower.
 - CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.
 
@@ -101,7 +117,14 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 ### 1.21.1 test gaps
 
 - Every shared game test runs on 1.21.1.
-- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies and horns are checked by hand. For horns and bellies, check:
+- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. For the herd book, check:
+  - using the book in the air opens it, and an empty book says how to add animals;
+  - a familiar cow can be added, and a wild one is refused;
+  - after breeding, the calf joins the book under Kids;
+  - after the mother dies, the calf's Mother link still opens her page;
+  - ✕ asks "Sure?" and then removes the animal.
+
+  For horns and bellies, check:
   - a ewe or cow late in pregnancy is wider;
   - bulls, rams and billies have horns;
   - a billy that has lost a horn shows only one;
