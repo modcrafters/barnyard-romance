@@ -14,6 +14,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
 import net.neoforged.neoforge.gametest.GameTestHooks;
 
@@ -80,6 +81,9 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(FoodGameTests.CASES);
         cases.addAll(ProductGameTests.CASES);
         cases.addAll(HerdBookGameTests.CASES);
+        cases.add(new BreedingGameTests.Case("unload_event_refreshes_the_record", 20,
+                helper -> HerdBookGameTests.unloadEventRefreshesTheRecord(helper,
+                        cow -> NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(cow, helper.getLevel())))));
         cases.add(new BreedingGameTests.Case("cancelled_baby_event_leaves_no_pregnancy", 20,
                 helper -> refusedBreeding(helper, Answer.CANCEL)));
         cases.add(new BreedingGameTests.Case("baby_swapped_for_nothing_leaves_no_pregnancy", 20,

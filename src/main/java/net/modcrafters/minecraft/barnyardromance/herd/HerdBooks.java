@@ -88,8 +88,9 @@ public final class HerdBooks {
     }
 
     // Killed and discarded animals (deaths, and conversions to a new animal) are dead to the book;
-    // any other way of leaving (unloading, changing dimension) just refreshes the record.
-    public static void leftLevel(Animal animal, Entity.RemovalReason reason) {
+    // any other way of leaving just refreshes the record. A chunk unload arrives before the entity has
+    // a removal reason, so a missing reason is an unload.
+    public static void leftLevel(Animal animal, Entity.@Nullable RemovalReason reason) {
         if (!(animal.level() instanceof ServerLevel level)) {
             return;
         }
@@ -99,7 +100,7 @@ public final class HerdBooks {
         }
         long now = level.getGameTime();
         refresh(data, animal, now);
-        if (reason.shouldDestroy()) {
+        if (reason != null && reason.shouldDestroy()) {
             HerdRecord record = data.record(animal.getUUID());
             if (record != null) {
                 data.put(animal.getUUID(), record.died(now));

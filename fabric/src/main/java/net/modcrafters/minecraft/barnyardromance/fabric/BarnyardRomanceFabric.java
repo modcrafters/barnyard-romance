@@ -76,7 +76,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
             }
         });
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {
-            if (entity instanceof Animal animal && entity.getRemovalReason() != null) {
+            if (entity instanceof Animal animal) {
                 HerdBooks.leftLevel(animal, entity.getRemovalReason());
             }
         });

@@ -31,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.forceBirth;
@@ -152,6 +153,21 @@ public final class HerdBookGameTests {
 
         HerdRecord record = data(helper).record(cow.getUUID());
         helper.assertTrue(record.traits().lastFedTick() == 500L, "the record was fed at " + record.traits().lastFedTick());
+        helper.assertTrue(record.diedAt() < 0L, "an unloaded cow was marked dead");
+        helper.succeed();
+    }
+
+    // A chunk unload reaches the loader's leave-level event before the entity has a removal reason,
+    // so this fires the real event on a live cow, the way an unload does.
+    public static void unloadEventRefreshesTheRecord(GameTestHelper helper, Consumer<Animal> fireUnload) {
+        Animal cow = female(helper, EntityTypes.COW);
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 600L));
+
+        fireUnload.accept(cow);
+
+        HerdRecord record = data(helper).record(cow.getUUID());
+        helper.assertTrue(record.traits().lastFedTick() == 600L, "the unload event left the record fed at " + record.traits().lastFedTick());
         helper.assertTrue(record.diedAt() < 0L, "an unloaded cow was marked dead");
         helper.succeed();
     }

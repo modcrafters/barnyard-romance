@@ -119,7 +119,7 @@ public class BarnyardRomanceNeoForge {
     }
 
     private static void onEntityLeave(EntityLeaveLevelEvent event) {
-        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Animal animal) || animal.getRemovalReason() == null) {
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Animal animal)) {
             return;
         }
         HerdBooks.leftLevel(animal, animal.getRemovalReason());
