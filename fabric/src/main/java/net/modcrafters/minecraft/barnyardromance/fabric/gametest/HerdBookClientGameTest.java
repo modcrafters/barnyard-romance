@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
@@ -23,10 +24,19 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ServerLevelData;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.UUID;
 
-// Opens a herd book with a small cow family in a real client and screenshots its pages.
+// Opens a herd book with a small cow family in a real client, clicks through it and screenshots its pages.
 public class HerdBookClientGameTest implements FabricClientGameTest {
+    // Where things are on the book, in GUI pixels from its top-left corner (see HerdBookScreen).
+    private static final int DAISY_X = 36 + 12;
+    private static final int DAISY_Y = 2 + 30 + 2 * 9 + 4;
+    private static final int BUTTON_Y = 2 + 157 + 7;
+    private static final int RETURN_X = 36 + 33;
+    private static final int REMOVE_X = 36 + 114 - 3;
+
     @Override
     public void runTest(ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
@@ -79,19 +89,41 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             context.waitTicks(2);
             context.takeScreenshot("herd_book_contents");
 
-            context.runOnClient(client -> ((HerdBookScreen) client.gui.screen()).showAnimal(daisy));
-            context.waitTicks(2);
+            // Real clicks: the contents list goes Females, Bluebell, Daisy.
+            click(context, DAISY_X, DAISY_Y);
+            expectShown(context, daisy, "Clicking Daisy's row should open her page");
             context.takeScreenshot("herd_book_animal");
 
-            context.runOnClient(client -> ((HerdBookScreen) client.gui.screen()).pressRemove());
-            context.waitTicks(2);
+            click(context, RETURN_X, BUTTON_Y);
+            expectShown(context, null, "The return button should go back to the contents");
+            click(context, DAISY_X, DAISY_Y);
+            expectShown(context, daisy, "Clicking Daisy's row again should open her page");
+
+            click(context, REMOVE_X, BUTTON_Y);
             context.takeScreenshot("herd_book_remove_sure");
 
-            context.runOnClient(client -> ((HerdBookScreen) client.gui.screen()).pressRemove());
+            click(context, REMOVE_X, BUTTON_Y);
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(2);
+            expectShown(context, null, "Removing Daisy should close her page");
             context.takeScreenshot("herd_book_after_remove");
             context.setScreen(() -> null);
+        }
+    }
+
+    private static void click(ClientGameTestContext context, int bookX, int bookY) {
+        double scale = context.computeOnClient(client -> client.getWindow().getGuiScale());
+        int left = context.computeOnClient(client -> (client.getWindow().getGuiScaledWidth() - 192) / 2);
+        context.getInput().setCursorPos((left + bookX) * scale, bookY * scale);
+        context.waitTicks(1);
+        context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        context.waitTicks(2);
+    }
+
+    private static void expectShown(ClientGameTestContext context, @Nullable UUID expected, String message) {
+        UUID shown = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
+        if (expected == null ? shown != null : !expected.equals(shown)) {
+            throw new AssertionError(message + ", but the book shows " + shown);
         }
     }
 

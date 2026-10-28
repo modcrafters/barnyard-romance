@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -103,6 +104,11 @@ public class HerdBookScreen extends Screen {
         }
         this.page = Math.min(this.page, Math.max(0, contents().size() - 1));
         updateButtons();
+    }
+
+    // The animal whose page is open, or null on a contents page.
+    public @Nullable UUID shownAnimal() {
+        return this.animal;
     }
 
     public void showAnimal(UUID id) {
@@ -217,7 +223,7 @@ public class HerdBookScreen extends Screen {
     //? if >=1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && click(event.x(), event.y())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && click(event.x(), event.y())) {
             return true;
         }
         return super.mouseClicked(event, doubleClick);
@@ -225,7 +231,7 @@ public class HerdBookScreen extends Screen {
     //?} else {
     /*@Override
     public boolean mouseClicked(double x, double y, int button) {
-        if (button == 0 && click(x, y)) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && click(x, y)) {
             return true;
         }
         return super.mouseClicked(x, y, button);
