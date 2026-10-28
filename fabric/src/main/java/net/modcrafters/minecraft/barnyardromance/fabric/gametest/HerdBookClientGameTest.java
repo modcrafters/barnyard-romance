@@ -62,6 +62,12 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                 for (Animal animal : new Animal[] {bess, tom, daisyCow, bluebell, calf}) {
                     HerdBooks.register(book, animal);
                 }
+                // More of Daisy's young than her page has room for.
+                for (int i = 0; i < 5; i++) {
+                    HerdBooks.register(book, cow(level, player, "Calf " + (i + 2), Sex.MALE, true, new AnimalTraits(Sex.MALE, 0.8, 1.0, clock)
+                            .withBornTick(now - 90_000L)
+                            .withLineage(new Lineage(daisyCow.getUUID(), tom.getUUID()))));
+                }
                 // The calf drops below the threshold, and Old Bess dies but stays as Daisy's mother.
                 Services.DATA.set(calf, Services.DATA.get(calf).orElseThrow().fed(0.1, clock));
                 bess.discard();

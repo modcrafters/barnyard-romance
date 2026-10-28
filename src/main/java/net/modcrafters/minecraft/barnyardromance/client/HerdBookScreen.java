@@ -18,6 +18,7 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -270,9 +271,13 @@ public class HerdBookScreen extends Screen {
     private void drawBookmarks(GuiGraphicsExtractor graphics) {
         List<String> bookmarks = HerdBookLayout.bookmarks(this.rows);
         int height = HerdBookLayout.tabHeight(bookmarks.size());
-        int x0 = left() + SIZE - 34;
-        int y = top() + 8;
-        for (String tab : bookmarks) {
+        int columns = HerdBookLayout.tabColumns(bookmarks.size());
+        int perColumn = (bookmarks.size() + columns - 1) / columns;
+        for (int i = 0; i < bookmarks.size(); i++) {
+            String tab = bookmarks.get(i);
+            // Further columns stand out past the first, like a second row of bookmarks.
+            int x0 = left() + SIZE - 34 + (i / perColumn) * 26;
+            int y = top() + 8 + (i % perColumn) * height;
             boolean on = tab.equals(this.species);
             int x1 = x0 + (on ? 26 : 22);
             graphics.fill(x0, y, x1, y + height - 1, on ? TAB_ON : TAB);
@@ -280,7 +285,6 @@ public class HerdBookScreen extends Screen {
             String letters = this.font.plainSubstrByWidth(name, x1 - x0 - 4);
             graphics.text(this.font, letters, x0 + 3, y + (height - 8) / 2, on ? TEXT : TAB_TEXT, false);
             this.hits.add(new Hit(x0, y, x1, y + height - 1, () -> showContents(tab, 0), Component.literal(name)));
-            y += height;
         }
     }
 
@@ -358,24 +362,19 @@ public class HerdBookScreen extends Screen {
         lineY = drawLink(graphics, Component.translatable("gui.barnyard_romance.herd_book.father"), entry.father(), x, lineY);
         List<HerdEntry> young = this.entries.values().stream()
                 .filter(other -> other.mother().equals(Optional.of(entry.id())) || other.father().equals(Optional.of(entry.id())))
+                .sorted(Comparator.comparing((HerdEntry child) -> this.names.get(child.id())).thenComparing(HerdEntry::id))
                 .toList();
         if (!young.isEmpty()) {
-            Component label = Component.translatable("gui.barnyard_romance.herd_book.young");
-            graphics.text(this.font, label, x, lineY, MUTED, false);
-            int linkX = x + this.font.width(label) + 4;
-            int bottom = top() + BUTTONS_Y - LINE;
-            for (HerdEntry child : young) {
-                String name = this.names.get(child.id());
-                int width = this.font.width(name);
-                if (linkX + width > x + TEXT_WIDTH) {
-                    linkX = x + 8;
-                    lineY += LINK_LINE;
-                }
-                if (lineY > bottom) {
-                    break;
-                }
-                link(graphics, name, child.id(), linkX, lineY);
-                linkX += width + 6;
+            graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.young"), x, lineY, MUTED, false);
+            lineY += LINK_LINE;
+            int linesLeft = Math.max(0, (top() + BUTTONS_Y - LINE - lineY) / LINK_LINE + 1);
+            int shown = HerdBookLayout.youngShown(young.size(), linesLeft);
+            for (HerdEntry child : young.subList(0, shown)) {
+                link(graphics, fit(this.names.get(child.id()), TEXT_WIDTH - 8), child.id(), x + 8, lineY);
+                lineY += LINK_LINE;
+            }
+            if (shown < young.size()) {
+                graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.more", young.size() - shown), x + 8, lineY, MUTED, false);
             }
         }
         drawAnimalButtons(graphics, entry);

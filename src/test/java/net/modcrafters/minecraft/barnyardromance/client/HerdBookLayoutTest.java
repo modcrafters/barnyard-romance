@@ -120,6 +120,28 @@ class HerdBookLayoutTest {
     }
 
     @Test
+    void manySpeciesStillFitInMoreColumns() {
+        for (int count : new int[] {17, 19, 20, 30, 60}) {
+            int columns = HerdBookLayout.tabColumns(count);
+            int rows = (count + columns - 1) / columns;
+            int height = HerdBookLayout.tabHeight(count);
+            assertTrue(height >= HerdBookLayout.MIN_TAB, count + " species: tabs " + height + " high");
+            assertTrue(rows * height <= HerdBookLayout.TAB_SPACE, count + " species run past the book: " + rows + " x " + height);
+        }
+        assertEquals(1, HerdBookLayout.tabColumns(16));
+        assertEquals(2, HerdBookLayout.tabColumns(30));
+    }
+
+    @Test
+    void youngThatDoNotFitLeaveRoomForMore() {
+        assertEquals(3, HerdBookLayout.youngShown(3, 5));
+        assertEquals(4, HerdBookLayout.youngShown(4, 4));
+        assertEquals(3, HerdBookLayout.youngShown(6, 4));
+        assertEquals(0, HerdBookLayout.youngShown(2, 0));
+        assertEquals(0, HerdBookLayout.youngShown(5, 1));
+    }
+
+    @Test
     void youngOfNamedMother() {
         assertEquals("Daisy's young", English.of(HerdBookLayout.displayName("", "Cow", "Daisy")));
     }

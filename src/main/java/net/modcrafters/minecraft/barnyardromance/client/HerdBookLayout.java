@@ -15,7 +15,8 @@ public final class HerdBookLayout {
     // The height the bookmarks share down the book's right edge.
     public static final int TAB_SPACE = 176;
     public static final int MAX_TAB = 24;
-    public static final int MIN_TAB = 11;
+    // A tab still fits the 8-pixel font; past that, the tabs go on in another column.
+    public static final int MIN_TAB = 9;
 
     public record Row(UUID id, String species, String speciesName, String name, boolean female, boolean kid, boolean alive) {
     }
@@ -48,8 +49,23 @@ public final class HerdBookLayout {
                 .toList();
     }
 
+    public static int tabColumns(int count) {
+        int perColumn = TAB_SPACE / MIN_TAB;
+        return Math.max(1, (count + perColumn - 1) / perColumn);
+    }
+
     public static int tabHeight(int count) {
-        return Math.max(MIN_TAB, Math.min(MAX_TAB, TAB_SPACE / Math.max(1, count)));
+        int columns = tabColumns(count);
+        int rows = Math.max(1, (count + columns - 1) / columns);
+        return Math.max(MIN_TAB, Math.min(MAX_TAB, TAB_SPACE / rows));
+    }
+
+    // Young are listed one per line; when they don't all fit, the last line says how many more there are.
+    public static int youngShown(int count, int linesLeft) {
+        if (count <= linesLeft) {
+            return count;
+        }
+        return Math.max(0, linesLeft - 1);
     }
 
     public static List<List<Line>> contents(List<Row> rows, String species) {

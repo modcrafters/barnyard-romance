@@ -26,6 +26,7 @@
   "gui.barnyard_romance.herd_book.mother": "Mother:",
   "gui.barnyard_romance.herd_book.father": "Father:",
   "gui.barnyard_romance.herd_book.young": "Young:",
+  "gui.barnyard_romance.herd_book.more": "+%s more",
   "gui.barnyard_romance.herd_book.unknown": "Unknown",
   "gui.barnyard_romance.herd_book.back": "Back to the list",
   "gui.barnyard_romance.herd_book.remove": "Remove from the book",
