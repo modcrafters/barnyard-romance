@@ -86,4 +86,54 @@ public class FabricCareGameTests {
     public void hungryDayDoesNotDryHerUp(GameTestHelper helper) {
         CareGameTests.hungryDayDoesNotDryHerUp(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void grumpyHorseRefusesRider(GameTestHelper helper) {
+        CareGameTests.grumpyHorseRefusesRider(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void contentHorseTakesRider(GameTestHelper helper) {
+        CareGameTests.contentHorseTakesRider(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void grumpyWolfIgnoresSit(GameTestHelper helper) {
+        CareGameTests.grumpyWolfIgnoresSit(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wolfStandsUpWhenGrumpy(GameTestHelper helper) {
+        CareGameTests.wolfStandsUpWhenGrumpy(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void grumpyWolfDoesNotFollow(GameTestHelper helper) {
+        CareGameTests.grumpyWolfDoesNotFollow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void grumpyWolfSulksWhenOwnerHurt(GameTestHelper helper) {
+        CareGameTests.grumpyWolfSulksWhenOwnerHurt(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void grumpyWolfFightsBack(GameTestHelper helper) {
+        CareGameTests.grumpyWolfFightsBack(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void fedGrumpyWolfObeysAgain(GameTestHelper helper) {
+        CareGameTests.fedGrumpyWolfObeysAgain(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void grumpyPetShowsInTheBook(GameTestHelper helper) {
+        CareGameTests.grumpyPetShowsInTheBook(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hurtWolfStopsSulking(GameTestHelper helper) {
+        CareGameTests.hurtWolfStopsSulking(helper);
+    }
 }

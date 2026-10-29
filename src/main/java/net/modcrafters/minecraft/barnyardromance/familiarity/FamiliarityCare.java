@@ -23,6 +23,9 @@ public final class FamiliarityCare {
     public static void serverTick(Animal animal, ServerLevel level) {
         try {
             settle(animal, level.getOverworldClockTime());
+            if (animal instanceof TamableAnimal pet) {
+                Sulk.tick(pet, level.getGameTime());
+            }
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to settle a {}'s hunger", AnimalSex.speciesId(animal), exception);
         }
@@ -57,6 +60,11 @@ public final class FamiliarityCare {
             updated = updated.withLactation(updated.lactation().postponed(hungryTicks, tuning.milkKeepsFlowingTicks(), now - hungryTicks));
         }
         Services.DATA.set(animal, updated);
+        // A pet that has just turned grumpy stops obeying, so one left sitting gets up and wanders off.
+        if (animal instanceof TamableAnimal pet && pet.isOrderedToSit() && grumpy(animal)) {
+            pet.setOrderedToSit(false);
+            pet.setInSittingPose(false);
+        }
         return Optional.of(updated);
     }
 

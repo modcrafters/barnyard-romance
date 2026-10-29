@@ -46,9 +46,10 @@ public final class HerdBookData extends SavedData {
             Codec.BOOL.optionalFieldOf("woolly", false).forGetter(HerdRecord::woolly),
             Codec.LONG.fieldOf("refreshedAt").forGetter(HerdRecord::refreshedAt),
             Codec.LONG.optionalFieldOf("diedAt", -1L).forGetter(HerdRecord::diedAt),
-            Codec.LONG.optionalFieldOf("diedClock", -1L).forGetter(HerdRecord::diedClock)
-    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock) ->
-            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock)));
+            Codec.LONG.optionalFieldOf("diedClock", -1L).forGetter(HerdRecord::diedClock),
+            Codec.BOOL.optionalFieldOf("tamed", false).forGetter(HerdRecord::tamed)
+    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed) ->
+            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed)));
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(entry -> entry.node().id()),
             UUIDUtil.CODEC.optionalFieldOf("motherId").forGetter(entry -> Optional.ofNullable(entry.node().mother())),

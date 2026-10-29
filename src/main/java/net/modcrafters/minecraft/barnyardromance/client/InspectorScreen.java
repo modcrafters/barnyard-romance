@@ -308,7 +308,7 @@ public class InspectorScreen extends Screen {
                 stage,
                 InspectorSheet.scaleText(value.scale()),
                 value.familiarity(),
-                Familiarity.percent(value.familiarity()),
+                Familiarity.text(value.familiarity(), tamed),
                 Familiarity.feedReady(value.lastFedTick(), clock),
                 InspectorSheet.feedText(value.lastFedTick(), clock),
                 Growth.percent(value.growthTicks()),

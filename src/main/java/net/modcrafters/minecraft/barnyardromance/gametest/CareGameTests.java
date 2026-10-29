@@ -5,6 +5,8 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Sulk;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
@@ -16,7 +18,12 @@ import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -53,7 +60,17 @@ public final class CareGameTests {
             new BreedingGameTests.Case("dispenser_shearing_costs_familiarity", 20, CareGameTests::dispenserShearingCostsFamiliarity),
             new BreedingGameTests.Case("mooshroom_stew_costs_familiarity", 20, CareGameTests::mooshroomStewCostsFamiliarity),
             new BreedingGameTests.Case("hungry_cow_gives_no_milk_next_day", 20, CareGameTests::hungryCowGivesNoMilkNextDay),
-            new BreedingGameTests.Case("hungry_day_does_not_dry_her_up", 20, CareGameTests::hungryDayDoesNotDryHerUp)
+            new BreedingGameTests.Case("hungry_day_does_not_dry_her_up", 20, CareGameTests::hungryDayDoesNotDryHerUp),
+            new BreedingGameTests.Case("grumpy_horse_refuses_rider", 20, CareGameTests::grumpyHorseRefusesRider),
+            new BreedingGameTests.Case("content_horse_takes_rider", 20, CareGameTests::contentHorseTakesRider),
+            new BreedingGameTests.Case("grumpy_wolf_ignores_sit", 20, CareGameTests::grumpyWolfIgnoresSit),
+            new BreedingGameTests.Case("wolf_stands_up_when_grumpy", 20, CareGameTests::wolfStandsUpWhenGrumpy),
+            new BreedingGameTests.Case("grumpy_wolf_does_not_follow", 20, CareGameTests::grumpyWolfDoesNotFollow),
+            new BreedingGameTests.Case("grumpy_wolf_sulks_when_owner_hurt", 20, CareGameTests::grumpyWolfSulksWhenOwnerHurt),
+            new BreedingGameTests.Case("hurt_wolf_stops_sulking", 20, CareGameTests::hurtWolfStopsSulking),
+            new BreedingGameTests.Case("grumpy_wolf_fights_back", 20, CareGameTests::grumpyWolfFightsBack),
+            new BreedingGameTests.Case("fed_grumpy_wolf_obeys_again", 20, CareGameTests::fedGrumpyWolfObeysAgain),
+            new BreedingGameTests.Case("grumpy_pet_shows_in_the_book", 20, CareGameTests::grumpyPetShowsInTheBook)
     );
 
     private CareGameTests() {
@@ -255,6 +272,154 @@ public final class CareGameTests {
         long endsAfter = traits(helper, cow).lactation().endsAt(keep);
         helper.assertTrue(endsAfter == endsBefore + 2L * GameDay.TICKS, "two hungry days moved her milk's end by " + (endsAfter - endsBefore));
         helper.succeed();
+    }
+
+    public static void grumpyHorseRefusesRider(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        AbstractHorse horse = tamedHorse(helper, owner, 0.1);
+
+        GameTestCompat.interact(horse, owner);
+
+        helper.assertTrue(!horse.hasPassenger(owner), "a grumpy horse took its rider");
+        helper.succeed();
+    }
+
+    public static void contentHorseTakesRider(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        AbstractHorse horse = tamedHorse(helper, owner, 0.5);
+
+        GameTestCompat.interact(horse, owner);
+
+        helper.assertTrue(horse.hasPassenger(owner), "a content horse refused its rider");
+        helper.succeed();
+    }
+
+    public static void grumpyWolfIgnoresSit(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+
+        GameTestCompat.interact(wolf, owner);
+
+        helper.assertTrue(!wolf.isOrderedToSit(), "a grumpy wolf sat when told to");
+        helper.succeed();
+    }
+
+    public static void wolfStandsUpWhenGrumpy(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
+        wolf.setOrderedToSit(true);
+        FamiliarityCare.settle(wolf, clock(10L));
+
+        FamiliarityCare.settle(wolf, clock(12L));
+
+        helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).familiarity() + " is not grumpy");
+        helper.assertTrue(!wolf.isOrderedToSit() && !wolf.isInSittingPose(), "a wolf that turned grumpy kept sitting");
+        helper.succeed();
+    }
+
+    public static void grumpyWolfDoesNotFollow(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        owner.setPos(wolf.getX() + 20.0, wolf.getY(), wolf.getZ());
+
+        helper.assertTrue(!new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a grumpy wolf follows its owner");
+        Services.DATA.set(wolf, traits(helper, wolf).fed(0.5, -1L));
+        helper.assertTrue(new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a content wolf doesn't follow its owner");
+        helper.succeed();
+    }
+
+    // The owner is attacked; a grumpy wolf sits down and watches, then gets up again. The test world never lets
+    // vanilla's defend-the-owner check fire, so the sulk is started the way that check's hook starts it.
+    public static void grumpyWolfSulksWhenOwnerHurt(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        long now = helper.getLevel().getGameTime();
+
+        Sulk.start(wolf, now);
+
+        helper.assertTrue(wolf.isInSittingPose() && !wolf.isOrderedToSit(), "a grumpy wolf didn't sit down to watch");
+        Sulk.tick(wolf, now + Sulk.SULK_TICKS - 1L);
+        helper.assertTrue(wolf.isInSittingPose(), "the wolf stopped sulking early");
+        Sulk.tick(wolf, now + Sulk.SULK_TICKS);
+        helper.assertTrue(!wolf.isInSittingPose(), "the wolf is still sulking");
+        helper.assertTrue(!new OwnerHurtByTargetGoal(wolf).canUse(), "a grumpy wolf defended its owner");
+        helper.succeed();
+    }
+
+    // Being hurt itself ends a sulk at once.
+    public static void hurtWolfStopsSulking(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        long now = helper.getLevel().getGameTime();
+        Sulk.start(wolf, now);
+        wolf.hurtTime = 10;
+
+        Sulk.tick(wolf, now + 1L);
+
+        helper.assertTrue(!wolf.isInSittingPose(), "a hurt wolf kept sulking");
+        helper.succeed();
+    }
+
+    // Grumpy or not, a wolf that is attacked fights back.
+    public static void grumpyWolfFightsBack(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        Mob zombie = GameTestCompat.spawn(helper, EntityTypes.ZOMBIE, 1, 1, 1);
+        wolf.tickCount = 5;
+        wolf.setLastHurtByMob(zombie);
+
+        helper.assertTrue(new HurtByTargetGoal(wolf).canUse(), "a grumpy wolf won't fight back");
+        zombie.discard();
+        helper.succeed();
+    }
+
+    public static void fedGrumpyWolfObeysAgain(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BEEF));
+        owner.setShiftKeyDown(true);
+
+        FamiliarityActions.interact(wolf, owner, InteractionHand.MAIN_HAND);
+        owner.setShiftKeyDown(false);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        GameTestCompat.interact(wolf, owner);
+
+        helper.assertTrue(!FamiliarityCare.grumpy(wolf), "a fed wolf at " + traits(helper, wolf).familiarity() + " is still grumpy");
+        helper.assertTrue(wolf.isOrderedToSit(), "a wolf fed back to familiar won't sit");
+        helper.succeed();
+    }
+
+    public static void grumpyPetShowsInTheBook(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.5);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, wolf);
+        Services.DATA.set(wolf, traits(helper, wolf).fed(0.1, -1L));
+
+        HerdEntry entry = HerdBooks.entries(helper.getLevel().getServer(), book.get(BarnyardComponents.HERD_BOOK), helper.getLevel().getGameTime()).getFirst();
+
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().getContents().toString().contains("herd_book.grumpy")),
+                "the book doesn't say the wolf is grumpy: " + entry.lines());
+        helper.succeed();
+    }
+
+    private static AbstractHorse tamedHorse(GameTestHelper helper, Player owner, double familiarity) {
+        AbstractHorse horse = (AbstractHorse) female(helper, EntityTypes.HORSE);
+        horse.tameWithName(owner);
+        Services.DATA.set(horse, traits(helper, horse).fed(familiarity, -1L));
+        return horse;
+    }
+
+    private static TamableAnimal tamedWolf(GameTestHelper helper, Player owner, double familiarity) {
+        TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
+        wolf.tame(owner);
+        Services.DATA.set(wolf, traits(helper, wolf).fed(familiarity, -1L));
+        return wolf;
     }
 
     static long clock(long day) {

@@ -64,7 +64,8 @@ public final class HerdStatus {
                 loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()),
                 familiar,
                 record.alive() ? -1L : diedDay(record),
-                shear
+                shear,
+                record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity())
         );
         return new HerdEntry(
                 node.id(),

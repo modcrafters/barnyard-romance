@@ -19,13 +19,15 @@ public record HerdRecord(
         boolean woolly,
         long refreshedAt,
         long diedAt,
-        long diedClock
+        long diedClock,
+        // Tamed animals below the familiarity threshold are grumpy, not wild.
+        boolean tamed
 ) {
     public boolean alive() {
         return diedAt < 0L;
     }
 
     public HerdRecord died(long tick, long clock) {
-        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick, clock);
+        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick, clock, tamed);
     }
 }
