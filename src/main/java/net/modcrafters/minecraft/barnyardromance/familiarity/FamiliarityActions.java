@@ -79,7 +79,7 @@ public final class FamiliarityActions {
         }
         if (eaten.superfood()) {
             return eaten.effects().startsMilk()
-                    ? MilkActions.startMilk(animal, player, stack, eaten)
+                    ? MilkActions.startMilk(animal, player, hand, eaten)
                     : PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.

@@ -104,7 +104,8 @@ public final class MilkActions {
 
     // Dairy Mash starts a dry, familiar female's milk. Like the other superfoods it skips the once-a-day feed,
     // and it counts as her meal for the day.
-    public static InteractionResult startMilk(Animal animal, Player player, ItemStack stack, Feed.Eaten eaten) {
+    public static InteractionResult startMilk(Animal animal, Player player, InteractionHand hand, Feed.Eaten eaten) {
+        ItemStack stack = player.getItemInHand(hand);
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
@@ -122,9 +123,8 @@ public final class MilkActions {
             return InteractionResult.CONSUME;
         }
         float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), tuning);
-        if (!player.hasInfiniteMaterials()) {
-            stack.consume(1, player);
-        }
+        // Dairy Mash comes in a bowl, and the player gets it back, as with a stew.
+        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(Items.BOWL)));
         Services.DATA.set(animal, traits.withLactation(traits.lactation().started(now, tuning.milkKeepsFlowingTicks())));
         if (animal.getHealth() < animal.getMaxHealth() && heal > 0.0F) {
             animal.heal(heal);

@@ -248,7 +248,7 @@ public final class FoodGameTests {
 
         FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(player.getMainHandItem().isEmpty(), "the dry cow didn't eat the dairy mash");
+        helper.assertTrue(player.getMainHandItem().is(Items.BOWL), "feeding the dairy mash left " + player.getMainHandItem() + " in hand, not its bowl");
         AnimalTraits traits = BreedingGameTests.traits(helper, cow);
         long now = helper.getLevel().getGameTime();
         helper.assertTrue(traits.lactation().milkUntil() == now + BarnyardConfig.current().tuning().milkKeepsFlowingTicks(),
