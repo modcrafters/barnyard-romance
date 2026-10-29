@@ -93,4 +93,29 @@ public class FabricHerdBookGameTests {
     public void showBookSurvivesTheNetworkCodec(GameTestHelper helper) {
         HerdBookGameTests.showBookSurvivesTheNetworkCodec(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void failedRemovalSendsTheBook(GameTestHelper helper) {
+        HerdBookGameTests.failedRemovalSendsTheBook(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void diedDayUsesTheOverworldClock(GameTestHelper helper) {
+        HerdBookGameTests.diedDayUsesTheOverworldClock(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void vanillaBirthRecordsParents(GameTestHelper helper) {
+        HerdBookGameTests.vanillaBirthRecordsParents(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void saveRefreshesLoadedMembers(GameTestHelper helper) {
+        HerdBookGameTests.saveRefreshesLoadedMembers(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void memberOrderSurvivesSave(GameTestHelper helper) {
+        HerdBookGameTests.memberOrderSurvivesSave(helper);
+    }
 }

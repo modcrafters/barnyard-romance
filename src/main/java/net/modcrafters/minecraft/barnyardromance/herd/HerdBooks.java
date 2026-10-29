@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 // The server side of herd books: registering, births, deaths, and keeping the records fresh.
 public final class HerdBooks {
@@ -103,7 +104,7 @@ public final class HerdBooks {
         if (reason != null && reason.shouldDestroy()) {
             HerdRecord record = data.record(animal.getUUID());
             if (record != null) {
-                data.put(animal.getUUID(), record.died(now));
+                data.put(animal.getUUID(), record.died(now, level.getOverworldClockTime()));
             }
             data.ledger().died(animal.getUUID());
             data.forgetOrphans();
@@ -112,9 +113,13 @@ public final class HerdBooks {
     }
 
     public static void tick(MinecraftServer server, int tickCount) {
-        if (tickCount % REFRESH_TICKS != 0) {
-            return;
+        if (tickCount % REFRESH_TICKS == 0) {
+            refreshLoaded(server);
         }
+    }
+
+    // Also run when the world saves, so a force-loaded animal's record is never a minute behind the save.
+    public static void refreshLoaded(MinecraftServer server) {
         HerdBookData data = HerdBookData.get(server);
         for (HerdLedger.Node node : List.copyOf(data.ledger().nodes().values())) {
             if (!node.alive()) {
@@ -127,12 +132,17 @@ public final class HerdBooks {
         }
     }
 
-    // Sends the whole book to the player: loaded members are recorded first, so they show as they are now.
+    // Sends the whole book to the player and opens it: loaded members are recorded first, so they show as they are now.
     public static void show(ServerPlayer player, ItemStack book) {
+        show(player, book, true);
+    }
+
+    // open is false for a reply, which only refreshes a book the player still has open.
+    public static void show(ServerPlayer player, ItemStack book, boolean open) {
         UUID id = book.get(BarnyardComponents.HERD_BOOK);
         MinecraftServer server = player.level().getServer();
         List<HerdEntry> entries = id == null ? List.of() : entries(server, id, player.level().getGameTime());
-        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries));
+        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries, open));
     }
 
     public static List<HerdEntry> entries(MinecraftServer server, UUID book, long now) {
@@ -155,20 +165,27 @@ public final class HerdBooks {
 
     // Only a player holding this book can take an animal out of it.
     public static boolean removeRequested(Player player, HerdBookPayloads.RemoveFromBook request) {
+        return removeRequested(player, request, held -> {
+            if (player instanceof ServerPlayer serverPlayer) {
+                show(serverPlayer, held, false);
+            }
+        });
+    }
+
+    // The player holding the book gets it back whether or not the removal worked, so their page is never stale.
+    public static boolean removeRequested(Player player, HerdBookPayloads.RemoveFromBook request, Consumer<ItemStack> reply) {
         ItemStack held = heldBook(player, request.book());
         if (held == null || !(player.level() instanceof ServerLevel level)) {
             return false;
         }
         HerdBookData data = HerdBookData.get(level.getServer());
-        if (!data.ledger().remove(request.book(), request.animal())) {
-            return false;
+        boolean removed = data.ledger().remove(request.book(), request.animal());
+        if (removed) {
+            data.forgetOrphans();
+            data.setDirty();
         }
-        data.forgetOrphans();
-        data.setDirty();
-        if (player instanceof ServerPlayer serverPlayer) {
-            show(serverPlayer, held);
-        }
-        return true;
+        reply.accept(held);
+        return removed;
     }
 
     private static @Nullable ItemStack heldBook(Player player, UUID book) {

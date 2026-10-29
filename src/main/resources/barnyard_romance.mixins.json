@@ -11,6 +11,7 @@
     "MateOverridesMixin",
     "MobProductMixin",
     "OcelotAccessor",
+    "ServerSaveMixin",
     "SheepShearMixin",
     "ShearsDispenseMixin",
     "TemptGoalMixin",

@@ -62,7 +62,7 @@ public final class HerdStatus {
                 female ? Fertility.current(traits, age, at) : -1.0,
                 loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()),
                 familiar,
-                record.alive() ? -1L : record.diedAt() / GameDay.TICKS,
+                record.alive() ? -1L : diedDay(record),
                 shear
         );
         return new HerdEntry(
@@ -83,5 +83,10 @@ public final class HerdStatus {
                         .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
                         .toList()
         );
+    }
+
+    // Deaths from before the clock was recorded fall back to game time.
+    private static long diedDay(HerdRecord record) {
+        return record.diedClock() >= 0L ? GameDay.of(record.diedClock()) : record.diedAt() / GameDay.TICKS;
     }
 }
