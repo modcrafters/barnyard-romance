@@ -3,12 +3,15 @@ package net.modcrafters.minecraft.barnyardromance.fabric.client;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
+import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
@@ -32,5 +35,6 @@ public class BarnyardRomanceFabricClient implements ClientModInitializer {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "animal_tooltip"),
                 AnimalHoverTooltip::render
         );
+        ClientPlayNetworking.registerGlobalReceiver(HerdBookPayloads.ShowBook.TYPE, (payload, context) -> HerdBookClient.show(payload));
     }
 }

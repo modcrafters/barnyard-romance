@@ -5,10 +5,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public final class AnimalTraitCodecs {
     public static final Codec<Sex> SEX_CODEC = Codec.STRING.xmap(Sex::valueOf, Sex::name);
@@ -33,6 +35,19 @@ public final class AnimalTraitCodecs {
             Lactation::graceGiven,
             Lactation::new
     );
+    // Saved inline as motherId and fatherId, each left out when unknown.
+    public static final MapCodec<Lineage> LINEAGE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            UUIDUtil.CODEC.optionalFieldOf("motherId").forGetter(lineage -> Optional.ofNullable(lineage.mother())),
+            UUIDUtil.CODEC.optionalFieldOf("fatherId").forGetter(lineage -> Optional.ofNullable(lineage.father()))
+    ).apply(instance, (mother, father) -> new Lineage(mother.orElse(null), father.orElse(null))));
+    private static final StreamCodec<ByteBuf, Optional<UUID>> OPTIONAL_UUID_STREAM_CODEC = ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC);
+    public static final StreamCodec<ByteBuf, Lineage> LINEAGE_STREAM_CODEC = StreamCodec.composite(
+            OPTIONAL_UUID_STREAM_CODEC,
+            lineage -> Optional.ofNullable(lineage.mother()),
+            OPTIONAL_UUID_STREAM_CODEC,
+            lineage -> Optional.ofNullable(lineage.father()),
+            (mother, father) -> new Lineage(mother.orElse(null), father.orElse(null))
+    );
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
             Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale),
@@ -47,7 +62,8 @@ public final class AnimalTraitCodecs {
             Codec.DOUBLE.optionalFieldOf("fertility", 1.0).forGetter(AnimalTraits::fertility),
             Codec.LONG.optionalFieldOf("fertilityTick", -1L).forGetter(AnimalTraits::fertilityTick),
             Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
-            LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation)
+            LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation),
+            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
@@ -68,6 +84,7 @@ public final class AnimalTraitCodecs {
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.fertilityTick());
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.bornTick());
                 LACTATION_STREAM_CODEC.encode(buf, traits.lactation());
+                LINEAGE_STREAM_CODEC.encode(buf, traits.lineage());
             },
             // Arguments are evaluated left to right, so this reads the fields in the order they were written.
             buf -> new AnimalTraits(
@@ -84,7 +101,8 @@ public final class AnimalTraitCodecs {
                     ByteBufCodecs.DOUBLE.decode(buf),
                     ByteBufCodecs.VAR_LONG.decode(buf),
                     ByteBufCodecs.VAR_LONG.decode(buf),
-                    LACTATION_STREAM_CODEC.decode(buf)
+                    LACTATION_STREAM_CODEC.decode(buf),
+                    LINEAGE_STREAM_CODEC.decode(buf)
             )
     );
 

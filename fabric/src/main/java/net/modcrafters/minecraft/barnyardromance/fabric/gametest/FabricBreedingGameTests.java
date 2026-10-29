@@ -67,4 +67,9 @@ public class FabricBreedingGameTests {
     public void traitsSurviveSaveAndLoad(GameTestHelper helper) {
         BreedingGameTests.traitsSurviveSaveAndLoad(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void calvesRememberBothParents(GameTestHelper helper) {
+        BreedingGameTests.calvesRememberBothParents(helper);
+    }
 }

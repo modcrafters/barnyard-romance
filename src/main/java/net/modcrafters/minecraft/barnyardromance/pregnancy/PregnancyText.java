@@ -11,14 +11,12 @@ public final class PregnancyText {
         if (remainingTicks <= 0) {
             return Text.of("gui.barnyard_romance.pregnancy.due_line");
         }
-        int percent = (int) Math.round(progress * 100.0);
-        if (percent >= 100) {
-            percent = 99;
-        }
-        if (percent < 0) {
-            percent = 0;
-        }
-        return Text.of("gui.barnyard_romance.pregnancy.line", percent, Growth.clock(remainingTicks));
+        return Text.of("gui.barnyard_romance.pregnancy.line", percent(progress), Growth.clock(remainingTicks));
+    }
+
+    // Rounded, and never 100 while time is left: "due" says that.
+    public static int percent(double progress) {
+        return Math.clamp(Math.round(progress * 100.0), 0, 99);
     }
 
     public static Text withFather(Text line, String fatherSpecies) {

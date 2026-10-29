@@ -5,10 +5,12 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Inheritance;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,7 +103,7 @@ public final class PregnancyController {
                     fatherTraits.growthTicks(),
                     fatherTraits.weight(),
                     litter.get()
-            ));
+            ).withFatherId(father.getUUID()));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
@@ -120,6 +123,7 @@ public final class PregnancyController {
         int count = Math.max(1, pregnancy.litterSize());
         String bornSpecies = null;
         int youngestGrowth = 0;
+        List<Animal> born = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             try {
                 AgeableMob baby = Litter.deliver(mother, level, pregnancy.litter(), i).orElse(null);
@@ -138,6 +142,9 @@ public final class PregnancyController {
                     baby.setAge(-growth);
                 }
                 level.addFreshEntityWithPassengers(baby);
+                if (baby instanceof Animal child) {
+                    born.add(child);
+                }
                 if (bornSpecies == null) {
                     bornSpecies = EntityType.getKey(baby.getType()).toString();
                 }
@@ -160,6 +167,11 @@ public final class PregnancyController {
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
+        try {
+            HerdBooks.born(mother, born);
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to add {} young to herd books", AnimalSex.speciesId(mother), exception);
+        }
     }
 
     private static int rememberParents(Animal mother, Animal child, Pregnancy pregnancy) {
@@ -183,7 +195,8 @@ public final class PregnancyController {
         double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
         Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth)
                 .withWeight(weight)
-                .withBornTick(mother.level().getGameTime()));
+                .withBornTick(mother.level().getGameTime())
+                .withLineage(new Lineage(mother.getUUID(), pregnancy.fatherId())));
         return growth;
     }
 

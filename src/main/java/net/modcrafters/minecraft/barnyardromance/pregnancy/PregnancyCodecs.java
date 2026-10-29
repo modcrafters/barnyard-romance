@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -43,8 +44,10 @@ public final class PregnancyCodecs {
             Codec.INT.optionalFieldOf("fatherGrowthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(Pregnancy::fatherGrowthTicks),
             Codec.DOUBLE.optionalFieldOf("fatherWeight", 0.5).forGetter(Pregnancy::fatherWeight),
             CompoundTag.CODEC.listOf().optionalFieldOf("litter", List.of()).forGetter(Pregnancy::litter),
-            CARE_CODEC.optionalFieldOf("care", PregnancyCare.NONE).forGetter(Pregnancy::care)
-    ).apply(instance, Pregnancy::new));
+            CARE_CODEC.optionalFieldOf("care", PregnancyCare.NONE).forGetter(Pregnancy::care),
+            UUIDUtil.CODEC.optionalFieldOf("fatherId").forGetter(pregnancy -> Optional.ofNullable(pregnancy.fatherId()))
+    ).apply(instance, (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId) ->
+            new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId.orElse(null))));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
     // The litter stays on the server; clients only see the fields below.
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.

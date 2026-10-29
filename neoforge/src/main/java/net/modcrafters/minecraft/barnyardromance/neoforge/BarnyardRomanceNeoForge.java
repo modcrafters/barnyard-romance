@@ -5,6 +5,10 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+//? if <1.21.6
+//import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
@@ -28,6 +32,10 @@ import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
 @Mod(Constants.MOD_ID)
@@ -36,6 +44,7 @@ public class BarnyardRomanceNeoForge {
         NeoForgeAnimalData.ATTACHMENT_TYPES.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
+        modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
         NeoForgeBreedingGameTests.register(modBus);
         //? if >=1.21.9 {
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
@@ -45,6 +54,8 @@ public class BarnyardRomanceNeoForge {
         }
         BarnyardRomance.init();
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
+        NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
     }
@@ -55,8 +66,14 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_tool"),
                 () -> BarnyardComponents.HERD_TOOL
         );
+        event.register(
+                Registries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book"),
+                () -> BarnyardComponents.HERD_BOOK
+        );
         event.register(Registries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), () -> BarnyardItems.HERD_STICK);
         event.register(Registries.ITEM, BarnyardItems.INSPECTOR_ID.identifier(), () -> BarnyardItems.INSPECTOR);
+        event.register(Registries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), () -> BarnyardItems.HERD_BOOK);
         event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);
         event.register(Registries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), () -> BarnyardItems.GOLDEN_BRAN);
         event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
@@ -76,6 +93,17 @@ public class BarnyardRomanceNeoForge {
         );
     }
 
+    // From 1.21.6 on, the client registers its own handler for ShowBook (see BarnyardRomanceNeoForgeClient).
+    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        //? if >=1.21.6 {
+        registrar.playToClient(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC);
+        //?} else
+        //registrar.playToClient(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC, (payload, context) -> HerdBookClient.show(payload));
+        registrar.playToServer(HerdBookPayloads.RemoveFromBook.TYPE, HerdBookPayloads.RemoveFromBook.STREAM_CODEC,
+                (payload, context) -> HerdBooks.removeRequested(context.player(), payload));
+    }
+
     private static void addToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == BarnyardItems.FOOD_AND_DRINKS) {
             event.accept(BarnyardItems.BREEDERS_MASH);
@@ -88,6 +116,17 @@ public class BarnyardRomanceNeoForge {
             return;
         }
         AnimalSex.onJoin(animal);
+    }
+
+    private static void onEntityLeave(EntityLeaveLevelEvent event) {
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Animal animal)) {
+            return;
+        }
+        HerdBooks.leftLevel(animal, animal.getRemovalReason());
+    }
+
+    private static void onServerTick(ServerTickEvent.Post event) {
+        HerdBooks.tick(event.getServer(), event.getServer().getTickCount());
     }
 
     //? if >=1.21.2 {

@@ -39,4 +39,11 @@ class PregnancyTextTest {
         assertEquals("Pregnant 50% · 10m 0s", English.of(PregnancyText.line(pregnancy, 13_000, false)));
         assertEquals("Pregnant 50% · 10m 0s · father minecraft:cow", English.of(PregnancyText.line(pregnancy, 13_000, true)));
     }
+
+    @Test
+    void thePercentRoundsLikeTheLineAndStopsAt99() {
+        assertEquals(61, PregnancyText.percent(0.606));
+        assertEquals(99, PregnancyText.percent(0.999));
+        assertEquals(0, PregnancyText.percent(-0.2));
+    }
 }

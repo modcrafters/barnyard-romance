@@ -3,12 +3,14 @@ package net.modcrafters.minecraft.barnyardromance.platform;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.data.EntityDataService;
 import net.modcrafters.minecraft.barnyardromance.platform.services.IPlatformHelper;
+import net.modcrafters.minecraft.barnyardromance.platform.services.NetworkService;
 
 import java.util.ServiceLoader;
 
 public final class Services {
     public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
     public static final EntityDataService DATA = load(EntityDataService.class);
+    public static final NetworkService NETWORK = load(NetworkService.class);
 
     private Services() {
     }

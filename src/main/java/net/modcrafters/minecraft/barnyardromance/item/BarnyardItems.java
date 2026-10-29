@@ -44,6 +44,10 @@ public final class BarnyardItems {
             Registries.ITEM,
             Identifier.fromNamespaceAndPath(Constants.MOD_ID, "goat_milk_bucket")
     );
+    public static final ResourceKey<Item> HERD_BOOK_ID = ResourceKey.create(
+            Registries.ITEM,
+            Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book")
+    );
     // Vanilla keeps its tab keys private; the superfoods sit with the other food.
     public static final ResourceKey<CreativeModeTab> FOOD_AND_DRINKS = ResourceKey.create(
             Registries.CREATIVE_MODE_TAB,
@@ -51,6 +55,7 @@ public final class BarnyardItems {
     );
     public static final Item HERD_STICK = new HerdStick(properties(HERD_STICK_ID).stacksTo(1).rarity(Rarity.EPIC));
     public static final Item INSPECTOR = new BarnyardInspector(properties(INSPECTOR_ID).stacksTo(1).rarity(Rarity.UNCOMMON));
+    public static final Item HERD_BOOK = new HerdBookItem(properties(HERD_BOOK_ID).stacksTo(1));
     // Plain items: what they do to an animal comes from their food files. The tooltip is the default lore,
     // so crafted stacks show it too; it is translatable, so a pack that changes the food files can reword it.
     public static final Item BREEDERS_MASH = new Item(superfood(BREEDERS_MASH_ID));

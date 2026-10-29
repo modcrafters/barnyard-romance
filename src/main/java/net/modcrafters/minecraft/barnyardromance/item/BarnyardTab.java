@@ -31,6 +31,7 @@ public final class BarnyardTab {
     public static List<ItemStack> contents() {
         return List.of(
                 BarnyardInspector.create(),
+                new ItemStack(BarnyardItems.HERD_BOOK),
                 HerdStick.create(HerdTool.info()),
                 HerdStick.create(HerdTool.familiarity(1)),
                 HerdStick.create(HerdTool.familiarity(-1)),
