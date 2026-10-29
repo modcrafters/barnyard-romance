@@ -3,7 +3,9 @@
   "minVersion": "0.8",
   "package": "net.modcrafters.minecraft.barnyardromance.neoforge.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
-  "mixins": [],
+  "mixins": [
+    "ShearsItemMixin"
+  ],
   "client": [],
   "server": [],
   "injectors": {

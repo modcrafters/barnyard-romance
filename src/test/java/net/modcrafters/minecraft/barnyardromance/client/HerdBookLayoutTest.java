@@ -20,6 +20,14 @@ class HerdBookLayoutTest {
         return new HerdBookLayout.Row(id(n), "minecraft:cow", "Cow", name, female, kid, true);
     }
 
+    private static List<String> species(int count) {
+        List<String> species = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            species.add("s" + i);
+        }
+        return species;
+    }
+
     private static List<HerdBookLayout.Line> flat(List<List<HerdBookLayout.Line>> pages) {
         return pages.stream().flatMap(List::stream).toList();
     }
@@ -112,24 +120,52 @@ class HerdBookLayoutTest {
     }
 
     @Test
-    void bookmarksShrinkToFit() {
-        assertEquals(24, HerdBookLayout.tabHeight(3));
-        assertEquals(11, HerdBookLayout.tabHeight(16));
-        assertTrue(HerdBookLayout.tabHeight(16) * 16 <= HerdBookLayout.TAB_SPACE);
-        assertEquals(11, HerdBookLayout.tabHeight(30));
+    void bookmarksFillTheLeftSideFirst() {
+        List<HerdBookLayout.Tab> tabs = HerdBookLayout.tabs(species(3));
+
+        assertEquals(List.of(
+                new HerdBookLayout.Tab("s0", HerdBookLayout.Side.LEFT, 0, 0),
+                new HerdBookLayout.Tab("s1", HerdBookLayout.Side.LEFT, 0, 1),
+                new HerdBookLayout.Tab("s2", HerdBookLayout.Side.LEFT, 0, 2)), tabs);
     }
 
     @Test
-    void manySpeciesStillFitInMoreColumns() {
-        for (int count : new int[] {17, 19, 20, 30, 60}) {
-            int columns = HerdBookLayout.tabColumns(count);
-            int rows = (count + columns - 1) / columns;
-            int height = HerdBookLayout.tabHeight(count);
-            assertTrue(height >= HerdBookLayout.MIN_TAB, count + " species: tabs " + height + " high");
-            assertTrue(rows * height <= HerdBookLayout.TAB_SPACE, count + " species run past the book: " + rows + " x " + height);
-        }
-        assertEquals(1, HerdBookLayout.tabColumns(16));
-        assertEquals(2, HerdBookLayout.tabColumns(30));
+    void bookmarksPastTheLeftSideGoOnTheRight() {
+        int side = HerdBookLayout.TABS_PER_SIDE;
+        List<HerdBookLayout.Tab> tabs = HerdBookLayout.tabs(species(side + 2));
+
+        assertEquals(new HerdBookLayout.Tab("s" + (side - 1), HerdBookLayout.Side.LEFT, 0, side - 1), tabs.get(side - 1));
+        assertEquals(new HerdBookLayout.Tab("s" + side, HerdBookLayout.Side.RIGHT, 0, 0), tabs.get(side));
+        assertEquals(new HerdBookLayout.Tab("s" + (side + 1), HerdBookLayout.Side.RIGHT, 0, 1), tabs.get(side + 1));
+    }
+
+    @Test
+    void pregnancyIconFillsFromTheBottom() {
+        assertEquals(0, HerdBookLayout.filledRows(0, 9));
+        assertEquals(3, HerdBookLayout.filledRows(33, 9));
+        assertEquals(5, HerdBookLayout.filledRows(50, 9));
+        assertEquals(9, HerdBookLayout.filledRows(100, 9));
+        assertEquals(9, HerdBookLayout.filledRows(120, 9));
+    }
+
+    @Test
+    void bookmarkLabelsKeepElevenLettersOrCutToTen() {
+        assertEquals("Sheep", HerdBookLayout.tabLabel("Sheep"));
+        assertEquals("Mooshroom", HerdBookLayout.tabLabel("Mooshroom"));
+        assertEquals("Polar Bears", HerdBookLayout.tabLabel("Polar Bears"));
+        assertEquals("Trader Lla…", HerdBookLayout.tabLabel("Trader Llama"));
+        // No space left hanging before the dots.
+        assertEquals("Skeleton…", HerdBookLayout.tabLabel("Skeleton  Horse"));
+    }
+
+    @Test
+    void bookmarksPastBothSidesGoInMoreColumnsOnTheRight() {
+        int side = HerdBookLayout.TABS_PER_SIDE;
+        List<HerdBookLayout.Tab> tabs = HerdBookLayout.tabs(species(3 * side + 1));
+
+        assertEquals(new HerdBookLayout.Tab("s" + (2 * side), HerdBookLayout.Side.RIGHT, 1, 0), tabs.get(2 * side));
+        assertEquals(new HerdBookLayout.Tab("s" + (3 * side), HerdBookLayout.Side.RIGHT, 2, 0), tabs.get(3 * side));
+        assertTrue(tabs.stream().allMatch(tab -> tab.row() < side));
     }
 
     @Test

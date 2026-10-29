@@ -16,6 +16,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.shear.ShearRule;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 
@@ -44,6 +45,9 @@ public final class HerdStatus {
         Optional<MilkStatus> milk = female && record.milkable() && record.alive()
                 ? MilkActions.status(traits, SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())), now, clock)
                 : Optional.empty();
+        ShearState shear = record.alive()
+                ? ShearRule.state(record.shearable(), record.woolly(), record.baby(), traits, clock)
+                : ShearState.NONE;
         HerdPageText.PageFacts facts = new HerdPageText.PageFacts(
                 SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())).name(),
                 stage,
@@ -58,7 +62,8 @@ public final class HerdStatus {
                 female ? Fertility.current(traits, age, at) : -1.0,
                 loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()),
                 familiar,
-                record.alive() ? -1L : record.diedAt() / GameDay.TICKS
+                record.alive() ? -1L : record.diedAt() / GameDay.TICKS,
+                shear
         );
         return new HerdEntry(
                 node.id(),
@@ -71,9 +76,12 @@ public final class HerdStatus {
                 fedToday,
                 pregnancy == null ? -1 : PregnancyText.percent(progress),
                 milk.map(status -> status.left() > 0).orElse(false),
+                shear,
                 Optional.ofNullable(node.mother()),
                 Optional.ofNullable(node.father()),
-                HerdPageText.lines(facts).stream().map(TextComponents::of).toList()
+                HerdPageText.lines(facts).stream()
+                        .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
+                        .toList()
         );
     }
 }

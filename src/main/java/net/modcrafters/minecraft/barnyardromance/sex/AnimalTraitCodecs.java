@@ -63,7 +63,8 @@ public final class AnimalTraitCodecs {
             Codec.LONG.optionalFieldOf("fertilityTick", -1L).forGetter(AnimalTraits::fertilityTick),
             Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
             LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation),
-            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage)
+            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage),
+            Codec.LONG.optionalFieldOf("lastShearedClock", -1L).forGetter(AnimalTraits::lastShearedClock)
     ).apply(instance, AnimalTraits::new));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
@@ -85,6 +86,7 @@ public final class AnimalTraitCodecs {
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.bornTick());
                 LACTATION_STREAM_CODEC.encode(buf, traits.lactation());
                 LINEAGE_STREAM_CODEC.encode(buf, traits.lineage());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.lastShearedClock());
             },
             // Arguments are evaluated left to right, so this reads the fields in the order they were written.
             buf -> new AnimalTraits(
@@ -102,7 +104,8 @@ public final class AnimalTraitCodecs {
                     ByteBufCodecs.VAR_LONG.decode(buf),
                     ByteBufCodecs.VAR_LONG.decode(buf),
                     LACTATION_STREAM_CODEC.decode(buf),
-                    LINEAGE_STREAM_CODEC.decode(buf)
+                    LINEAGE_STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.VAR_LONG.decode(buf)
             )
     );
 

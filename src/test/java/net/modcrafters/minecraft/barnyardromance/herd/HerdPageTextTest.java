@@ -18,13 +18,50 @@ class HerdPageTextTest {
     }
 
     private static List<String> english(HerdPageText.PageFacts facts) {
-        return HerdPageText.lines(facts).stream().map(English::of).toList();
+        return HerdPageText.lines(facts).stream().map(line -> English.of(line.text())).toList();
+    }
+
+    private static List<HerdPageText.Kind> kinds(HerdPageText.PageFacts facts) {
+        return HerdPageText.lines(facts).stream().map(HerdPageText.Line::kind).toList();
     }
 
     @Test
     void aPregnantFedLoadedCow() {
         assertEquals(List.of("Size L · Adult · 18d old", "Fed today", "Pregnant 62% · 10m 0s", "Familiar 80%", "Fertile 90%"),
                 english(cow()));
+    }
+
+    @Test
+    void eachLineSaysWhatItIsAndHowFullItsBarIs() {
+        List<HerdPageText.Line> lines = HerdPageText.lines(cow());
+
+        assertEquals(List.of(HerdPageText.Kind.SIZE, HerdPageText.Kind.FED, HerdPageText.Kind.PREGNANT,
+                HerdPageText.Kind.FAMILIARITY, HerdPageText.Kind.FERTILITY), kinds(cow()));
+        assertEquals(0.62, lines.get(2).fill());
+        assertEquals(0.8, lines.get(3).fill());
+        assertEquals(0.9, lines.get(4).fill());
+    }
+
+    @Test
+    void notesAndHungerHaveTheirOwnKinds() {
+        HerdPageText.PageFacts calf = new HerdPageText.PageFacts("S", AgeStage.BABY, 500L, false, -1L, false, 0.0, 0L, Text.plain("Milk 1/1"),
+                0.2, -1.0, 3 * DAY, Familiar.NOT_YET, -1L);
+
+        assertEquals(List.of(HerdPageText.Kind.SIZE, HerdPageText.Kind.NOTE, HerdPageText.Kind.NOT_FED, HerdPageText.Kind.MILK,
+                HerdPageText.Kind.FAMILIARITY, HerdPageText.Kind.NOTE), kinds(calf));
+        assertEquals(HerdPageText.Kind.NOTE, kinds(cow().died(42L)).get(1));
+    }
+
+    @Test
+    void aSheepSaysWhetherItCanBeShorn() {
+        HerdPageText.PageFacts ewe = new HerdPageText.PageFacts("M", AgeStage.ADULT, -1L, true, 0L, false, 0.0, 0L, Text.EMPTY,
+                0.8, 0.9, -1L, Familiar.FAMILIAR, -1L);
+
+        assertEquals(List.of("Size M · Adult", "Fed today", "Ready to shear", "Familiar 80%", "Fertile 90%"), english(ewe.shear(ShearState.READY)));
+        assertEquals("Sheared today", english(ewe.shear(ShearState.SHEARED_TODAY)).get(2));
+        assertEquals("Wool growing back", english(ewe.shear(ShearState.REGROWING)).get(2));
+        assertEquals(HerdPageText.Kind.SHEAR, kinds(ewe.shear(ShearState.READY)).get(2));
+        assertEquals(4, english(ewe).size());
     }
 
     @Test

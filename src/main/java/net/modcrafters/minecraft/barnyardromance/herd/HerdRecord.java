@@ -13,6 +13,9 @@ public record HerdRecord(
         @Nullable Pregnancy pregnancy,
         boolean baby,
         boolean milkable,
+        // A sheep, and whether it has its wool; woolly is false from shearing until it eats grass.
+        boolean shearable,
+        boolean woolly,
         long refreshedAt,
         long diedAt
 ) {
@@ -21,6 +24,6 @@ public record HerdRecord(
     }
 
     public HerdRecord died(long tick) {
-        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, refreshedAt, tick);
+        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick);
     }
 }

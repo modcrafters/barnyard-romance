@@ -28,6 +28,11 @@ public final class GameTestCompat {
         return mob.interact(player, InteractionHand.MAIN_HAND);
     }
 
+    // The whole right click: the mob first, then the held item, as NeoForge's shears need here.
+    public static InteractionResult useOn(Mob mob, Player player) {
+        return player.interactOn(mob, InteractionHand.MAIN_HAND);
+    }
+
     // GameTestHelper.spawn always makes the mob persistent here, so this adds it to the level directly.
     public static <T extends Mob> T spawnDespawnable(GameTestHelper helper, EntityType<T> type, Vec3 position) {
         T mob = Objects.requireNonNull(type.create(helper.getLevel()), () -> "could not create " + type);

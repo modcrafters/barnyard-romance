@@ -12,11 +12,9 @@ import java.util.UUID;
 // the arrows step through. Names come in already translated, so this has no Minecraft types and is unit tested.
 public final class HerdBookLayout {
     public static final int LINES = 12;
-    // The height the bookmarks share down the book's right edge.
-    public static final int TAB_SPACE = 176;
-    public static final int MAX_TAB = 24;
-    // A tab still fits the 8-pixel font; past that, the tabs go on in another column.
-    public static final int MIN_TAB = 9;
+    // How many bookmarks fit down one edge of the book.
+    public static final int TABS_PER_SIDE = 12;
+    public static final int TAB_LETTERS = 10;
 
     public record Row(UUID id, String species, String speciesName, String name, boolean female, boolean kid, boolean alive) {
     }
@@ -36,6 +34,15 @@ public final class HerdBookLayout {
     public record Animal(UUID id) implements Line {
     }
 
+    public enum Side {
+        LEFT,
+        RIGHT
+    }
+
+    // Where a bookmark sits: its side, the column counted out from the cover, and the row from the top.
+    public record Tab(String species, Side side, int column, int row) {
+    }
+
     private HerdBookLayout() {
     }
 
@@ -49,15 +56,31 @@ public final class HerdBookLayout {
                 .toList();
     }
 
-    public static int tabColumns(int count) {
-        int perColumn = TAB_SPACE / MIN_TAB;
-        return Math.max(1, (count + perColumn - 1) / perColumn);
+    // How many rows of a `size`-high icon are colored in, counting up from the bottom, at `percent` done.
+    public static int filledRows(int percent, int size) {
+        return Math.clamp(Math.round(size * percent / 100.0F), 0, size);
     }
 
-    public static int tabHeight(int count) {
-        int columns = tabColumns(count);
-        int rows = Math.max(1, (count + columns - 1) / columns);
-        return Math.max(MIN_TAB, Math.min(MAX_TAB, TAB_SPACE / rows));
+    // A bookmark shows its species' name whole up to 11 letters, else the first 10 and "…".
+    public static String tabLabel(String name) {
+        if (name.length() <= TAB_LETTERS + 1) {
+            return name;
+        }
+        return name.substring(0, TAB_LETTERS).stripTrailing() + "…";
+    }
+
+    // Bookmarks go down the left edge, then down the right, then in more columns standing out on the right.
+    public static List<Tab> tabs(List<String> bookmarks) {
+        List<Tab> tabs = new ArrayList<>();
+        for (int i = 0; i < bookmarks.size(); i++) {
+            if (i < TABS_PER_SIDE) {
+                tabs.add(new Tab(bookmarks.get(i), Side.LEFT, 0, i));
+            } else {
+                int right = i - TABS_PER_SIDE;
+                tabs.add(new Tab(bookmarks.get(i), Side.RIGHT, right / TABS_PER_SIDE, right % TABS_PER_SIDE));
+            }
+        }
+        return tabs;
     }
 
     // Young are listed one per line; when they don't all fit, the last line says how many more there are.

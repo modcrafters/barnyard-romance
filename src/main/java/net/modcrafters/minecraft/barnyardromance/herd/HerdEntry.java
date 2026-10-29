@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 // One animal as the herd book shows it, worked out on the server when the book is opened.
-// pregnancyPercent is -1 when not pregnant; the page's lines are already translatable components.
+// pregnancyPercent is -1 when not pregnant; shear is NONE for animals that aren't sheared; the page's lines are already translatable components.
 public record HerdEntry(
         UUID id,
         String species,
@@ -24,12 +24,23 @@ public record HerdEntry(
         boolean fedToday,
         int pregnancyPercent,
         boolean milkReady,
+        ShearState shear,
         Optional<UUID> mother,
         Optional<UUID> father,
-        List<Component> lines
+        List<Line> lines
 ) {
+    // A line of the animal's page; see HerdPageText.Line.
+    public record Line(HerdPageText.Kind kind, Component text, float fill) {
+        private static final HerdPageText.Kind[] KINDS = HerdPageText.Kind.values();
+        public static final StreamCodec<RegistryFriendlyByteBuf, Line> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT.map(i -> KINDS[Math.clamp(i, 0, KINDS.length - 1)], HerdPageText.Kind::ordinal), Line::kind,
+                ComponentSerialization.STREAM_CODEC, Line::text,
+                ByteBufCodecs.FLOAT, Line::fill,
+                Line::new);
+    }
+
     private static final StreamCodec<RegistryFriendlyByteBuf, Optional<UUID>> OPTIONAL_UUID = ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC).cast();
-    private static final StreamCodec<RegistryFriendlyByteBuf, List<Component>> LINES = ComponentSerialization.STREAM_CODEC.apply(ByteBufCodecs.list());
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<Line>> LINES = Line.STREAM_CODEC.apply(ByteBufCodecs.list());
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
     public static final StreamCodec<RegistryFriendlyByteBuf, HerdEntry> STREAM_CODEC = StreamCodec.of(
             (buf, entry) -> {
@@ -43,6 +54,7 @@ public record HerdEntry(
                 ByteBufCodecs.BOOL.encode(buf, entry.fedToday());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.pregnancyPercent());
                 ByteBufCodecs.BOOL.encode(buf, entry.milkReady());
+                ByteBufCodecs.VAR_INT.encode(buf, entry.shear().ordinal());
                 OPTIONAL_UUID.encode(buf, entry.mother());
                 OPTIONAL_UUID.encode(buf, entry.father());
                 LINES.encode(buf, entry.lines());
@@ -59,6 +71,7 @@ public record HerdEntry(
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.VAR_INT.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
+                    ShearState.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, ShearState.values().length - 1)],
                     OPTIONAL_UUID.decode(buf),
                     OPTIONAL_UUID.decode(buf),
                     LINES.decode(buf)

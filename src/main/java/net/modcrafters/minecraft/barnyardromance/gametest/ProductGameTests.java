@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -68,6 +69,8 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("sized_drops_follow_the_rule", 20, ProductGameTests::sizedDropsFollowTheRule),
             new BreedingGameTests.Case("meat_keeps_its_curve", 20, ProductGameTests::meatKeepsItsCurve),
             new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool),
+            new BreedingGameTests.Case("sheep_shear_once_a_day", 20, ProductGameTests::sheepShearOnceADay),
+            new BreedingGameTests.Case("unfamiliar_sheep_keep_their_wool", 20, ProductGameTests::unfamiliarSheepKeepTheirWool),
             new BreedingGameTests.Case("wolf_tamed_by_familiarity", 20, ProductGameTests::wolfTamedByFamiliarity),
             new BreedingGameTests.Case("cat_tamed_by_familiarity", 20, ProductGameTests::catTamedByFamiliarity),
             new BreedingGameTests.Case("ocelot_trusts_by_familiarity", 20, ProductGameTests::ocelotTrustsByFamiliarity),
@@ -287,6 +290,34 @@ public final class ProductGameTests {
                 .mapToInt(entity -> entity.getItem().getCount())
                 .sum();
         helper.assertTrue(wool >= 4, "a sheep of four times her base scale gave " + wool + " wool");
+        helper.succeed();
+    }
+
+    // Grass grows the wool back, but the shears wait for the next day, which starts at midnight.
+    public static void sheepShearOnceADay(GameTestHelper helper) {
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+
+        GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
+        helper.assertTrue(sheep.isSheared(), "a familiar sheep was not sheared");
+
+        sheep.setSheared(false);
+        GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
+        helper.assertTrue(!sheep.isSheared(), "a sheep was sheared twice in one day");
+
+        AnimalTraits traits = BreedingGameTests.traits(helper, sheep);
+        Services.DATA.set(sheep, traits.sheared(traits.lastShearedClock() - GameDay.TICKS));
+        GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
+        helper.assertTrue(sheep.isSheared(), "a sheep sheared yesterday was not sheared today");
+        helper.succeed();
+    }
+
+    public static void unfamiliarSheepKeepTheirWool(GameTestHelper helper) {
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        FoodGameTests.withFamiliarity(helper, sheep, 0.1);
+
+        GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
+
+        helper.assertTrue(!sheep.isSheared(), "an unfamiliar sheep was sheared");
         helper.succeed();
     }
 

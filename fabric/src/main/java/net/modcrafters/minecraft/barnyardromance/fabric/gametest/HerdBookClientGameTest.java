@@ -21,6 +21,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ServerLevelData;
 
@@ -31,7 +32,7 @@ import java.util.UUID;
 // Opens a herd book with a small cow family in a real client, clicks through it and screenshots its pages.
 public class HerdBookClientGameTest implements FabricClientGameTest {
     // Where things are on the book, in GUI pixels from its top-left corner (see HerdBookScreen).
-    private static final int DAISY_X = 36 + 12;
+    private static final int DAISY_X = 36 + 19 + 4;
     private static final int DAISY_Y = 2 + 30 + 2 * 9 + 4;
     private static final int BUTTON_Y = 2 + 157 + 7;
     private static final int RETURN_X = 36 + 33;
@@ -78,6 +79,9 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                             .withBornTick(now - 90_000L)
                             .withLineage(new Lineage(daisyCow.getUUID(), tom.getUUID()))));
                 }
+                // Two ewes for the shears icon: one with her wool, one sheared today.
+                HerdBooks.register(book, sheep(level, player, "Dolly", new AnimalTraits(Sex.FEMALE, 1.0, 1.0, clock), false));
+                HerdBooks.register(book, sheep(level, player, "Shaun", new AnimalTraits(Sex.FEMALE, 1.0, 1.0, clock).sheared(clock), true));
                 // The calf drops below the threshold, and Old Bess dies but stays as Daisy's mother.
                 Services.DATA.set(calf, Services.DATA.get(calf).orElseThrow().fed(0.1, clock));
                 bess.discard();
@@ -107,6 +111,13 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             context.waitTicks(2);
             expectShown(context, null, "Removing Daisy should close her page");
             context.takeScreenshot("herd_book_after_remove");
+
+            // The ewes' list goes Females, Dolly, Shaun: Dolly is ready to shear, Shaun was sheared today.
+            context.runOnClient(client -> ((HerdBookScreen) client.gui.screen()).showContents("minecraft:sheep", 0));
+            context.waitTicks(2);
+            context.takeScreenshot("herd_book_sheep");
+            click(context, DAISY_X, DAISY_Y);
+            context.takeScreenshot("herd_book_sheared_today");
             context.setScreen(() -> null);
         }
     }
@@ -125,6 +136,17 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
         if (expected == null ? shown != null : !expected.equals(shown)) {
             throw new AssertionError(message + ", but the book shows " + shown);
         }
+    }
+
+    private static Animal sheep(ServerLevel level, ServerPlayer player, String name, AnimalTraits traits, boolean sheared) {
+        Sheep sheep = EntityTypes.SHEEP.create(level, EntitySpawnReason.COMMAND);
+        sheep.snapTo(player.getX() - 4.0, player.getY(), player.getZ() + level.getRandom().nextInt(5) - 2, 90.0F, 0.0F);
+        sheep.setNoAi(true);
+        sheep.setSheared(sheared);
+        sheep.setCustomName(Component.literal(name));
+        level.addFreshEntity(sheep);
+        Services.DATA.set(sheep, traits);
+        return sheep;
     }
 
     private static Animal cow(ServerLevel level, ServerPlayer player, String name, Sex sex, boolean baby, AnimalTraits traits) {

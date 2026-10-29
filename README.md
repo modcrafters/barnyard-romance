@@ -46,19 +46,7 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 
 ## Herd book
 
-Craft a **Herd Book** from a book and a wheat. It keeps a list of your herd that you can read from anywhere.
-
-- **Adding animals:** use the book on an animal. Only animals familiar enough to breed (`familiarityThreshold`, 30% by default) can be added. Newborns join every book their mother is in, at birth.
-- **Reading it:** use the book in the air. Bookmarks on the right pick a species. Each species lists its females, males and kids. Next to each name:
-  - a green or red dot shows whether it was fed today;
-  - a pink percentage is a pregnancy;
-  - a blue mark means milk is ready;
-  - a grey `?` means the animal isn't familiar enough, so the book stopped updating it.
-  
-  Hover an icon for the words. Click a name for the animal's page, with its family. Parents and young in the book are links; others show as unknown.
-- **Away from home:** the server keeps a short record of every animal in a book. A loaded animal shows as it is now. An unloaded one shows its record, with pregnancy, feeding and milk worked out to the present, and "Seen … ago". Births and deaths still only happen while the animal is loaded.
-- **Deaths and removing:** a dead animal leaves the lists, but its page stays while a living animal in the book descends from it. The ✕ on an animal page removes it from this book (click twice). Its young stay, and dead ancestors no longer linked to a living animal go too.
-- **Sharing:** the list belongs to the book item, so giving someone the book gives them the herd.
+Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
 
 ## Translations
 
@@ -117,7 +105,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 ### 1.21.1 test gaps
 
 - Every shared game test runs on 1.21.1.
-- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. For the herd book, check:
+- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. The herd book has no head close-ups on 1.21.1 yet. For the herd book, check:
   - using the book in the air opens it, and an empty book says how to add animals;
   - a familiar cow can be added, and a wild one is refused;
   - after breeding, the calf joins the book under Kids;
