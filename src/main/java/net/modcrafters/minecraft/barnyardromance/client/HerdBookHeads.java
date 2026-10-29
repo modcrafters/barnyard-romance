@@ -1,6 +1,7 @@
-// 26.3 draws entities in screens from render states; 1.21.1 has no head close-ups yet, and its rows go without.
-//? if >=26.1 {
 package net.modcrafters.minecraft.barnyardromance.client;
+
+// 26.3 draws entities in screens from render states; 1.21.1 has no head close-ups yet, so the book goes without.
+//? if >=26.1 {
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -33,10 +34,12 @@ import java.util.WeakHashMap;
 // as it looks now, anything else as a stand-in of its species. The model's part named "head" (with its ears, horns
 // and snout) is framed, so modded animals work as long as their model names it that.
 public final class HerdBookHeads {
+    public static final boolean AVAILABLE = true;
     // Turned a little, so the face doesn't look flat.
     private static final float TURN = 25.0F;
     private static final float FILL = 0.95F;
     private static final Map<String, LivingEntity> STAND_INS = new HashMap<>();
+    private static int lastStandInId;
     // Head boxes per animal, so the renderer only has to be asked once; an empty array means no head part.
     private static final Map<LivingEntity, float[]> BOXES = new WeakHashMap<>();
 
@@ -170,8 +173,24 @@ public final class HerdBookHeads {
         if (kid && living instanceof AgeableMob ageable) {
             ageable.setBaby(true);
         }
+        // Never added to the level, so it gets no id of its own; renderers ask for one. Real ids are never negative.
+        living.setId(--lastStandInId);
         STAND_INS.put(key, living);
         return living;
     }
 }
-//?}
+//?} else {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+
+import java.util.UUID;
+
+public final class HerdBookHeads {
+    public static final boolean AVAILABLE = false;
+
+    private HerdBookHeads() {
+    }
+
+    public static void draw(GuiGraphicsExtractor graphics, UUID id, String species, boolean kid, int x, int y, int size) {
+    }
+}
+*///?}

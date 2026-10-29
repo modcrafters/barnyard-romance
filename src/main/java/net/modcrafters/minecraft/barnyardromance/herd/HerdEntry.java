@@ -26,10 +26,20 @@ public record HerdEntry(
         boolean milkReady,
         Optional<UUID> mother,
         Optional<UUID> father,
-        List<Component> lines
+        List<Line> lines
 ) {
+    // A line of the animal's page; see HerdPageText.Line.
+    public record Line(HerdPageText.Kind kind, Component text, float fill) {
+        private static final HerdPageText.Kind[] KINDS = HerdPageText.Kind.values();
+        public static final StreamCodec<RegistryFriendlyByteBuf, Line> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT.map(i -> KINDS[Math.clamp(i, 0, KINDS.length - 1)], HerdPageText.Kind::ordinal), Line::kind,
+                ComponentSerialization.STREAM_CODEC, Line::text,
+                ByteBufCodecs.FLOAT, Line::fill,
+                Line::new);
+    }
+
     private static final StreamCodec<RegistryFriendlyByteBuf, Optional<UUID>> OPTIONAL_UUID = ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC).cast();
-    private static final StreamCodec<RegistryFriendlyByteBuf, List<Component>> LINES = ComponentSerialization.STREAM_CODEC.apply(ByteBufCodecs.list());
+    private static final StreamCodec<RegistryFriendlyByteBuf, List<Line>> LINES = Line.STREAM_CODEC.apply(ByteBufCodecs.list());
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
     public static final StreamCodec<RegistryFriendlyByteBuf, HerdEntry> STREAM_CODEC = StreamCodec.of(
             (buf, entry) -> {

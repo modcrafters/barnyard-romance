@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -293,13 +294,18 @@ public final class HerdBookGameTests {
 
     // Books grow by themselves as calves are born, so a big farm's book is past vanilla's 1 MiB packet limit.
     public static void aBigBookFitsThePayloadLimit(GameTestHelper helper) {
-        List<Component> lines = List.of(
-                Component.translatable("gui.barnyard_romance.herd_book.size_age", "XL", Component.translatable("gui.barnyard_romance.age.adult"), "17d"),
-                Component.translatable("gui.barnyard_romance.herd_book.fed_today"),
-                Component.translatable("gui.barnyard_romance.pregnancy.line", 61, Component.translatable("gui.barnyard_romance.time.minutes_seconds", 21, 40)),
-                Component.translatable("gui.barnyard_romance.herd_book.familiarity", Component.translatable("gui.barnyard_romance.percent", 80)),
-                Component.translatable("gui.barnyard_romance.herd_book.fertility", Component.translatable("gui.barnyard_romance.percent", 90)),
-                Component.translatable("gui.barnyard_romance.herd_book.seen", Component.translatable("gui.barnyard_romance.time.days", 12)));
+        List<HerdEntry.Line> lines = List.of(
+                new HerdEntry.Line(HerdPageText.Kind.SIZE, Component.translatable("gui.barnyard_romance.herd_book.size_age", "XL",
+                        Component.translatable("gui.barnyard_romance.age.adult"), "17d"), 0.0F),
+                new HerdEntry.Line(HerdPageText.Kind.FED, Component.translatable("gui.barnyard_romance.herd_book.fed_today"), 0.0F),
+                new HerdEntry.Line(HerdPageText.Kind.PREGNANT, Component.translatable("gui.barnyard_romance.pregnancy.line", 61,
+                        Component.translatable("gui.barnyard_romance.time.minutes_seconds", 21, 40)), 0.61F),
+                new HerdEntry.Line(HerdPageText.Kind.FAMILIARITY, Component.translatable("gui.barnyard_romance.herd_book.familiarity",
+                        Component.translatable("gui.barnyard_romance.percent", 80)), 0.8F),
+                new HerdEntry.Line(HerdPageText.Kind.FERTILITY, Component.translatable("gui.barnyard_romance.herd_book.fertility",
+                        Component.translatable("gui.barnyard_romance.percent", 90)), 0.9F),
+                new HerdEntry.Line(HerdPageText.Kind.NOTE, Component.translatable("gui.barnyard_romance.herd_book.seen",
+                        Component.translatable("gui.barnyard_romance.time.days", 12)), 0.0F));
         List<HerdEntry> entries = new java.util.ArrayList<>();
         for (int i = 0; i < 1_500; i++) {
             entries.add(new HerdEntry(UUID.randomUUID(), "minecraft:cow", "Daisy the " + i + "th", true, false, true, Familiar.FAMILIAR,

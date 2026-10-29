@@ -42,49 +42,70 @@ public final class HerdPageText {
         }
     }
 
+    // What a line is about, so the page can give it an icon or a bar. NOTE lines (died, not familiar, seen) get neither.
+    public enum Kind {
+        SIZE,
+        NOTE,
+        FED,
+        NOT_FED,
+        PREGNANT,
+        MILK,
+        FAMILIARITY,
+        FERTILITY
+    }
+
+    // fill is how far along a pregnancy, familiarity or fertility is, from 0 to 1; 0 for the other kinds.
+    public record Line(Kind kind, Text text, double fill) {
+        static Line of(Kind kind, Text text) {
+            return new Line(kind, text, 0.0);
+        }
+    }
+
     private HerdPageText() {
     }
 
-    public static List<Text> lines(PageFacts facts) {
-        List<Text> lines = new ArrayList<>();
-        lines.add(facts.ageTicks() < 0L
+    public static List<Line> lines(PageFacts facts) {
+        List<Line> lines = new ArrayList<>();
+        lines.add(Line.of(Kind.SIZE, facts.ageTicks() < 0L
                 ? Text.of("gui.barnyard_romance.herd_book.size", facts.sizeLetter(), facts.stage().text())
-                : Text.of("gui.barnyard_romance.herd_book.size_age", facts.sizeLetter(), facts.stage().text(), InspectorSheet.gameTime(facts.ageTicks())));
+                : Text.of("gui.barnyard_romance.herd_book.size_age", facts.sizeLetter(), facts.stage().text(), InspectorSheet.gameTime(facts.ageTicks()))));
         if (facts.diedDay() >= 0L) {
-            lines.add(Text.of("gui.barnyard_romance.herd_book.died", facts.diedDay()));
+            lines.add(Line.of(Kind.NOTE, Text.of("gui.barnyard_romance.herd_book.died", facts.diedDay())));
             values(lines, facts);
             return lines;
         }
         switch (facts.familiar()) {
-            case NOT_YET -> lines.add(Text.of("gui.barnyard_romance.herd_book.not_familiar"));
-            case NO_LONGER -> lines.add(Text.of("gui.barnyard_romance.herd_book.no_longer_familiar"));
+            case NOT_YET -> lines.add(Line.of(Kind.NOTE, Text.of("gui.barnyard_romance.herd_book.not_familiar")));
+            case NO_LONGER -> lines.add(Line.of(Kind.NOTE, Text.of("gui.barnyard_romance.herd_book.no_longer_familiar")));
             case FAMILIAR -> {
             }
         }
         if (facts.fedToday()) {
-            lines.add(Text.of("gui.barnyard_romance.herd_book.fed_today"));
+            lines.add(Line.of(Kind.FED, Text.of("gui.barnyard_romance.herd_book.fed_today")));
         } else if (facts.ticksSinceFed() < 0L) {
-            lines.add(Text.of("gui.barnyard_romance.herd_book.never_fed"));
+            lines.add(Line.of(Kind.NOT_FED, Text.of("gui.barnyard_romance.herd_book.never_fed")));
         } else {
-            lines.add(Text.of("gui.barnyard_romance.herd_book.last_fed", InspectorSheet.gameTime(facts.ticksSinceFed())));
+            lines.add(Line.of(Kind.NOT_FED, Text.of("gui.barnyard_romance.herd_book.last_fed", InspectorSheet.gameTime(facts.ticksSinceFed()))));
         }
         if (facts.pregnant()) {
-            lines.add(PregnancyText.describe(facts.pregnancy(), facts.dueTicks()));
+            lines.add(new Line(Kind.PREGNANT, PregnancyText.describe(facts.pregnancy(), facts.dueTicks()), facts.pregnancy()));
         }
         if (!facts.milk().isEmpty()) {
-            lines.add(facts.milk());
+            lines.add(Line.of(Kind.MILK, facts.milk()));
         }
         values(lines, facts);
         if (facts.seenTicksAgo() >= 0L) {
-            lines.add(Text.of("gui.barnyard_romance.herd_book.seen", InspectorSheet.gameTime(facts.seenTicksAgo())));
+            lines.add(Line.of(Kind.NOTE, Text.of("gui.barnyard_romance.herd_book.seen", InspectorSheet.gameTime(facts.seenTicksAgo()))));
         }
         return lines;
     }
 
-    private static void values(List<Text> lines, PageFacts facts) {
-        lines.add(Text.of("gui.barnyard_romance.herd_book.familiarity", Familiarity.percent(facts.familiarity())));
+    private static void values(List<Line> lines, PageFacts facts) {
+        lines.add(new Line(Kind.FAMILIARITY, Text.of("gui.barnyard_romance.herd_book.familiarity", Familiarity.percent(facts.familiarity())),
+                facts.familiarity()));
         if (facts.fertility() >= 0.0) {
-            lines.add(Text.of("gui.barnyard_romance.herd_book.fertility", Familiarity.percent(facts.fertility())));
+            lines.add(new Line(Kind.FERTILITY, Text.of("gui.barnyard_romance.herd_book.fertility", Familiarity.percent(facts.fertility())),
+                    facts.fertility()));
         }
     }
 }

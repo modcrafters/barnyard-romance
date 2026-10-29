@@ -73,7 +73,9 @@ public final class HerdStatus {
                 milk.map(status -> status.left() > 0).orElse(false),
                 Optional.ofNullable(node.mother()),
                 Optional.ofNullable(node.father()),
-                HerdPageText.lines(facts).stream().map(TextComponents::of).toList()
+                HerdPageText.lines(facts).stream()
+                        .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
+                        .toList()
         );
     }
 }

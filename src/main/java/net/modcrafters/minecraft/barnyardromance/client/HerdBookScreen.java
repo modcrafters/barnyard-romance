@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
@@ -17,6 +18,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -69,6 +71,35 @@ public class HerdBookScreen extends Screen {
     private static final Identifier MILK_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk");
     private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier PREGNANT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant");
+    private static final Identifier MILK_EMPTY = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk_empty");
+    private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
+    private static final Identifier FERTILE_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/fertile");
+    private static final Identifier UNKNOWN_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/unknown");
+    private static final Identifier RETURN_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/back");
+    private static final Identifier RETURN_HIGHLIGHTED = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/back_highlighted");
+    private static final Identifier REMOVE_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/remove");
+    private static final Identifier REMOVE_HIGHLIGHTED = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/remove_highlighted");
+
+    // An animal's page starts higher than a contents page, which has a title there.
+    private static final int ANIMAL_TOP = 14;
+    private static final int PORTRAIT = 24;
+    private static final int STATUS_LINE = 10;
+    private static final int YOUNG_GAP = 2;
+    private static final int BAR_HEIGHT = 5;
+    private static final int INK = 0xFF3B2614;
+    private static final int RULE = 0xFFD9C7A0;
+    private static final int BAR_EDGE = 0xFF8A6A48;
+    private static final int BAR_EMPTY = 0xFFEFE3C6;
+    private static final int FAMILIAR_BAR = 0xFFD6523A;
+    private static final int PREGNANT_BAR = 0xFFE07096;
+    private static final int FERTILE_BAR = 0xFF78A840;
+    // The bottom bar: page arrows on either side of the return arrow, the cross on the right.
+    private static final int NEXT_X = 46;
+    private static final int RETURN_X = 25;
+    private static final int RETURN_WIDTH = 19;
+    private static final int RETURN_HEIGHT = 13;
+    private static final int REMOVE_WIDTH = 11;
+    private static final int REMOVE_HEIGHT = 12;
 
     private record Hit(int x0, int y0, int x1, int y1, @Nullable Runnable action, @Nullable Component tooltip) {
         boolean contains(double x, double y) {
@@ -163,7 +194,7 @@ public class HerdBookScreen extends Screen {
     protected void init() {
         int left = left();
         this.backButton = addRenderableWidget(new PageButton(left + TEXT_X, BUTTONS_Y + top(), false, button -> back(), true));
-        this.forwardButton = addRenderableWidget(new PageButton(left + TEXT_X + 44, BUTTONS_Y + top(), true, button -> forward(), true));
+        this.forwardButton = addRenderableWidget(new PageButton(left + TEXT_X + NEXT_X, BUTTONS_Y + top(), true, button -> forward(), true));
         updateButtons();
     }
 
@@ -272,12 +303,12 @@ public class HerdBookScreen extends Screen {
         int y = top() + TEXT_Y;
         drawBookmarks(graphics);
         if (this.entries.isEmpty() || this.species.isEmpty()) {
-            List<net.minecraft.util.FormattedCharSequence> lines = this.font.split(Component.translatable("gui.barnyard_romance.herd_book.empty"), TEXT_WIDTH);
+            List<FormattedCharSequence> lines = this.font.split(Component.translatable("gui.barnyard_romance.herd_book.empty"), TEXT_WIDTH);
             for (int i = 0; i < lines.size(); i++) {
                 graphics.text(this.font, lines.get(i), x, y + i * LINE, TEXT, false);
             }
         } else if (this.animal != null && this.entries.containsKey(this.animal)) {
-            drawAnimal(graphics, this.entries.get(this.animal), x, y);
+            drawAnimal(graphics, this.entries.get(this.animal), x, mouseX, mouseY);
         } else {
             drawContents(graphics, x, y);
         }
@@ -386,11 +417,8 @@ public class HerdBookScreen extends Screen {
     }
 
     private void drawRow(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int y) {
-        //? if >=26.1 {
         HerdBookHeads.draw(graphics, entry.id(), entry.species(), entry.kid(), x, y - 1, ICON);
-        int markX = x + ICON + 2;
-        //?} else
-        //int markX = x;
+        int markX = HerdBookHeads.AVAILABLE ? x + ICON + 2 : x;
         graphics.text(this.font, entry.female() ? FEMALE_MARK : MALE_MARK, markX, y, entry.female() ? FEMALE : MALE, false);
         int nameX = markX + 8;
         int iconsX = drawIcons(graphics, entry, x + TEXT_WIDTH, y);
@@ -411,13 +439,8 @@ public class HerdBookScreen extends Screen {
             return x;
         }
         if (entry.pregnancyPercent() >= 0) {
-            // An empty heart that fills with color from the bottom as the pregnancy goes on.
             x -= ICON;
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, y - 1, ICON, ICON);
-            int filled = HerdBookLayout.filledRows(entry.pregnancyPercent(), ICON);
-            if (filled > 0) {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_ICON, ICON, ICON, 0, ICON - filled, x, y - 1 + ICON - filled, ICON, filled);
-            }
+            pregnancyHeart(graphics, entry.pregnancyPercent(), x, y - 1);
             this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null,
                     Component.translatable("gui.barnyard_romance.herd_book.pregnant_icon", entry.pregnancyPercent())));
             x -= 1;
@@ -439,49 +462,182 @@ public class HerdBookScreen extends Screen {
         return x;
     }
 
-    private void drawAnimal(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int y) {
-        int lineY = y;
-        graphics.text(this.font, entry.female() ? FEMALE_MARK : MALE_MARK, x, lineY, entry.female() ? FEMALE : MALE, false);
-        graphics.text(this.font, fit(this.names.get(entry.id()), TEXT_WIDTH - 8), x + 8, lineY, entry.alive() ? TEXT : MUTED, false);
-        lineY += LINE + 2;
-        for (Component line : entry.lines()) {
-            graphics.text(this.font, line, x, lineY, TEXT, false);
-            lineY += LINE;
+    // An animal's page: a card with its head, name and size, its status lines, then its family.
+    private void drawAnimal(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int mouseX, int mouseY) {
+        int y = top() + ANIMAL_TOP;
+        HerdBookHeads.draw(graphics, entry.id(), entry.species(), entry.kid(), x, y, PORTRAIT);
+        int textX = HerdBookHeads.AVAILABLE ? x + PORTRAIT + 4 : x;
+        int right = x + TEXT_WIDTH;
+        graphics.text(this.font, entry.female() ? FEMALE_MARK : MALE_MARK, textX, y + 2, entry.female() ? FEMALE : MALE, false);
+        graphics.text(this.font, fit(this.names.get(entry.id()), right - textX - 8), textX + 8, y + 2, entry.alive() ? INK : MUTED, false);
+        int subtitleY = y + 12;
+        for (HerdEntry.Line line : entry.lines()) {
+            if (line.kind() == HerdPageText.Kind.SIZE) {
+                for (FormattedCharSequence part : this.font.split(line.text(), right - textX)) {
+                    graphics.text(this.font, part, textX, subtitleY, MUTED, false);
+                    subtitleY += LINE;
+                }
+            }
         }
-        lineY += 2;
-        graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.family"), x, lineY, HEADER, false);
-        lineY += LINE;
-        lineY = drawLink(graphics, Component.translatable("gui.barnyard_romance.herd_book.mother"), entry.mother(), x, lineY);
-        lineY = drawLink(graphics, Component.translatable("gui.barnyard_romance.herd_book.father"), entry.father(), x, lineY);
+        y = Math.max(y + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), subtitleY - 1) + 2;
+        graphics.fill(x, y, right, y + 1, RULE);
+        y += 4;
+        for (HerdEntry.Line line : entry.lines()) {
+            if (line.kind() != HerdPageText.Kind.SIZE) {
+                drawPageLine(graphics, entry, line, x, y);
+                y += STATUS_LINE;
+            }
+        }
+        y += 2;
+        Component family = Component.translatable("gui.barnyard_romance.herd_book.family");
+        graphics.text(this.font, family, x, y, HEADER, false);
+        graphics.fill(x + this.font.width(family) + 3, y + 4, right, y + 5, RULE);
+        y += STATUS_LINE + 1;
+        Component mother = Component.translatable("gui.barnyard_romance.herd_book.mother");
+        Component father = Component.translatable("gui.barnyard_romance.herd_book.father");
+        Component youngLabel = Component.translatable("gui.barnyard_romance.herd_book.young");
+        // Mother, father and young line up after the longest of the three labels.
+        int valueX = x + Math.max(this.font.width(mother), Math.max(this.font.width(father), this.font.width(youngLabel))) + 4;
+        drawParent(graphics, mother, entry.mother(), x, valueX, y);
+        y += STATUS_LINE;
+        drawParent(graphics, father, entry.father(), x, valueX, y);
+        y += STATUS_LINE;
         List<HerdEntry> young = this.entries.values().stream()
                 .filter(other -> other.mother().equals(Optional.of(entry.id())) || other.father().equals(Optional.of(entry.id())))
                 .sorted(Comparator.comparing((HerdEntry child) -> this.names.get(child.id())).thenComparing(HerdEntry::id))
                 .toList();
         if (!young.isEmpty()) {
-            graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.young"), x, lineY, MUTED, false);
-            lineY += LINK_LINE;
-            int linesLeft = Math.max(0, (top() + BUTTONS_Y - LINE - lineY) / LINK_LINE + 1);
-            int shown = HerdBookLayout.youngShown(young.size(), linesLeft);
-            for (HerdEntry child : young.subList(0, shown)) {
-                link(graphics, fit(this.names.get(child.id()), TEXT_WIDTH - 8), child.id(), x + 8, lineY);
-                lineY += LINK_LINE;
-            }
-            if (shown < young.size()) {
-                graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.more", young.size() - shown), x + 8, lineY, MUTED, false);
+            graphics.text(this.font, youngLabel, x, y, MUTED, false);
+            if (HerdBookHeads.AVAILABLE) {
+                drawYoungHeads(graphics, young, valueX, right, y);
+            } else {
+                drawYoungNames(graphics, young, x, y + LINK_LINE);
             }
         }
-        drawAnimalButtons(graphics, entry);
+        drawAnimalButtons(graphics, entry, mouseX, mouseY);
     }
 
-    private int drawLink(GuiGraphicsExtractor graphics, Component label, Optional<UUID> parent, int x, int y) {
-        graphics.text(this.font, label, x, y, MUTED, false);
-        int linkX = x + this.font.width(label) + 4;
-        if (parent.isPresent() && this.entries.containsKey(parent.get())) {
-            link(graphics, fit(this.names.get(parent.get()), x + TEXT_WIDTH - linkX), parent.get(), linkX, y);
-        } else {
-            graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.unknown"), linkX, y, MUTED, false);
+    // A status line: its icon, then its words, or a label and a bar for pregnancy, familiarity and fertility.
+    private void drawPageLine(GuiGraphicsExtractor graphics, HerdEntry entry, HerdEntry.Line line, int x, int y) {
+        int iconY = y - 1;
+        switch (line.kind()) {
+            case FED -> {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, iconY, ICON, ICON);
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, iconY, ICON, ICON);
+            }
+            case NOT_FED -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, iconY, ICON, ICON);
+            case PREGNANT -> pregnancyHeart(graphics, Math.round(line.fill() * 100.0F), x, iconY);
+            case MILK -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.milkReady() ? MILK_ICON : MILK_EMPTY, x, iconY, ICON, ICON);
+            case FAMILIARITY -> {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, iconY, ICON, ICON);
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_FULL, x, iconY, ICON, ICON);
+            }
+            case FERTILITY -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FERTILE_ICON, x, iconY, ICON, ICON);
+            case SIZE, NOTE -> {
+            }
         }
-        return y + LINK_LINE;
+        int textX = x + ICON + 3;
+        int right = x + TEXT_WIDTH;
+        Component label = switch (line.kind()) {
+            case PREGNANT -> Component.translatable("gui.barnyard_romance.herd_book.pregnant_label");
+            case FAMILIARITY -> Component.translatable("gui.barnyard_romance.herd_book.familiar_label");
+            case FERTILITY -> Component.translatable("gui.barnyard_romance.herd_book.fertile_label");
+            default -> null;
+        };
+        if (label != null) {
+            graphics.text(this.font, label, textX, y, INK, false);
+            bar(graphics, textX + barLabelWidth() + 4, y + 1, right, line.fill(), switch (line.kind()) {
+                case PREGNANT -> PREGNANT_BAR;
+                case FAMILIARITY -> FAMILIAR_BAR;
+                default -> FERTILE_BAR;
+            });
+            // The bar's words, such as how long until the birth, are in its tooltip.
+            this.hits.add(new Hit(x, iconY, right, iconY + ICON, null, line.text()));
+            return;
+        }
+        String words = line.text().getString();
+        String shown = fit(words, right - textX);
+        graphics.text(this.font, shown, textX, y, line.kind() == HerdPageText.Kind.NOTE ? MUTED : INK, false);
+        if (!shown.equals(words)) {
+            this.hits.add(new Hit(textX, iconY, right, iconY + ICON, null, line.text()));
+        }
+    }
+
+    // Every bar starts at the same place, past the longest label.
+    private int barLabelWidth() {
+        int width = 0;
+        for (String key : List.of("gui.barnyard_romance.herd_book.pregnant_label", "gui.barnyard_romance.herd_book.familiar_label",
+                "gui.barnyard_romance.herd_book.fertile_label")) {
+            width = Math.max(width, this.font.width(Component.translatable(key)));
+        }
+        return width;
+    }
+
+    // An ink-edged bar on the paper, filled from the left.
+    private static void bar(GuiGraphicsExtractor graphics, int x0, int y, int x1, float fill, int color) {
+        graphics.fill(x0, y, x1, y + BAR_HEIGHT, BAR_EDGE);
+        graphics.fill(x0 + 1, y + 1, x1 - 1, y + BAR_HEIGHT - 1, BAR_EMPTY);
+        int filled = Math.round(Math.clamp(fill, 0.0F, 1.0F) * (x1 - x0 - 2));
+        if (filled > 0) {
+            graphics.fill(x0 + 1, y + 1, x0 + 1 + filled, y + BAR_HEIGHT - 1, color);
+        }
+    }
+
+    // An empty heart that fills with color from the bottom as the pregnancy goes on.
+    private static void pregnancyHeart(GuiGraphicsExtractor graphics, int percent, int x, int y) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, y, ICON, ICON);
+        int filled = HerdBookLayout.filledRows(percent, ICON);
+        if (filled > 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_ICON, ICON, ICON, 0, ICON - filled, x, y + ICON - filled, ICON, filled);
+        }
+    }
+
+    // A parent's head and a link to their page, or a faded "?" when the book doesn't know them.
+    private void drawParent(GuiGraphicsExtractor graphics, Component label, Optional<UUID> parent, int x, int valueX, int y) {
+        graphics.text(this.font, label, x, y, MUTED, false);
+        int nameX = HerdBookHeads.AVAILABLE ? valueX + ICON + 2 : valueX;
+        if (parent.isPresent() && this.entries.containsKey(parent.get())) {
+            HerdEntry known = this.entries.get(parent.get());
+            HerdBookHeads.draw(graphics, known.id(), known.species(), known.kid(), valueX, y - 1, ICON);
+            link(graphics, fit(this.names.get(known.id()), x + TEXT_WIDTH - nameX), known.id(), nameX, y);
+        } else {
+            if (HerdBookHeads.AVAILABLE) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, UNKNOWN_ICON, valueX, y - 1, ICON, ICON);
+            }
+            graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.unknown"), nameX, y, MUTED, false);
+        }
+    }
+
+    // Young as a row of heads, wrapping while there is room; hover one for its name, click it for its page.
+    private void drawYoungHeads(GuiGraphicsExtractor graphics, List<HerdEntry> young, int x0, int right, int y) {
+        int perRow = Math.max(1, (right - x0 + YOUNG_GAP) / (ICON + YOUNG_GAP));
+        int rows = Math.max(1, (top() + BUTTONS_Y - 1 - y) / STATUS_LINE);
+        int shown = HerdBookLayout.youngShown(young.size(), perRow * rows);
+        for (int i = 0; i < shown; i++) {
+            HerdEntry child = young.get(i);
+            int headX = x0 + (i % perRow) * (ICON + YOUNG_GAP);
+            int headY = y - 1 + (i / perRow) * STATUS_LINE;
+            HerdBookHeads.draw(graphics, child.id(), child.species(), child.kid(), headX, headY, ICON);
+            this.hits.add(new Hit(headX, headY, headX + ICON, headY + ICON, () -> showAnimal(child.id()), Component.literal(this.names.get(child.id()))));
+        }
+        if (shown < young.size()) {
+            int moreX = x0 + (shown % perRow) * (ICON + YOUNG_GAP);
+            graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.more", young.size() - shown), moreX,
+                    y + (shown / perRow) * STATUS_LINE, MUTED, false);
+        }
+    }
+
+    // Without heads (1.21.1), young are listed by name, one per line.
+    private void drawYoungNames(GuiGraphicsExtractor graphics, List<HerdEntry> young, int x, int y) {
+        int linesLeft = Math.max(0, (top() + BUTTONS_Y - LINE - y) / LINK_LINE + 1);
+        int shown = HerdBookLayout.youngShown(young.size(), linesLeft);
+        for (HerdEntry child : young.subList(0, shown)) {
+            link(graphics, fit(this.names.get(child.id()), TEXT_WIDTH - 8), child.id(), x + 8, y);
+            y += LINK_LINE;
+        }
+        if (shown < young.size()) {
+            graphics.text(this.font, Component.translatable("gui.barnyard_romance.herd_book.more", young.size() - shown), x + 8, y, MUTED, false);
+        }
     }
 
     private void link(GuiGraphicsExtractor graphics, String name, UUID id, int x, int y) {
@@ -492,22 +648,32 @@ public class HerdBookScreen extends Screen {
         this.hits.add(new Hit(x, y - 1, x + this.font.width(name), y + LINE, () -> showAnimal(id), null));
     }
 
-    // ↩ between the arrows goes back to the contents; ✕ on the right removes the animal from the book.
-    private void drawAnimalButtons(GuiGraphicsExtractor graphics, HerdEntry entry) {
-        int y = top() + BUTTONS_Y + 3;
-        int backX = left() + TEXT_X + 30;
-        graphics.text(this.font, "↩", backX, y, MUTED, false);
-        List<List<HerdBookLayout.Line>> pages = contents();
-        int contentsPage = entry.alive() ? HerdBookLayout.pageOf(pages, entry.id()) : 0;
-        this.hits.add(new Hit(backX - 2, y - 2, backX + 10, y + 10, () -> showContents(this.species, contentsPage),
-                Component.translatable("gui.barnyard_romance.herd_book.back")));
-        Component remove = this.removeArmed
-                ? Component.translatable("gui.barnyard_romance.herd_book.sure")
-                : Component.literal("✕");
-        int removeX = left() + TEXT_X + TEXT_WIDTH - this.font.width(remove);
-        graphics.text(this.font, remove, removeX, y, HUNGRY, false);
-        this.hits.add(new Hit(removeX - 2, y - 2, removeX + this.font.width(remove) + 2, y + 10, this::pressRemove,
-                Component.translatable("gui.barnyard_romance.herd_book.remove")));
+    // The return arrow between the page arrows goes back to the contents; the cross on the right removes the animal
+    // from the book. Both turn red under the mouse, like the page arrows.
+    private void drawAnimalButtons(GuiGraphicsExtractor graphics, HerdEntry entry, int mouseX, int mouseY) {
+        int y = top() + BUTTONS_Y;
+        int backX = left() + TEXT_X + RETURN_X;
+        Hit back = new Hit(backX, y, backX + RETURN_WIDTH, y + RETURN_HEIGHT, () -> showContents(this.species, contentsPage(entry)),
+                Component.translatable("gui.barnyard_romance.herd_book.back"));
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, back.contains(mouseX, mouseY) ? RETURN_HIGHLIGHTED : RETURN_ICON,
+                backX, y, RETURN_WIDTH, RETURN_HEIGHT);
+        this.hits.add(back);
+        int removeX = left() + TEXT_X + TEXT_WIDTH - REMOVE_WIDTH;
+        Hit remove = new Hit(removeX, y, removeX + REMOVE_WIDTH, y + REMOVE_HEIGHT, this::pressRemove,
+                Component.translatable("gui.barnyard_romance.herd_book.remove"));
+        boolean red = this.removeArmed || remove.contains(mouseX, mouseY);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, red ? REMOVE_HIGHLIGHTED : REMOVE_ICON, removeX, y, REMOVE_WIDTH, REMOVE_HEIGHT);
+        this.hits.add(remove);
+        if (this.removeArmed) {
+            Component sure = Component.translatable("gui.barnyard_romance.herd_book.sure");
+            int sureX = removeX - 2 - this.font.width(sure);
+            graphics.text(this.font, sure, sureX, y + 3, HUNGRY, false);
+            this.hits.add(new Hit(sureX, y, removeX, y + REMOVE_HEIGHT, this::pressRemove, Component.translatable("gui.barnyard_romance.herd_book.remove")));
+        }
+    }
+
+    private int contentsPage(HerdEntry entry) {
+        return entry.alive() ? HerdBookLayout.pageOf(contents(), entry.id()) : 0;
     }
 
     private void page(GuiGraphicsExtractor graphics, Component title, int pages) {
