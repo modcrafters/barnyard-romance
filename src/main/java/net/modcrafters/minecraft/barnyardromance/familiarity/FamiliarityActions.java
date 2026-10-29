@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -77,7 +78,9 @@ public final class FamiliarityActions {
             return null;
         }
         if (eaten.superfood()) {
-            return PregnancyCareActions.feed(animal, player, stack, eaten);
+            return eaten.effects().startsMilk()
+                    ? MilkActions.startMilk(animal, player, stack, eaten)
+                    : PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.
         AnimalTraits current = FamiliarityCare.settle(animal).orElse(traits.get());

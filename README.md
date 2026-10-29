@@ -46,7 +46,7 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 
 ## Looking after animals
 
-Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goes without food it loses 5%, and each milking or shearing costs 5%, since animals don't much enjoy them. Feeding every day never loses anything. A female that went hungry yesterday gives no milk today, and that day doesn't count towards her drying up. Babies don't go hungry while they're nursing.
+Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goes without food it loses 5%, and each milking or shearing costs 5%, since animals don't much enjoy them. Feeding every day never loses anything. A female that went hungry yesterday gives no milk today, and like any day she isn't milked it counts towards her drying up. **Dairy Mash** (grains, a root and any milk bucket) starts a dry, familiar female's milk for three days; milking keeps it going from there. Babies don't go hungry while they're nursing.
 
 Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told and wanders instead of following you, and a grumpy wolf sits down and watches while you're attacked. Feed it back above the threshold to win it back. Pets tamed before this change start at the threshold.
 

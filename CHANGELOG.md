@@ -7,6 +7,8 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 ## Unreleased
 
 - Familiarity fades: an animal loses some each day it isn't fed, and a little each time it's milked or sheared. Feeding every day keeps it. A cow that went hungry gives no milk the next day.
+- New Dairy Mash: feed it to a dry cow, goat or sheep and she gives milk for three days, without having to breed her first.
+- Sheep and goat milk buckets look like the vanilla milk bucket with creamier or whiter milk, and the vanilla one is now called Bucket of Cow Milk.
 - Tamed wolves, cats and horses never go wild, but if they lose too much familiarity they turn grumpy: horses won't be ridden, cats and wolves won't sit or follow, and a grumpy wolf just watches when you're attacked. Feed them to win them back.
 - Mod packs can leave species out in bulk with the config's `exclude` list (`"somemod:*"` for a whole mod) or the `barnyard_romance:excluded` entity tag.
 - Calves from vanilla breeding (with pregnancy turned off) remember their parents and join their mother's herd books.

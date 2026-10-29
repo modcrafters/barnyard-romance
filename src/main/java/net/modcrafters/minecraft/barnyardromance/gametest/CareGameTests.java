@@ -60,7 +60,7 @@ public final class CareGameTests {
             new BreedingGameTests.Case("dispenser_shearing_costs_familiarity", 20, CareGameTests::dispenserShearingCostsFamiliarity),
             new BreedingGameTests.Case("mooshroom_stew_costs_familiarity", 20, CareGameTests::mooshroomStewCostsFamiliarity),
             new BreedingGameTests.Case("hungry_cow_gives_no_milk_next_day", 20, CareGameTests::hungryCowGivesNoMilkNextDay),
-            new BreedingGameTests.Case("hungry_day_does_not_dry_her_up", 20, CareGameTests::hungryDayDoesNotDryHerUp),
+            new BreedingGameTests.Case("hungry_days_count_towards_drying_up", 20, CareGameTests::hungryDaysCountTowardsDryingUp),
             new BreedingGameTests.Case("grumpy_horse_refuses_rider", 20, CareGameTests::grumpyHorseRefusesRider),
             new BreedingGameTests.Case("content_horse_takes_rider", 20, CareGameTests::contentHorseTakesRider),
             new BreedingGameTests.Case("grumpy_wolf_ignores_sit", 20, CareGameTests::grumpyWolfIgnoresSit),
@@ -262,8 +262,9 @@ public final class CareGameTests {
         helper.succeed();
     }
 
-    // A day she can't be milked because she was hungry doesn't count towards drying up.
-    public static void hungryDayDoesNotDryHerUp(GameTestHelper helper) {
+    // A hungry day is just a day she isn't milked: it counts towards drying up like any other, so a neglected
+    // cow dries up on the usual schedule.
+    public static void hungryDaysCountTowardsDryingUp(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
         long keep = BarnyardConfig.current().tuning().milkKeepsFlowingTicks();
         long endsBefore = traits(helper, cow).lactation().endsAt(keep);
@@ -272,7 +273,7 @@ public final class CareGameTests {
         FamiliarityCare.settle(cow, clock(12L));
 
         long endsAfter = traits(helper, cow).lactation().endsAt(keep);
-        helper.assertTrue(endsAfter == endsBefore + 2L * GameDay.TICKS, "two hungry days moved her milk's end by " + (endsAfter - endsBefore));
+        helper.assertTrue(endsAfter == endsBefore, "two hungry days moved her milk's end by " + (endsAfter - endsBefore));
         helper.succeed();
     }
 

@@ -47,6 +47,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), BarnyardItems.HERD_BOOK);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), BarnyardItems.BREEDERS_MASH);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), BarnyardItems.GOLDEN_BRAN);
+        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.DAIRY_MASH_ID.identifier(), BarnyardItems.DAIRY_MASH);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), BarnyardItems.SHEEP_MILK_BUCKET);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), BarnyardItems.GOAT_MILK_BUCKET);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, BarnyardTab.ID, BarnyardTab.titled(FabricCreativeModeTab.builder())
@@ -55,6 +56,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
         CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> {
             output.accept(BarnyardItems.BREEDERS_MASH);
             output.accept(BarnyardItems.GOLDEN_BRAN);
+            output.accept(BarnyardItems.DAIRY_MASH);
         });
         Registry.register(
                 BuiltInRegistries.PARTICLE_TYPE,

@@ -83,8 +83,8 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void hungryDayDoesNotDryHerUp(GameTestHelper helper) {
-        CareGameTests.hungryDayDoesNotDryHerUp(helper);
+    public void hungryDaysCountTowardsDryingUp(GameTestHelper helper) {
+        CareGameTests.hungryDaysCountTowardsDryingUp(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

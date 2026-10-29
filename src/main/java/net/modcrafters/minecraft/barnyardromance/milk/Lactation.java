@@ -54,14 +54,9 @@ public record Lactation(long milkUntil, long youngUntil, long milkedDay, int mil
         return new Lactation(until, youngUntil, milkedDay, milkedToday, true);
     }
 
-    // Pushes the end of her milk back by ticks, for days she couldn't be milked because she went hungry. A female
-    // whose milk had already ended by since is left alone.
-    public Lactation postponed(long ticks, long keepFlowingTicks, long since) {
-        long ends = endsAt(keepFlowingTicks);
-        if (ends <= since) {
-            return this;
-        }
-        return new Lactation(ends + ticks, youngUntil, milkedDay, milkedToday, graceGiven);
+    // Dairy Mash: milk for the keep-flowing window, kept going by milking like any other milk.
+    public Lactation started(long now, long keepFlowingTicks) {
+        return new Lactation(Math.max(milkUntil, now + keepFlowingTicks), youngUntil, milkedDay, milkedToday, true);
     }
 
     public Lactation withGraceGiven() {

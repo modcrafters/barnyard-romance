@@ -11,6 +11,11 @@ public final class MilkRules {
     public static final Text ENOUGH_TEXT = Text.of("message.barnyard_romance.milk.enough");
     public static final Text DISABLED_TEXT = Text.of("message.barnyard_romance.milk.disabled");
     public static final Text HUNGRY_TEXT = Text.of("message.barnyard_romance.milk.hungry");
+    public static final Text START_MALE_TEXT = Text.of("message.barnyard_romance.dairy_mash.male");
+    public static final Text START_BABY_TEXT = Text.of("message.barnyard_romance.dairy_mash.baby");
+    public static final Text START_NO_MILK_SPECIES_TEXT = Text.of("message.barnyard_romance.dairy_mash.no_milk_species");
+    public static final Text START_ALREADY_TEXT = Text.of("message.barnyard_romance.dairy_mash.already");
+    public static final Text START_NOT_FAMILIAR_TEXT = Text.of("message.barnyard_romance.not_familiar");
 
     public enum Check {
         OK,
@@ -21,7 +26,44 @@ public final class MilkRules {
         ENOUGH_TODAY
     }
 
+    // Whether Dairy Mash can start a female's milk.
+    public enum Start {
+        OK,
+        MALE,
+        BABY,
+        NO_MILK_SPECIES,
+        ALREADY,
+        NOT_FAMILIAR
+    }
+
     private MilkRules() {
+    }
+
+    public static Start start(Sex sex, boolean baby, boolean givesMilk, boolean hasMilk, boolean familiar) {
+        if (!givesMilk) {
+            return Start.NO_MILK_SPECIES;
+        }
+        if (sex == Sex.MALE) {
+            return Start.MALE;
+        }
+        if (baby) {
+            return Start.BABY;
+        }
+        if (!familiar) {
+            return Start.NOT_FAMILIAR;
+        }
+        return hasMilk ? Start.ALREADY : Start.OK;
+    }
+
+    public static Text text(Start start) {
+        return switch (start) {
+            case MALE -> START_MALE_TEXT;
+            case BABY -> START_BABY_TEXT;
+            case NO_MILK_SPECIES -> START_NO_MILK_SPECIES_TEXT;
+            case ALREADY -> START_ALREADY_TEXT;
+            case NOT_FAMILIAR -> START_NOT_FAMILIAR_TEXT;
+            case OK -> Text.EMPTY;
+        };
     }
 
     // now is game time, for how long milk flows; clock is the overworld clock, for the daily count.

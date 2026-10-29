@@ -88,23 +88,12 @@ class LactationTest {
     }
 
     @Test
-    void postponedPushesTheEnd() {
-        Lactation lactation = new Lactation(1_000L, -1L, -1L, 0, true);
+    void startedGivesTheShortWindow() {
+        Lactation started = Lactation.NONE.started(1_000L, KEEP);
 
-        assertEquals(25_000L, lactation.postponed(24_000L, 0L, 500L).milkUntil());
-    }
-
-    @Test
-    void postponedLeavesDriedUpAlone() {
-        Lactation lactation = new Lactation(1_000L, -1L, -1L, 0, true);
-
-        assertEquals(lactation, lactation.postponed(24_000L, 0L, 2_000L));
-    }
-
-    @Test
-    void postponedCountsTheBabysMilkToo() {
-        Lactation nursing = new Lactation(-1L, 10_000L, -1L, 0, true);
-
-        assertEquals(10_000L + 72_000L + 24_000L, nursing.postponed(24_000L, 72_000L, 5_000L).milkUntil());
+        assertEquals(1_000L + KEEP, started.milkUntil());
+        assertTrue(started.hasMilk(1_000L + KEEP - 1L, KEEP));
+        assertFalse(started.hasMilk(1_000L + KEEP, KEEP));
+        assertTrue(started.graceGiven());
     }
 }

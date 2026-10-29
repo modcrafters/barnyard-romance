@@ -55,12 +55,6 @@ public final class FamiliarityCare {
             familiarity = Math.max(familiarity, Familiarity.threshold());
         }
         AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
-        if (settled.hungryDays() > 0) {
-            // Each hungry day takes the next day's milk, so it doesn't count towards her drying up.
-            long hungryTicks = settled.hungryDays() * GameDay.TICKS;
-            long now = animal.level().getGameTime();
-            updated = updated.withLactation(updated.lactation().postponed(hungryTicks, tuning.milkKeepsFlowingTicks(), now - hungryTicks));
-        }
         Services.DATA.set(animal, updated);
         // A pet that has just turned grumpy stops obeying, so one left sitting gets up and wanders off.
         if (animal instanceof TamableAnimal pet && pet.isOrderedToSit() && grumpy(animal)) {

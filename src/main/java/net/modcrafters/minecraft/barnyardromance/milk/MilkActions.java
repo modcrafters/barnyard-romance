@@ -6,7 +6,11 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.food.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
+import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -95,6 +99,38 @@ public final class MilkActions {
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
         Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, clock, tuning.milkKeepsFlowingTicks())));
         FamiliarityCare.spend(animal, tuning.familiarityMilkingCost());
+        return VersionCompat.SUCCESS_SERVER;
+    }
+
+    // Dairy Mash starts a dry, familiar female's milk. Like the other superfoods it skips the once-a-day feed,
+    // and it counts as her meal for the day.
+    public static InteractionResult startMilk(Animal animal, Player player, ItemStack stack, Feed.Eaten eaten) {
+        if (animal.level().isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+        Optional<AnimalTraits> tracked = tracked(animal);
+        if (tracked.isEmpty()) {
+            return null;
+        }
+        AnimalTraits traits = tracked.get();
+        Tuning tuning = BarnyardConfig.current().tuning();
+        long now = animal.level().getGameTime();
+        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
+                traits.lactation().hasMilk(now, tuning.milkKeepsFlowingTicks()), Familiarity.ready(traits.familiarity()));
+        if (start != MilkRules.Start.OK) {
+            VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(start)));
+            return InteractionResult.CONSUME;
+        }
+        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), tuning);
+        if (!player.hasInfiniteMaterials()) {
+            stack.consume(1, player);
+        }
+        Services.DATA.set(animal, traits.withLactation(traits.lactation().started(now, tuning.milkKeepsFlowingTicks())));
+        if (animal.getHealth() < animal.getMaxHealth() && heal > 0.0F) {
+            animal.heal(heal);
+        }
+        VersionCompat.playEatingSound(animal, stack);
+        FamiliarityCare.markEaten(animal);
         return VersionCompat.SUCCESS_SERVER;
     }
 
