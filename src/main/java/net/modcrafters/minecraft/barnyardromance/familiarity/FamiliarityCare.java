@@ -11,6 +11,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.Optional;
 
@@ -99,9 +101,11 @@ public final class FamiliarityCare {
         });
     }
 
+    // Only the animals familiarity tames (wolves, cats, horses and the rest of the horse family) count: a parrot tamed
+    // with seeds, or another mod's pet, can't be fed back up, so it never turns grumpy.
     public static boolean tamed(Animal animal) {
-        if (animal instanceof TamableAnimal pet) {
-            return pet.isTame();
+        if (animal instanceof Wolf || animal instanceof Cat) {
+            return ((TamableAnimal) animal).isTame();
         }
         return animal instanceof AbstractHorse horse && horse.isTamed();
     }

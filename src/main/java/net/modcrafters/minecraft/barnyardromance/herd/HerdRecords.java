@@ -36,7 +36,8 @@ public final class HerdRecords {
         if (old == null || Familiarity.ready(fresh.traits().familiarity())) {
             return fresh;
         }
-        AnimalTraits kept = old.traits().fed(fresh.traits().familiarity(), old.traits().lastFedTick());
+        // The hunger goes with the familiarity it was settled into, so the book doesn't count those days twice.
+        AnimalTraits kept = old.traits().fed(fresh.traits().familiarity(), old.traits().lastFedTick()).withHunger(fresh.traits().hunger());
         return new HerdRecord(old.species(), old.name(), kept, old.pregnancy(), old.baby(), old.milkable(), old.shearable(), old.woolly(), old.refreshedAt(),
                 old.diedAt(), old.diedClock(), fresh.tamed());
     }

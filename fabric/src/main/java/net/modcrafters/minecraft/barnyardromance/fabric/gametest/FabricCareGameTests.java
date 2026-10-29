@@ -136,4 +136,14 @@ public class FabricCareGameTests {
     public void hurtWolfStopsSulking(GameTestHelper helper) {
         CareGameTests.hurtWolfStopsSulking(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void tamedParrotIsNeverGrumpy(GameTestHelper helper) {
+        CareGameTests.tamedParrotIsNeverGrumpy(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void frozenMemberIsNotChargedTwice(GameTestHelper helper) {
+        CareGameTests.frozenMemberIsNotChargedTwice(helper);
+    }
 }

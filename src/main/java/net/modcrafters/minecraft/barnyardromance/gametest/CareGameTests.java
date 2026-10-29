@@ -70,7 +70,9 @@ public final class CareGameTests {
             new BreedingGameTests.Case("hurt_wolf_stops_sulking", 20, CareGameTests::hurtWolfStopsSulking),
             new BreedingGameTests.Case("grumpy_wolf_fights_back", 20, CareGameTests::grumpyWolfFightsBack),
             new BreedingGameTests.Case("fed_grumpy_wolf_obeys_again", 20, CareGameTests::fedGrumpyWolfObeysAgain),
-            new BreedingGameTests.Case("grumpy_pet_shows_in_the_book", 20, CareGameTests::grumpyPetShowsInTheBook)
+            new BreedingGameTests.Case("grumpy_pet_shows_in_the_book", 20, CareGameTests::grumpyPetShowsInTheBook),
+            new BreedingGameTests.Case("tamed_parrot_is_never_grumpy", 20, CareGameTests::tamedParrotIsNeverGrumpy),
+            new BreedingGameTests.Case("frozen_member_is_not_charged_twice", 20, CareGameTests::frozenMemberIsNotChargedTwice)
     );
 
     private CareGameTests() {
@@ -405,6 +407,34 @@ public final class CareGameTests {
 
         helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().getContents().toString().contains("herd_book.grumpy")),
                 "the book doesn't say the wolf is grumpy: " + entry.lines());
+        helper.succeed();
+    }
+
+    // Only the animals familiarity tames (wolves, cats, horses) turn grumpy; a parrot tamed with seeds can't be fed
+    // back up, so it must never stop following its owner.
+    public static void tamedParrotIsNeverGrumpy(GameTestHelper helper) {
+        TamableAnimal parrot = (TamableAnimal) female(helper, EntityTypes.PARROT);
+        parrot.tame(helper.makeMockServerPlayerInLevel());
+        Services.DATA.set(parrot, traits(helper, parrot).fed(0.0, -1L));
+
+        helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy");
+        helper.succeed();
+    }
+
+    // A record frozen below the threshold takes the hunger already settled with its familiarity, so the book
+    // doesn't take those days off a second time.
+    public static void frozenMemberIsNotChargedTwice(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L)));
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.2, -1L).withHunger(new Hunger(14L, 10L, 13L)));
+        HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
+
+        HerdEntry entry = HerdStatus.entry(data.record(cow.getUUID()), data.ledger().node(cow.getUUID()), helper.getLevel().getGameTime(), clock(14L), false);
+
+        float fill = entry.lines().stream().filter(line -> line.kind() == HerdPageText.Kind.FAMILIARITY).findFirst().orElseThrow().fill();
+        helper.assertTrue(Math.abs(fill - 0.2F) < 1.0e-4F, "the book shows familiarity " + fill + ", not 0.2");
         helper.succeed();
     }
 
