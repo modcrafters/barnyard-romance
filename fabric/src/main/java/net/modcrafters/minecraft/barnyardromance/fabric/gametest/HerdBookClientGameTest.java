@@ -31,7 +31,7 @@ import java.util.UUID;
 // Opens a herd book with a small cow family in a real client, clicks through it and screenshots its pages.
 public class HerdBookClientGameTest implements FabricClientGameTest {
     // Where things are on the book, in GUI pixels from its top-left corner (see HerdBookScreen).
-    private static final int DAISY_X = 36 + 12;
+    private static final int DAISY_X = 36 + 19 + 4;
     private static final int DAISY_Y = 2 + 30 + 2 * 9 + 4;
     private static final int BUTTON_Y = 2 + 157 + 7;
     private static final int RETURN_X = 36 + 33;

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -26,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// The herd book: species bookmarks on the right edge, a contents page per species, and a page per animal.
+// The herd book: species bookmarks down the edges, a contents page per species, and a page per animal.
 // The whole book comes from the server in one message (HerdBookPayloads.ShowBook); paging happens here.
 public class HerdBookScreen extends Screen {
     private static final Identifier BOOK = Identifier.withDefaultNamespace("textures/gui/book.png");
@@ -44,15 +45,30 @@ public class HerdBookScreen extends Screen {
     private static final int LINK = 0xFF1F4F8A;
     private static final int FEMALE = 0xFFC2457E;
     private static final int MALE = 0xFF2F6FB0;
-    private static final int FED = 0xFF4F8A2B;
     private static final int HUNGRY = 0xFFB5482F;
-    private static final int MILK = 0xFF4A76A8;
     private static final int FROZEN = 0xFF8A8A8A;
-    private static final int TAB = 0xFF8A5A22;
-    private static final int TAB_ON = 0xFFE8D8B0;
-    private static final int TAB_TEXT = 0xFFFFE3A1;
+    private static final int TAB_TEXT = 0xFF4C1A0B;
+    // Where the cover's left and right edges are in the book texture.
+    private static final int COVER_LEFT = 20;
+    private static final int COVER_RIGHT = 166;
+    private static final int TAB_TOP = 8;
+    private static final int TAB_HEIGHT = 13;
+    private static final int TAB_PITCH = 14;
+    // How far a bookmark reaches under the cover, and how far it stands out past it.
+    private static final int TAB_TUCK = 8;
+    // A bookmark stands out as far as its label needs, and the open one a little further.
+    private static final int TAB_PADDING = 8;
+    private static final int TAB_SELECTED = 4;
     private static final String FEMALE_MARK = "♀";
     private static final String MALE_MARK = "♂";
+
+    // Status icons are the hunger bar's size.
+    private static final int ICON = 9;
+    private static final Identifier FOOD_EMPTY = Identifier.withDefaultNamespace("hud/food_empty");
+    private static final Identifier FOOD_FULL = Identifier.withDefaultNamespace("hud/food_full");
+    private static final Identifier MILK_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk");
+    private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
+    private static final Identifier PREGNANT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant");
 
     private record Hit(int x0, int y0, int x1, int y1, @Nullable Runnable action, @Nullable Component tooltip) {
         boolean contains(double x, double y) {
@@ -198,6 +214,7 @@ public class HerdBookScreen extends Screen {
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
+        drawBookmarkTabs(graphics, mouseX, mouseY);
         graphics.blit(RenderPipelines.GUI_TEXTURED, BOOK, left(), top(), 0.0F, 0.0F, SIZE, SIZE, 256, 256);
     }
 
@@ -210,6 +227,7 @@ public class HerdBookScreen extends Screen {
     /*@Override
     public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
+        drawBookmarkTabs(graphics, mouseX, mouseY);
         graphics.blit(BOOK, left(), top(), 0, 0, SIZE, SIZE);
     }
 
@@ -274,23 +292,78 @@ public class HerdBookScreen extends Screen {
         }
     }
 
+    // A bookmark on screen: the whole sprite, part of which is tucked under the cover, and the part that shows.
+    private record TabBox(String species, String label, HerdBookLayout.Side side, int column, int x0, int x1, int shown0, int shown1, int y) {
+        boolean contains(double x, double y) {
+            return x >= shown0 && x < shown1 && y >= this.y && y < this.y + TAB_HEIGHT;
+        }
+    }
+
+    // Inner columns come last, so they are drawn over the columns standing out past them.
+    private List<TabBox> tabBoxes() {
+        List<HerdBookLayout.Tab> tabs = HerdBookLayout.tabs(HerdBookLayout.bookmarks(this.rows));
+        // Each column on the right starts past the widest bookmark of the column inside it.
+        List<Integer> columnStarts = new ArrayList<>(List.of(0));
+        for (HerdBookLayout.Tab tab : tabs) {
+            if (tab.side() == HerdBookLayout.Side.RIGHT) {
+                while (columnStarts.size() <= tab.column() + 1) {
+                    columnStarts.add(columnStarts.getLast());
+                }
+                int end = columnStarts.get(tab.column()) + tabWidth(tab.species()) + TAB_SELECTED;
+                columnStarts.set(tab.column() + 1, Math.max(columnStarts.get(tab.column() + 1), end));
+            }
+        }
+        List<TabBox> boxes = new ArrayList<>();
+        for (HerdBookLayout.Tab tab : tabs) {
+            String label = HerdBookLayout.tabLabel(speciesName(tab.species()));
+            int shown = tab.side() == HerdBookLayout.Side.RIGHT ? columnStarts.get(tab.column()) : 0;
+            int out = shown + tabWidth(tab.species()) + (tab.species().equals(this.species) ? TAB_SELECTED : 0);
+            int y = top() + TAB_TOP + tab.row() * TAB_PITCH;
+            if (tab.side() == HerdBookLayout.Side.LEFT) {
+                int edge = left() + COVER_LEFT;
+                boxes.add(new TabBox(tab.species(), label, tab.side(), tab.column(), edge - out, edge + TAB_TUCK, edge - out, edge - shown, y));
+            } else {
+                int edge = left() + COVER_RIGHT;
+                boxes.add(new TabBox(tab.species(), label, tab.side(), tab.column(), edge - TAB_TUCK, edge + out, edge + shown, edge + out, y));
+            }
+        }
+        boxes.sort(Comparator.comparingInt(TabBox::column).reversed());
+        return boxes;
+    }
+
+    private int tabWidth(String species) {
+        return this.font.width(HerdBookLayout.tabLabel(speciesName(species))) + TAB_PADDING;
+    }
+
+    private @Nullable TabBox hoveredTab(List<TabBox> boxes, double mouseX, double mouseY) {
+        for (int i = boxes.size() - 1; i >= 0; i--) {
+            if (boxes.get(i).contains(mouseX, mouseY)) {
+                return boxes.get(i);
+            }
+        }
+        return null;
+    }
+
+    // Drawn before the book, so the cover hides the tucked-in ends.
+    private void drawBookmarkTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        List<TabBox> boxes = tabBoxes();
+        TabBox hovered = hoveredTab(boxes, mouseX, mouseY);
+        for (TabBox box : boxes) {
+            String state = box.species().equals(this.species) ? "bookmark_selected" : box == hovered ? "bookmark_highlighted" : "bookmark";
+            String side = box.side() == HerdBookLayout.Side.LEFT ? "_left" : "_right";
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/" + state + side),
+                    box.x0(), box.y(), box.x1() - box.x0(), TAB_HEIGHT);
+        }
+    }
+
     private void drawBookmarks(GuiGraphicsExtractor graphics) {
-        List<String> bookmarks = HerdBookLayout.bookmarks(this.rows);
-        int height = HerdBookLayout.tabHeight(bookmarks.size());
-        int columns = HerdBookLayout.tabColumns(bookmarks.size());
-        int perColumn = (bookmarks.size() + columns - 1) / columns;
-        for (int i = 0; i < bookmarks.size(); i++) {
-            String tab = bookmarks.get(i);
-            // Further columns stand out past the first, like a second row of bookmarks.
-            int x0 = left() + SIZE - 34 + (i / perColumn) * 26;
-            int y = top() + 8 + (i % perColumn) * height;
-            boolean on = tab.equals(this.species);
-            int x1 = x0 + (on ? 26 : 22);
-            graphics.fill(x0, y, x1, y + height - 1, on ? TAB_ON : TAB);
-            String name = speciesName(tab);
-            String letters = this.font.plainSubstrByWidth(name, x1 - x0 - 4);
-            graphics.text(this.font, letters, x0 + 3, y + (height - 8) / 2, on ? TEXT : TAB_TEXT, false);
-            this.hits.add(new Hit(x0, y, x1, y + height - 1, () -> showContents(tab, 0), Component.literal(name)));
+        List<TabBox> boxes = tabBoxes();
+        // Hits are checked first to last, so the tabs drawn on top go first.
+        for (TabBox box : boxes.reversed()) {
+            String name = speciesName(box.species());
+            int textX = (box.shown0() + box.shown1() - this.font.width(box.label()) + 1) / 2;
+            graphics.text(this.font, box.label(), textX, box.y() + 3, box.species().equals(this.species) ? TEXT : TAB_TEXT, false);
+            this.hits.add(new Hit(box.shown0(), box.y(), box.shown1(), box.y() + TAB_HEIGHT, () -> showContents(box.species(), 0), Component.literal(name)));
         }
     }
 
@@ -298,8 +371,8 @@ public class HerdBookScreen extends Screen {
         List<List<HerdBookLayout.Line>> pages = contents();
         page(graphics, Component.literal(speciesName(this.species)), pages.size());
         List<HerdBookLayout.Line> lines = pages.get(Math.min(this.page, pages.size() - 1));
+        int lineY = y;
         for (int i = 0; i < lines.size(); i++) {
-            int lineY = y + i * LINE;
             switch (lines.get(i)) {
                 case HerdBookLayout.Header header -> graphics.text(this.font, Component.translatable(switch (header.group()) {
                     case FEMALES -> "gui.barnyard_romance.herd_book.females";
@@ -308,13 +381,19 @@ public class HerdBookScreen extends Screen {
                 }), x, lineY, HEADER, false);
                 case HerdBookLayout.Animal row -> drawRow(graphics, this.entries.get(row.id()), x, lineY);
             }
+            lineY += LINE;
         }
     }
 
     private void drawRow(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int y) {
-        graphics.text(this.font, entry.female() ? FEMALE_MARK : MALE_MARK, x, y, entry.female() ? FEMALE : MALE, false);
+        //? if >=26.1 {
+        HerdBookHeads.draw(graphics, entry.id(), entry.species(), entry.kid(), x, y - 1, ICON);
+        int markX = x + ICON + 2;
+        //?} else
+        //int markX = x;
+        graphics.text(this.font, entry.female() ? FEMALE_MARK : MALE_MARK, markX, y, entry.female() ? FEMALE : MALE, false);
+        int nameX = markX + 8;
         int iconsX = drawIcons(graphics, entry, x + TEXT_WIDTH, y);
-        int nameX = x + 8;
         String name = fit(this.names.get(entry.id()), iconsX - 2 - nameX);
         graphics.text(this.font, name, nameX, y, TEXT, false);
         this.hits.add(new Hit(nameX, y - 1, nameX + this.font.width(name), y + LINE - 1, () -> showAnimal(entry.id()), null));
@@ -332,21 +411,29 @@ public class HerdBookScreen extends Screen {
             return x;
         }
         if (entry.pregnancyPercent() >= 0) {
-            String percent = entry.pregnancyPercent() + "%";
-            x -= this.font.width(percent);
-            graphics.text(this.font, percent, x, y, FEMALE, false);
-            this.hits.add(new Hit(x, y, x + this.font.width(percent), y + 8, null,
+            // An empty heart that fills with color from the bottom as the pregnancy goes on.
+            x -= ICON;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, y - 1, ICON, ICON);
+            int filled = HerdBookLayout.filledRows(entry.pregnancyPercent(), ICON);
+            if (filled > 0) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_ICON, ICON, ICON, 0, ICON - filled, x, y - 1 + ICON - filled, ICON, filled);
+            }
+            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null,
                     Component.translatable("gui.barnyard_romance.herd_book.pregnant_icon", entry.pregnancyPercent())));
-            x -= 3;
+            x -= 1;
         } else if (entry.milkReady()) {
-            x -= 4;
-            graphics.fill(x, y + 1, x + 4, y + 7, MILK);
-            this.hits.add(new Hit(x - 1, y, x + 5, y + 8, null, Component.translatable("gui.barnyard_romance.herd_book.milk_icon")));
-            x -= 3;
+            x -= ICON;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, MILK_ICON, x, y - 1, ICON, ICON);
+            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, Component.translatable("gui.barnyard_romance.herd_book.milk_icon")));
+            x -= 1;
         }
-        x -= 4;
-        graphics.fill(x, y + 2, x + 4, y + 6, entry.fedToday() ? FED : HUNGRY);
-        this.hits.add(new Hit(x - 1, y, x + 5, y + 8, null, Component.translatable(entry.fedToday()
+        x -= ICON;
+        // Like the hunger bar: the dark outline always, the drumstick on top when fed.
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y - 1, ICON, ICON);
+        if (entry.fedToday()) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, y - 1, ICON, ICON);
+        }
+        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, Component.translatable(entry.fedToday()
                 ? "gui.barnyard_romance.herd_book.fed_today"
                 : "gui.barnyard_romance.herd_book.not_fed_today")));
         return x;

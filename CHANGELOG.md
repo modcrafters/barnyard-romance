@@ -6,6 +6,7 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- The herd book shows a close-up of each animal's head, hunger-bar style icons for feeding, pregnancy and milk, and paper bookmarks down both sides that fit the species' name.
 - Newborn animals remember their mother and father.
 - New Herd Book (a book and a wheat): use it on familiar animals to keep a live list of your herd, with feeding, pregnancy and milk at a glance, family links, and calves added automatically.
 - All of the mod's text can be translated: the inspector, chat and action-bar messages, commands, herd sticks and tag names all come from the lang file. Add a translation as `assets/barnyard_romance/lang/<language>.json`, in the mod or in a resource pack.
