@@ -6,6 +6,12 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- Familiarity fades: an animal loses some each day it isn't fed, and a little each time it's milked or sheared. Feeding every day keeps it. A cow that went hungry gives no milk the next day.
+- Tamed wolves, cats and horses never go wild, but if they lose too much familiarity they turn grumpy: horses won't be ridden, cats and wolves won't sit or follow, and a grumpy wolf just watches when you're attacked. Feed them to win them back.
+- Mod packs can leave species out in bulk with the config's `exclude` list (`"somemod:*"` for a whole mod) or the `barnyard_romance:excluded` entity tag.
+- Calves from vanilla breeding (with pregnancy turned off) remember their parents and join their mother's herd books.
+- The herd book keeps its animals in the order they joined after a reload, no longer reopens itself after you close it, and dates deaths by the in-game day.
+
 - Wolves fight by their size, wild and tamed: a small female bites like a stick with half the health, a big male bites like a netherite sword with half again the health. A big wolf gets all of its extra health when tamed.
 - Using the herd book on a tamed cat or wolf adds it to the book instead of making it sit or stand up.
 - The mouse wheel, touchpad and Page Up/Page Down turn the herd book's pages: down for the next page or animal, up for the one before. A touchpad swipe turns one page at a time instead of racing through the book.
