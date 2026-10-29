@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.age.Aging;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
@@ -30,7 +31,7 @@ public final class HerdStatus {
 
     public static HerdEntry entry(HerdRecord record, HerdLedger.Node node, long now, long clock, boolean loaded) {
         BarnyardConfig config = BarnyardConfig.current();
-        AnimalTraits traits = record.traits();
+        AnimalTraits traits = loaded || !record.alive() ? record.traits() : hungry(record, clock, config);
         AgeSettings age = config.ageFor(record.species());
         // The dead are shown as they were when they died.
         long at = record.alive() ? now : record.diedAt();
@@ -83,6 +84,14 @@ public final class HerdStatus {
                         .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
                         .toList()
         );
+    }
+
+    // An animal far from home goes on missing meals; the book shows the familiarity it has lost since it was seen.
+    private static AnimalTraits hungry(HerdRecord record, long clock, BarnyardConfig config) {
+        AnimalTraits traits = record.traits();
+        Hunger.Settled settled = Hunger.settle(traits.hunger(), GameDay.of(clock), record.baby());
+        double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), config.tuning().familiarityHungerLoss());
+        return traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
     }
 
     // Deaths from before the clock was recorded fall back to game time.
