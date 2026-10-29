@@ -155,6 +155,7 @@
   "commands.barnyard_romance.foods.scan.unread": "Couldn't read: %s.",
   "commands.barnyard_romance.foods.scan.recipe_type": "%s (%s)",
   "commands.barnyard_romance.foods.scan.failed": "The food scan failed: %s",
+  "tag.entity_type.barnyard_romance.excluded": "Excluded from Barnyard Romance",
   "tag.item.barnyard_romance.contains_fish": "Contains Fish",
   "tag.item.barnyard_romance.contains_meat": "Contains Meat",
   "tag.item.barnyard_romance.milk_buckets": "Milk Buckets",

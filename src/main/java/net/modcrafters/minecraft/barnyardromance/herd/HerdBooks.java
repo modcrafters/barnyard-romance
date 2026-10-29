@@ -207,7 +207,11 @@ public final class HerdBooks {
         return null;
     }
 
+    // A member whose species has been switched off or excluded keeps the record it had.
     static void refresh(HerdBookData data, Animal animal, long now) {
+        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
+            return;
+        }
         try {
             HerdRecords.capture(animal, now).ifPresent(fresh -> {
                 data.put(animal.getUUID(), HerdRecords.refreshed(data.record(animal.getUUID()), fresh));

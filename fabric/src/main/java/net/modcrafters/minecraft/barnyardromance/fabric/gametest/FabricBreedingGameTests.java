@@ -72,4 +72,19 @@ public class FabricBreedingGameTests {
     public void calvesRememberBothParents(GameTestHelper helper) {
         BreedingGameTests.calvesRememberBothParents(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void excludedSpeciesKeepTheirTraits(GameTestHelper helper) {
+        BreedingGameTests.excludedSpeciesKeepTheirTraits(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void excludedSpeciesCannotJoinABook(GameTestHelper helper) {
+        BreedingGameTests.excludedSpeciesCannotJoinABook(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void excludedMembersAreNotRefreshed(GameTestHelper helper) {
+        BreedingGameTests.excludedMembersAreNotRefreshed(helper);
+    }
 }

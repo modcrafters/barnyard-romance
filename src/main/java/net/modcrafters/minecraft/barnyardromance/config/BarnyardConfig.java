@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.config;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,9 +14,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public final class BarnyardConfig {
     private static final SizeSettings DEFAULT_SIZE = new SizeSettings(0.8, 1.2, 0.1);
@@ -28,6 +32,9 @@ public final class BarnyardConfig {
     private static final double MAX_BELLY_START = 0.99;
 
     private static BarnyardConfig current = defaults();
+    // Whether a species is in the barnyard_romance:excluded entity tag. Tags are Minecraft's, so the mod installs this
+    // at start-up; until then (and in unit tests) nothing is excluded by tag.
+    private static Predicate<String> excludedByTag = speciesId -> false;
 
     private final boolean enabled;
     private final double femaleRatio;
@@ -38,6 +45,7 @@ public final class BarnyardConfig {
     private final AgeSettings age;
     private final BellySettings belly;
     private final Map<String, SpeciesSettings> species;
+    private final List<String> exclude;
     private final Tuning tuning;
 
     private BarnyardConfig(
@@ -50,6 +58,7 @@ public final class BarnyardConfig {
             AgeSettings age,
             BellySettings belly,
             Map<String, SpeciesSettings> species,
+            List<String> exclude,
             Tuning tuning
     ) {
         this.enabled = enabled;
@@ -61,15 +70,20 @@ public final class BarnyardConfig {
         this.age = age;
         this.belly = belly;
         this.species = species;
+        this.exclude = exclude;
         this.tuning = tuning;
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), Tuning.DEFAULTS);
+        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), Tuning.DEFAULTS);
     }
 
     public static BarnyardConfig current() {
         return current;
+    }
+
+    public static void setExcludedByTag(Predicate<String> excluded) {
+        excludedByTag = excluded;
     }
 
     // For game tests, which swap a config in and restore it within the same tick.
@@ -144,6 +158,7 @@ public final class BarnyardConfig {
                 age,
                 belly,
                 Collections.unmodifiableMap(species),
+                exclude(object),
                 object.get("tuning") instanceof JsonObject tuning ? Tuning.from(tuning) : Tuning.DEFAULTS
         );
     }
@@ -180,6 +195,9 @@ public final class BarnyardConfig {
             }
             object.add("species", speciesObject);
         }
+        JsonArray excludeArray = new JsonArray();
+        exclude.forEach(excludeArray::add);
+        object.add("exclude", excludeArray);
         object.add("tuning", tuning.toJson());
         StringWriter writer = new StringWriter();
         JsonWriter jsonWriter = new JsonWriter(writer);
@@ -201,12 +219,51 @@ public final class BarnyardConfig {
         return defaults;
     }
 
+    // A species entry's own "enabled" wins, so one species of an excluded mod can be switched back on.
     public boolean speciesEnabled(String speciesId) {
         if (!enabled) {
             return false;
         }
         SpeciesSettings settings = species.get(speciesId);
-        return settings == null || settings.enabled() == null || settings.enabled();
+        if (settings != null && settings.enabled() != null) {
+            return settings.enabled();
+        }
+        return !excluded(speciesId) && !excludedByTag.test(speciesId);
+    }
+
+    public List<String> exclude() {
+        return exclude;
+    }
+
+    private boolean excluded(String speciesId) {
+        for (String entry : exclude) {
+            if (entry.equals(speciesId) || entry.endsWith(":*") && speciesId.startsWith(entry.substring(0, entry.length() - 1))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Each entry is a species id or a whole mod ("somemod:*"); a bad entry is skipped and logged, the rest still apply.
+    private static List<String> exclude(JsonObject object) {
+        if (!object.has("exclude") || object.get("exclude").isJsonNull()) {
+            return List.of();
+        }
+        if (!object.get("exclude").isJsonArray()) {
+            Constants.LOG.warn("Ignoring the barnyard config's exclude: it must be a list");
+            return List.of();
+        }
+        List<String> entries = new ArrayList<>();
+        for (JsonElement element : object.getAsJsonArray("exclude")) {
+            String entry = element.isJsonPrimitive() && element.getAsJsonPrimitive().isString() ? element.getAsString() : "";
+            int colon = entry.indexOf(':');
+            if (colon <= 0 || colon == entry.length() - 1) {
+                Constants.LOG.warn("Ignoring exclude entry {}: it must be a species id or \"mod:*\"", element);
+                continue;
+            }
+            entries.add(entry);
+        }
+        return List.copyOf(entries);
     }
 
     public boolean pregnancyEnabled() {
@@ -285,6 +342,14 @@ public final class BarnyardConfig {
                 write(writer, entry.getValue());
             }
             writer.endObject();
+            return;
+        }
+        if (element.isJsonArray()) {
+            writer.beginArray();
+            for (JsonElement item : element.getAsJsonArray()) {
+                write(writer, item);
+            }
+            writer.endArray();
             return;
         }
         if (element.isJsonPrimitive()) {
