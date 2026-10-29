@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -48,6 +49,27 @@ public final class AnimalTraitCodecs {
             lineage -> Optional.ofNullable(lineage.father()),
             (mother, father) -> new Lineage(mother.orElse(null), father.orElse(null))
     );
+    public static final Codec<Hunger> HUNGER_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.LONG.optionalFieldOf("settledDay", -1L).forGetter(Hunger::settledDay),
+            Codec.LONG.optionalFieldOf("lastAteDay", -1L).forGetter(Hunger::lastAteDay),
+            Codec.LONG.optionalFieldOf("lastHungryDay", -1L).forGetter(Hunger::lastHungryDay)
+    ).apply(instance, Hunger::new));
+    public static final StreamCodec<ByteBuf, Hunger> HUNGER_STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_LONG,
+            Hunger::settledDay,
+            ByteBufCodecs.VAR_LONG,
+            Hunger::lastAteDay,
+            ByteBufCodecs.VAR_LONG,
+            Hunger::lastHungryDay,
+            Hunger::new
+    );
+    // A codec group takes at most 16 fields, so the newest two are saved inline as a pair.
+    private record Care(long lastShearedClock, Hunger hunger) {
+    }
+    private static final MapCodec<Care> CARE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            Codec.LONG.optionalFieldOf("lastShearedClock", -1L).forGetter(Care::lastShearedClock),
+            HUNGER_CODEC.optionalFieldOf("hunger", Hunger.NONE).forGetter(Care::hunger)
+    ).apply(instance, Care::new));
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
             Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale),
@@ -64,8 +86,11 @@ public final class AnimalTraitCodecs {
             Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
             LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation),
             LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage),
-            Codec.LONG.optionalFieldOf("lastShearedClock", -1L).forGetter(AnimalTraits::lastShearedClock)
-    ).apply(instance, AnimalTraits::new));
+            CARE_MAP_CODEC.forGetter(traits -> new Care(traits.lastShearedClock(), traits.hunger()))
+    ).apply(instance, (sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight,
+                       fertility, fertilityTick, bornTick, lactation, lineage, care) -> new AnimalTraits(sex, scale, familiarity, lastFedTick,
+            growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage,
+            care.lastShearedClock(), care.hunger())));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
@@ -87,6 +112,7 @@ public final class AnimalTraitCodecs {
                 LACTATION_STREAM_CODEC.encode(buf, traits.lactation());
                 LINEAGE_STREAM_CODEC.encode(buf, traits.lineage());
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.lastShearedClock());
+                HUNGER_STREAM_CODEC.encode(buf, traits.hunger());
             },
             // Arguments are evaluated left to right, so this reads the fields in the order they were written.
             buf -> new AnimalTraits(
@@ -105,7 +131,8 @@ public final class AnimalTraitCodecs {
                     ByteBufCodecs.VAR_LONG.decode(buf),
                     LACTATION_STREAM_CODEC.decode(buf),
                     LINEAGE_STREAM_CODEC.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf)
+                    ByteBufCodecs.VAR_LONG.decode(buf),
+                    HUNGER_STREAM_CODEC.decode(buf)
             )
     );
 

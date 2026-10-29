@@ -136,4 +136,9 @@ public class FabricProductGameTests {
     public void unfamiliarAnimalsKeepTheirProducts(GameTestHelper helper) {
         ProductGameTests.unfamiliarAnimalsKeepTheirProducts(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void oldTraitsLoadWithoutHunger(GameTestHelper helper) {
+        ProductGameTests.oldTraitsLoadWithoutHunger(helper);
+    }
 }

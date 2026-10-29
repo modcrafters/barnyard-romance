@@ -9,7 +9,7 @@ class TuningTest {
     void defaultsMatchTodaysBehaviour() {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
         assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
-                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0), Tuning.DEFAULTS);
+                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05), Tuning.DEFAULTS);
     }
 
     @Test
@@ -63,5 +63,27 @@ class TuningTest {
     @Test
     void tuningRoundTripsThroughJson() {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.parse(BarnyardConfig.defaults().toJson()).tuning());
+    }
+
+    @Test
+    void familiarityLossesDefaultToFivePercent() {
+        Tuning tuning = BarnyardConfig.parse("{}").tuning();
+
+        assertEquals(0.05, tuning.familiarityHungerLoss(), 1.0e-9);
+        assertEquals(0.05, tuning.familiarityMilkingCost(), 1.0e-9);
+        assertEquals(0.05, tuning.familiarityShearingCost(), 1.0e-9);
+    }
+
+    @Test
+    void familiarityLossesParseAndClamp() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "tuning": { "familiarityHungerLoss": 0.03, "familiarityMilkingCost": 2, "familiarityShearingCost": -1 } }
+                """);
+        Tuning tuning = config.tuning();
+
+        assertEquals(0.03, tuning.familiarityHungerLoss(), 1.0e-9);
+        assertEquals(1.0, tuning.familiarityMilkingCost(), 1.0e-9);
+        assertEquals(0.0, tuning.familiarityShearingCost(), 1.0e-9);
+        assertEquals(tuning, BarnyardConfig.parse(config.toJson()).tuning());
     }
 }
