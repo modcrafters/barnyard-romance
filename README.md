@@ -105,7 +105,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 ### 1.21.1 test gaps
 
 - Every shared game test runs on 1.21.1.
-- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. The herd book has no head close-ups on 1.21.1 yet. For the herd book, check:
+- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. On 1.21.1 the herd book has no head close-ups, as designed. For the herd book, check:
   - using the book in the air opens it, and an empty book says how to add animals;
   - a familiar cow can be added, and a wild one is refused;
   - after breeding, the calf joins the book under Kids;
