@@ -32,6 +32,11 @@ public final class GameTestCompat {
         return mob.interact(player, InteractionHand.MAIN_HAND, mob.position());
     }
 
+    // The whole right click: the mob first, then the held item, as NeoForge's shears need on 1.21.1.
+    public static InteractionResult useOn(Mob mob, Player player) {
+        return player.interactOn(mob, InteractionHand.MAIN_HAND, mob.position());
+    }
+
     // Spawned at a position relative to the test, like a natural mob that may despawn.
     public static <T extends Mob> T spawnDespawnable(GameTestHelper helper, EntityType<T> type, Vec3 position) {
         return helper.spawnEntity(type, position).requirePersistence(false).spawn();

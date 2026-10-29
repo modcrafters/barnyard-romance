@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
+import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
@@ -73,6 +74,8 @@ public class HerdBookScreen extends Screen {
     private static final Identifier PREGNANT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant");
     private static final Identifier MILK_EMPTY = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk_empty");
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
+    private static final Identifier SHEARS_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/shears");
+    private static final Identifier SHEARS_EMPTY = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/shears_empty");
     private static final Identifier FERTILE_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/fertile");
     private static final Identifier UNKNOWN_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/unknown");
     private static final Identifier RETURN_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/back");
@@ -450,6 +453,12 @@ public class HerdBookScreen extends Screen {
             this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, Component.translatable("gui.barnyard_romance.herd_book.milk_icon")));
             x -= 1;
         }
+        if (entry.shear() != ShearState.NONE) {
+            x -= ICON;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, y - 1, ICON, ICON);
+            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, Component.translatable(shearKey(entry.shear()))));
+            x -= 1;
+        }
         x -= ICON;
         // Like the hunger bar: the dark outline always, the drumstick on top when fed.
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y - 1, ICON, ICON);
@@ -533,6 +542,7 @@ public class HerdBookScreen extends Screen {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_FULL, x, iconY, ICON, ICON);
             }
             case FERTILITY -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FERTILE_ICON, x, iconY, ICON, ICON);
+            case SHEAR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, iconY, ICON, ICON);
             case SIZE, NOTE -> {
             }
         }
@@ -670,6 +680,14 @@ public class HerdBookScreen extends Screen {
             graphics.text(this.font, sure, sureX, y + 3, HUNGRY, false);
             this.hits.add(new Hit(sureX, y, removeX, y + REMOVE_HEIGHT, this::pressRemove, Component.translatable("gui.barnyard_romance.herd_book.remove")));
         }
+    }
+
+    private static String shearKey(ShearState state) {
+        return switch (state) {
+            case SHEARED_TODAY -> "gui.barnyard_romance.herd_book.sheared_today";
+            case REGROWING -> "gui.barnyard_romance.herd_book.wool_regrowing";
+            default -> "gui.barnyard_romance.herd_book.shear_ready";
+        };
     }
 
     private int contentsPage(HerdEntry entry) {

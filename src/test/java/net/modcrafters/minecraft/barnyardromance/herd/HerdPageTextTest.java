@@ -53,6 +53,18 @@ class HerdPageTextTest {
     }
 
     @Test
+    void aSheepSaysWhetherItCanBeShorn() {
+        HerdPageText.PageFacts ewe = new HerdPageText.PageFacts("M", AgeStage.ADULT, -1L, true, 0L, false, 0.0, 0L, Text.EMPTY,
+                0.8, 0.9, -1L, Familiar.FAMILIAR, -1L);
+
+        assertEquals(List.of("Size M · Adult", "Fed today", "Ready to shear", "Familiar 80%", "Fertile 90%"), english(ewe.shear(ShearState.READY)));
+        assertEquals("Sheared today", english(ewe.shear(ShearState.SHEARED_TODAY)).get(2));
+        assertEquals("Wool growing back", english(ewe.shear(ShearState.REGROWING)).get(2));
+        assertEquals(HerdPageText.Kind.SHEAR, kinds(ewe.shear(ShearState.READY)).get(2));
+        assertEquals(4, english(ewe).size());
+    }
+
+    @Test
     void anUnloadedCowSaysWhenItWasSeen() {
         HerdPageText.PageFacts facts = cow().seen(2 * DAY);
 

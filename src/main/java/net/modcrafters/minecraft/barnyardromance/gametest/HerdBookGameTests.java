@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
+import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -309,7 +310,7 @@ public final class HerdBookGameTests {
         List<HerdEntry> entries = new java.util.ArrayList<>();
         for (int i = 0; i < 1_500; i++) {
             entries.add(new HerdEntry(UUID.randomUUID(), "minecraft:cow", "Daisy the " + i + "th", true, false, true, Familiar.FAMILIAR,
-                    true, 61, false, Optional.of(UUID.randomUUID()), Optional.of(UUID.randomUUID()), lines));
+                    true, 61, false, ShearState.NONE, Optional.of(UUID.randomUUID()), Optional.of(UUID.randomUUID()), lines));
         }
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 

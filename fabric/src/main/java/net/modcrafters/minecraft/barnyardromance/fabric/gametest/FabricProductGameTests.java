@@ -8,6 +8,16 @@ import static net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricBr
 
 public class FabricProductGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
+    public void sheepShearOnceADay(GameTestHelper helper) {
+        ProductGameTests.sheepShearOnceADay(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void unfamiliarSheepKeepTheirWool(GameTestHelper helper) {
+        ProductGameTests.unfamiliarSheepKeepTheirWool(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void oldTraitsLoadWithoutLactation(GameTestHelper helper) {
         ProductGameTests.oldTraitsLoadWithoutLactation(helper);
     }

@@ -46,19 +46,7 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 
 ## Herd book
 
-Craft a **Herd Book** from a book and a wheat. It keeps a list of your herd that you can read from anywhere.
-
-- **Adding animals:** use the book on an animal. Only animals familiar enough to breed (`familiarityThreshold`, 30% by default) can be added. Newborns join every book their mother is in, at birth.
-- **Reading it:** use the book in the air. Bookmarks pick a species: they go down the left edge, then the right, then in more columns on the right. Each species lists its females, males and kids, each with a close-up of its head and a ♀ or ♂. After each name:
-  - a drumstick, full if it was fed today and empty if not;
-  - a heart that fills with pink as a pregnancy goes on;
-  - a milk bucket when milk is ready;
-  - a grey `?` means the animal isn't familiar enough, so the book stopped updating it.
-  
-  Hover an icon for the words. Click a name for the animal's page, with its family. Parents and young in the book are links; others show as unknown.
-- **Away from home:** the server keeps a short record of every animal in a book. A loaded animal shows as it is now. An unloaded one shows its record, with pregnancy, feeding and milk worked out to the present, and "Seen … ago". Births and deaths still only happen while the animal is loaded.
-- **Deaths and removing:** a dead animal leaves the lists, but its page stays while a living animal in the book descends from it. The ✕ on an animal page removes it from this book (click twice). Its young stay, and dead ancestors no longer linked to a living animal go too.
-- **Sharing:** the list belongs to the book item, so giving someone the book gives them the herd.
+Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
 
 ## Translations
 
