@@ -19,7 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Mob.class)
 public class MobProductMixin {
-    // Horses and camels act on most held items themselves (rear up, open inventory), so our tools go first.
+    // Horses and camels act on most held items themselves (rear up, open inventory), and tamed pets sit or stand,
+    // so our tools go first.
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
     //? if >=1.21.11 {
     private void barnyardromance$tools(Player player, InteractionHand hand, Vec3 location, CallbackInfoReturnable<InteractionResult> callback) {

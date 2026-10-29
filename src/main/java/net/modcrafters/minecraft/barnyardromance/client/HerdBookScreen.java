@@ -12,8 +12,10 @@ import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
-//? if >=1.21.9
+//? if >=1.21.9 {
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+//?}
 //? if >=1.21.6
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -62,6 +64,13 @@ public class HerdBookScreen extends Screen {
     // A bookmark stands out as far as its label needs, and the open one a little further.
     private static final int TAB_PADDING = 8;
     private static final int TAB_SELECTED = 4;
+    //? if >=1.21.9 {
+    private static final int PAGE_UP = InputConstants.KEYCODE_PAGEUP;
+    private static final int PAGE_DOWN = InputConstants.KEYCODE_PAGEDOWN;
+    //?} else {
+    /*private static final int PAGE_UP = InputConstants.KEY_PAGEUP;
+    private static final int PAGE_DOWN = InputConstants.KEY_PAGEDOWN;
+    *///?}
     private static final String FEMALE_MARK = "♀";
     private static final String MALE_MARK = "♂";
 
@@ -119,6 +128,7 @@ public class HerdBookScreen extends Screen {
     private @Nullable UUID animal;
     private boolean removeArmed;
     private final List<Hit> hits = new ArrayList<>();
+    private final PageWheel wheel = new PageWheel();
     private @Nullable PageButton backButton;
     private @Nullable PageButton forwardButton;
 
@@ -289,6 +299,53 @@ public class HerdBookScreen extends Screen {
         return super.mouseClicked(x, y, button);
     }
     *///?}
+
+    // The wheel turns pages like the arrows: down for the next page or animal, up for the one before.
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (scrollY == 0.0) {
+            return super.mouseScrolled(x, y, scrollX, scrollY);
+        }
+        int turns = this.wheel.scroll(scrollY);
+        for (int i = 0; i < turns; i++) {
+            back();
+        }
+        for (int i = 0; i > turns; i--) {
+            forward();
+        }
+        return true;
+    }
+
+    // Page Up and Page Down turn pages too, as in a vanilla book.
+    //? if >=1.21.9 {
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (super.keyPressed(event)) {
+            return true;
+        }
+        return turnPage(event.shortcutKey());
+    }
+    //?} else {
+    /*@Override
+    public boolean keyPressed(int key, int scanCode, int modifiers) {
+        if (super.keyPressed(key, scanCode, modifiers)) {
+            return true;
+        }
+        return turnPage(key);
+    }
+    *///?}
+
+    private boolean turnPage(int key) {
+        if (key == PAGE_UP) {
+            back();
+            return true;
+        }
+        if (key == PAGE_DOWN) {
+            forward();
+            return true;
+        }
+        return false;
+    }
 
     private boolean click(double x, double y) {
         for (Hit hit : this.hits) {

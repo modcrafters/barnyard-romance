@@ -29,6 +29,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 
@@ -47,6 +48,7 @@ public final class HerdBookGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("wild_animals_cannot_join_a_book", 20, HerdBookGameTests::wildAnimalsCannotJoinABook),
             new BreedingGameTests.Case("familiar_animals_join_once", 20, HerdBookGameTests::familiarAnimalsJoinOnce),
+            new BreedingGameTests.Case("tamed_cats_join_without_sitting", 20, HerdBookGameTests::tamedCatsJoinWithoutSitting),
             new BreedingGameTests.Case("newborns_join_their_mothers_books", 20, HerdBookGameTests::newbornsJoinTheirMothersBooks),
             new BreedingGameTests.Case("newborns_join_frozen", 20, HerdBookGameTests::newbornsJoinFrozen),
             new BreedingGameTests.Case("a_death_marks_the_record", 20, HerdBookGameTests::aDeathMarksTheRecord),
@@ -86,6 +88,21 @@ public final class HerdBookGameTests {
         UUID id = bookId(helper, book);
         helper.assertTrue(data(helper).ledger().members(id).equals(java.util.Set.of(cow.getUUID())), "the book holds " + data(helper).ledger().members(id));
         helper.assertTrue(data(helper).record(cow.getUUID()) != null, "the cow has no record");
+        helper.succeed();
+    }
+
+    // A tamed cat sits or stands up when its owner right-clicks it; with the book in hand it joins the book instead.
+    public static void tamedCatsJoinWithoutSitting(GameTestHelper helper) {
+        TamableAnimal cat = (TamableAnimal) female(helper, EntityTypes.CAT);
+        Player player = FoodGameTests.holding(helper, BarnyardItems.HERD_BOOK);
+        cat.tame(player);
+        boolean sitting = cat.isOrderedToSit();
+
+        GameTestCompat.useOn(cat, player);
+
+        helper.assertTrue(cat.isOrderedToSit() == sitting, "the cat sat or stood up instead of joining the book");
+        UUID id = bookId(helper, player.getMainHandItem());
+        helper.assertTrue(data(helper).ledger().isMember(id, cat.getUUID()), "the cat did not join the book");
         helper.succeed();
     }
 

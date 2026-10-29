@@ -100,7 +100,8 @@ public final class BarnyardItems {
                 )));
     }
 
-        public static boolean isTool(ItemStack stack) {
-        return stack.is(HERD_STICK) || stack.is(INSPECTOR);
+    // Our items that act on an animal before it does, so a horse doesn't rear and a tamed cat doesn't sit instead.
+    public static boolean isTool(ItemStack stack) {
+        return stack.is(HERD_STICK) || stack.is(INSPECTOR) || stack.is(HERD_BOOK);
     }
 }

@@ -31,6 +31,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -72,6 +73,8 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("sheep_shear_once_a_day", 20, ProductGameTests::sheepShearOnceADay),
             new BreedingGameTests.Case("unfamiliar_sheep_keep_their_wool", 20, ProductGameTests::unfamiliarSheepKeepTheirWool),
             new BreedingGameTests.Case("wolf_tamed_by_familiarity", 20, ProductGameTests::wolfTamedByFamiliarity),
+            new BreedingGameTests.Case("wolves_bite_and_last_by_their_size", 20, ProductGameTests::wolvesBiteAndLastByTheirSize),
+            new BreedingGameTests.Case("big_tamed_wolves_keep_their_health", 20, ProductGameTests::bigTamedWolvesKeepTheirHealth),
             new BreedingGameTests.Case("cat_tamed_by_familiarity", 20, ProductGameTests::catTamedByFamiliarity),
             new BreedingGameTests.Case("ocelot_trusts_by_familiarity", 20, ProductGameTests::ocelotTrustsByFamiliarity),
             new BreedingGameTests.Case("bones_no_longer_tame_wolves", 20, ProductGameTests::bonesNoLongerTameWolves),
@@ -351,6 +354,46 @@ public final class ProductGameTests {
 
         helper.assertTrue(((OcelotAccessor) ocelot).barnyardromance$isTrusting(), "a familiar ocelot does not trust its feeder");
         helper.succeed();
+    }
+
+    // With the default sizes, the smallest female (0.7) bites for 1 with half a wild wolf's 8 health, and the largest
+    // male (1.3) bites for 8 with 12.
+    public static void wolvesBiteAndLastByTheirSize(GameTestHelper helper) {
+        Animal small = sized(helper, BreedingGameTests.female(helper, EntityTypes.WOLF), 0.7);
+        Animal big = sized(helper, BreedingGameTests.male(helper, EntityTypes.WOLF), 1.3);
+
+        assertNear(helper, "the small female's bite", small.getAttributeValue(Attributes.ATTACK_DAMAGE), 1.0);
+        assertNear(helper, "the small female's max health", small.getMaxHealth(), 4.0);
+        assertNear(helper, "the small female's health", small.getHealth(), 4.0);
+        assertNear(helper, "the big male's bite", big.getAttributeValue(Attributes.ATTACK_DAMAGE), 8.0);
+        assertNear(helper, "the big male's max health", big.getMaxHealth(), 12.0);
+        assertNear(helper, "the big male's health", big.getHealth(), 12.0);
+        helper.succeed();
+    }
+
+    // Taming sets a wolf's health to 40; a big male gets his full 60, and keeps it through a save and load.
+    public static void bigTamedWolvesKeepTheirHealth(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) sized(helper, BreedingGameTests.male(helper, EntityTypes.WOLF), 1.3);
+
+        wolf.tame(FoodGameTests.holding(helper, Items.BONE));
+
+        assertNear(helper, "the tamed male's max health", wolf.getMaxHealth(), 60.0);
+        assertNear(helper, "the tamed male's health", wolf.getHealth(), 60.0);
+        TamableAnimal loaded = GameTestCompat.reloaded(helper, wolf);
+        assertNear(helper, "the reloaded male's health", loaded.getHealth(), 60.0);
+        assertNear(helper, "the reloaded male's bite", loaded.getAttributeValue(Attributes.ATTACK_DAMAGE), 8.0);
+        helper.succeed();
+    }
+
+    private static Animal sized(GameTestHelper helper, Animal animal, double scale) {
+        AnimalTraits traits = BreedingGameTests.traits(helper, animal);
+        Services.DATA.set(animal, new AnimalTraits(traits.sex(), scale, traits.familiarity(), traits.lastFedTick()));
+        AnimalSex.onAgeBoundary(animal);
+        return animal;
+    }
+
+    private static void assertNear(GameTestHelper helper, String what, double actual, double expected) {
+        helper.assertTrue(Math.abs(actual - expected) < 1.0e-4, what + " is " + actual + ", not " + expected);
     }
 
     // Vanilla tames on one bone in three, so ten bones would almost surely have tamed it.

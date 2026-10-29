@@ -6,6 +6,9 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- Wolves fight by their size, wild and tamed: a small female bites like a stick with half the health, a big male bites like a netherite sword with half again the health. A big wolf gets all of its extra health when tamed.
+- Using the herd book on a tamed cat or wolf adds it to the book instead of making it sit or stand up.
+- The mouse wheel, touchpad and Page Up/Page Down turn the herd book's pages: down for the next page or animal, up for the one before. A touchpad swipe turns one page at a time instead of racing through the book.
 - Sheep can be sheared once a day, like milking, and still need to eat grass to grow their wool back. The herd book shows which ones are ready to shear.
 - The herd book shows a close-up of each animal's head, hunger-bar style icons for feeding, pregnancy and milk, and paper bookmarks down both sides that fit the species' name.
 - Newborn animals remember their mother and father.

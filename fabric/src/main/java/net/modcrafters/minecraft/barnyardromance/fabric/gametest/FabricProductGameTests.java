@@ -98,6 +98,16 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void wolvesBiteAndLastByTheirSize(GameTestHelper helper) {
+        ProductGameTests.wolvesBiteAndLastByTheirSize(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void bigTamedWolvesKeepTheirHealth(GameTestHelper helper) {
+        ProductGameTests.bigTamedWolvesKeepTheirHealth(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void catTamedByFamiliarity(GameTestHelper helper) {
         ProductGameTests.catTamedByFamiliarity(helper);
     }

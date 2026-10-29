@@ -103,6 +103,22 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             click(context, DAISY_X, DAISY_Y);
             expectShown(context, daisy, "Clicking Daisy's row again should open her page");
 
+            // The wheel turns pages, and a touchpad's small scrolls add up to one turn.
+            scroll(context, -0.5);
+            expectShown(context, daisy, "Half a scroll should not turn the page yet");
+            scroll(context, -0.5);
+            UUID next = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
+            if (next == null || next.equals(daisy)) {
+                throw new AssertionError("Scrolling down on Daisy's page should open the next animal, but the book shows " + next);
+            }
+            // Page Up and Page Down turn pages like a vanilla book.
+            context.getInput().pressKey(InputConstants.KEY_PAGEUP);
+            expectShown(context, daisy, "Page Up should go back to Daisy's page");
+            context.getInput().pressKey(InputConstants.KEY_PAGEDOWN);
+            expectShown(context, next, "Page Down should open the animal after Daisy");
+            scroll(context, 1.0);
+            expectShown(context, daisy, "Scrolling up should go back to Daisy's page");
+
             click(context, REMOVE_X, BUTTON_Y);
             context.takeScreenshot("herd_book_remove_sure");
 
@@ -128,6 +144,11 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
         context.getInput().setCursorPos((left + bookX) * scale, bookY * scale);
         context.waitTicks(1);
         context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        context.waitTicks(2);
+    }
+
+    private static void scroll(ClientGameTestContext context, double amount) {
+        context.getInput().scroll(amount);
         context.waitTicks(2);
     }
 

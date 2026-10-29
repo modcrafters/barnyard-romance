@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-// 26.3 draws entities in screens from render states; 1.21.1 has no head close-ups yet, so the book goes without.
+// 26.3 draws entities in screens from render states. On 1.21.1 the book goes without head close-ups, as designed.
 //? if >=26.1 {
 
 import com.mojang.blaze3d.vertex.PoseStack;

@@ -14,7 +14,8 @@
     "SheepShearMixin",
     "ShearsDispenseMixin",
     "TemptGoalMixin",
-    "TemptingSensorMixin"
+    "TemptingSensorMixin",
+    "WolfTamingMixin"
   ],
   "client": [
     ${extra_client_mixins}"client.LivingEntityRendererMixin",

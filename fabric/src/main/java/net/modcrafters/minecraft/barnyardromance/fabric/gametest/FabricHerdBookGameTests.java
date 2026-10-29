@@ -25,6 +25,11 @@ public class FabricHerdBookGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void tamedCatsJoinWithoutSitting(GameTestHelper helper) {
+        HerdBookGameTests.tamedCatsJoinWithoutSitting(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void newbornsJoinTheirMothersBooks(GameTestHelper helper) {
         HerdBookGameTests.newbornsJoinTheirMothersBooks(helper);
     }
