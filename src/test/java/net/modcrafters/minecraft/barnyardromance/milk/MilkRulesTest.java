@@ -98,4 +98,17 @@ class MilkRulesTest {
         assertTrue(longAgo.graceGiven());
         assertFalse(longAgo.hasMilk(500_000L, TUNING.milkKeepsFlowingTicks()));
     }
+
+    @Test
+    void hungryYesterdayGivesNoMilk() {
+        assertEquals(MilkRules.Check.HUNGRY, MilkRules.check(Sex.FEMALE, SizeClass.XL, MOTHER, 100L, 100L, TUNING, true));
+        assertEquals(MilkRules.Check.OK, MilkRules.check(Sex.FEMALE, SizeClass.XL, MOTHER, 100L, 100L, TUNING, false));
+        assertEquals("She went hungry yesterday, so she has no milk today.", English.of(MilkRules.text(MilkRules.Check.HUNGRY)));
+    }
+
+    @Test
+    void maleStaysMaleWhenHungry() {
+        assertEquals(MilkRules.Check.MALE, MilkRules.check(Sex.MALE, SizeClass.XL, MOTHER, 100L, 100L, TUNING, true));
+        assertEquals(MilkRules.Check.NO_MILK, MilkRules.check(Sex.FEMALE, SizeClass.XL, Lactation.NONE, 100L, 100L, TUNING, true));
+    }
 }

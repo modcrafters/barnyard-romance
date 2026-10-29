@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.shear;
 
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -39,8 +40,12 @@ public final class ShearActions {
         return InteractionResult.FAIL;
     }
 
+    // Counts the shearing for the once-a-day rule, and takes its familiarity cost.
     public static void recordShearing(Animal animal) {
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, traits.sheared(animal.level().getOverworldClockTime())));
+        tracked(animal).ifPresent(traits -> {
+            Services.DATA.set(animal, traits.sheared(animal.level().getOverworldClockTime()));
+            FamiliarityCare.spend(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
+        });
     }
 
     private static Optional<AnimalTraits> tracked(Animal animal) {

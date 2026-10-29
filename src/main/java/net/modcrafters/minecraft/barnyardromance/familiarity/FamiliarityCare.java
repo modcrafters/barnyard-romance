@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -42,12 +43,19 @@ public final class FamiliarityCare {
         if (settled.hunger().equals(traits.hunger())) {
             return tracked;
         }
-        double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), BarnyardConfig.current().tuning().familiarityHungerLoss());
+        Tuning tuning = BarnyardConfig.current().tuning();
+        double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), tuning.familiarityHungerLoss());
         // A pet tamed before hunger was kept starts at the threshold, so it isn't grumpy the day this arrives.
         if (settled.first() && tamed(animal)) {
             familiarity = Math.max(familiarity, Familiarity.threshold());
         }
         AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
+        if (settled.hungryDays() > 0) {
+            // Each hungry day takes the next day's milk, so it doesn't count towards her drying up.
+            long hungryTicks = settled.hungryDays() * GameDay.TICKS;
+            long now = animal.level().getGameTime();
+            updated = updated.withLactation(updated.lactation().postponed(hungryTicks, tuning.milkKeepsFlowingTicks(), now - hungryTicks));
+        }
         Services.DATA.set(animal, updated);
         return Optional.of(updated);
     }
@@ -61,6 +69,15 @@ public final class FamiliarityCare {
         settle(animal, clock).ifPresent(traits -> {
             if (!animal.level().isClientSide()) {
                 Services.DATA.set(animal, traits.withHunger(traits.hunger().ate(GameDay.of(clock))));
+            }
+        });
+    }
+
+    // Milking and shearing cost a little familiarity: animals don't much enjoy them.
+    public static void spend(Animal animal, double cost) {
+        settle(animal).ifPresent(traits -> {
+            if (!animal.level().isClientSide() && cost > 0.0) {
+                Services.DATA.set(animal, traits.fed(Math.max(0.0, traits.familiarity() - cost), traits.lastFedTick()));
             }
         });
     }

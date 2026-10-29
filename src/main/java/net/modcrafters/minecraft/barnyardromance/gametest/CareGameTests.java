@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
@@ -19,7 +20,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -42,7 +45,15 @@ public final class CareGameTests {
             new BreedingGameTests.Case("calf_does_not_go_hungry", 20, CareGameTests::calfDoesNotGoHungry),
             new BreedingGameTests.Case("old_tamed_wolf_starts_at_threshold", 20, CareGameTests::oldTamedWolfStartsAtThreshold),
             new BreedingGameTests.Case("horse_tamed_by_riding_is_not_grumpy", 20, CareGameTests::horseTamedByRidingIsNotGrumpy),
-            new BreedingGameTests.Case("unloaded_member_shows_projected_familiarity", 20, CareGameTests::unloadedMemberShowsProjectedFamiliarity)
+            new BreedingGameTests.Case("unloaded_member_shows_projected_familiarity", 20, CareGameTests::unloadedMemberShowsProjectedFamiliarity),
+            new BreedingGameTests.Case("milking_costs_familiarity", 20, CareGameTests::milkingCostsFamiliarity),
+            new BreedingGameTests.Case("large_cow_milked_twice_costs_ten", 20, CareGameTests::largeCowMilkedTwiceCostsTen),
+            new BreedingGameTests.Case("refused_milking_costs_nothing", 20, CareGameTests::refusedMilkingCostsNothing),
+            new BreedingGameTests.Case("shearing_costs_familiarity", 20, CareGameTests::shearingCostsFamiliarity),
+            new BreedingGameTests.Case("dispenser_shearing_costs_familiarity", 20, CareGameTests::dispenserShearingCostsFamiliarity),
+            new BreedingGameTests.Case("mooshroom_stew_costs_familiarity", 20, CareGameTests::mooshroomStewCostsFamiliarity),
+            new BreedingGameTests.Case("hungry_cow_gives_no_milk_next_day", 20, CareGameTests::hungryCowGivesNoMilkNextDay),
+            new BreedingGameTests.Case("hungry_day_does_not_dry_her_up", 20, CareGameTests::hungryDayDoesNotDryHerUp)
     );
 
     private CareGameTests() {
@@ -140,6 +151,109 @@ public final class CareGameTests {
 
         float fill = entry.lines().stream().filter(line -> line.kind() == HerdPageText.Kind.FAMILIARITY).findFirst().orElseThrow().fill();
         helper.assertTrue(Math.abs(fill - 0.35F) < 1.0e-4F, "the book shows familiarity " + fill + ", not 0.35");
+        helper.succeed();
+    }
+
+    public static void milkingCostsFamiliarity(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.COW, 0.5), 0.8);
+
+        ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
+
+        assertFamiliarity(helper, cow, 0.75);
+        helper.succeed();
+    }
+
+    public static void largeCowMilkedTwiceCostsTen(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.COW, 0.7), 0.8);
+
+        ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
+        ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
+
+        assertFamiliarity(helper, cow, 0.7);
+        helper.succeed();
+    }
+
+    public static void refusedMilkingCostsNothing(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.COW, 0.0), 0.8);
+        ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
+        Player second = holding(helper, Items.BUCKET);
+
+        GameTestCompat.interact(cow, second);
+
+        helper.assertTrue(second.getMainHandItem().is(Items.BUCKET), "a small cow gave a second bucket today");
+        assertFamiliarity(helper, cow, 0.75);
+        helper.succeed();
+    }
+
+    public static void shearingCostsFamiliarity(GameTestHelper helper) {
+        Sheep sheep = (Sheep) withFamiliarity(helper, female(helper, EntityTypes.SHEEP), 0.8);
+
+        GameTestCompat.useOn(sheep, holding(helper, Items.SHEARS));
+
+        helper.assertTrue(sheep.isSheared(), "a familiar sheep was not sheared");
+        assertFamiliarity(helper, sheep, 0.75);
+        helper.succeed();
+    }
+
+    // A dispenser shears through the sheep's own shear, the same as shears in hand.
+    public static void dispenserShearingCostsFamiliarity(GameTestHelper helper) {
+        Sheep sheep = (Sheep) withFamiliarity(helper, female(helper, EntityTypes.SHEEP), 0.8);
+
+        //? if >=1.21.2 {
+        sheep.shear(helper.getLevel(), SoundSource.BLOCKS, new ItemStack(Items.SHEARS));
+        //?} else
+        //sheep.shear(SoundSource.BLOCKS);
+
+        assertFamiliarity(helper, sheep, 0.75);
+        helper.succeed();
+    }
+
+    public static void mooshroomStewCostsFamiliarity(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        Player player = holding(helper, Items.BOWL);
+
+        GameTestCompat.interact(mooshroom, player);
+
+        helper.assertTrue(player.getMainHandItem().is(Items.MUSHROOM_STEW), "the mooshroom gave " + player.getMainHandItem());
+        assertFamiliarity(helper, mooshroom, 0.75);
+        helper.succeed();
+    }
+
+    // Hungry on days 10 and 11, so on day 12 she has no milk, and the herd book agrees.
+    public static void hungryCowGivesNoMilkNextDay(GameTestHelper helper) {
+        Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        FamiliarityCare.settle(cow, clock(10L));
+        long before = helper.getLevel().getOverworldClockTime();
+        Player player = holding(helper, Items.BUCKET);
+        HerdEntry entry;
+        try {
+            GameTestCompat.setOverworldClock(helper, clock(12L) + 1_000L);
+            GameTestCompat.interact(cow, player);
+            HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
+            entry = HerdBooks.entries(helper.getLevel().getServer(), data.ledger().books().keySet().stream()
+                            .filter(book -> data.ledger().isMember(book, cow.getUUID())).findFirst().orElseThrow(), helper.getLevel().getGameTime())
+                    .getFirst();
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a cow that went hungry yesterday gave " + player.getMainHandItem());
+        helper.assertTrue(!entry.milkReady(), "the herd book shows milk for a cow that went hungry yesterday");
+        helper.succeed();
+    }
+
+    // A day she can't be milked because she was hungry doesn't count towards drying up.
+    public static void hungryDayDoesNotDryHerUp(GameTestHelper helper) {
+        Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
+        long keep = BarnyardConfig.current().tuning().milkKeepsFlowingTicks();
+        long endsBefore = traits(helper, cow).lactation().endsAt(keep);
+        FamiliarityCare.settle(cow, clock(10L));
+
+        FamiliarityCare.settle(cow, clock(12L));
+
+        long endsAfter = traits(helper, cow).lactation().endsAt(keep);
+        helper.assertTrue(endsAfter == endsBefore + 2L * GameDay.TICKS, "two hungry days moved her milk's end by " + (endsAfter - endsBefore));
         helper.succeed();
     }
 

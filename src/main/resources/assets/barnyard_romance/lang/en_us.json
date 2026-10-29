@@ -132,6 +132,7 @@
   "message.barnyard_romance.milk.male": "Only mothers give milk.",
   "message.barnyard_romance.milk.none": "She has no milk.",
   "message.barnyard_romance.milk.enough": "Milked enough for today.",
+  "message.barnyard_romance.milk.hungry": "She went hungry yesterday, so she has no milk today.",
   "message.barnyard_romance.milk.disabled": "Milking is turned off.",
   "message.barnyard_romance.shear.enough": "Sheared enough for today.",
   "message.barnyard_romance.superfood.needs_mother": "Only a pregnant mother needs this.",

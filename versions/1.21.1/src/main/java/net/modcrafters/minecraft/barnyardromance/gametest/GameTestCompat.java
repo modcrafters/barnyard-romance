@@ -42,6 +42,11 @@ public final class GameTestCompat {
         return mob;
     }
 
+    // Moves the overworld clock (the time of day), as /time set does. Tests set it back within the same tick.
+    public static void setOverworldClock(GameTestHelper helper, long ticks) {
+        helper.getLevel().setDayTime(ticks);
+    }
+
     // isOwnedBy looks the owner up among the level's players here, and a test's mock player is not one of them.
     public static boolean ownedBy(TamableAnimal pet, Player player) {
         return player.getUUID().equals(pet.getOwnerUUID());

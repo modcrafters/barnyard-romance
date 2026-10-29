@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -40,6 +41,12 @@ public final class GameTestCompat {
     // Spawned at a position relative to the test, like a natural mob that may despawn.
     public static <T extends Mob> T spawnDespawnable(GameTestHelper helper, EntityType<T> type, Vec3 position) {
         return helper.spawnEntity(type, position).requirePersistence(false).spawn();
+    }
+
+    // Moves the overworld clock (the time of day), as /time set does. Tests set it back within the same tick.
+    public static void setOverworldClock(GameTestHelper helper, long ticks) {
+        ServerLevel level = helper.getLevel();
+        level.clockManager().setTotalTicks(level.registryAccess().get(WorldClocks.OVERWORLD).orElseThrow(), ticks);
     }
 
     // The pet's owner is this player.
