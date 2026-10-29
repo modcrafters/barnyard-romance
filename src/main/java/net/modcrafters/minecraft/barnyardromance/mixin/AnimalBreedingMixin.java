@@ -5,7 +5,10 @@ import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.VanillaBirth;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.AgeableMob;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,6 +38,11 @@ public class AnimalBreedingMixin {
         if (PregnancyController.replaceBirth((Animal) (Object) this, partner, level)) {
             callback.cancel();
         }
+    }
+
+    @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))
+    private void barnyardromance$vanillaBirth(ServerLevel level, Animal partner, @Nullable AgeableMob baby, CallbackInfo callback) {
+        VanillaBirth.born((Animal) (Object) this, partner, baby);
     }
 
     @Inject(method = "customServerAiStep", at = @At("TAIL"))

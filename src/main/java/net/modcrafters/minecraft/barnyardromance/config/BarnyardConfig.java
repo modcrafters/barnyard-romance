@@ -72,6 +72,11 @@ public final class BarnyardConfig {
         return current;
     }
 
+    // For game tests, which swap a config in and restore it within the same tick.
+    public static void set(BarnyardConfig config) {
+        current = config;
+    }
+
     public static void load(Path path) {
         try {
             if (Files.notExists(path)) {
