@@ -93,7 +93,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 
 - `gradlew :26.3:test` runs the unit tests for the pure rules.
 - `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
-- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, of rows of animals showing horns and bellies, and of the herd book's pages. It also clicks through the book: an animal's row, the return button, and remove.
+- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, of rows of animals showing horns and bellies, and of the herd book's pages. It also clicks through the book: an animal's row, the return button, the mouse wheel, and remove.
 - On 1.21.1 the same checks run with `gradlew :1.21.1:test` and `gradlew :neoforge:1.21.1:runGameTestServer` (NeoForge only). There each test runs in its own batch, and `GameTestCompat` covers the steps that differ, such as test positions counting from one block lower.
 - CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.
 
@@ -110,7 +110,8 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
   - a familiar cow can be added, and a wild one is refused;
   - after breeding, the calf joins the book under Kids;
   - after the mother dies, the calf's Mother link still opens her page;
-  - ✕ asks "Sure?" and then removes the animal.
+  - ✕ asks "Sure?" and then removes the animal;
+  - the mouse wheel turns pages, on the contents and on an animal's page.
 
   For horns and bellies, check:
   - a ewe or cow late in pregnancy is wider;

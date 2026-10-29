@@ -103,6 +103,15 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             click(context, DAISY_X, DAISY_Y);
             expectShown(context, daisy, "Clicking Daisy's row again should open her page");
 
+            // The wheel turns pages: down to the next animal, up back to Daisy.
+            scroll(context, -1.0);
+            UUID next = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
+            if (next == null || next.equals(daisy)) {
+                throw new AssertionError("Scrolling down on Daisy's page should open the next animal, but the book shows " + next);
+            }
+            scroll(context, 1.0);
+            expectShown(context, daisy, "Scrolling up should go back to Daisy's page");
+
             click(context, REMOVE_X, BUTTON_Y);
             context.takeScreenshot("herd_book_remove_sure");
 
@@ -128,6 +137,11 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
         context.getInput().setCursorPos((left + bookX) * scale, bookY * scale);
         context.waitTicks(1);
         context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
+        context.waitTicks(2);
+    }
+
+    private static void scroll(ClientGameTestContext context, double amount) {
+        context.getInput().scroll(amount);
         context.waitTicks(2);
     }
 

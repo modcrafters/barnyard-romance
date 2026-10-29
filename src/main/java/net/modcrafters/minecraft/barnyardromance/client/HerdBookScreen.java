@@ -290,6 +290,20 @@ public class HerdBookScreen extends Screen {
     }
     *///?}
 
+    // The wheel turns pages like the arrows: down for the next page or animal, up for the one before.
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (scrollY < 0) {
+            forward();
+            return true;
+        }
+        if (scrollY > 0) {
+            back();
+            return true;
+        }
+        return super.mouseScrolled(x, y, scrollX, scrollY);
+    }
+
     private boolean click(double x, double y) {
         for (Hit hit : this.hits) {
             if (hit.action() != null && hit.contains(x, y)) {
