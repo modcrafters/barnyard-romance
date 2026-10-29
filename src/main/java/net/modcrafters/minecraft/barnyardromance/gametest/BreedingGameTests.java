@@ -4,7 +4,14 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
@@ -32,6 +39,9 @@ public final class BreedingGameTests {
     }
 
     public static final List<Case> CASES = List.of(
+            new Case("excluded_species_keep_their_traits", 20, BreedingGameTests::excludedSpeciesKeepTheirTraits),
+            new Case("excluded_species_cannot_join_a_book", 20, BreedingGameTests::excludedSpeciesCannotJoinABook),
+            new Case("excluded_members_are_not_refreshed", 20, BreedingGameTests::excludedMembersAreNotRefreshed),
             new Case("pigs_conceive_a_litter_and_rest", 200, BreedingGameTests::pigsConceiveALitterAndRest),
             new Case("cows_carry_one_calf_for_about_three_days", 20, BreedingGameTests::cowsCarryOneCalfForAboutThreeDays),
             new Case("same_sex_pairs_make_nothing", 20, BreedingGameTests::sameSexPairsMakeNothing),
@@ -278,6 +288,59 @@ public final class BreedingGameTests {
                 .toList();
         helper.assertTrue(!young.isEmpty(), "no young were born");
         return young;
+    }
+
+    // Excluding a species makes it vanilla without wiping what the mod saved; switching it back on brings it all back.
+    public static void excludedSpeciesKeepTheirTraits(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        AnimalTraits before = traits(helper, cow).fed(0.7, -1L);
+        Services.DATA.set(cow, before);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:cow\"]}"));
+            AnimalSex.onJoin(cow);
+            helper.assertTrue(AgeController.deathAt(cow) == Long.MAX_VALUE, "an excluded cow still ages");
+            helper.assertTrue(!FamiliarityActions.denies(cow), "an excluded cow still asks for familiarity");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(traits(helper, cow).equals(before), "the cow came back as " + traits(helper, cow));
+        helper.succeed();
+    }
+
+    public static void excludedSpeciesCannotJoinABook(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        BarnyardConfig config = BarnyardConfig.current();
+        HerdBooks.RegisterResult result;
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:*\"]}"));
+            result = HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(result == HerdBooks.RegisterResult.NOT_TRACKED, "an excluded cow was " + result);
+        helper.succeed();
+    }
+
+    // A member whose species is excluded later stays in the book as it was last recorded.
+    public static void excludedMembersAreNotRefreshed(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
+        long recorded = data.record(cow.getUUID()).traits().lastFedTick();
+        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 900L));
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:cow\"]}"));
+            HerdBooks.refreshLoaded(helper.getLevel().getServer());
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(data.record(cow.getUUID()).traits().lastFedTick() == recorded, "an excluded cow's record was refreshed");
+        helper.succeed();
     }
 
     public static Animal female(GameTestHelper helper, EntityType<? extends Animal> type) {

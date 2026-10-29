@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -77,9 +78,12 @@ public final class FamiliarityActions {
             return null;
         }
         if (eaten.superfood()) {
-            return PregnancyCareActions.feed(animal, player, stack, eaten);
+            return eaten.effects().startsMilk()
+                    ? MilkActions.startMilk(animal, player, hand, eaten)
+                    : PregnancyCareActions.feed(animal, player, stack, eaten);
         }
-        AnimalTraits current = traits.get();
+        // Hungry days are taken off first, so the animal is fed as it is today.
+        AnimalTraits current = FamiliarityCare.settle(animal).orElse(traits.get());
         long now = animal.level().getOverworldClockTime();
         boolean familiar = Familiarity.ready(current.familiarity());
         boolean hurt = animal.getHealth() < animal.getMaxHealth();
@@ -115,12 +119,14 @@ public final class FamiliarityActions {
         }
         VersionCompat.playEatingSound(animal, stack);
         if (click == Familiarity.Click.HEAL_ONLY) {
+            FamiliarityCare.markEaten(animal);
             return VersionCompat.SUCCESS_SERVER;
         }
         PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
         double gained = Familiarity.gain(current.familiarity(), amount);
         Services.DATA.set(animal, current.fed(gained, now));
+        FamiliarityCare.markEaten(animal);
         tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
             animal.setInLove(player);

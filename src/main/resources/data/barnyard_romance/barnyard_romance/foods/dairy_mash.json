@@ -1,0 +1,13 @@
+{
+  "diets": [
+    "barnyard_romance:grazer",
+    "barnyard_romance:herbivore",
+    "barnyard_romance:omnivore"
+  ],
+  "items": "barnyard_romance:dairy_mash",
+  "superfood": true,
+  "effects": {
+    "heal": 2.0,
+    "startsMilk": true
+  }
+}

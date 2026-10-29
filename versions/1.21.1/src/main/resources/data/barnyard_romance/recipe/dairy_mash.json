@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:bowl" },
+    { "tag": "barnyard_romance:superfood/grains" },
+    { "tag": "barnyard_romance:superfood/roots" },
+    { "tag": "barnyard_romance:milk_buckets" }
+  ],
+  "result": {
+    "id": "barnyard_romance:dairy_mash",
+    "count": 1
+  }
+}

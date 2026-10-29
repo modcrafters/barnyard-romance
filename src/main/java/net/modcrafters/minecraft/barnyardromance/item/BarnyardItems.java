@@ -36,6 +36,10 @@ public final class BarnyardItems {
             Registries.ITEM,
             Identifier.fromNamespaceAndPath(Constants.MOD_ID, "golden_bran")
     );
+    public static final ResourceKey<Item> DAIRY_MASH_ID = ResourceKey.create(
+            Registries.ITEM,
+            Identifier.fromNamespaceAndPath(Constants.MOD_ID, "dairy_mash")
+    );
     public static final ResourceKey<Item> SHEEP_MILK_BUCKET_ID = ResourceKey.create(
             Registries.ITEM,
             Identifier.fromNamespaceAndPath(Constants.MOD_ID, "sheep_milk_bucket")
@@ -60,6 +64,7 @@ public final class BarnyardItems {
     // so crafted stacks show it too; it is translatable, so a pack that changes the food files can reword it.
     public static final Item BREEDERS_MASH = new Item(superfood(BREEDERS_MASH_ID));
     public static final Item GOLDEN_BRAN = new Item(superfood(GOLDEN_BRAN_ID));
+    public static final Item DAIRY_MASH = new Item(superfood(DAIRY_MASH_ID));
     // Drink like cow milk; the barnyard_romance:milk_buckets tag lets them stand in for it in cake.
     //? if >=1.21.2 {
     public static final Item SHEEP_MILK_BUCKET = new Item(milk(SHEEP_MILK_BUCKET_ID));

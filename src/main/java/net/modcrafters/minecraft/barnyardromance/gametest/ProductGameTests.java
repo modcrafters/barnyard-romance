@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.drops.MeatDrop;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
@@ -56,6 +57,7 @@ public final class ProductGameTests {
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("old_traits_load_without_lactation", 20, ProductGameTests::oldTraitsLoadWithoutLactation),
+            new BreedingGameTests.Case("old_traits_load_without_hunger", 20, ProductGameTests::oldTraitsLoadWithoutHunger),
             new BreedingGameTests.Case("cake_takes_every_milk", 20, ProductGameTests::cakeTakesEveryMilk),
             new BreedingGameTests.Case("milk_buckets_are_in_the_common_tag", 20, ProductGameTests::milkBucketsAreInTheCommonTag),
             new BreedingGameTests.Case("goat_milk_clears_effects", 20, ProductGameTests::goatMilkClearsEffects),
@@ -87,6 +89,27 @@ public final class ProductGameTests {
     }
 
     // Traits saved before Stage 5 have no lactation and load with none.
+    public static void oldTraitsLoadWithoutHunger(GameTestHelper helper) {
+        AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L).sheared(40L);
+        CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
+        tag.remove("hunger");
+
+        AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
+        helper.assertTrue(loaded.hunger().equals(Hunger.NONE), "old traits loaded with " + loaded.hunger());
+        helper.assertTrue(loaded.lastShearedClock() == 40L, "old traits lost their shearing time: " + loaded.lastShearedClock());
+
+        Hunger hunger = new Hunger(12L, 11L, 9L);
+        AnimalTraits hungry = saved.withHunger(hunger);
+        CompoundTag hungryTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, hungry).getOrThrow();
+        AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, hungryTag).getOrThrow();
+        helper.assertTrue(reloaded.equals(hungry), "hunger came back as " + reloaded.hunger());
+        ByteBuf buffer = Unpooled.buffer();
+        AnimalTraitCodecs.STREAM_CODEC.encode(buffer, hungry);
+        AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
+        helper.assertTrue(synced.equals(hungry), "hunger synced as " + synced.hunger());
+        helper.succeed();
+    }
+
     public static void oldTraitsLoadWithoutLactation(GameTestHelper helper) {
         AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L);
         CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();

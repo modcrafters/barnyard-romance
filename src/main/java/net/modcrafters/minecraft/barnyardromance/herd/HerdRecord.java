@@ -5,7 +5,8 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import org.jspecify.annotations.Nullable;
 
 // What the server last saw of an animal in a herd book, so the book can show it while it isn't loaded.
-// The pregnancy is kept without its litter; diedAt is -1 while the animal is alive.
+// The pregnancy is kept without its litter; diedAt (game time) and diedClock (overworld clock) are -1 while the
+// animal is alive, and diedClock is also -1 for deaths recorded before it was kept.
 public record HerdRecord(
         String species,
         String name,
@@ -17,13 +18,16 @@ public record HerdRecord(
         boolean shearable,
         boolean woolly,
         long refreshedAt,
-        long diedAt
+        long diedAt,
+        long diedClock,
+        // Tamed animals below the familiarity threshold are grumpy, not wild.
+        boolean tamed
 ) {
     public boolean alive() {
         return diedAt < 0L;
     }
 
-    public HerdRecord died(long tick) {
-        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick);
+    public HerdRecord died(long tick, long clock) {
+        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick, clock, tamed);
     }
 }

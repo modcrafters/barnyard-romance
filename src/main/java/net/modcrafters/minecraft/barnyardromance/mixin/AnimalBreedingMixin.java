@@ -3,9 +3,13 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.VanillaBirth;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.AgeableMob;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,6 +41,11 @@ public class AnimalBreedingMixin {
         }
     }
 
+    @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))
+    private void barnyardromance$vanillaBirth(ServerLevel level, Animal partner, @Nullable AgeableMob baby, CallbackInfo callback) {
+        VanillaBirth.born((Animal) (Object) this, partner, baby);
+    }
+
     @Inject(method = "customServerAiStep", at = @At("TAIL"))
     //? if >=1.21.2 {
     private void barnyardromance$birth(ServerLevel level, CallbackInfo callback) {
@@ -49,6 +58,7 @@ public class AnimalBreedingMixin {
         PregnancyController.catchUp(self, level);
         AnimalHearts.serverTick(self, level);
         AgeController.serverTick(self, level);
+        FamiliarityCare.serverTick(self, level);
     }
 
     @Inject(method = "aiStep", at = @At("TAIL"))

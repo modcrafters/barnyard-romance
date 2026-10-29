@@ -81,4 +81,24 @@ public class FabricFoodGameTests {
     public void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
         FoodGameTests.ourCreativeTabHoldsEveryItem(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void dairyMashStartsMilk(GameTestHelper helper) {
+        FoodGameTests.dairyMashStartsMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void dairyMashIsRefusedByAMilkingCow(GameTestHelper helper) {
+        FoodGameTests.dairyMashIsRefusedByAMilkingCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void dairyMashIsRefusedByABull(GameTestHelper helper) {
+        FoodGameTests.dairyMashIsRefusedByABull(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void dairyMashNeedsFamiliarity(GameTestHelper helper) {
+        FoodGameTests.dairyMashNeedsFamiliarity(helper);
+    }
 }

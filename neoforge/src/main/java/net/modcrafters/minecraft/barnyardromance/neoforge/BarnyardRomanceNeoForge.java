@@ -76,6 +76,7 @@ public class BarnyardRomanceNeoForge {
         event.register(Registries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), () -> BarnyardItems.HERD_BOOK);
         event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);
         event.register(Registries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), () -> BarnyardItems.GOLDEN_BRAN);
+        event.register(Registries.ITEM, BarnyardItems.DAIRY_MASH_ID.identifier(), () -> BarnyardItems.DAIRY_MASH);
         event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
         event.register(Registries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.GOAT_MILK_BUCKET);
         event.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), () -> BarnyardTab.titled(CreativeModeTab.builder())
@@ -108,6 +109,7 @@ public class BarnyardRomanceNeoForge {
         if (event.getTabKey() == BarnyardItems.FOOD_AND_DRINKS) {
             event.accept(BarnyardItems.BREEDERS_MASH);
             event.accept(BarnyardItems.GOLDEN_BRAN);
+            event.accept(BarnyardItems.DAIRY_MASH);
         }
     }
 

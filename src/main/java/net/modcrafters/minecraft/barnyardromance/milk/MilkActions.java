@@ -5,6 +5,12 @@ import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.food.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
+import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
@@ -73,11 +79,12 @@ public final class MilkActions {
         if (tracked.isEmpty()) {
             return null;
         }
-        AnimalTraits traits = tracked.get();
+        AnimalTraits traits = FamiliarityCare.settle(animal).orElse(tracked.get());
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
         long clock = animal.level().getOverworldClockTime();
-        MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, clock, tuning);
+        MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, clock, tuning,
+                traits.hunger().hungryYesterday(GameDay.of(clock)));
         if (check != MilkRules.Check.OK) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(check)));
@@ -91,6 +98,39 @@ public final class MilkActions {
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
         Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, clock, tuning.milkKeepsFlowingTicks())));
+        FamiliarityCare.spend(animal, tuning.familiarityMilkingCost());
+        return VersionCompat.SUCCESS_SERVER;
+    }
+
+    // Dairy Mash starts a dry, familiar female's milk. Like the other superfoods it skips the once-a-day feed,
+    // and it counts as her meal for the day.
+    public static InteractionResult startMilk(Animal animal, Player player, InteractionHand hand, Feed.Eaten eaten) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (animal.level().isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+        Optional<AnimalTraits> tracked = tracked(animal);
+        if (tracked.isEmpty()) {
+            return null;
+        }
+        AnimalTraits traits = tracked.get();
+        Tuning tuning = BarnyardConfig.current().tuning();
+        long now = animal.level().getGameTime();
+        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
+                traits.lactation().hasMilk(now, tuning.milkKeepsFlowingTicks()), Familiarity.ready(traits.familiarity()));
+        if (start != MilkRules.Start.OK) {
+            VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(start)));
+            return InteractionResult.CONSUME;
+        }
+        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), tuning);
+        // Dairy Mash comes in a bowl, and the player gets it back, as with a stew.
+        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(Items.BOWL)));
+        Services.DATA.set(animal, traits.withLactation(traits.lactation().started(now, tuning.milkKeepsFlowingTicks())));
+        if (animal.getHealth() < animal.getMaxHealth() && heal > 0.0F) {
+            animal.heal(heal);
+        }
+        VersionCompat.playEatingSound(animal, stack);
+        FamiliarityCare.markEaten(animal);
         return VersionCompat.SUCCESS_SERVER;
     }
 
@@ -127,10 +167,12 @@ public final class MilkActions {
             return Optional.empty();
         }
         int perDay = MilkRules.perDay(size, tuning);
+        // A female that went hungry yesterday can't be milked today.
+        boolean hungry = traits.hunger().hungryYesterday(GameDay.of(clock));
         return Optional.of(new MilkStatus(
                 lactation.nursing(now),
                 lactation.endsAt(tuning.milkKeepsFlowingTicks()) - now,
-                lactation.milkingsLeft(clock, perDay),
+                hungry ? 0 : lactation.milkingsLeft(clock, perDay),
                 perDay
         ));
     }

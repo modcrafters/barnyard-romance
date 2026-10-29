@@ -106,4 +106,14 @@ class HerdPageTextTest {
 
         assertEquals(List.of("Size M · Adult", "Fed today", "Milk 1/1", "Familiar 80%", "Fertile 90%"), english(facts));
     }
+
+    @Test
+    void aGrumpyPetSaysSo() {
+        HerdPageText.PageFacts wolf = new HerdPageText.PageFacts("L", AgeStage.ADULT, -1L, false, 2 * DAY, false, 0.0, 0L, Text.EMPTY,
+                0.2, -1.0, -1L, Familiar.NO_LONGER, -1L);
+
+        assertEquals(List.of("Size L · Adult", "No longer familiar", "Grumpy: won't take orders", "Last fed 2d ago", "Familiar 20%"),
+                english(wolf.grumpy(true)));
+        assertEquals(List.of("Size L · Adult", "No longer familiar", "Last fed 2d ago", "Familiar 20%"), english(wolf));
+    }
 }

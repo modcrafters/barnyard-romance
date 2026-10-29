@@ -44,6 +44,18 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 - `hide` lists vanilla horns to hide whenever the mod draws this animal's horns. It takes either a part path or the cubes of one part matching `size` (and `from`, if given). Entries a model doesn't have are ignored, so one list can cover every variant on every version.
 - Models built some other way, such as GeckoLib, can't take horns from these files. A file whose `attach` part is missing logs one warning and draws nothing.
 
+## Looking after animals
+
+Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goes without food it loses 5%, and each milking or shearing costs 5%, since animals don't much enjoy them. Feeding every day never loses anything. A female that went hungry yesterday gives no milk today, and like any day she isn't milked it counts towards her drying up. **Dairy Mash** (a bowl, grains, a root and any milk bucket; you get the bowl back) starts a dry, familiar female's milk for three days; milking keeps it going from there. Babies don't go hungry while they're nursing.
+
+Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told and wanders instead of following you, and a grumpy wolf sits down and watches while you're attacked. Feed it back above the threshold to win it back. Pets tamed before this change start at the threshold.
+
+The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
+
+## Leaving species out
+
+Set `"enabled": false` in a species entry to leave one species vanilla. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:parrot", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead. An explicit `"enabled": true` in a species entry wins over both. Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
+
 ## Herd book
 
 Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
@@ -112,6 +124,11 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
   - after the mother dies, the calf's Mother link still opens her page;
   - ✕ asks "Sure?" and then removes the animal;
   - the mouse wheel and Page Up/Page Down turn pages, on the contents and on an animal's page.
+
+  For grumpy pets, let a tamed one go unfed (`/time add 24000` once per day) until the inspector shows "· Grumpy", then check on both versions:
+  - a grumpy horse rears and won't let you on;
+  - a grumpy wolf won't sit, and sits down to watch while a zombie attacks you;
+  - the herd book says "Grumpy: won't take orders", and feeding it back above 30% ends it.
 
   For horns and bellies, check:
   - a ewe or cow late in pregnancy is wider;

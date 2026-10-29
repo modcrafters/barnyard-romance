@@ -43,7 +43,8 @@ public final class HerdLedger {
 
     public Map<UUID, Set<UUID>> books() {
         Map<UUID, Set<UUID>> copy = new LinkedHashMap<>();
-        books.forEach((book, members) -> copy.put(book, Set.copyOf(members)));
+        // Set.copyOf would lose the order animals joined in, and the save is written from this.
+        books.forEach((book, members) -> copy.put(book, Collections.unmodifiableSet(new LinkedHashSet<>(members))));
         return Collections.unmodifiableMap(copy);
     }
 

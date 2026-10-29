@@ -86,4 +86,14 @@ class LactationTest {
         assertEquals(1_000L + KEEP, second.milkUntil());
         assertTrue(second.graceGiven());
     }
+
+    @Test
+    void startedGivesTheShortWindow() {
+        Lactation started = Lactation.NONE.started(1_000L, KEEP);
+
+        assertEquals(1_000L + KEEP, started.milkUntil());
+        assertTrue(started.hasMilk(1_000L + KEEP - 1L, KEEP));
+        assertFalse(started.hasMilk(1_000L + KEEP, KEEP));
+        assertTrue(started.graceGiven());
+    }
 }

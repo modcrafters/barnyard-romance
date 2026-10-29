@@ -98,4 +98,31 @@ class MilkRulesTest {
         assertTrue(longAgo.graceGiven());
         assertFalse(longAgo.hasMilk(500_000L, TUNING.milkKeepsFlowingTicks()));
     }
+
+    @Test
+    void hungryYesterdayGivesNoMilk() {
+        assertEquals(MilkRules.Check.HUNGRY, MilkRules.check(Sex.FEMALE, SizeClass.XL, MOTHER, 100L, 100L, TUNING, true));
+        assertEquals(MilkRules.Check.OK, MilkRules.check(Sex.FEMALE, SizeClass.XL, MOTHER, 100L, 100L, TUNING, false));
+        assertEquals("She went hungry yesterday, so she has no milk today.", English.of(MilkRules.text(MilkRules.Check.HUNGRY)));
+    }
+
+    @Test
+    void maleStaysMaleWhenHungry() {
+        assertEquals(MilkRules.Check.MALE, MilkRules.check(Sex.MALE, SizeClass.XL, MOTHER, 100L, 100L, TUNING, true));
+        assertEquals(MilkRules.Check.NO_MILK, MilkRules.check(Sex.FEMALE, SizeClass.XL, Lactation.NONE, 100L, 100L, TUNING, true));
+    }
+
+    @Test
+    void dairyMashStartsMilkOnlyForADryFamiliarFemale() {
+        assertEquals(MilkRules.Start.OK, MilkRules.start(Sex.FEMALE, false, true, false, true));
+        assertEquals(MilkRules.Start.MALE, MilkRules.start(Sex.MALE, false, true, false, true));
+        assertEquals(MilkRules.Start.BABY, MilkRules.start(Sex.FEMALE, true, true, false, true));
+        assertEquals(MilkRules.Start.NO_MILK_SPECIES, MilkRules.start(Sex.FEMALE, false, false, false, true));
+        assertEquals(MilkRules.Start.ALREADY, MilkRules.start(Sex.FEMALE, false, true, true, true));
+        assertEquals(MilkRules.Start.NOT_FAMILIAR, MilkRules.start(Sex.FEMALE, false, true, false, false));
+        assertEquals("Only females give milk.", English.of(MilkRules.text(MilkRules.Start.MALE)));
+        assertEquals("She's too young to give milk.", English.of(MilkRules.text(MilkRules.Start.BABY)));
+        assertEquals("This animal doesn't give milk.", English.of(MilkRules.text(MilkRules.Start.NO_MILK_SPECIES)));
+        assertEquals("She already has milk.", English.of(MilkRules.text(MilkRules.Start.ALREADY)));
+    }
 }

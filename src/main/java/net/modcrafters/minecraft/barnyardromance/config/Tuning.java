@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 // The numbers behind familiarity, growth, inheritance, fertility, old age, food healing, milk and yield.
+// The familiarity losses are per hungry day, per milking and per shearing.
 public record Tuning(
         double familiarityGain,
         double familiarityThreshold,
@@ -28,7 +29,10 @@ public record Tuning(
         double maleYield,
         double femaleYield,
         double oldYieldFactor,
-        double yieldScaleExponent
+        double yieldScaleExponent,
+        double familiarityHungerLoss,
+        double familiarityMilkingCost,
+        double familiarityShearingCost
 ) {
     private static final double MAX_FOOD_HEAL = 20.0;
     private static final long MAX_MILK_TICKS = 2_400_000L;
@@ -36,7 +40,7 @@ public record Tuning(
     private static final double MAX_YIELD = 4.0;
 
     public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
-            72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0);
+            72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -72,7 +76,10 @@ public record Tuning(
                 yieldFactor(object, "maleYield", DEFAULTS.maleYield),
                 yieldFactor(object, "femaleYield", DEFAULTS.femaleYield),
                 yieldFactor(object, "oldYieldFactor", DEFAULTS.oldYieldFactor),
-                yieldFactor(object, "yieldScaleExponent", DEFAULTS.yieldScaleExponent)
+                yieldFactor(object, "yieldScaleExponent", DEFAULTS.yieldScaleExponent),
+                unit(object, "familiarityHungerLoss", DEFAULTS.familiarityHungerLoss),
+                unit(object, "familiarityMilkingCost", DEFAULTS.familiarityMilkingCost),
+                unit(object, "familiarityShearingCost", DEFAULTS.familiarityShearingCost)
         );
     }
 
@@ -102,6 +109,9 @@ public record Tuning(
         object.addProperty("femaleYield", femaleYield);
         object.addProperty("oldYieldFactor", oldYieldFactor);
         object.addProperty("yieldScaleExponent", yieldScaleExponent);
+        object.addProperty("familiarityHungerLoss", familiarityHungerLoss);
+        object.addProperty("familiarityMilkingCost", familiarityMilkingCost);
+        object.addProperty("familiarityShearingCost", familiarityShearingCost);
         return object;
     }
 

@@ -5,6 +5,8 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -67,6 +69,10 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("golden_bran_feeds_the_litter", 20, FoodGameTests::goldenBranFeedsTheLitter),
             new BreedingGameTests.Case("superfoods_need_a_pregnant_mother", 20, FoodGameTests::superfoodsNeedAPregnantMother),
             new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad),
+            new BreedingGameTests.Case("dairy_mash_starts_milk", 20, FoodGameTests::dairyMashStartsMilk),
+            new BreedingGameTests.Case("dairy_mash_is_refused_by_a_milking_cow", 20, FoodGameTests::dairyMashIsRefusedByAMilkingCow),
+            new BreedingGameTests.Case("dairy_mash_is_refused_by_a_bull", 20, FoodGameTests::dairyMashIsRefusedByABull),
+            new BreedingGameTests.Case("dairy_mash_needs_familiarity", 20, FoodGameTests::dairyMashNeedsFamiliarity),
             new BreedingGameTests.Case("food_scan_reads_real_recipes", 100, FoodGameTests::foodScanReadsRealRecipes),
             new BreedingGameTests.Case("our_creative_tab_holds_every_item", 20, FoodGameTests::ourCreativeTabHoldsEveryItem)
     );
@@ -235,8 +241,57 @@ public final class FoodGameTests {
         helper.succeed();
     }
 
+    // A dry, familiar cow given Dairy Mash has milk for the short window, and it counts as her meal.
+    public static void dairyMashStartsMilk(GameTestHelper helper) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+
+        FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BOWL), "feeding the dairy mash left " + player.getMainHandItem() + " in hand, not its bowl");
+        AnimalTraits traits = BreedingGameTests.traits(helper, cow);
+        long now = helper.getLevel().getGameTime();
+        helper.assertTrue(traits.lactation().milkUntil() == now + BarnyardConfig.current().tuning().milkKeepsFlowingTicks(),
+                "the dairy mash gave milk until " + traits.lactation().milkUntil());
+        helper.assertTrue(traits.hunger().lastAteDay() == GameDay.of(helper.getLevel().getOverworldClockTime()), "the dairy mash didn't count as eating");
+        ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
+        helper.succeed();
+    }
+
+    public static void dairyMashIsRefusedByAMilkingCow(GameTestHelper helper) {
+        Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
+        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+
+        FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "a cow that has milk ate the dairy mash");
+        helper.succeed();
+    }
+
+    public static void dairyMashIsRefusedByABull(GameTestHelper helper) {
+        Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
+        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+
+        FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "a bull ate the dairy mash");
+        helper.assertTrue(!BreedingGameTests.traits(helper, bull).lactation().hasMilk(helper.getLevel().getGameTime(), 72_000L), "a bull has milk");
+        helper.succeed();
+    }
+
+    public static void dairyMashNeedsFamiliarity(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.COW), 0.1);
+        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+        player.setShiftKeyDown(true);
+
+        FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "an unfamiliar cow ate the dairy mash");
+        helper.succeed();
+    }
+
     public static void superfoodRecipesLoad(GameTestHelper helper) {
-        for (String name : List.of("breeders_mash", "golden_bran")) {
+        for (String name : List.of("breeders_mash", "golden_bran", "dairy_mash")) {
             //? if >=1.21.2 {
             ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, name));
             //?} else
@@ -244,7 +299,7 @@ public final class FoodGameTests {
             helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(key).isPresent(), "the " + name + " recipe is missing");
         }
         // Crafted stacks carry the tooltip too, because it is the item's default lore.
-        for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
+        for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, BarnyardItems.DAIRY_MASH)) {
             ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
             helper.assertTrue(lore != null && lore.lines().size() == 2, item + " has no tooltip");
         }

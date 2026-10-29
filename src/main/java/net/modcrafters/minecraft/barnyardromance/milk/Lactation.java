@@ -54,6 +54,11 @@ public record Lactation(long milkUntil, long youngUntil, long milkedDay, int mil
         return new Lactation(until, youngUntil, milkedDay, milkedToday, true);
     }
 
+    // Dairy Mash: milk for the keep-flowing window, kept going by milking like any other milk.
+    public Lactation started(long now, long keepFlowingTicks) {
+        return new Lactation(Math.max(milkUntil, now + keepFlowingTicks), youngUntil, milkedDay, milkedToday, true);
+    }
+
     public Lactation withGraceGiven() {
         return new Lactation(milkUntil, youngUntil, milkedDay, milkedToday, true);
     }

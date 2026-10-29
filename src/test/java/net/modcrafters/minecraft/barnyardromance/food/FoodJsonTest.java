@@ -102,4 +102,17 @@ class FoodJsonTest {
                 { "species": ["minecraft:horse"], "items": "wheat", "effects": { "heal": "lots" } }
                 """));
     }
+
+    @Test
+    void startsMilkIsAnEffect() {
+        FoodFile file = FoodJson.foodFile("""
+                { "diets": ["barnyard_romance:grazer"], "items": "wheat", "superfood": true, "effects": { "startsMilk": true } }
+                """);
+
+        assertTrue(file.effects().startsMilk());
+        assertFalse(file.effects().needsPregnancy());
+        assertFalse(FoodJson.foodFile("""
+                { "species": ["minecraft:horse"], "items": "wheat", "effects": { "heal": 2 } }
+                """).effects().startsMilk());
+    }
 }

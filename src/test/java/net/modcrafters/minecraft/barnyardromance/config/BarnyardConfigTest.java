@@ -247,4 +247,77 @@ class BarnyardConfigTest {
         assertEquals(new BellySettings(0.2, 0.6), parsed.bellyFor("minecraft:pig"));
         assertEquals(new BellySettings(0.2, 0.4), parsed.bellyFor("minecraft:cow"));
     }
+
+    @Test
+    void excludeById() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["minecraft:parrot"] }
+                """);
+
+        assertFalse(config.speciesEnabled("minecraft:parrot"));
+        assertTrue(config.speciesEnabled("minecraft:cow"));
+    }
+
+    @Test
+    void excludeWholeMod() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["somemod:*"] }
+                """);
+
+        assertFalse(config.speciesEnabled("somemod:yak"));
+        assertTrue(config.speciesEnabled("minecraft:cow"));
+    }
+
+    @Test
+    void explicitEnabledBeatsExclude() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["somemod:*"], "species": { "somemod:yak": { "enabled": true } } }
+                """);
+
+        assertTrue(config.speciesEnabled("somemod:yak"));
+        assertFalse(config.speciesEnabled("somemod:ox"));
+    }
+
+    @Test
+    void explicitEnabledBeatsTag() {
+        BarnyardConfig.setExcludedByTag("minecraft:cow"::equals);
+        try {
+            assertFalse(BarnyardConfig.parse("{}").speciesEnabled("minecraft:cow"));
+            assertTrue(BarnyardConfig.parse("""
+                    { "species": { "minecraft:cow": { "enabled": true } } }
+                    """).speciesEnabled("minecraft:cow"));
+        } finally {
+            BarnyardConfig.setExcludedByTag(id -> false);
+        }
+    }
+
+    @Test
+    void explicitDisabledStaysOff() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:cow": { "enabled": false } } }
+                """);
+
+        assertFalse(config.speciesEnabled("minecraft:cow"));
+    }
+
+    @Test
+    void malformedExcludeEntriesAreSkipped() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["", "nocolon", 5, ":*", "minecraft:parrot"] }
+                """);
+
+        assertEquals(java.util.List.of("minecraft:parrot"), config.exclude());
+        assertTrue(config.speciesEnabled("minecraft:cow"));
+        assertFalse(config.speciesEnabled("minecraft:parrot"));
+    }
+
+    @Test
+    void excludeRoundTrips() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["somemod:*", "minecraft:parrot"] }
+                """);
+
+        assertEquals(java.util.List.of("somemod:*", "minecraft:parrot"), BarnyardConfig.parse(config.toJson()).exclude());
+        assertEquals(java.util.List.of(), BarnyardConfig.parse("{}").exclude());
+    }
 }

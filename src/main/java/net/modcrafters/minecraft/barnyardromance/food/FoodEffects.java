@@ -8,9 +8,15 @@ public record FoodEffects(
         Optional<Double> heal,
         Optional<PregnancySpeed> pregnancySpeed,
         double pregnancyProgress,
-        double babyImprove
+        double babyImprove,
+        // Starts a dry female's milk for the keep-flowing window (Dairy Mash).
+        boolean startsMilk
 ) {
-    public static final FoodEffects NONE = new FoodEffects(Optional.empty(), Optional.empty(), Optional.empty(), 0.0, 0.0);
+    public static final FoodEffects NONE = new FoodEffects(Optional.empty(), Optional.empty(), Optional.empty(), 0.0, 0.0, false);
+
+    public FoodEffects(Optional<Double> familiarity, Optional<Double> heal, Optional<PregnancySpeed> pregnancySpeed, double pregnancyProgress, double babyImprove) {
+        this(familiarity, heal, pregnancySpeed, pregnancyProgress, babyImprove, false);
+    }
 
     // Pregnancy runs `factor` times as fast for `ticks` ticks.
     public record PregnancySpeed(double factor, long ticks) {

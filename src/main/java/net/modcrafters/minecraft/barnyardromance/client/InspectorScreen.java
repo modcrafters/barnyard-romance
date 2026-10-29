@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorRow;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
@@ -308,7 +309,7 @@ public class InspectorScreen extends Screen {
                 stage,
                 InspectorSheet.scaleText(value.scale()),
                 value.familiarity(),
-                Familiarity.percent(value.familiarity()),
+                Familiarity.text(value.familiarity(), FamiliarityCare.tamed(this.animal)),
                 Familiarity.feedReady(value.lastFedTick(), clock),
                 InspectorSheet.feedText(value.lastFedTick(), clock),
                 Growth.percent(value.growthTicks()),

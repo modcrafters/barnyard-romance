@@ -122,4 +122,11 @@ class FamiliarityTest {
         assertTrue(Familiarity.tames(false, 1.0));
         assertFalse(Familiarity.tames(true, 1.0));
     }
+
+    @Test
+    void aTamedAnimalBelowTheThresholdIsGrumpy() {
+        assertEquals("20% · Grumpy", English.of(Familiarity.text(0.2, true)));
+        assertEquals("20%", English.of(Familiarity.text(0.2, false)));
+        assertEquals("50%", English.of(Familiarity.text(0.5, true)));
+    }
 }

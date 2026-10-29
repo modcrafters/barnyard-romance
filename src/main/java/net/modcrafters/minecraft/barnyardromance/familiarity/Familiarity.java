@@ -109,6 +109,11 @@ public final class Familiarity {
         return Math.clamp(mother, 0.0, 1.0) / 2.0;
     }
 
+    // A tamed animal below the threshold is grumpy (see FamiliarityCare), and says so next to its familiarity.
+    public static Text text(double familiarity, boolean tamed) {
+        return tamed && !ready(familiarity) ? Text.of("gui.barnyard_romance.inspector.grumpy", percent(familiarity)) : percent(familiarity);
+    }
+
     public static Text percent(double familiarity) {
         long points = Math.round(Math.clamp(familiarity, 0.0, 1.0) * 100.0);
         return Text.of("gui.barnyard_romance.percent", points);

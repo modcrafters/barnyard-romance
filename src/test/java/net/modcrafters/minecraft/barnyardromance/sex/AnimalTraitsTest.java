@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -50,5 +51,21 @@ class AnimalTraitsTest {
         assertEquals(traits, withParents.withLineage(Lineage.UNKNOWN));
         assertEquals(lineage, withParents.withWeight(0.1).withFertility(0.2, 9L).withBornTick(1L).fed(0.9, 2L)
                 .withLove(3L).withCooldown(4L).gaveBirth(5L, "minecraft:cow").lineage());
+    }
+
+    @Test
+    void oldTraitsHaveNoHunger() {
+        assertEquals(Hunger.NONE, new AnimalTraits(Sex.FEMALE, 0.9).hunger());
+    }
+
+    @Test
+    void copiesKeepHunger() {
+        Hunger hunger = new Hunger(10L, 9L, 8L);
+        AnimalTraits traits = new AnimalTraits(Sex.FEMALE, 0.9).withHunger(hunger);
+
+        AnimalTraits copied = traits.fed(0.4, 7L).gaveBirth(70L, "minecraft:cow").withLove(50L).withCooldown(60L).withWeight(0.8)
+                .withFertility(0.5, 100L).withBornTick(30L).withLactation(traits.lactation()).sheared(5L).withLineage(Lineage.UNKNOWN);
+
+        assertEquals(hunger, copied.hunger());
     }
 }

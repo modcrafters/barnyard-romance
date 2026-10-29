@@ -67,7 +67,8 @@ public final class FoodJson {
                 optional(object, "heal").map(value -> Math.clamp(value, 0.0, MAX_HEAL)),
                 speed,
                 Math.clamp(number(object, "pregnancyProgress", 0.0), -1.0, 1.0),
-                Math.clamp(number(object, "babyImprove", 0.0), 0.0, 1.0)
+                Math.clamp(number(object, "babyImprove", 0.0), 0.0, 1.0),
+                object.has("startsMilk") && bool(object.get("startsMilk"), "startsMilk")
         );
     }
 

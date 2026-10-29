@@ -1,6 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
@@ -61,7 +64,12 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("unloaded_status_is_projected", 20, HerdBookGameTests::unloadedStatusIsProjected),
             new BreedingGameTests.Case("removal_needs_the_book_in_hand", 20, HerdBookGameTests::removalNeedsTheBookInHand),
             new BreedingGameTests.Case("show_book_survives_the_network_codec", 20, HerdBookGameTests::showBookSurvivesTheNetworkCodec),
-            new BreedingGameTests.Case("a_big_book_fits_the_payload_limit", 20, HerdBookGameTests::aBigBookFitsThePayloadLimit)
+            new BreedingGameTests.Case("a_big_book_fits_the_payload_limit", 20, HerdBookGameTests::aBigBookFitsThePayloadLimit),
+            new BreedingGameTests.Case("failed_removal_sends_the_book", 20, HerdBookGameTests::failedRemovalSendsTheBook),
+            new BreedingGameTests.Case("died_day_uses_the_overworld_clock", 20, HerdBookGameTests::diedDayUsesTheOverworldClock),
+            new BreedingGameTests.Case("vanilla_birth_records_parents", 20, HerdBookGameTests::vanillaBirthRecordsParents),
+            new BreedingGameTests.Case("save_refreshes_loaded_members", 20, HerdBookGameTests::saveRefreshesLoadedMembers),
+            new BreedingGameTests.Case("member_order_survives_save", 20, HerdBookGameTests::memberOrderSurvivesSave)
     );
 
     private HerdBookGameTests() {
@@ -300,7 +308,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()));
+        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()), false);
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
         HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, sent);
@@ -331,10 +339,102 @@ public final class HerdBookGameTests {
         }
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
-        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries));
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true));
 
         helper.assertTrue(buffer.readableBytes() > 1_048_576, "1,500 animals took only " + buffer.readableBytes() + " bytes");
         helper.assertTrue(buffer.readableBytes() < HerdBookPayloads.ShowBook.MAX_BYTES, "1,500 animals took " + buffer.readableBytes() + " bytes");
+        helper.succeed();
+    }
+
+    // Whatever happened to the request, the player holding the book gets it back, so the page never goes stale.
+    public static void failedRemovalSendsTheBook(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, cow);
+        UUID id = bookId(helper, book);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        player.setItemInHand(InteractionHand.MAIN_HAND, book);
+        List<ItemStack> replies = new java.util.ArrayList<>();
+        HerdBookPayloads.RemoveFromBook stranger = new HerdBookPayloads.RemoveFromBook(id, UUID.randomUUID());
+
+        helper.assertTrue(!HerdBooks.removeRequested(player, stranger, replies::add), "removing an animal that is not in the book worked");
+
+        helper.assertTrue(replies.size() == 1 && replies.getFirst() == book, "a failed removal sent " + replies.size() + " books back");
+        helper.succeed();
+    }
+
+    // The overworld clock is not game time: sleeping and /time move it on, so a death's day comes from the clock.
+    public static void diedDayUsesTheOverworldClock(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Animal father = male(helper, EntityTypes.COW);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, cow);
+        breed(helper, cow, father);
+
+        cow.discard();
+
+        HerdRecord record = data(helper).record(cow.getUUID());
+        long clockNow = helper.getLevel().getOverworldClockTime();
+        helper.assertTrue(record != null && record.diedClock() == clockNow, "the dead cow's clock is " + (record == null ? null : record.diedClock()));
+        // Setting the clock differs between versions, so the record is built with a clock five days ahead of game time.
+        long clock = 5L * GameDay.TICKS + 1_000L;
+        HerdRecord ahead = record.died(100L, clock);
+        HerdEntry entry = HerdStatus.entry(ahead, data(helper).ledger().node(cow.getUUID()), 200L, clock, false);
+        String died = entry.lines().stream().filter(line -> line.kind() == HerdPageText.Kind.NOTE).findFirst().orElseThrow().text().getString();
+        helper.assertTrue(died.contains(Long.toString(GameDay.of(clock))), "the died line is " + died);
+        helper.succeed();
+    }
+
+    // With pregnancy off, calves come from vanilla breeding; they still remember their parents and join the book.
+    public static void vanillaBirthRecordsParents(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.COW);
+        Animal father = male(helper, EntityTypes.COW);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, mother);
+        UUID id = bookId(helper, book);
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"pregnancyEnabled\": false}"));
+            father.setInLove(null);
+            mother.setInLove(null);
+            father.spawnChildFromBreeding(helper.getLevel(), mother);
+        } finally {
+            BarnyardConfig.set(before);
+        }
+
+        Animal calf = helper.getLevel().getEntitiesOfClass(Animal.class, mother.getBoundingBox().inflate(8.0), Animal::isBaby).stream()
+                .findFirst().orElseThrow(() -> GameTestCompat.failure(helper, "vanilla breeding made no calf"));
+        Lineage lineage = traits(helper, calf).lineage();
+        helper.assertTrue(mother.getUUID().equals(lineage.mother()) && father.getUUID().equals(lineage.father()), "the calf's lineage is " + lineage);
+        helper.assertTrue(data(helper).ledger().isMember(id, calf.getUUID()), "the calf did not join its mother's book");
+        helper.succeed();
+    }
+
+    public static void saveRefreshesLoadedMembers(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 800L));
+
+        HerdBooks.refreshLoaded(server(helper));
+
+        helper.assertTrue(data(helper).record(cow.getUUID()).traits().lastFedTick() == 800L, "refreshing on save left the record behind");
+        helper.succeed();
+    }
+
+    public static void memberOrderSurvivesSave(GameTestHelper helper) {
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        List<UUID> order = new java.util.ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            Animal cow = i % 2 == 0 ? female(helper, EntityTypes.COW) : male(helper, EntityTypes.COW);
+            HerdBooks.register(book, cow);
+            order.add(cow.getUUID());
+        }
+        UUID id = bookId(helper, book);
+
+        Tag saved = HerdBookData.CODEC.encodeStart(NbtOps.INSTANCE, data(helper)).getOrThrow();
+        HerdBookData loaded = HerdBookData.CODEC.parse(NbtOps.INSTANCE, saved).getOrThrow();
+
+        helper.assertTrue(List.copyOf(loaded.ledger().members(id)).equals(order), "the members came back as " + loaded.ledger().members(id));
         helper.succeed();
     }
 
