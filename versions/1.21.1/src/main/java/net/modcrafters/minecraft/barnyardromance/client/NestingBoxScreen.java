@@ -42,7 +42,6 @@ public class NestingBoxScreen extends AbstractContainerScreen<NestingBoxMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        long now = this.minecraft.level == null ? 0L : this.minecraft.level.getGameTime();
         for (int index = 0; index < NestingBoxBlockEntity.SLOTS; index++) {
             Slot slot = this.menu.getSlot(index);
             graphics.pose().pushPose();
@@ -58,7 +57,7 @@ public class NestingBoxScreen extends AbstractContainerScreen<NestingBoxMenu> {
             }
             graphics.pose().popPose();
             FertilizedEggItem.data(stack).ifPresent(data -> {
-                String timer = NestingBoxLayout.timer(data.remaining(now));
+                String timer = NestingBoxLayout.timer(data.remainingTicks());
                 graphics.drawString(this.font, timer, slot.x + 8 - this.font.width(timer) / 2, slot.y + 19, TIMER, false);
             });
         }

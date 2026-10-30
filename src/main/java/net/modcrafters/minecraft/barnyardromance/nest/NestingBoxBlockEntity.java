@@ -40,7 +40,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-// Ten nests. A fertilized egg has a nest to itself and counts down to hatching while it's in the box (EggData);
+// Ten nests. A fertilized egg has a nest to itself and the box counts it down to hatching (EggData);
 // plain eggs pile up in a nest to their stack size. Players may put fertilized eggs back but never plain ones,
 // and hoppers may only take plain eggs out.
 public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
@@ -49,9 +49,14 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
 
     // A hen sits for an in-game hour before her egg is in the nest.
     public static final int SIT_TICKS = 1_000;
+    // The countdowns are brought up to date once a second.
+    private static final int COUNT_EVERY = 20;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private @Nullable NestOccupant occupant;
+    // The game time the countdowns were last brought up to date, saved so they catch up after an unload.
+    private static final long NEVER = Long.MIN_VALUE;
+    private long lastCounted = NEVER;
     // For the window: 0 for an empty box, else the sitting hen's nest plus one.
     private final ContainerData sitting = new ContainerData() {
         @Override
@@ -197,7 +202,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return true;
     }
 
-    // Fertilized eggs whose time has come hatch in front of the hole, including any that came due while unloaded.
+    // Counts the fertilized eggs down, including the time the box was unloaded, and hatches those that are done.
     public static void serverTick(Level level, BlockPos pos, BlockState state, NestingBoxBlockEntity box) {
         if (!(level instanceof ServerLevel server)) {
             return;
@@ -206,13 +211,28 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         if (box.occupant != null && box.occupant.exitAt() <= now) {
             box.finishSitting();
         }
+        if (box.lastCounted == NEVER) {
+            box.lastCounted = now;
+        }
+        long elapsed = now - box.lastCounted;
+        boolean counting = elapsed >= COUNT_EVERY;
+        if (counting) {
+            box.lastCounted = now;
+        }
         for (int slot = 0; slot < SLOTS; slot++) {
-            Optional<EggData> data = FertilizedEggItem.data(box.items.get(slot));
-            if (data.isPresent() && data.get().inBox() && data.get().hatchAt() <= now) {
-                box.items.set(slot, ItemStack.EMPTY);
-                box.setChanged();
-                Hatching.hatch(server, data.get(), box.exitPos());
+            ItemStack egg = box.items.get(slot);
+            Optional<EggData> data = FertilizedEggItem.data(egg);
+            if (data.isEmpty()) {
+                continue;
             }
+            EggData left = counting ? data.get().counted(elapsed) : data.get();
+            if (left.remainingTicks() <= 0L) {
+                box.items.set(slot, ItemStack.EMPTY);
+                Hatching.hatch(server, left, box.exitPos());
+            } else if (counting) {
+                egg.set(BarnyardComponents.EGG_DATA, left);
+            }
+            box.setChanged();
         }
     }
 
@@ -244,37 +264,8 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return stack.is(BarnyardItems.FERTILIZED_EGG);
     }
 
-    @Override
-    public void setItem(int slot, ItemStack stack) {
-        countDown(stack, true);
-        super.setItem(slot, stack);
-    }
-
-    @Override
-    public ItemStack removeItem(int slot, int count) {
-        return countDown(super.removeItem(slot, count), false);
-    }
-
-    @Override
-    public ItemStack removeItemNoUpdate(int slot) {
-        return countDown(super.removeItemNoUpdate(slot), false);
-    }
-
-    // A fertilized egg's countdown runs while it's in the box and stops when it leaves.
-    private ItemStack countDown(ItemStack stack, boolean entering) {
-        if (level == null || level.isClientSide()) {
-            return stack;
-        }
-        long now = level.getGameTime();
-        FertilizedEggItem.data(stack).ifPresent(data -> stack.set(BarnyardComponents.EGG_DATA, entering ? data.enterBox(now) : data.leaveBox(now)));
-        return stack;
-    }
-
-    // Eggs leave with their countdowns stopped when the box is broken, and a sitting hen gets out without laying.
+    // A sitting hen gets out without laying when the box is broken.
     void beforeRemoved() {
-        for (int slot = 0; slot < SLOTS; slot++) {
-            countDown(items.get(slot), false);
-        }
         if (occupant != null && level instanceof ServerLevel server) {
             NestOccupant hen = occupant;
             occupant = null;
@@ -343,6 +334,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         occupant = input.read("occupant", NestOccupant.CODEC).orElse(null);
+        lastCounted = input.getLongOr("lastCounted", NEVER);
     }
 
     @Override
@@ -350,6 +342,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
         output.storeNullable("occupant", NestOccupant.CODEC, occupant);
+        output.putLong("lastCounted", lastCounted);
     }
     //?} else {
     /*@Override
@@ -360,6 +353,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         occupant = tag.contains("occupant")
                 ? NestOccupant.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("occupant")).result().orElse(null)
                 : null;
+        lastCounted = tag.contains("lastCounted") ? tag.getLong("lastCounted") : NEVER;
     }
 
     @Override
@@ -369,6 +363,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         if (occupant != null) {
             NestOccupant.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), occupant).result().ifPresent(saved -> tag.put("occupant", saved));
         }
+        tag.putLong("lastCounted", lastCounted);
     }
     *///?}
 }

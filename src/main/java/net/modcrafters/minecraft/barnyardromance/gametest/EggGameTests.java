@@ -75,6 +75,8 @@ public final class EggGameTests {
     static final double MEDIUM_HEN = 0.76;
     static final double LARGE_HEN = 0.9;
     static final BlockPos BOX = new BlockPos(2, 2, 2);
+    // A box brings its countdowns up to date once a second; this is long enough for a nearly done egg to hatch.
+    static final int COUNT_AND_HATCH = 30;
     // Ticks for a freshly spawned chicken to land: a mob in the air can't plan a path.
     static final int LANDED = 10;
     static final TagKey<Item> COMMON_EGGS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "eggs"));
@@ -98,7 +100,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("plain_eggs_stack_in_one_slot", 20, EggGameTests::plainEggsStackInOneSlot),
             new BreedingGameTests.Case("plain_eggs_cannot_be_put_in", 20, EggGameTests::plainEggsCannotBePutIn),
             new BreedingGameTests.Case("hopper_pulls_only_plain_eggs", 20, EggGameTests::hopperPullsOnlyPlainEggs),
-            new BreedingGameTests.Case("countdown_pauses_outside_the_box", 20, EggGameTests::countdownPausesOutsideTheBox),
+            new BreedingGameTests.Case("countdown_pauses_outside_the_box", 80, EggGameTests::countdownPausesOutsideTheBox),
             new BreedingGameTests.Case("box_drops_eggs_when_broken", 20, EggGameTests::boxDropsEggsWhenBroken),
             new BreedingGameTests.Case("box_recipe", 20, EggGameTests::boxRecipe),
             new BreedingGameTests.Case("egg_hatches_in_the_box", 40, EggGameTests::eggHatchesInTheBox),
@@ -395,19 +397,34 @@ public final class EggGameTests {
         helper.succeed();
     }
 
+    // The box counts its eggs down; an egg taken out any way at all, shift-click included, stops counting.
     public static void countdownPausesOutsideTheBox(GameTestHelper helper) {
         NestingBoxBlockEntity box = box(helper, BOX);
-        long placed = helper.getLevel().getGameTime();
+        Player player = holding(helper, Items.STICK);
+        NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
         box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
-        long hatchAt = FertilizedEggItem.data(box.getItem(0)).orElseThrow().hatchAt();
-        helper.assertTrue(hatchAt == placed + 1_000L, "an egg put in at " + placed + " hatches at " + hatchAt);
 
-        helper.runAfterDelay(5, () -> {
-            long taken = helper.getLevel().getGameTime();
-            EggData out = FertilizedEggItem.data(box.removeItemNoUpdate(0)).orElseThrow();
-            helper.assertTrue(!out.inBox() && out.remainingTicks() == 1_000L - (taken - placed), "an egg taken out after " + (taken - placed) + " ticks: " + out);
-            helper.succeed();
+        helper.runAfterDelay(25, () -> {
+            long inBox = FertilizedEggItem.data(box.getItem(0)).orElseThrow().remainingTicks();
+            helper.assertTrue(inBox < 1_000L, "an egg in the box didn't count down: " + inBox + " left");
+            menu.quickMoveStack(player, 0);
+            ItemStack carried = carriedEgg(helper, player);
+            long out = FertilizedEggItem.data(carried).orElseThrow().remainingTicks();
+            helper.runAfterDelay(25, () -> {
+                long later = FertilizedEggItem.data(carriedEgg(helper, player)).orElseThrow().remainingTicks();
+                helper.assertTrue(later == out, "a shift-clicked egg kept counting: " + out + " then " + later);
+                helper.succeed();
+            });
         });
+    }
+
+    static ItemStack carriedEgg(GameTestHelper helper, Player player) {
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (player.getInventory().getItem(slot).is(BarnyardItems.FERTILIZED_EGG)) {
+                return player.getInventory().getItem(slot);
+            }
+        }
+        throw GameTestCompat.failure(helper, "the egg didn't reach the player's inventory");
     }
 
     public static void boxDropsEggsWhenBroken(GameTestHelper helper) {
@@ -421,7 +438,7 @@ public final class EggGameTests {
         int plain = dropped.stream().filter(item -> item.getItem().is(Items.EGG)).mapToInt(item -> item.getItem().getCount()).sum();
         List<EggData> fertile = dropped.stream().map(item -> FertilizedEggItem.data(item.getItem())).flatMap(Optional::stream).toList();
         helper.assertTrue(plain == 3, "breaking the box dropped " + plain + " plain eggs");
-        helper.assertTrue(fertile.size() == 1 && !fertile.getFirst().inBox(), "breaking the box dropped fertilized eggs " + fertile);
+        helper.assertTrue(fertile.size() == 1, "breaking the box dropped fertilized eggs " + fertile);
         helper.succeed();
     }
 
@@ -449,9 +466,10 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 5L)));
 
-        helper.runAfterDelay(10, () -> {
+        helper.runAfterDelay(COUNT_AND_HATCH, () -> {
             helper.assertTrue(box.getItem(0).isEmpty(), "the egg is still in the box: " + box.getItem(0));
-            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())));
+            // The test box stands a block above the floor, so the chick may have dropped down by now.
+            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())).expandTowards(0.0, -2.0, 0.0));
             helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
             helper.succeed();
         });
@@ -460,7 +478,7 @@ public final class EggGameTests {
     public static void hatchedChickInherits(GameTestHelper helper) {
         NestingBoxBlockEntity box = box(helper, BOX);
         EggData data = new EggData("minecraft:chicken", UUID.randomUUID(), UUID.randomUUID(), LARGE_HEN, Growth.wild(), 1.0, 0.5,
-                1.3, Growth.wild(), 1.0, "", 1_000L, 0L, helper.getLevel().getGameTime() - 1L);
+                1.3, Growth.wild(), 1.0, "", 1_000L, 0L);
         box.setItem(0, FertilizedEggItem.create(data));
 
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
@@ -484,7 +502,7 @@ public final class EggGameTests {
         mother.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         NestingBoxBlockEntity box = box(helper, BOX);
         EggData data = new EggData("minecraft:chicken", motherId, null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
-                1.2, Growth.wild(), 0.5, "", 1_000L, 0L, helper.getLevel().getGameTime() - 1L);
+                1.2, Growth.wild(), 0.5, "", 1_000L, 0L);
         box.setItem(0, FertilizedEggItem.create(data));
 
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
@@ -499,7 +517,7 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         helper.setBlock(BOX.north(), Blocks.STONE.defaultBlockState());
         box.setItem(0, FertilizedEggItem.create(new EggData("minecraft:chicken", UUID.randomUUID(), null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
-                1.2, Growth.wild(), 0.5, "", 1_000L, 0L, helper.getLevel().getGameTime() - 1L)));
+                1.2, Growth.wild(), 0.5, "", 1_000L, 0L)));
 
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
 
@@ -507,15 +525,21 @@ public final class EggGameTests {
         helper.succeed();
     }
 
-    // An egg whose time came while the box was unloaded hatches on the box's first tick back.
+    // A box saved long ago counts the time it was unloaded on its first tick back, and an egg that ran out hatches.
     public static void hatchingCatchesUpAfterUnload(GameTestHelper helper) {
         NestingBoxBlockEntity box = box(helper, BOX);
-        box.setItem(0, FertilizedEggItem.create(new EggData("minecraft:chicken", UUID.randomUUID(), null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
-                1.2, Growth.wild(), 0.5, "", 1_000L, 0L, helper.getLevel().getGameTime() - 50_000L)));
-
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        saved.putLong("lastCounted", helper.getLevel().getGameTime() - 50_000L);
+        helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        helper.assertTrue(box.getItem(0).isEmpty(), "an overdue egg didn't hatch");
+        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        helper.getLevel().setBlockEntity(loaded);
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), loaded);
+
+        helper.assertTrue(loaded.getItem(0).isEmpty(), "an egg that ran out while unloaded didn't hatch: " + FertilizedEggItem.data(loaded.getItem(0))
+                + ", saved lastCounted " + saved.get("lastCounted") + ", now " + helper.getLevel().getGameTime());
         chickIn(helper, BOX.north());
         helper.succeed();
     }
@@ -821,7 +845,7 @@ public final class EggGameTests {
 
     static EggData eggData(double motherScale, double fatherScale, long ticks) {
         return new EggData("minecraft:chicken", UUID.randomUUID(), UUID.randomUUID(), motherScale, Growth.wild(), 0.5, 0.5,
-                fatherScale, Growth.wild(), 0.5, "", ticks, ticks, -1L);
+                fatherScale, Growth.wild(), 0.5, "", ticks, ticks);
     }
 
     static Animal hen(GameTestHelper helper, double scale, double familiarity) {

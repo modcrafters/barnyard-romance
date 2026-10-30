@@ -97,7 +97,7 @@ public class FabricEggGameTests {
         EggGameTests.hopperPullsOnlyPlainEggs(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 20)
+    @GameTest(structure = PEN, maxTicks = 80)
     public void countdownPausesOutsideTheBox(GameTestHelper helper) {
         EggGameTests.countdownPausesOutsideTheBox(helper);
     }

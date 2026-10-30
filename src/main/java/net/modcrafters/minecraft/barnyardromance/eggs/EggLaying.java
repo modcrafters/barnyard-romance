@@ -174,8 +174,7 @@ public final class EggLaying {
                 fatherTraits.weight(),
                 variant(hen),
                 hatchTicks,
-                hatchTicks,
-                -1L
+                hatchTicks
         )));
     }
 

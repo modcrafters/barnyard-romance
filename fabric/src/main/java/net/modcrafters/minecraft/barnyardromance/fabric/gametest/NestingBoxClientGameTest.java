@@ -99,6 +99,6 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
 
     private static ItemStack egg(long ticks) {
         return FertilizedEggItem.create(new EggData("minecraft:chicken", UUID.randomUUID(), UUID.randomUUID(), 0.9, Growth.wild(), 0.5, 0.5,
-                1.2, Growth.wild(), 0.5, "", ticks, ticks, -1L));
+                1.2, Growth.wild(), 0.5, "", ticks, ticks));
     }
 }

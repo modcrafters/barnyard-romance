@@ -11,9 +11,9 @@ import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-// What a fertilized egg remembers of its parents, made when it is laid, and its hatching countdown. The countdown
-// only runs in a nesting box: hatchAt is the game time it hatches while in one, and -1 while it's out, when
-// remainingTicks holds what's left. variant is the mother's chicken variant ("" where chickens have none).
+// What a fertilized egg remembers of its parents, made when it is laid, and how long it has left to hatch. Only a
+// nesting box counts that down (NestingBoxBlockEntity), so an egg anywhere else is paused, however it got there.
+// variant is the mother's chicken variant ("" where chickens have none).
 public record EggData(
         String species,
         UUID mother,
@@ -27,8 +27,7 @@ public record EggData(
         double fatherWeight,
         String variant,
         long totalTicks,
-        long remainingTicks,
-        long hatchAt
+        long remainingTicks
 ) {
     public static final Codec<EggData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("species").forGetter(EggData::species),
@@ -43,32 +42,15 @@ public record EggData(
             Codec.DOUBLE.fieldOf("fatherWeight").forGetter(EggData::fatherWeight),
             Codec.STRING.optionalFieldOf("variant", "").forGetter(EggData::variant),
             Codec.LONG.fieldOf("totalTicks").forGetter(EggData::totalTicks),
-            Codec.LONG.fieldOf("remainingTicks").forGetter(EggData::remainingTicks),
-            Codec.LONG.optionalFieldOf("hatchAt", -1L).forGetter(EggData::hatchAt)
+            Codec.LONG.fieldOf("remainingTicks").forGetter(EggData::remainingTicks)
     ).apply(instance, (species, mother, father, motherScale, motherGrowth, motherWeight, motherFamiliarity,
-                       fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, remainingTicks, hatchAt) -> new EggData(
+                       fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, remainingTicks) -> new EggData(
             species, mother, father.orElse(null), motherScale, motherGrowth, motherWeight, motherFamiliarity,
-            fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, remainingTicks, hatchAt)));
+            fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, remainingTicks)));
     public static final StreamCodec<ByteBuf, EggData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 
-    public boolean inBox() {
-        return hatchAt >= 0L;
-    }
-
-    public EggData enterBox(long now) {
-        return inBox() ? this : withCountdown(remainingTicks, now + remainingTicks);
-    }
-
-    public EggData leaveBox(long now) {
-        return inBox() ? withCountdown(remaining(now), -1L) : this;
-    }
-
-    public long remaining(long now) {
-        return inBox() ? Math.max(0L, hatchAt - now) : remainingTicks;
-    }
-
-    private EggData withCountdown(long remaining, long at) {
+    public EggData counted(long ticks) {
         return new EggData(species, mother, father, motherScale, motherGrowth, motherWeight, motherFamiliarity,
-                fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, remaining, at);
+                fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, Math.max(0L, remainingTicks - ticks));
     }
 }

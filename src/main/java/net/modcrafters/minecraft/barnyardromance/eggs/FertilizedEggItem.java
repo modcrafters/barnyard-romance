@@ -51,7 +51,6 @@ public class FertilizedEggItem extends EggItem {
     }
     *///?}
 
-    // In a box the window shows the countdown under the egg, so only a paused egg says how long it has left.
     private static List<Text> lines(EggData data) {
         SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
         Text parents = Text.of(
@@ -59,9 +58,6 @@ public class FertilizedEggItem extends EggItem {
                 SizeClass.of(Sex.FEMALE, data.motherScale(), size).name(),
                 SizeClass.of(Sex.MALE, data.fatherScale(), size).name()
         );
-        if (data.inBox()) {
-            return List.of(parents);
-        }
         return List.of(Text.of("item.barnyard_romance.fertilized_egg.time", Growth.clock(data.remainingTicks())), parents);
     }
 }
