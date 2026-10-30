@@ -320,4 +320,60 @@ class BarnyardConfigTest {
         assertEquals(java.util.List.of("somemod:*", "minecraft:parrot"), BarnyardConfig.parse(config.toJson()).exclude());
         assertEquals(java.util.List.of(), BarnyardConfig.parse("{}").exclude());
     }
+
+    @Test
+    void chickenLaysByDefault() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.eggsFor("minecraft:chicken").enabled());
+        assertEquals(EggSettings.CHICKEN, config.eggsFor("minecraft:chicken"));
+        assertEquals(EggSettings.NONE, config.eggsFor("minecraft:cow"));
+    }
+
+    @Test
+    void eggsBlockOverridesPreset() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:chicken": { "eggs": { "largePerDay": 4, "hatchTicksMin": 100, "hatchTicksMax": 200 } } } }
+                """);
+
+        EggSettings eggs = config.eggsFor("minecraft:chicken");
+        assertEquals(4, eggs.largePerDay());
+        assertEquals(new Range(100L, 200L), eggs.hatchTicks());
+        assertEquals(EggSettings.CHICKEN.smallPerDay(), eggs.smallPerDay());
+        assertEquals(EggSettings.CHICKEN.roosterRange(), eggs.roosterRange());
+        assertEquals(eggs, BarnyardConfig.parse(config.toJson()).eggsFor("minecraft:chicken"));
+    }
+
+    @Test
+    void eggsBlockCanMakeAnyBirdLay() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "somemod:duck": { "eggs": { "enabled": true, "plainEgg": "somemod:duck_egg" } } } }
+                """);
+
+        EggSettings eggs = config.eggsFor("somemod:duck");
+        assertTrue(eggs.enabled());
+        assertEquals("somemod:duck_egg", eggs.plainEgg());
+        assertEquals(EggSettings.CHICKEN.hatchTicks(), eggs.hatchTicks());
+    }
+
+    @Test
+    void badEggValuesKeepTheirDefaults() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:chicken": { "eggs": { "smallPerDay": "lots", "thrownHatchChance": 7 } } } }
+                """);
+
+        EggSettings eggs = config.eggsFor("minecraft:chicken");
+        assertEquals(EggSettings.CHICKEN.smallPerDay(), eggs.smallPerDay());
+        assertEquals(1.0, eggs.thrownHatchChance(), 1.0e-9);
+    }
+
+    @Test
+    void excludedChickenDoesNotLay() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["minecraft:chicken"] }
+                """);
+
+        assertEquals(EggSettings.NONE, config.eggsFor("minecraft:chicken"));
+        assertFalse(config.eggsFor("minecraft:chicken").enabled());
+    }
 }
