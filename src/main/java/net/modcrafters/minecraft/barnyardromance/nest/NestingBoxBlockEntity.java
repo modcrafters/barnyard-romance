@@ -1,19 +1,25 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
+import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
+import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 //? if >=1.21.6 {
 import net.minecraft.world.level.storage.ValueInput;
@@ -23,6 +29,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.nbt.CompoundTag;
 *///?}
 
+import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 // Ten nests. A fertilized egg has a nest to itself and counts down to hatching while it's in the box (EggData);
@@ -72,6 +80,46 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             return placeEgg(egg.copyWithCount(egg.getCount() - 1));
         }
         return true;
+    }
+
+    // Fertilized eggs whose time has come hatch in front of the hole, including any that came due while unloaded.
+    public static void serverTick(Level level, BlockPos pos, BlockState state, NestingBoxBlockEntity box) {
+        if (!(level instanceof ServerLevel server)) {
+            return;
+        }
+        long now = level.getGameTime();
+        for (int slot = 0; slot < SLOTS; slot++) {
+            Optional<EggData> data = FertilizedEggItem.data(box.items.get(slot));
+            if (data.isPresent() && data.get().inBox() && data.get().hatchAt() <= now) {
+                box.items.set(slot, ItemStack.EMPTY);
+                box.setChanged();
+                Hatching.hatch(server, data.get(), box.exitPos());
+            }
+        }
+    }
+
+    // In front of the hole if there's room, else on top of the box, else the nearest free spot close by.
+    public Vec3 exitPos() {
+        BlockPos pos = getBlockPos();
+        if (level == null) {
+            return Vec3.atBottomCenterOf(pos.above());
+        }
+        BlockPos front = pos.relative(getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING));
+        if (free(front)) {
+            return Vec3.atBottomCenterOf(front);
+        }
+        if (free(pos.above())) {
+            return Vec3.atBottomCenterOf(pos.above());
+        }
+        return BlockPos.betweenClosedStream(pos.offset(-2, -1, -2), pos.offset(2, 1, 2))
+                .filter(this::free)
+                .min(Comparator.comparingDouble(candidate -> candidate.distSqr(pos)))
+                .map(Vec3::atBottomCenterOf)
+                .orElse(Vec3.atBottomCenterOf(pos.above()));
+    }
+
+    private boolean free(BlockPos pos) {
+        return level.getBlockState(pos).getCollisionShape(level, pos).isEmpty();
     }
 
     public static boolean allowedByHand(ItemStack stack) {

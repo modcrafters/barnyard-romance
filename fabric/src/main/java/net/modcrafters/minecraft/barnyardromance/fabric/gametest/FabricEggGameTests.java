@@ -112,6 +112,31 @@ public class FabricEggGameTests {
         EggGameTests.boxRecipe(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void eggHatchesInTheBox(GameTestHelper helper) {
+        EggGameTests.eggHatchesInTheBox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hatchedChickInherits(GameTestHelper helper) {
+        EggGameTests.hatchedChickInherits(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hatchedChickJoinsMothersBook(GameTestHelper helper) {
+        EggGameTests.hatchedChickJoinsMothersBook(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void blockedFrontHatchesOnTop(GameTestHelper helper) {
+        EggGameTests.blockedFrontHatchesOnTop(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hatchingCatchesUpAfterUnload(GameTestHelper helper) {
+        EggGameTests.hatchingCatchesUpAfterUnload(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);

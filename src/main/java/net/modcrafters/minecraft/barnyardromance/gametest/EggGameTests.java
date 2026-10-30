@@ -7,7 +7,11 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
@@ -28,6 +32,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.chicken.Chicken;
@@ -87,7 +92,12 @@ public final class EggGameTests {
             new BreedingGameTests.Case("hopper_pulls_only_plain_eggs", 20, EggGameTests::hopperPullsOnlyPlainEggs),
             new BreedingGameTests.Case("countdown_pauses_outside_the_box", 20, EggGameTests::countdownPausesOutsideTheBox),
             new BreedingGameTests.Case("box_drops_eggs_when_broken", 20, EggGameTests::boxDropsEggsWhenBroken),
-            new BreedingGameTests.Case("box_recipe", 20, EggGameTests::boxRecipe)
+            new BreedingGameTests.Case("box_recipe", 20, EggGameTests::boxRecipe),
+            new BreedingGameTests.Case("egg_hatches_in_the_box", 40, EggGameTests::eggHatchesInTheBox),
+            new BreedingGameTests.Case("hatched_chick_inherits", 20, EggGameTests::hatchedChickInherits),
+            new BreedingGameTests.Case("hatched_chick_joins_mothers_book", 20, EggGameTests::hatchedChickJoinsMothersBook),
+            new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
+            new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload)
             //? if >=1.21.5 {
             , new BreedingGameTests.Case("warm_hen_lays_brown_eggs", 20, EggGameTests::warmHenLaysBrownEggs)
             //?}
@@ -412,6 +422,89 @@ public final class EggGameTests {
         //ItemStack result = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
         helper.assertTrue(result.is(BarnyardBlocks.NESTING_BOX_ITEM), "planks round wheat craft " + result);
         helper.succeed();
+    }
+
+    public static void eggHatchesInTheBox(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 5L)));
+
+        helper.runAfterDelay(10, () -> {
+            helper.assertTrue(box.getItem(0).isEmpty(), "the egg is still in the box: " + box.getItem(0));
+            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())));
+            helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
+            helper.succeed();
+        });
+    }
+
+    public static void hatchedChickInherits(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        EggData data = new EggData("minecraft:chicken", UUID.randomUUID(), UUID.randomUUID(), LARGE_HEN, Growth.wild(), 1.0, 0.5,
+                1.3, Growth.wild(), 1.0, "", 1_000L, 0L, helper.getLevel().getGameTime() - 1L);
+        box.setItem(0, FertilizedEggItem.create(data));
+
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+
+        Animal chick = chickIn(helper, BOX.north());
+        AnimalTraits traits = traits(helper, chick);
+        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
+        helper.assertTrue(traits.lineage().equals(new Lineage(data.mother(), data.father())), "the chick's parents are " + traits.lineage());
+        helper.assertTrue(traits.bornTick() == helper.getLevel().getGameTime(), "the chick was born at " + traits.bornTick());
+        helper.assertTrue(traits.familiarity() == Familiarity.inherited(0.5), "the chick starts at familiarity " + traits.familiarity());
+        helper.assertTrue(size != SizeClass.S, "two XL parents hatched an S chick");
+        helper.succeed();
+    }
+
+    public static void hatchedChickJoinsMothersBook(GameTestHelper helper) {
+        Animal mother = hen(helper, LARGE_HEN, 0.5);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, mother);
+        UUID bookId = book.get(BarnyardComponents.HERD_BOOK);
+        UUID motherId = mother.getUUID();
+        mother.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        NestingBoxBlockEntity box = box(helper, BOX);
+        EggData data = new EggData("minecraft:chicken", motherId, null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
+                1.2, Growth.wild(), 0.5, "", 1_000L, 0L, helper.getLevel().getGameTime() - 1L);
+        box.setItem(0, FertilizedEggItem.create(data));
+
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+
+        Animal chick = chickIn(helper, BOX.north());
+        HerdBookData herd = HerdBookData.get(helper.getLevel().getServer());
+        helper.assertTrue(herd.ledger().isMember(bookId, chick.getUUID()), "the chick didn't join its mother's book");
+        helper.succeed();
+    }
+
+    public static void blockedFrontHatchesOnTop(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        helper.setBlock(BOX.north(), Blocks.STONE.defaultBlockState());
+        box.setItem(0, FertilizedEggItem.create(new EggData("minecraft:chicken", UUID.randomUUID(), null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
+                1.2, Growth.wild(), 0.5, "", 1_000L, 0L, helper.getLevel().getGameTime() - 1L)));
+
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+
+        chickIn(helper, BOX.above());
+        helper.succeed();
+    }
+
+    // An egg whose time came while the box was unloaded hatches on the box's first tick back.
+    public static void hatchingCatchesUpAfterUnload(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.setItem(0, FertilizedEggItem.create(new EggData("minecraft:chicken", UUID.randomUUID(), null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
+                1.2, Growth.wild(), 0.5, "", 1_000L, 0L, helper.getLevel().getGameTime() - 50_000L)));
+
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+
+        helper.assertTrue(box.getItem(0).isEmpty(), "an overdue egg didn't hatch");
+        chickIn(helper, BOX.north());
+        helper.succeed();
+    }
+
+    static Animal chickIn(GameTestHelper helper, BlockPos pos) {
+        List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(pos)));
+        if (chicks.size() != 1) {
+            throw GameTestCompat.failure(helper, "expected one chick at " + pos + ", found " + chicks.size());
+        }
+        return chicks.getFirst();
     }
 
     static NestingBoxBlockEntity box(GameTestHelper helper, BlockPos pos) {

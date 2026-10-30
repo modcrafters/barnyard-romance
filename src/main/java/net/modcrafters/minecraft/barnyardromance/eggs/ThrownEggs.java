@@ -12,16 +12,11 @@ import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-//? if >=1.21.2
-import net.minecraft.world.entity.EntitySpawnReason;
 
 import java.util.Optional;
 
@@ -56,7 +51,7 @@ public final class ThrownEggs {
     }
 
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, EggData data, RandomSource random) {
-        Optional<Animal> created = create(level, data.species());
+        Optional<Animal> created = Hatching.create(level, data.species());
         if (created.isEmpty()) {
             return Optional.empty();
         }
@@ -77,17 +72,5 @@ public final class ThrownEggs {
         Hatching.place(chick, data, growth, position);
         level.addFreshEntityWithPassengers(chick);
         return Optional.of(chick);
-    }
-
-    static Optional<Animal> create(ServerLevel level, String species) {
-        Identifier id = Identifier.tryParse(species);
-        if (id == null) {
-            return Optional.empty();
-        }
-        //? if >=1.21.2 {
-        Optional<Entity> entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).map(type -> type.create(level, EntitySpawnReason.TRIGGERED));
-        //?} else
-        //Optional<Entity> entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).map(type -> type.create(level));
-        return entity.filter(Animal.class::isInstance).map(Animal.class::cast);
     }
 }

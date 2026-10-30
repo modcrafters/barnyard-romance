@@ -1,20 +1,79 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
+import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
+import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.phys.Vec3;
+//? if >=1.21.2
+import net.minecraft.world.entity.EntitySpawnReason;
 //? if >=1.21.5 {
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 //?}
 
-// What every chick hatched from an egg gets: a baby's age, its mother's look, and a place to stand.
+import java.util.List;
+import java.util.Optional;
+
+// Chicks from eggs. One hatched in a nesting box inherits from both parents like a calf (Offspring) and joins its
+// mother's herd books; a thrown one is made by ThrownEggs. Either way it gets a baby's age, its mother's look and
+// a place to stand.
 public final class Hatching {
     private Hatching() {
     }
 
-    public static void place(Animal chick, EggData data, int growthTicks, Vec3 position) {
+    public static Optional<Animal> hatch(ServerLevel level, EggData data, Vec3 position) {
+        try {
+            Optional<Animal> created = create(level, data.species());
+            if (created.isEmpty()) {
+                return Optional.empty();
+            }
+            Animal chick = created.get();
+            BarnyardConfig config = BarnyardConfig.current();
+            AnimalTraits traits = Offspring.traits(
+                    SexRoll.roll(chick.getRandom().nextDouble(), config.femaleRatio()),
+                    config.sizeFor(data.species()),
+                    new Offspring.Parent(data.motherScale(), data.motherGrowth(), data.motherWeight()),
+                    new Offspring.Parent(data.fatherScale(), data.fatherGrowth(), data.fatherWeight()),
+                    Math.clamp(data.motherFamiliarity(), 0.0, 1.0),
+                    chick.getRandom(),
+                    level.getGameTime(),
+                    new Lineage(data.mother(), data.father())
+            );
+            Services.DATA.set(chick, traits);
+            place(chick, data, traits.growthTicks(), position);
+            level.addFreshEntityWithPassengers(chick);
+            HerdBooks.born(level, data.mother(), List.of(chick));
+            return Optional.of(chick);
+        } catch (RuntimeException exception) {
+            Constants.LOG.error("Failed to hatch a {} egg", data.species(), exception);
+            return Optional.empty();
+        }
+    }
+
+    static Optional<Animal> create(ServerLevel level, String species) {
+        Identifier id = Identifier.tryParse(species);
+        if (id == null) {
+            return Optional.empty();
+        }
+        //? if >=1.21.2 {
+        Optional<Entity> entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).map(type -> type.create(level, EntitySpawnReason.TRIGGERED));
+        //?} else
+        //Optional<Entity> entity = BuiltInRegistries.ENTITY_TYPE.getOptional(id).map(type -> type.create(level));
+        return entity.filter(Animal.class::isInstance).map(Animal.class::cast);
+    }
+
+    static void place(Animal chick, EggData data, int growthTicks, Vec3 position) {
         chick.setBaby(true);
         chick.setAge(-growthTicks);
         //? if >=1.21.5 {

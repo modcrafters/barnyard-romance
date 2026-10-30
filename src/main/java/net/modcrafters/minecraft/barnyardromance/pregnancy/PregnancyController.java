@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Inheritance;
+import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
@@ -184,23 +184,17 @@ public final class PregnancyController {
         // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
         double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
-        double scalePercent = inherit(
-                child,
-                ScaleRoll.percent(Sex.FEMALE, motherScale, size),
-                ScaleRoll.percent(Sex.MALE, pregnancy.fatherScale(), size),
-                nutrition
+        AnimalTraits traits = Offspring.traits(
+                sex,
+                size,
+                new Offspring.Parent(motherScale, motherGrowth, motherWeight),
+                new Offspring.Parent(pregnancy.fatherScale(), pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
+                nutrition,
+                child.getRandom(),
+                mother.level().getGameTime(),
+                new Lineage(mother.getUUID(), pregnancy.fatherId())
         );
-        double scale = ScaleRoll.fromPercent(sex, size, scalePercent);
-        int growth = Growth.fromPercent(inherit(child, Growth.percent(motherGrowth), Growth.percent(pregnancy.fatherGrowthTicks()), nutrition));
-        double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
-        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth)
-                .withWeight(weight)
-                .withBornTick(mother.level().getGameTime())
-                .withLineage(new Lineage(mother.getUUID(), pregnancy.fatherId())));
-        return growth;
-    }
-
-    private static double inherit(Animal child, double mother, double father, double nutrition) {
-        return Inheritance.child(mother, father, child.getRandom().nextDouble(), child.getRandom().nextDouble(), nutrition);
+        Services.DATA.set(child, traits);
+        return traits.growthTicks();
     }
 }
