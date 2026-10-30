@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
@@ -134,6 +135,36 @@ public final class EggLaying {
         long clock = level.getOverworldClockTime();
         Services.DATA.getLaying(hen).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.setLaying(hen,
                 new Laying(laying.day(), EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)), laying.next())));
+    }
+
+    // For the herd book: the best adult rooster in range, by whether he ate today (so he's fertile tomorrow).
+    public static RoosterNear roosterNear(Animal hen, ServerLevel level) {
+        int range = settings(hen).roosterRange();
+        long today = GameDay.of(level.getOverworldClockTime());
+        RoosterNear best = RoosterNear.NONE;
+        for (Animal other : level.getEntitiesOfClass(Animal.class, hen.getBoundingBox().inflate(range),
+                other -> other != hen && other.getType() == hen.getType() && other.isAlive() && !other.isBaby()
+                        && other.distanceToSqr(hen) <= (double) range * range)) {
+            Optional<AnimalTraits> traits = Services.DATA.get(other);
+            if (traits.isEmpty() || traits.get().sex() != Sex.MALE) {
+                continue;
+            }
+            AgeStage stage = AgeController.stage(other, traits.get());
+            if (stage != AgeStage.ADULT && stage != AgeStage.OLD) {
+                continue;
+            }
+            if (traits.get().hunger().lastAteDay() == today) {
+                return RoosterNear.FED;
+            }
+            best = RoosterNear.HUNGRY;
+        }
+        return best;
+    }
+
+    public static boolean boxWithRoomNear(Animal hen, ServerLevel level) {
+        ItemStack egg = new ItemStack(BarnyardItems.FERTILIZED_EGG);
+        return NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange()).stream()
+                .anyMatch(box -> !box.occupied() && box.canPlaceEgg(egg) >= 0);
     }
 
     public static void layOnGround(Animal hen, ServerLevel level) {

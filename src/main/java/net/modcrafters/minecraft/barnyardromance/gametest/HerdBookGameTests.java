@@ -335,7 +335,8 @@ public final class HerdBookGameTests {
         List<HerdEntry> entries = new java.util.ArrayList<>();
         for (int i = 0; i < 1_500; i++) {
             entries.add(new HerdEntry(UUID.randomUUID(), "minecraft:cow", "Daisy the " + i + "th", true, false, true, Familiar.FAMILIAR,
-                    true, 61, false, ShearState.NONE, Optional.of(UUID.randomUUID()), Optional.of(UUID.randomUUID()), lines));
+                    true, 61, false, ShearState.NONE, Optional.empty(), net.minecraft.network.chat.Component.empty(),
+                    Optional.of(UUID.randomUUID()), Optional.of(UUID.randomUUID()), lines));
         }
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 

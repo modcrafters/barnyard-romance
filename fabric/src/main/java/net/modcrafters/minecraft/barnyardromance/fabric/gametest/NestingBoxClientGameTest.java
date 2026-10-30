@@ -5,6 +5,9 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxHen;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
@@ -14,6 +17,8 @@ import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -91,6 +96,28 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(10);
             context.takeScreenshot("rooster_and_hen");
+            // The herd book's egg icons: fertilized eggs, one egg fewer for an unfamiliar hen, and none for a hungry one.
+            world.getServer().runOnServer(server -> {
+                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerLevel level = player.level();
+                level.setBlockAndUpdate(player.blockPosition().north(3), BarnyardBlocks.NESTING_BOX.defaultBlockState());
+                ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+                player.setItemInHand(InteractionHand.MAIN_HAND, book);
+                level.getEntities(EntityTypes.CHICKEN, chicken -> true).forEach(chicken -> {
+                    AnimalTraits traits = Services.DATA.get(chicken).orElseThrow();
+                    Services.DATA.set(chicken, traits.fed(traits.familiarity(), level.getOverworldClockTime()));
+                    FamiliarityCare.markEaten(chicken);
+                    chicken.setCustomName(Component.literal(traits.sex() == Sex.MALE ? "Big Red" : "Henrietta"));
+                    HerdBooks.register(book, chicken);
+                });
+                Animal nugget = chicken(level, player, Sex.FEMALE, 0.75, 2.0);
+                nugget.setCustomName(Component.literal("Nugget"));
+                HerdBooks.register(book, nugget);
+                HerdBooks.show(player, book);
+            });
+            world.getConnection().waitForClientboundPackets();
+            context.waitTicks(5);
+            context.takeScreenshot("herd_book_hens");
         }
     }
 

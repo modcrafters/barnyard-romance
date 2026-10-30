@@ -223,6 +223,26 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void herdBookShowsFertilizedEggs(GameTestHelper helper) {
+        EggGameTests.herdBookShowsFertilizedEggs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void herdBookSaysWhyEggsArePlain(GameTestHelper helper) {
+        EggGameTests.herdBookSaysWhyEggsArePlain(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void herdBookShowsNoEggsForAnUnfedHen(GameTestHelper helper) {
+        EggGameTests.herdBookShowsNoEggsForAnUnfedHen(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void herdBookShowsNoEggsForRoosters(GameTestHelper helper) {
+        EggGameTests.herdBookShowsNoEggsForRoosters(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
     }

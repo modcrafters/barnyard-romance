@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
@@ -11,6 +12,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
@@ -26,6 +29,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -127,7 +131,11 @@ public final class EggGameTests {
             new BreedingGameTests.Case("egg_due_while_sitting_is_laid_after", 20, EggGameTests::eggDueWhileSittingIsLaidAfter),
             new BreedingGameTests.Case("walking_hen_keeps_her_next_egg", 40, EggGameTests::walkingHenKeepsHerNextEgg),
             new BreedingGameTests.Case("leashed_hen_lays_on_the_ground", 100, EggGameTests::leashedHenLaysOnTheGround),
-            new BreedingGameTests.Case("hen_comes_out_despite_a_copy", 20, EggGameTests::henComesOutDespiteACopy)
+            new BreedingGameTests.Case("hen_comes_out_despite_a_copy", 20, EggGameTests::henComesOutDespiteACopy),
+            new BreedingGameTests.Case("herd_book_shows_fertilized_eggs", 20, EggGameTests::herdBookShowsFertilizedEggs),
+            new BreedingGameTests.Case("herd_book_says_why_eggs_are_plain", 20, EggGameTests::herdBookSaysWhyEggsArePlain),
+            new BreedingGameTests.Case("herd_book_shows_no_eggs_for_an_unfed_hen", 20, EggGameTests::herdBookShowsNoEggsForAnUnfedHen),
+            new BreedingGameTests.Case("herd_book_shows_no_eggs_for_roosters", 20, EggGameTests::herdBookShowsNoEggsForRoosters)
             //? if >=1.21.5 {
             , new BreedingGameTests.Case("warm_hen_lays_brown_eggs", 20, EggGameTests::warmHenLaysBrownEggs)
             //?}
@@ -885,6 +893,70 @@ public final class EggGameTests {
         helper.assertTrue(chickensIn(helper) == before + 1, "the hen didn't come out: " + before + " chickens before, " + chickensIn(helper) + " after");
         helper.assertTrue(!box.occupied(), "the hen is still in the box");
         helper.succeed();
+    }
+
+    // A fed, familiar hen with a fed rooster and a box with room nearby lays fertilized eggs tomorrow.
+    public static void herdBookShowsFertilizedEggs(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 4);
+        FamiliarityCare.markEaten(hen);
+        FamiliarityCare.markEaten(rooster);
+        box(helper, BOX);
+
+        HerdEntry entry = bookEntry(helper, hen);
+
+        helper.assertTrue(entry.eggs().equals(Optional.of(EggOutlook.Kind.FERTILIZED)), "the book shows " + entry.eggs());
+        helper.assertTrue(entry.eggTip().equals(TextComponents.of(new EggOutlook(EggOutlook.Kind.FERTILIZED, 2, List.of()).tooltip())),
+                "the icon's tooltip is " + entry.eggTip());
+        helper.succeed();
+    }
+
+    public static void herdBookSaysWhyEggsArePlain(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        FamiliarityCare.markEaten(hen);
+        box(helper, BOX);
+
+        HerdEntry entry = bookEntry(helper, hen);
+
+        helper.assertTrue(entry.eggs().equals(Optional.of(EggOutlook.Kind.PLAIN)), "the book shows " + entry.eggs());
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == HerdPageText.Kind.EGGS), "her page has no eggs line");
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().equals(TextComponents.of(EggOutlook.Reason.NO_ROOSTER.text()))),
+                "her page doesn't say there's no rooster");
+        helper.succeed();
+    }
+
+    public static void herdBookShowsNoEggsForAnUnfedHen(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 4);
+        FamiliarityCare.markEaten(rooster);
+        box(helper, BOX);
+
+        HerdEntry entry = bookEntry(helper, hen);
+
+        helper.assertTrue(entry.eggs().equals(Optional.of(EggOutlook.Kind.NO_EGGS)), "the book shows " + entry.eggs());
+        helper.succeed();
+    }
+
+    public static void herdBookShowsNoEggsForRoosters(GameTestHelper helper) {
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 4);
+        FamiliarityCare.markEaten(rooster);
+
+        HerdEntry entry = bookEntry(helper, rooster);
+
+        helper.assertTrue(entry.eggs().isEmpty(), "a rooster has an egg icon: " + entry.eggs());
+        helper.succeed();
+    }
+
+    // The animal's entry in a new herd book, worked out with ranges that stay inside this test's pen.
+    static HerdEntry bookEntry(GameTestHelper helper, Animal animal) {
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        List<HerdEntry>[] entries = new List[1];
+        inPen(() -> {
+            HerdBooks.register(book, animal);
+            entries[0] = HerdBooks.entries(helper.getLevel().getServer(), book.get(BarnyardComponents.HERD_BOOK), helper.getLevel().getGameTime());
+        });
+        return entries[0].stream().filter(entry -> entry.id().equals(animal.getUUID())).findFirst()
+                .orElseThrow(() -> GameTestCompat.failure(helper, "the animal isn't in the book"));
     }
 
     static EggData fertile(GameTestHelper helper, Animal hen) {

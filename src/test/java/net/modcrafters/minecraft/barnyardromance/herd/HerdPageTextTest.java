@@ -1,6 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
+import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
+import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.text.English;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import org.junit.jupiter.api.Test;
@@ -62,6 +66,18 @@ class HerdPageTextTest {
         assertEquals("Wool growing back", english(ewe.shear(ShearState.REGROWING)).get(2));
         assertEquals(HerdPageText.Kind.SHEAR, kinds(ewe.shear(ShearState.READY)).get(2));
         assertEquals(4, english(ewe).size());
+    }
+
+    @Test
+    void aHenSaysWhatSheLaysTomorrowAndWhy() {
+        HerdPageText.PageFacts hen = new HerdPageText.PageFacts("M", AgeStage.ADULT, -1L, true, 0L, false, 0.0, 0L, Text.EMPTY,
+                0.2, 0.9, -1L, Familiar.FAMILIAR, -1L)
+                .eggs(EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN));
+
+        assertEquals(List.of("Size M · Adult", "Fed today", "Plain eggs tomorrow (1)", "No rooster nearby", "Not familiar: one egg fewer",
+                "Familiar 20%", "Fertile 90%"), english(hen));
+        assertEquals(List.of(HerdPageText.Kind.SIZE, HerdPageText.Kind.FED, HerdPageText.Kind.EGGS, HerdPageText.Kind.NOTE, HerdPageText.Kind.NOTE,
+                HerdPageText.Kind.FAMILIARITY, HerdPageText.Kind.FERTILITY), kinds(hen));
     }
 
     @Test

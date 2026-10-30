@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -12,7 +13,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 // One animal as the herd book shows it, worked out on the server when the book is opened.
-// pregnancyPercent is -1 when not pregnant; shear is NONE for animals that aren't sheared; the page's lines are already translatable components.
+// pregnancyPercent is -1 when not pregnant; shear is NONE for animals that aren't sheared; eggs is what a hen lays
+// tomorrow (empty for everything else) and eggTip says why; the page's lines are already translatable components.
 public record HerdEntry(
         UUID id,
         String species,
@@ -25,6 +27,8 @@ public record HerdEntry(
         int pregnancyPercent,
         boolean milkReady,
         ShearState shear,
+        Optional<EggOutlook.Kind> eggs,
+        Component eggTip,
         Optional<UUID> mother,
         Optional<UUID> father,
         List<Line> lines
@@ -37,6 +41,11 @@ public record HerdEntry(
                 ComponentSerialization.STREAM_CODEC, Line::text,
                 ByteBufCodecs.FLOAT, Line::fill,
                 Line::new);
+    }
+
+    private static Optional<EggOutlook.Kind> eggs(int ordinal) {
+        EggOutlook.Kind[] kinds = EggOutlook.Kind.values();
+        return ordinal < 0 || ordinal >= kinds.length ? Optional.empty() : Optional.of(kinds[ordinal]);
     }
 
     private static final StreamCodec<RegistryFriendlyByteBuf, Optional<UUID>> OPTIONAL_UUID = ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC).cast();
@@ -55,6 +64,8 @@ public record HerdEntry(
                 ByteBufCodecs.VAR_INT.encode(buf, entry.pregnancyPercent());
                 ByteBufCodecs.BOOL.encode(buf, entry.milkReady());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.shear().ordinal());
+                ByteBufCodecs.VAR_INT.encode(buf, entry.eggs().map(Enum::ordinal).orElse(-1));
+                ComponentSerialization.STREAM_CODEC.encode(buf, entry.eggTip());
                 OPTIONAL_UUID.encode(buf, entry.mother());
                 OPTIONAL_UUID.encode(buf, entry.father());
                 LINES.encode(buf, entry.lines());
@@ -72,6 +83,8 @@ public record HerdEntry(
                     ByteBufCodecs.VAR_INT.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     ShearState.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, ShearState.values().length - 1)],
+                    eggs(ByteBufCodecs.VAR_INT.decode(buf)),
+                    ComponentSerialization.STREAM_CODEC.decode(buf),
                     OPTIONAL_UUID.decode(buf),
                     OPTIONAL_UUID.decode(buf),
                     LINES.decode(buf)

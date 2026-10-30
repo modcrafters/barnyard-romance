@@ -12,6 +12,7 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 - Thrown eggs: plain ones never hatch, and fertilized ones sometimes hatch a small chick with no known parents.
 - Roosters are bigger than hens and wear a red comb and big wattles.
 - The inspector shows a hen's eggs for the day, and whether a rooster is fertile.
+- The herd book shows what each hen will lay tomorrow (fertilized, plain or none) and why.
 
 - Familiarity fades: an animal loses some each day it isn't fed, and a little each time it's milked or sheared. Feeding every day keeps it. A cow that went hungry gives no milk the next day.
 - New Dairy Mash: feed it to a dry cow, goat or sheep and she gives milk for three days, without having to breed her first.
