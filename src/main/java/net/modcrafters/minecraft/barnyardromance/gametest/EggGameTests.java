@@ -116,6 +116,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
             new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload),
             new BreedingGameTests.Case("hen_lays_into_a_nearby_box", 400, EggGameTests::henLaysIntoANearbyBox),
+            new BreedingGameTests.Case("hen_uses_a_box_with_a_fence_on_top", 400, EggGameTests::henUsesABoxWithAFenceOnTop),
             new BreedingGameTests.Case("box_egg_is_fertilized_with_a_fed_rooster", 400, EggGameTests::boxEggIsFertilizedWithAFedRooster),
             new BreedingGameTests.Case("heavy_hen_egg_hatches_sooner", 20, EggGameTests::heavyHenEggHatchesSooner),
             new BreedingGameTests.Case("closest_rooster_is_the_father", 20, EggGameTests::closestRoosterIsTheFather),
@@ -576,6 +577,22 @@ public final class EggGameTests {
             helper.assertTrue(!box.occupied(), "she's still in the box");
             helper.succeed();
         });
+    }
+
+    // A box set into a pen's fence, with fence on top so no one hops out over it: the hen walks up to it instead of
+    // trying to stand on it.
+    public static void henUsesABoxWithAFenceOnTop(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            helper.getLevel().setBlockAndUpdate(placed[0].getBlockPos().above(), Blocks.OAK_FENCE.defaultBlockState());
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+            helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 0, "she laid on the ground instead of heading for the box");
+        });
+
+        once(helper, () -> placed[0] != null && placed[0].occupied(), helper::succeed);
     }
 
     public static void boxEggIsFertilizedWithAFedRooster(GameTestHelper helper) {

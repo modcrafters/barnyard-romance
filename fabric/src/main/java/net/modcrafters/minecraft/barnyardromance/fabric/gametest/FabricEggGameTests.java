@@ -143,6 +143,11 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 400)
+    public void henUsesABoxWithAFenceOnTop(GameTestHelper helper) {
+        EggGameTests.henUsesABoxWithAFenceOnTop(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
     public void boxEggIsFertilizedWithAFedRooster(GameTestHelper helper) {
         EggGameTests.boxEggIsFertilizedWithAFedRooster(helper);
     }
