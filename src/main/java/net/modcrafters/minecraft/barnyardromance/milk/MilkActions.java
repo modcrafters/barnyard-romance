@@ -134,6 +134,23 @@ public final class MilkActions {
         return VersionCompat.SUCCESS_SERVER;
     }
 
+    // An ordinary food with startsMilk (a mod's or a pack's) starts a dry, familiar female's milk when she eats it, and
+    // says nothing when it can't: it was a meal either way.
+    public static void startMilkWithMeal(Animal animal) {
+        Optional<AnimalTraits> tracked = tracked(animal);
+        if (tracked.isEmpty() || animal.level().isClientSide()) {
+            return;
+        }
+        AnimalTraits traits = tracked.get();
+        Tuning tuning = BarnyardConfig.current().tuning();
+        long now = animal.level().getGameTime();
+        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
+                traits.lactation().hasMilk(now, tuning.milkKeepsFlowingTicks()), Familiarity.ready(traits.familiarity()));
+        if (start == MilkRules.Start.OK) {
+            Services.DATA.set(animal, traits.withLactation(traits.lactation().started(now, tuning.milkKeepsFlowingTicks())));
+        }
+    }
+
     // Females from before Stage 5 and wild spawns get their milk on their first join (see MilkRules.firstJoin).
     public static void onJoin(Animal animal) {
         Optional<AnimalTraits> tracked = tracked(animal);

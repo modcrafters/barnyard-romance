@@ -5,6 +5,8 @@ import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 
+import java.util.Locale;
+
 public final class MilkRules {
     public static final Text MALE_TEXT = Text.of("message.barnyard_romance.milk.male");
     public static final Text NO_MILK_TEXT = Text.of("message.barnyard_romance.milk.none");
@@ -120,5 +122,15 @@ public final class MilkRules {
             case ENOUGH_TODAY -> ENOUGH_TEXT;
             case OK -> Text.EMPTY;
         };
+    }
+
+    // What Dairy Mash says it does: how many days its milk lasts, whole or to one decimal place.
+    public static Text dairyMashEffect(long ticks) {
+        double days = ticks / 24_000.0;
+        if (days == 1.0) {
+            return Text.of("item.barnyard_romance.dairy_mash.effect_one");
+        }
+        String shown = days == Math.rint(days) ? Long.toString((long) days) : String.format(Locale.ROOT, "%.1f", days);
+        return Text.of("item.barnyard_romance.dairy_mash.effect", shown);
     }
 }

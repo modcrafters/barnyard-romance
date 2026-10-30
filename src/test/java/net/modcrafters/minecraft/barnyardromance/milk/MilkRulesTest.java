@@ -23,6 +23,9 @@ class MilkRulesTest {
 
         assertEquals(MilkRules.Check.DISABLED, MilkRules.check(Sex.FEMALE, SizeClass.XL, MOTHER, 100L, 100L, off));
         assertEquals("Milking is turned off.", English.of(MilkRules.text(MilkRules.Check.DISABLED)));
+        assertEquals("She gives milk for 3 days", English.of(MilkRules.dairyMashEffect(72_000L)));
+        assertEquals("She gives milk for 1 day", English.of(MilkRules.dairyMashEffect(24_000L)));
+        assertEquals("She gives milk for 1.5 days", English.of(MilkRules.dairyMashEffect(36_000L)));
         assertEquals("Only mothers give milk.", English.of(MilkRules.text(MilkRules.Check.MALE)));
         assertEquals("She has no milk.", English.of(MilkRules.text(MilkRules.Check.NO_MILK)));
         assertEquals("Milked enough for today.", English.of(MilkRules.text(MilkRules.Check.ENOUGH_TODAY)));

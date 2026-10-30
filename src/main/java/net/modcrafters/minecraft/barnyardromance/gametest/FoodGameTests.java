@@ -4,6 +4,8 @@ import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.food.FoodFile;
+import net.modcrafters.minecraft.barnyardromance.food.FoodJson;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -42,6 +44,7 @@ import net.minecraft.world.level.GameType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +73,7 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("superfoods_need_a_pregnant_mother", 20, FoodGameTests::superfoodsNeedAPregnantMother),
             new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad),
             new BreedingGameTests.Case("dairy_mash_starts_milk", 20, FoodGameTests::dairyMashStartsMilk),
+            new BreedingGameTests.Case("ordinary_food_can_start_milk", 20, FoodGameTests::ordinaryFoodCanStartMilk),
             new BreedingGameTests.Case("dairy_mash_is_refused_by_a_milking_cow", 20, FoodGameTests::dairyMashIsRefusedByAMilkingCow),
             new BreedingGameTests.Case("dairy_mash_is_refused_by_a_bull", 20, FoodGameTests::dairyMashIsRefusedByABull),
             new BreedingGameTests.Case("dairy_mash_needs_familiarity", 20, FoodGameTests::dairyMashNeedsFamiliarity),
@@ -124,11 +128,14 @@ public final class FoodGameTests {
     }
 
     public static void carnivoresGetLittleFromSalad(GameTestHelper helper) {
-        Animal wolf = withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.WOLF), 0.4);
+        // Below the threshold, so the feed doesn't also tame it, which would lift it to the taming grace.
+        Animal wolf = withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.WOLF), 0.1);
 
-        FamiliarityActions.interact(wolf, holding(helper, Items.CARROT), InteractionHand.MAIN_HAND);
+        Player player = holding(helper, Items.CARROT);
+        player.setShiftKeyDown(true);
+        FamiliarityActions.interact(wolf, player, InteractionHand.MAIN_HAND);
 
-        assertFamiliarity(helper, wolf, 0.45);
+        assertFamiliarity(helper, wolf, 0.15);
         helper.succeed();
     }
 
@@ -258,6 +265,26 @@ public final class FoodGameTests {
         helper.succeed();
     }
 
+    // Any food can start milk: a pack's food file with startsMilk, eaten as an ordinary meal.
+    public static void ordinaryFoodCanStartMilk(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.COW), 0.5);
+        List<FoodFile> foods = FoodData.foods();
+        try {
+            List<FoodFile> withMilk = new ArrayList<>(foods);
+            withMilk.add(FoodJson.foodFile("{ \"species\": [\"minecraft:cow\"], \"items\": \"carrot\", \"effects\": { \"startsMilk\": true } }"));
+            FoodData.replaceFoods(withMilk);
+
+            FamiliarityActions.interact(cow, holding(helper, Items.CARROT), InteractionHand.MAIN_HAND);
+        } finally {
+            FoodData.replaceFoods(foods);
+        }
+
+        AnimalTraits traits = BreedingGameTests.traits(helper, cow);
+        helper.assertTrue(traits.lactation().hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()),
+                "a carrot with startsMilk didn't start the cow's milk");
+        helper.succeed();
+    }
+
     public static void dairyMashIsRefusedByAMilkingCow(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
         Player player = holding(helper, BarnyardItems.DAIRY_MASH);
@@ -298,10 +325,12 @@ public final class FoodGameTests {
             //Identifier key = Identifier.fromNamespaceAndPath(Constants.MOD_ID, name);
             helper.assertTrue(helper.getLevel().getServer().getRecipeManager().byKey(key).isPresent(), "the " + name + " recipe is missing");
         }
-        // Crafted stacks carry the tooltip too, because it is the item's default lore.
+        // Crafted stacks carry the tooltip too, because it is the item's default lore. Dairy Mash writes its effect
+        // line itself, from the config.
         for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, BarnyardItems.DAIRY_MASH)) {
             ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
-            helper.assertTrue(lore != null && lore.lines().size() == 2, item + " has no tooltip");
+            int lines = item == BarnyardItems.DAIRY_MASH ? 1 : 2;
+            helper.assertTrue(lore != null && lore.lines().size() == lines, item + " has no tooltip");
         }
         helper.succeed();
     }
