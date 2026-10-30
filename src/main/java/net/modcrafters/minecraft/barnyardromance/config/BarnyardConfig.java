@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 public final class BarnyardConfig {
@@ -47,6 +48,8 @@ public final class BarnyardConfig {
     private final Map<String, SpeciesSettings> species;
     private final List<String> exclude;
     private final Tuning tuning;
+    // eggsFor runs several times per chicken per tick, so each species' eggs block is read once.
+    private final Map<String, EggSettings> eggs = new ConcurrentHashMap<>();
 
     private BarnyardConfig(
             boolean enabled,
@@ -328,12 +331,14 @@ public final class BarnyardConfig {
         if (!speciesEnabled(speciesId)) {
             return EggSettings.NONE;
         }
-        EggSettings preset = SpeciesPresets.eggs(speciesId);
-        SpeciesSettings settings = species.get(speciesId);
-        if (settings == null || settings.eggs() == null) {
-            return preset;
-        }
-        return EggSettings.from(settings.eggs(), preset.enabled() ? preset : EggSettings.CHICKEN.disabled());
+        return eggs.computeIfAbsent(speciesId, id -> {
+            EggSettings preset = SpeciesPresets.eggs(id);
+            SpeciesSettings settings = species.get(id);
+            if (settings == null || settings.eggs() == null) {
+                return preset;
+            }
+            return EggSettings.from(settings.eggs(), preset.enabled() ? preset : EggSettings.CHICKEN.disabled());
+        });
     }
 
     public SizeSettings sizeFor(String speciesId) {

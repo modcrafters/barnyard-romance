@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -342,6 +343,22 @@ class BarnyardConfigTest {
         assertEquals(EggSettings.CHICKEN.smallPerDay(), eggs.smallPerDay());
         assertEquals(EggSettings.CHICKEN.roosterRange(), eggs.roosterRange());
         assertEquals(eggs, BarnyardConfig.parse(config.toJson()).eggsFor("minecraft:chicken"));
+    }
+
+    @Test
+    void eggsBlockIsReadOnceButTagsStillExclude() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:chicken": { "eggs": { "largePerDay": 4 } } } }
+                """);
+
+        assertSame(config.eggsFor("minecraft:chicken"), config.eggsFor("minecraft:chicken"));
+        try {
+            BarnyardConfig.setExcludedByTag("minecraft:chicken"::equals);
+            assertEquals(EggSettings.NONE, config.eggsFor("minecraft:chicken"));
+        } finally {
+            BarnyardConfig.setExcludedByTag(id -> false);
+        }
+        assertEquals(4, config.eggsFor("minecraft:chicken").largePerDay());
     }
 
     @Test
