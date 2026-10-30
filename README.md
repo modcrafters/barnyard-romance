@@ -59,7 +59,7 @@ Chickens lay eggs instead of breeding. Seeds feed them and win familiarity like 
 - **How many:** each day an adult hen lays 1 egg if she's S or M and 2 if she's L or XL, one more if she's familiar, and none on a day after she went hungry. The eggs come at random times between sunrise and sunset, and the count starts again at midnight.
 - **Where:** when an egg is due, a hen looks for a **Nesting Box** within 16 blocks that she can walk to, that no other hen is sitting in and that has room. She walks over, goes in for an in-game hour, and leaves the egg in a nest. With no box, or while she's on a lead, she lays on the ground, like vanilla.
 - **Fertilized eggs:** an egg laid in a box is a **Fertilized Egg** if an adult rooster within 16 blocks wasn't hungry yesterday; the closest one is the father. Eggs laid on the ground are always plain.
-- **Hatching:** a fertilized egg left in a box hatches after about a day (sooner from a heavier hen). The chick inherits from both parents like a calf and joins its mother's herd books. Taking the egg out pauses its countdown; putting it back in any box carries on.
+- **Hatching:** a fertilized egg left in a box hatches after about a day (sooner from a heavier hen). The chick inherits from both parents like a calf and joins its mother's herd books. Taking the egg out pauses its countdown; putting it back in any box carries on. Time skipped by sleeping or with `/time add` counts too.
 - **Throwing:** plain eggs never hatch. A fertilized egg hatches one time in eight, into a small, light chick with no known parents.
 - **Roosters** are bigger than hens and wear a red comb and big wattles. Hens have no comb.
 

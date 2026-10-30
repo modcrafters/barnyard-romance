@@ -57,9 +57,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private @Nullable NestOccupant occupant;
-    // The game time the countdowns were last brought up to date, saved so they catch up after an unload.
+    // The game time and overworld clock time the countdowns were last brought up to date, saved so they catch up
+    // after an unload.
     private static final long NEVER = Long.MIN_VALUE;
     private long lastCounted = NEVER;
+    private long lastClock = NEVER;
     // For the window: 0 for an empty box, else the sitting hen's nest plus one.
     private final ContainerData sitting = new ContainerData() {
         @Override
@@ -233,16 +235,23 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             return;
         }
         long now = level.getGameTime();
+        long clock = server.getOverworldClockTime();
         if (box.occupant != null && box.occupant.exitAt() <= now) {
             box.finishSitting();
         }
         if (box.lastCounted == NEVER) {
             box.lastCounted = now;
         }
-        long elapsed = now - box.lastCounted;
+        if (box.lastClock == NEVER) {
+            box.lastClock = clock;
+        }
+        // Time skipped with /time add or by sleeping moves the clock but not the game time, and a stopped daylight
+        // cycle moves only the game time: whichever went further counts.
+        long elapsed = Math.max(now - box.lastCounted, clock - box.lastClock);
         boolean counting = elapsed >= COUNT_EVERY;
         if (counting) {
             box.lastCounted = now;
+            box.lastClock = clock;
         }
         for (int slot = 0; slot < SLOTS; slot++) {
             ItemStack egg = box.items.get(slot);
@@ -361,6 +370,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         ContainerHelper.loadAllItems(input, items);
         occupant = input.read("occupant", NestOccupant.CODEC).orElse(null);
         lastCounted = input.getLongOr("lastCounted", NEVER);
+        lastClock = input.getLongOr("lastClock", NEVER);
     }
 
     @Override
@@ -369,6 +379,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         ContainerHelper.saveAllItems(output, items);
         output.storeNullable("occupant", NestOccupant.CODEC, occupant);
         output.putLong("lastCounted", lastCounted);
+        output.putLong("lastClock", lastClock);
     }
     //?} else {
     /*@Override
@@ -380,6 +391,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
                 ? NestOccupant.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("occupant")).result().orElse(null)
                 : null;
         lastCounted = tag.contains("lastCounted") ? tag.getLong("lastCounted") : NEVER;
+        lastClock = tag.contains("lastClock") ? tag.getLong("lastClock") : NEVER;
     }
 
     @Override
@@ -390,6 +402,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             NestOccupant.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), occupant).result().ifPresent(saved -> tag.put("occupant", saved));
         }
         tag.putLong("lastCounted", lastCounted);
+        tag.putLong("lastClock", lastClock);
     }
     *///?}
 }

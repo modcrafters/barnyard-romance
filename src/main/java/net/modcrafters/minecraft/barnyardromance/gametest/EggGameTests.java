@@ -115,6 +115,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("hatched_chick_joins_mothers_book", 20, EggGameTests::hatchedChickJoinsMothersBook),
             new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
             new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload),
+            new BreedingGameTests.Case("time_skip_counts_eggs_down", 20, EggGameTests::timeSkipCountsEggsDown),
             new BreedingGameTests.Case("hen_lays_into_a_nearby_box", 400, EggGameTests::henLaysIntoANearbyBox),
             new BreedingGameTests.Case("hen_uses_a_box_with_a_fence_on_top", 400, EggGameTests::henUsesABoxWithAFenceOnTop),
             new BreedingGameTests.Case("box_egg_is_fertilized_with_a_fed_rooster", 400, EggGameTests::boxEggIsFertilizedWithAFedRooster),
@@ -556,6 +557,25 @@ public final class EggGameTests {
 
         helper.assertTrue(loaded.getItem(0).isEmpty(), "an egg that ran out while unloaded didn't hatch: " + FertilizedEggItem.data(loaded.getItem(0))
                 + ", saved lastCounted " + saved.get("lastCounted") + ", now " + helper.getLevel().getGameTime());
+        chickIn(helper, BOX.north());
+        helper.succeed();
+    }
+
+    // /time add and sleeping move the overworld clock without the game time; eggs in a box count that time too. The
+    // clock is put back within the tick so the other tests' days stay where they were.
+    public static void timeSkipCountsEggsDown(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 20_000L)));
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+        long before = helper.getLevel().getOverworldClockTime();
+        try {
+            GameTestCompat.setOverworldClock(helper, before + GameDay.TICKS);
+            NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+
+        helper.assertTrue(box.getItem(0).isEmpty(), "a day went by and the egg didn't hatch: " + FertilizedEggItem.data(box.getItem(0)));
         chickIn(helper, BOX.north());
         helper.succeed();
     }

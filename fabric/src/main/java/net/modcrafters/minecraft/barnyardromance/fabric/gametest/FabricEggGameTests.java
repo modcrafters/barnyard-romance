@@ -137,6 +137,11 @@ public class FabricEggGameTests {
         EggGameTests.hatchingCatchesUpAfterUnload(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void timeSkipCountsEggsDown(GameTestHelper helper) {
+        EggGameTests.timeSkipCountsEggsDown(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 400)
     public void henLaysIntoANearbyBox(GameTestHelper helper) {
         EggGameTests.henLaysIntoANearbyBox(helper);
