@@ -276,4 +276,24 @@ public class FabricEggGameTests {
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void lateHatchIsBornWhenDue(GameTestHelper helper) {
+        EggGameTests.lateHatchIsBornWhenDue(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void failedHatchKeepsTheEgg(GameTestHelper helper) {
+        EggGameTests.failedHatchKeepsTheEgg(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void skippedEggsAreNotLaid(GameTestHelper helper) {
+        EggGameTests.skippedEggsAreNotLaid(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void oldLayingCountsEveryEggAsLaid(GameTestHelper helper) {
+        EggGameTests.oldLayingCountsEveryEggAsLaid(helper);
+    }
 }
