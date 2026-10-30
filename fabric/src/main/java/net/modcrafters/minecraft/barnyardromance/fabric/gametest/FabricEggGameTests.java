@@ -203,6 +203,16 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void eggDueWhileSittingIsLaidAfter(GameTestHelper helper) {
+        EggGameTests.eggDueWhileSittingIsLaidAfter(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void walkingHenKeepsHerNextEgg(GameTestHelper helper) {
+        EggGameTests.walkingHenKeepsHerNextEgg(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
     }

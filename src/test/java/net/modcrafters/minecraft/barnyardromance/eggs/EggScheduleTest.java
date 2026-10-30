@@ -63,6 +63,14 @@ class EggScheduleTest {
         assertEquals(new EggSchedule.Due(2, false), EggSchedule.due(times, 0, 9_500));
     }
 
+    // A hen that was busy in a box lays the eggs that came due meanwhile now, instead of skipping them.
+    @Test
+    void resumeMovesMissedEggsToNow() {
+        assertEquals(List.of(8_500, 8_500, 15_000), EggSchedule.resume(List.of(7_000, 7_500, 15_000), 0, 8_500));
+        assertEquals(List.of(7_000, 8_500, 15_000), EggSchedule.resume(List.of(7_000, 7_500, 15_000), 1, 8_500));
+        assertEquals(new EggSchedule.Due(0, true), EggSchedule.due(EggSchedule.resume(List.of(7_000, 15_000), 0, 8_500), 0, 8_500));
+    }
+
     @Test
     void nothingLeftIsNeverDue() {
         assertEquals(new EggSchedule.Due(0, false), EggSchedule.due(List.of(7_000), 1, 7_000));

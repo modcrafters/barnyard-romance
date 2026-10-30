@@ -81,6 +81,7 @@ public class LayInNestGoal extends Goal {
         long now = level.getGameTime();
         if (now - trip.since() > GIVE_UP_TICKS) {
             TRIPS.remove(hen);
+            EggLaying.resume(hen, level);
             EggLaying.layOnGround(hen, level);
             return;
         }
@@ -114,6 +115,7 @@ public class LayInNestGoal extends Goal {
     // The box can't be reached, or was taken or filled on the way: one more look, then the ground.
     private void lookElsewhere(ServerLevel level, Trip trip) {
         if (trip.retried() || !EggLaying.headForBox(hen, level, trip.egg(), Set.of(trip.box()), true)) {
+            EggLaying.resume(hen, level);
             EggLaying.layOnGround(hen, level);
         }
     }

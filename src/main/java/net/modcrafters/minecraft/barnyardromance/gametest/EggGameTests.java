@@ -120,7 +120,9 @@ public final class EggGameTests {
             new BreedingGameTests.Case("sitting_hen_reserves_her_slot", 20, EggGameTests::sittingHenReservesHerSlot),
             new BreedingGameTests.Case("hen_in_box_stays_in_herd_book", 20, EggGameTests::henInBoxStaysInHerdBook),
             new BreedingGameTests.Case("breaking_box_releases_hen_and_eggs", 20, EggGameTests::breakingBoxReleasesHenAndEggs),
-            new BreedingGameTests.Case("box_survives_save_with_hen", 20, EggGameTests::boxSurvivesSaveWithHen)
+            new BreedingGameTests.Case("box_survives_save_with_hen", 20, EggGameTests::boxSurvivesSaveWithHen),
+            new BreedingGameTests.Case("egg_due_while_sitting_is_laid_after", 20, EggGameTests::eggDueWhileSittingIsLaidAfter),
+            new BreedingGameTests.Case("walking_hen_keeps_her_next_egg", 40, EggGameTests::walkingHenKeepsHerNextEgg)
             //? if >=1.21.5 {
             , new BreedingGameTests.Case("warm_hen_lays_brown_eggs", 20, EggGameTests::warmHenLaysBrownEggs)
             //?}
@@ -783,6 +785,58 @@ public final class EggGameTests {
         }
     }
 
+    // An egg that came due while the hen sat in a box is laid when she comes out, not skipped.
+    public static void eggDueWhileSittingIsLaidAfter(GameTestHelper helper) {
+        Animal hen = hen(helper, MEDIUM_HEN, 0.0);
+        UUID id = hen.getUUID();
+        NestingBoxBlockEntity box = box(helper, BOX);
+        long day = 10L;
+        long clock = at(day, 10_000);
+        long before = helper.getLevel().getOverworldClockTime();
+        BarnyardConfig config = BarnyardConfig.current();
+        Animal back;
+        try {
+            GameTestCompat.setOverworldClock(helper, clock);
+            Services.DATA.setLaying(hen, new Laying(day, List.of(9_500, 15_000), 0));
+            box.enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+            box.finishSitting();
+            back = (Animal) helper.getLevel().getEntity(id);
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:chicken\": {\"eggs\": {\"boxRange\": 0, \"roosterRange\": 0}}}}"));
+            EggLaying.serverTick(back, helper.getLevel());
+        } finally {
+            BarnyardConfig.set(config);
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+
+        helper.assertTrue(eggsNear(helper, back, Items.EGG) == 1, "the egg due while she sat was skipped");
+        helper.succeed();
+    }
+
+    // A second egg coming due on the way to a box waits; it doesn't send her off on a new trip or vanish.
+    public static void walkingHenKeepsHerNextEgg(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.0, 2);
+
+        helper.runAfterDelay(LANDED, () -> {
+            BlockPos box = boxBeside(helper, hen, 5).getBlockPos();
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+            long day = 10L;
+            long before = helper.getLevel().getOverworldClockTime();
+            Laying after;
+            try {
+                GameTestCompat.setOverworldClock(helper, at(day, 10_000));
+                Services.DATA.setLaying(hen, new Laying(day, List.of(10_000, 15_000), 0));
+                inPen(() -> EggLaying.serverTick(hen, helper.getLevel()));
+                after = Services.DATA.getLaying(hen).orElseThrow();
+            } finally {
+                GameTestCompat.setOverworldClock(helper, before);
+            }
+
+            helper.assertTrue(box.equals(LayInNestGoal.target(hen).orElse(null)), "her trip changed to " + LayInNestGoal.target(hen));
+            helper.assertTrue(after.next() == 0, "the egg due on the way was used up: " + after);
+            helper.succeed();
+        });
+    }
+
     static EggData fertile(GameTestHelper helper, Animal hen) {
         return EggLaying.fertilizedEgg(hen, helper.getLevel()).flatMap(FertilizedEggItem::data)
                 .orElseThrow(() -> GameTestCompat.failure(helper, "no fertilized egg"));
@@ -852,9 +906,11 @@ public final class EggGameTests {
         return chicken(helper, Sex.FEMALE, scale, familiarity, 3);
     }
 
+    // A test chicken has no eggs of her own due today, so only what a test does makes her lay.
     static Animal chicken(GameTestHelper helper, Sex sex, double scale, double familiarity, int x) {
         Animal chicken = GameTestCompat.spawn(helper, EntityTypes.CHICKEN, x, 1, 4);
         Services.DATA.set(chicken, new AnimalTraits(sex, scale, familiarity, -1L));
+        Services.DATA.setLaying(chicken, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
         return chicken;
     }
 

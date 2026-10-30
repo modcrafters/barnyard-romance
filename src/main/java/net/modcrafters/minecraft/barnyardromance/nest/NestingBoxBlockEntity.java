@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
@@ -180,6 +181,9 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             entity.snapTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
             //?} else
             //entity.moveTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
+            if (entity instanceof Animal animal) {
+                EggLaying.resume(animal, server);
+            }
             server.addFreshEntity(entity);
         });
     }

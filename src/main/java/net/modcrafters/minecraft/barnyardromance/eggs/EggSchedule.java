@@ -34,6 +34,17 @@ public final class EggSchedule {
         return List.copyOf(times);
     }
 
+    // For a hen back from being busy in a nesting box: eggs that came due meanwhile are due now instead of missed.
+    public static List<Integer> resume(List<Integer> times, int next, int sinceMidnight) {
+        List<Integer> resumed = new ArrayList<>(times);
+        for (int i = next; i < resumed.size(); i++) {
+            if (resumed.get(i) < sinceMidnight) {
+                resumed.set(i, sinceMidnight);
+            }
+        }
+        return List.copyOf(resumed);
+    }
+
     // skip is how many eggs from next on were missed; layNow is whether the egg after them is due now.
     public record Due(int skip, boolean layNow) {
     }

@@ -79,6 +79,10 @@ public final class EggLaying {
                 laying = plan(animal, GameDay.of(clock), sinceMidnight);
                 Services.DATA.setLaying(animal, laying);
             }
+            // While she's on her way to a box, the next egg waits for her.
+            if (LayInNestGoal.target(animal).isPresent()) {
+                return;
+            }
             EggSchedule.Due due = EggSchedule.due(laying.times(), laying.next(), sinceMidnight);
             if (due.skip() == 0 && !due.layNow()) {
                 return;
@@ -123,6 +127,13 @@ public final class EggLaying {
             }
         }
         return false;
+    }
+
+    // Back from a box or a trip to one: eggs that came due while she was busy are laid now, not skipped.
+    public static void resume(Animal hen, ServerLevel level) {
+        long clock = level.getOverworldClockTime();
+        Services.DATA.getLaying(hen).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.setLaying(hen,
+                new Laying(laying.day(), EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)), laying.next())));
     }
 
     public static void layOnGround(Animal hen, ServerLevel level) {
