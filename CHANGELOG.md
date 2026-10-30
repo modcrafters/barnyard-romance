@@ -6,8 +6,12 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- An egg that can't hatch, say because its animal's mod was removed, stays in its nest instead of disappearing.
+- A chick that hatched in a box while no one was nearby is as old as it would be if you had watched it hatch.
+- The inspector counts only the eggs a hen really laid, not the ones she missed while her chunk was unloaded.
+
 - Chickens lay eggs instead of breeding: S and M hens lay one a day, L and XL hens two, one more when they're familiar, and none after a hungry day. Seeds feed chickens but no longer breed them.
-- New Nesting Box (planks round a wheat): hens walk to one to lay, and you can see a hen sitting in it through the hole. Its window shows ten straw nests with each egg's countdown.
+- New Nesting Box (planks round a wheat): hens walk to one to lay, and you can see a hen sitting in it through the hole. Its window shows sixteen straw nests with each egg's countdown.
 - A rooster nearby makes the eggs laid in a box fertile. Fertilized eggs hatch in the box after about a day into chicks that take after both parents and join their mother's herd books. Eggs laid on the ground are always plain.
 - Thrown eggs: plain ones never hatch, and fertilized ones sometimes hatch a small chick with no known parents.
 - Roosters are bigger than hens and wear a red comb and big wattles.
