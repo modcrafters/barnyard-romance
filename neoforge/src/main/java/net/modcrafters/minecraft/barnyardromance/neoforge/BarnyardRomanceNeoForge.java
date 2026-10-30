@@ -23,6 +23,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 //? if >=1.21.2 {
@@ -45,6 +46,7 @@ public class BarnyardRomanceNeoForge {
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
+        modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(BarnyardRomance::setup));
         NeoForgeBreedingGameTests.register(modBus);
         //? if >=1.21.9 {
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
@@ -71,6 +73,11 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book"),
                 () -> BarnyardComponents.HERD_BOOK
         );
+        event.register(
+                Registries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "egg_data"),
+                () -> BarnyardComponents.EGG_DATA
+        );
         event.register(Registries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), () -> BarnyardItems.HERD_STICK);
         event.register(Registries.ITEM, BarnyardItems.INSPECTOR_ID.identifier(), () -> BarnyardItems.INSPECTOR);
         event.register(Registries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), () -> BarnyardItems.HERD_BOOK);
@@ -79,6 +86,7 @@ public class BarnyardRomanceNeoForge {
         event.register(Registries.ITEM, BarnyardItems.DAIRY_MASH_ID.identifier(), () -> BarnyardItems.DAIRY_MASH);
         event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
         event.register(Registries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.GOAT_MILK_BUCKET);
+        event.register(Registries.ITEM, BarnyardItems.FERTILIZED_EGG_ID.identifier(), () -> BarnyardItems.FERTILIZED_EGG);
         event.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), () -> BarnyardTab.titled(CreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());

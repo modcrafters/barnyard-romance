@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 
@@ -15,6 +16,11 @@ public final class BarnyardComponents {
     public static final DataComponentType<UUID> HERD_BOOK = DataComponentType.<UUID>builder()
             .persistent(UUIDUtil.CODEC)
             .networkSynchronized(UUIDUtil.STREAM_CODEC)
+            .build();
+    // A fertilized egg's parents and hatching countdown.
+    public static final DataComponentType<EggData> EGG_DATA = DataComponentType.<EggData>builder()
+            .persistent(EggData.CODEC)
+            .networkSynchronized(EggData.STREAM_CODEC)
             .build();
 
     private BarnyardComponents() {

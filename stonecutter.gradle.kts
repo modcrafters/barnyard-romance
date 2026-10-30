@@ -33,6 +33,7 @@ stonecutter parameters {
                 replace("$animal.$type;", "$animal.$pkg.$type;")
             for (type in listOf("AbstractHorse", "Donkey", "Horse", "Llama"))
                 replace("$animal.horse.$type;", "$animal.equine.$type;")
+            replace("net.minecraft.world.entity.projectile.ThrownEgg;", "net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;")
             // The EntityType constants moved to EntityTypes. The import keeps a marker so it can turn back.
             replace("import net.minecraft.world.entity.EntityType /* EntityTypes */;", "import net.minecraft.world.entity.EntityTypes;")
         }

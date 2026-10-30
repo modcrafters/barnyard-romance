@@ -24,6 +24,7 @@
     "SheepShearMixin",
     "ShearsDispenseMixin",
     "TemptGoalMixin",
+    "ThrownEggMixin",
     "TamingGraceMixin",
     "TemptingSensorMixin",
     "WolfTamingMixin"
