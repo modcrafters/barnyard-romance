@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EggScheduleTest {
-    private static final double[] ROLLS = {0.9, 0.0, 0.5};
+    private static final double ROLL = 0.5;
 
     @Test
     void sinceMidnight() {
@@ -20,15 +20,16 @@ class EggScheduleTest {
 
     @Test
     void planFromMidnightIsDaytime() {
-        List<Integer> times = EggSchedule.plan(0, 3, ROLLS);
+        List<Integer> times = EggSchedule.plan(0, 3, ROLL);
 
         assertEquals(3, times.size());
         assertSortedWithin(times, 6_000, 18_000);
+        assertEquals(12_000, times.getFirst());
     }
 
     @Test
     void planAfterSunriseStartsNow() {
-        List<Integer> times = EggSchedule.plan(10_000, 2, ROLLS);
+        List<Integer> times = EggSchedule.plan(10_000, 2, ROLL);
 
         assertEquals(2, times.size());
         assertSortedWithin(times, 10_000, 18_000);
@@ -36,7 +37,7 @@ class EggScheduleTest {
 
     @Test
     void planAfterSunsetUsesRestOfDay() {
-        List<Integer> times = EggSchedule.plan(20_000, 2, ROLLS);
+        List<Integer> times = EggSchedule.plan(20_000, 2, ROLL);
 
         assertEquals(2, times.size());
         assertSortedWithin(times, 20_000, 24_000);
@@ -44,7 +45,13 @@ class EggScheduleTest {
 
     @Test
     void planOfNothingIsEmpty() {
-        assertEquals(List.of(), EggSchedule.plan(0, 0, ROLLS));
+        assertEquals(List.of(), EggSchedule.plan(0, 0, ROLL));
+    }
+
+    // The day's eggs are laid in one sitting, so they're all due at once.
+    @Test
+    void planPutsEveryEggAtOneTime() {
+        assertEquals(List.of(9_000, 9_000, 9_000), EggSchedule.plan(0, 3, 0.25));
     }
 
     @Test

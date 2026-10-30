@@ -10,7 +10,7 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-// The nesting box window: ten nests (NestSlot), then the player's inventory and hotbar.
+// The nesting box window: sixteen nests (NestSlot), then the player's inventory and hotbar.
 public class NestingBoxMenu extends AbstractContainerMenu {
     private final Container box;
     // The sitting hen's nest plus one, or 0 (NestingBoxBlockEntity.sitting).

@@ -16,12 +16,13 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-// A hen with an egg due walks to the nesting box EggLaying picked and goes in. If the box is taken or full when
+// A hen with eggs due walks to the nesting box EggLaying picked and goes in to lay them all. If the box is taken or full when
 // she gets there she looks once more; if she can't get anywhere in time she lays on the ground where she is.
 public class LayInNestGoal extends Goal {
     private static final int GIVE_UP_TICKS = 600;
@@ -32,7 +33,7 @@ public class LayInNestGoal extends Goal {
     private final Animal hen;
 
     // planned is false until she has a path, which can only be worked out once she's on the ground.
-    private record Trip(ItemStack egg, BlockPos box, long since, boolean retried, boolean planned) {
+    private record Trip(List<ItemStack> eggs, BlockPos box, long since, boolean retried, boolean planned) {
     }
 
     public LayInNestGoal(Animal hen) {
@@ -47,12 +48,12 @@ public class LayInNestGoal extends Goal {
 
     // Starts her off towards the box if she can get there. A hen flapping in the air can't plan a path yet, so she
     // sets off anyway and finds her way once she lands, or gives up in time.
-    public static boolean headFor(Animal hen, ItemStack egg, BlockPos box, long now, boolean retried) {
+    public static boolean headFor(Animal hen, List<ItemStack> eggs, BlockPos box, long now, boolean retried) {
         Path path = hen.onGround() ? pathTo(hen, box) : null;
         if (hen.onGround() && path == null) {
             return false;
         }
-        TRIPS.put(hen, new Trip(egg, box.immutable(), now, retried, path != null));
+        TRIPS.put(hen, new Trip(List.copyOf(eggs), box.immutable(), now, retried, path != null));
         if (path != null) {
             hen.getNavigation().moveTo(path, 1.0);
         }
@@ -109,13 +110,13 @@ public class LayInNestGoal extends Goal {
         if (!walks(hen)) {
             TRIPS.remove(hen);
             EggLaying.resume(hen, level);
-            EggLaying.layOnGround(hen, level);
+            EggLaying.layOnGround(hen, level, trip.eggs().size());
             return;
         }
         if (now - trip.since() > GIVE_UP_TICKS) {
             TRIPS.remove(hen);
             EggLaying.resume(hen, level);
-            EggLaying.layOnGround(hen, level);
+            EggLaying.layOnGround(hen, level, trip.eggs().size());
             return;
         }
         if (!trip.planned()) {
@@ -128,7 +129,7 @@ public class LayInNestGoal extends Goal {
                 lookElsewhere(level, trip);
                 return;
             }
-            TRIPS.put(hen, new Trip(trip.egg(), trip.box(), trip.since(), trip.retried(), true));
+            TRIPS.put(hen, new Trip(trip.eggs(), trip.box(), trip.since(), trip.retried(), true));
             hen.getNavigation().moveTo(path, 1.0);
             return;
         }
@@ -142,7 +143,7 @@ public class LayInNestGoal extends Goal {
             return;
         }
         TRIPS.remove(hen);
-        if (level.getBlockEntity(trip.box()) instanceof NestingBoxBlockEntity box && box.enter(hen, trip.egg(), now)) {
+        if (level.getBlockEntity(trip.box()) instanceof NestingBoxBlockEntity box && box.enter(hen, trip.eggs(), now)) {
             return;
         }
         lookElsewhere(level, trip);
@@ -150,9 +151,9 @@ public class LayInNestGoal extends Goal {
 
     // The box can't be reached, or was taken or filled on the way: one more look, then the ground.
     private void lookElsewhere(ServerLevel level, Trip trip) {
-        if (trip.retried() || !EggLaying.headForBox(hen, level, trip.egg(), Set.of(trip.box()), true)) {
+        if (trip.retried() || !EggLaying.headForBox(hen, level, trip.eggs(), Set.of(trip.box()), true)) {
             EggLaying.resume(hen, level);
-            EggLaying.layOnGround(hen, level);
+            EggLaying.layOnGround(hen, level, trip.eggs().size());
         }
     }
 

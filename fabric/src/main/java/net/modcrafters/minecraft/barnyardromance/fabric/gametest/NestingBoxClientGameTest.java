@@ -32,6 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
+import java.util.List;
 import java.util.UUID;
 
 // The nesting box in a real client: the block with a hen sitting in it, its window with eggs in the nests and her
@@ -57,7 +58,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
                 box.placeEgg(new ItemStack(Items.EGG, 3));
                 box.placeEgg(egg(6_500L));
                 box.placeEgg(new ItemStack(Items.BROWN_EGG, 16));
-                box.enter(chicken(level, player, Sex.FEMALE, 0.85, 0.0), new ItemStack(Items.EGG), level.getGameTime());
+                box.enter(chicken(level, player, Sex.FEMALE, 0.85, 0.0), List.of(new ItemStack(Items.EGG)), level.getGameTime());
                 player.getInventory().setItem(0, new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM));
                 player.getInventory().setItem(1, egg(12_000L));
             });

@@ -3,10 +3,12 @@ package net.modcrafters.minecraft.barnyardromance.eggs;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 // When a hen lays today's eggs, in ticks since midnight on the overworld clock (GameDay): sunrise is 6,000 and
-// sunset 18,000. Eggs come at random times through the daylight; a hen first seen after sunset uses what's left.
+// sunset 18,000. She lays them all in one sitting, at a random time in the daylight; a hen first seen after sunset
+// uses what's left of the day.
 public final class EggSchedule {
     public static final int SUNRISE = 6_000;
     public static final int SUNSET = 18_000;
@@ -22,16 +24,11 @@ public final class EggSchedule {
         return (int) Math.floorMod(clock + (GameDay.TICKS - 18_000L), GameDay.TICKS);
     }
 
-    public static List<Integer> plan(int sinceMidnight, int count, double[] rolls) {
+    public static List<Integer> plan(int sinceMidnight, int count, double roll) {
         int start = sinceMidnight < SUNSET ? Math.max(sinceMidnight, SUNRISE) : sinceMidnight;
         int end = sinceMidnight < SUNSET ? SUNSET : DAY;
-        List<Integer> times = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            double roll = i < rolls.length ? Math.clamp(rolls[i], 0.0, 1.0) : 0.5;
-            times.add(Math.min(end - 1, start + (int) Math.floor(roll * (end - start))));
-        }
-        times.sort(null);
-        return List.copyOf(times);
+        int time = Math.min(end - 1, start + (int) Math.floor(Math.clamp(roll, 0.0, 1.0) * (end - start)));
+        return List.copyOf(Collections.nCopies(count, time));
     }
 
     // For a hen back from being busy in a nesting box: eggs that came due meanwhile are due now instead of missed.

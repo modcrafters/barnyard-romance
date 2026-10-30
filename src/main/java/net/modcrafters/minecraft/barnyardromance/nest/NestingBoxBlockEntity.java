@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.nest;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
@@ -39,19 +40,18 @@ import net.minecraft.world.level.storage.ValueOutput;
 *///?}
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-// Ten nests. A fertilized egg has a nest to itself and the box counts it down to hatching (EggData);
+// Sixteen nests. A fertilized egg has a nest to itself and the box counts it down to hatching (EggData);
 // plain eggs pile up in a nest to their stack size. Players may put fertilized eggs back but never plain ones,
 // and hoppers may only take plain eggs out.
 public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
-    public static final int SLOTS = 10;
+    public static final int SLOTS = 16;
     private static final int[] ALL_SLOTS = IntStream.range(0, SLOTS).toArray();
 
-    // A hen sits for an in-game hour before her egg is in the nest.
-    public static final int SIT_TICKS = 1_000;
     // The countdowns are brought up to date once a second.
     private static final int COUNT_EVERY = 20;
 
@@ -141,45 +141,58 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return saveWithoutMetadata(registries);
     }
 
-    // The hen leaves the world to sit in the box, saved whole, and comes back out with her egg laid.
-    public boolean enter(Animal hen, ItemStack egg, long now) {
-        if (occupant != null || !(level instanceof ServerLevel server) || !LayInNestGoal.walks(hen)) {
+    // The hen leaves the world to sit in the box, saved whole, and comes back out with all her eggs laid. She sits
+    // longer for more eggs (EggRules.sitTicks). Her nest is the one her first egg goes in.
+    public boolean enter(Animal hen, List<ItemStack> eggs, long now) {
+        if (eggs.isEmpty() || occupant != null || !(level instanceof ServerLevel server) || !LayInNestGoal.walks(hen)) {
             return false;
         }
-        int slot = canPlaceEgg(egg);
+        int slot = canPlaceEgg(eggs.getFirst());
         if (slot < 0) {
             return false;
         }
         CompoundTag saved = NestCompat.save(hen, server);
         NestingBoxes.entered(hen.getUUID());
         hen.discard();
-        occupant = new NestOccupant(saved, egg.copyWithCount(1), now + SIT_TICKS, slot, hen.getUUID());
+        occupant = new NestOccupant(saved, eggs.stream().map(egg -> egg.copyWithCount(1)).toList(), now + EggRules.sitTicks(eggs.size()), slot, hen.getUUID());
         sendToClients();
         return true;
     }
 
-    // Her time is up: she comes out and the egg goes in her nest. If she can't be brought back she stays in, and
-    // tries again in an hour.
+    // Her time is up: she comes out, her first egg goes in her nest and the rest wherever they fit; any that don't are
+    // left in front of the box. If she can't be brought back she stays in, and tries again a quarter of an hour later.
     public void finishSitting() {
         if (occupant == null || !(level instanceof ServerLevel server)) {
             return;
         }
         NestOccupant done = occupant;
         if (!release(server, done)) {
-            occupant = new NestOccupant(done.hen(), done.egg(), server.getGameTime() + SIT_TICKS, done.slot(), done.id());
+            occupant = new NestOccupant(done.hen(), done.eggs(), server.getGameTime() + EggRules.sitTicks(1), done.slot(), done.id());
             setChanged();
             return;
         }
         occupant = null;
-        ItemStack pile = items.get(done.slot());
-        if (pile.isEmpty()) {
-            setItem(done.slot(), done.egg().copy());
-        } else if (ItemStack.isSameItemSameComponents(pile, done.egg()) && pile.getCount() < pile.getMaxStackSize()) {
-            pile.grow(1);
-        } else if (!placeEgg(done.egg())) {
-            Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0, getBlockPos().getZ() + 0.5, done.egg().copy());
+        Vec3 front = exitPos();
+        for (int i = 0; i < done.eggs().size(); i++) {
+            ItemStack egg = done.eggs().get(i);
+            if (!(i == 0 && intoNest(done.slot(), egg)) && !placeEgg(egg)) {
+                Containers.dropItemStack(server, front.x, front.y, front.z, egg.copy());
+            }
         }
         sendToClients();
+    }
+
+    private boolean intoNest(int slot, ItemStack egg) {
+        ItemStack pile = items.get(slot);
+        if (pile.isEmpty()) {
+            setItem(slot, egg.copy());
+            return true;
+        }
+        if (ItemStack.isSameItemSameComponents(pile, egg) && pile.getCount() < pile.getMaxStackSize()) {
+            pile.grow(1);
+            return true;
+        }
+        return false;
     }
 
     // Brings her back into the world in front of the hole. Another entity with her id (a box copied with its hen,
@@ -298,12 +311,14 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return stack.is(BarnyardItems.FERTILIZED_EGG);
     }
 
-    // Breaking the box drops the egg a sitting hen was about to leave along with the rest, and lets her out.
+    // Breaking the box drops the eggs a sitting hen was about to leave along with the rest, and lets her out.
     void beforeRemoved() {
         if (occupant != null && level instanceof ServerLevel server) {
             NestOccupant hen = occupant;
             occupant = null;
-            Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5, hen.egg().copy());
+            for (ItemStack egg : hen.eggs()) {
+                Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5, egg.copy());
+            }
             release(server, hen);
             sendToClients();
         }

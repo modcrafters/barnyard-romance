@@ -78,8 +78,8 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void boxTakesTenEggs(GameTestHelper helper) {
-        EggGameTests.boxTakesTenEggs(helper);
+    public void boxTakesSixteenEggs(GameTestHelper helper) {
+        EggGameTests.boxTakesSixteenEggs(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
@@ -210,6 +210,26 @@ public class FabricEggGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void boxSurvivesSaveWithHen(GameTestHelper helper) {
         EggGameTests.boxSurvivesSaveWithHen(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void henSitsLongerForMoreEggs(GameTestHelper helper) {
+        EggGameTests.henSitsLongerForMoreEggs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void boxTakesEveryEggOfASitting(GameTestHelper helper) {
+        EggGameTests.boxTakesEveryEggOfASitting(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void eggsThatDoNotFitComeOutWithHer(GameTestHelper helper) {
+        EggGameTests.eggsThatDoNotFitComeOutWithHer(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void dueEggsAreLaidTogether(GameTestHelper helper) {
+        EggGameTests.dueEggsAreLaidTogether(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

@@ -7,17 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NestingBoxLayoutTest {
     @Test
-    void nestsAreTwoCentredRowsOfFive() {
-        assertEquals(NestingBoxLayout.nestX(0), NestingBoxLayout.nestX(5));
-        assertEquals(NestingBoxLayout.nestY(0) + NestingBoxLayout.ROW_STEP, NestingBoxLayout.nestY(5));
+    void nestsAreFourCentredRowsOfFour() {
+        assertEquals(NestingBoxLayout.nestX(0), NestingBoxLayout.nestX(12));
+        assertEquals(NestingBoxLayout.nestY(0) + 3 * NestingBoxLayout.ROW_STEP, NestingBoxLayout.nestY(12));
         int left = NestingBoxLayout.nestX(0);
-        int right = NestingBoxLayout.nestX(4) + 16;
+        int right = NestingBoxLayout.nestX(3) + 16;
         assertEquals(NestingBoxLayout.WIDTH / 2, (left + right) / 2);
     }
 
     @Test
     void countdownsFitAboveTheInventoryLabel() {
-        int lastTimerBottom = NestingBoxLayout.nestY(9) + 18 + 9;
+        int lastTimerBottom = NestingBoxLayout.nestY(15) + 18 + 9;
         assertTrue(lastTimerBottom <= NestingBoxLayout.INVENTORY_LABEL_Y, "timers end at " + lastTimerBottom);
     }
 

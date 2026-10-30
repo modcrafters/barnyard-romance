@@ -21,6 +21,14 @@ class EggRulesTest {
         assertEquals(3, EggRules.perDay(SizeClass.XL, false, true, EggSettings.CHICKEN));
     }
 
+    // A quarter of an in-game hour (1,000 ticks), and five minutes more for each egg after the first.
+    @Test
+    void sittingIsFifteenMinutesAndFiveMorePerEgg() {
+        assertEquals(250, EggRules.sitTicks(1));
+        assertEquals(333, EggRules.sitTicks(2));
+        assertEquals(416, EggRules.sitTicks(3));
+    }
+
     @Test
     void hungryYesterdayLaysNothing() {
         assertEquals(0, EggRules.perDay(SizeClass.XL, true, true, EggSettings.CHICKEN));

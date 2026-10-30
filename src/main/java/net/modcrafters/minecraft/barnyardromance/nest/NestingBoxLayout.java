@@ -1,18 +1,18 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
-// Where things sit in the nesting box window: ten nests in two rows of five, each with room for its countdown
+// Where things sit in the nesting box window: sixteen nests in four rows of four, each with room for its countdown
 // underneath, above the player's inventory. Positions are the top-left of a slot's item, as Minecraft's slots use.
 public final class NestingBoxLayout {
     public static final int WIDTH = 176;
-    public static final int HEIGHT = 174;
-    public static final int NESTS_PER_ROW = 5;
+    public static final int HEIGHT = 232;
+    public static final int NESTS_PER_ROW = 4;
     public static final int CELL = 30;
-    public static final int FIRST_NEST_X = 20;
+    public static final int FIRST_NEST_X = (WIDTH - (NESTS_PER_ROW - 1) * CELL - 16) / 2;
     public static final int FIRST_NEST_Y = 20;
     public static final int ROW_STEP = 30;
-    // The inventory starts where a chest's would sit under three fewer rows.
-    public static final int INVENTORY_Y = 92;
-    public static final int HOTBAR_Y = 150;
+    // The inventory sits at the bottom, as a chest's does.
+    public static final int INVENTORY_Y = HEIGHT - 82;
+    public static final int HOTBAR_Y = HEIGHT - 24;
     public static final int INVENTORY_LABEL_Y = HEIGHT - 94;
 
     private NestingBoxLayout() {

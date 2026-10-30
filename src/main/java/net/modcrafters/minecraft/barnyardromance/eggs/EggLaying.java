@@ -38,7 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 
 // Hens lay a few eggs a day instead of breeding (see EggRules for how many). The day is planned on the hen's first
-// tick after midnight, after her hunger is settled, and each egg is laid when its time comes round.
+// tick after midnight, after her hunger is settled, and when her time comes round she lays all of them at once.
 public final class EggLaying {
     private EggLaying() {
     }
@@ -88,9 +88,10 @@ public final class EggLaying {
             if (due.skip() == 0 && !due.layNow()) {
                 return;
             }
-            Services.DATA.setLaying(animal, laying.advance(due.skip() + (due.layNow() ? 1 : 0)));
-            if (due.layNow()) {
-                layDue(animal, level);
+            int eggs = due.layNow() ? laying.planned() - laying.next() - due.skip() : 0;
+            Services.DATA.setLaying(animal, laying.advance(due.skip() + eggs));
+            if (eggs > 0) {
+                layDue(animal, level, eggs);
             }
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to lay a {}'s egg", AnimalSex.speciesId(animal), exception);
@@ -101,29 +102,30 @@ public final class EggLaying {
         AnimalTraits traits = Services.DATA.get(hen).orElseThrow();
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(hen)));
         int count = EggRules.perDay(size, traits.hunger().hungryYesterday(today), Familiarity.ready(traits.familiarity()), settings(hen));
-        double[] rolls = new double[count];
-        for (int i = 0; i < count; i++) {
-            rolls[i] = hen.getRandom().nextDouble();
-        }
-        return new Laying(today, EggSchedule.plan(sinceMidnight, count, rolls), 0);
+        return new Laying(today, EggSchedule.plan(sinceMidnight, count, hen.getRandom().nextDouble()), 0);
     }
 
-    // The egg is fertilized if a fed rooster is near. A hen that can walk to a box with room goes and lays it there;
-    // otherwise it's laid on the ground, where it's always plain: it has been out in the weather.
-    public static void layDue(Animal hen, ServerLevel level) {
-        ItemStack egg = fertilizedEgg(hen, level).orElseGet(() -> plainEgg(hen, level));
-        if (LayInNestGoal.walks(hen) && headForBox(hen, level, egg, Set.of(), false)) {
+    // The eggs are fertilized if a fed rooster is near. A hen that can walk to a box with room goes and lays them all
+    // there in one sitting; otherwise they're laid on the ground, where they're always plain: they've been out in the
+    // weather.
+    public static void layDue(Animal hen, ServerLevel level, int count) {
+        List<ItemStack> eggs = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            eggs.add(fertilizedEgg(hen, level).orElseGet(() -> plainEgg(hen, level)));
+        }
+        if (LayInNestGoal.walks(hen) && headForBox(hen, level, eggs, Set.of(), false)) {
             return;
         }
-        layOnGround(hen, level);
+        layOnGround(hen, level, count);
     }
 
-    public static boolean headForBox(Animal hen, ServerLevel level, ItemStack egg, Set<BlockPos> skip, boolean retried) {
+    // A box only needs room for her first egg; what doesn't fit is left in front of it when she comes out.
+    public static boolean headForBox(Animal hen, ServerLevel level, List<ItemStack> eggs, Set<BlockPos> skip, boolean retried) {
         for (NestingBoxBlockEntity box : NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange())) {
-            if (skip.contains(box.getBlockPos()) || box.occupied() || box.canPlaceEgg(egg) < 0) {
+            if (skip.contains(box.getBlockPos()) || box.occupied() || box.canPlaceEgg(eggs.getFirst()) < 0) {
                 continue;
             }
-            if (LayInNestGoal.headFor(hen, egg, box.getBlockPos(), level.getGameTime(), retried)) {
+            if (LayInNestGoal.headFor(hen, eggs, box.getBlockPos(), level.getGameTime(), retried)) {
                 return true;
             }
         }
@@ -167,8 +169,8 @@ public final class EggLaying {
                 .anyMatch(box -> !box.occupied() && box.canPlaceEgg(egg) >= 0);
     }
 
-    public static void layOnGround(Animal hen, ServerLevel level) {
-        drop(hen, level, plainEgg(hen, level));
+    public static void layOnGround(Animal hen, ServerLevel level, int count) {
+        drop(hen, level, plainEgg(hen, level).copyWithCount(count));
     }
 
     // An egg fathered by the closest adult rooster in range that wasn't hungry yesterday, or nothing.
