@@ -78,6 +78,41 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void boxTakesTenEggs(GameTestHelper helper) {
+        EggGameTests.boxTakesTenEggs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void plainEggsStackInOneSlot(GameTestHelper helper) {
+        EggGameTests.plainEggsStackInOneSlot(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void plainEggsCannotBePutIn(GameTestHelper helper) {
+        EggGameTests.plainEggsCannotBePutIn(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hopperPullsOnlyPlainEggs(GameTestHelper helper) {
+        EggGameTests.hopperPullsOnlyPlainEggs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void countdownPausesOutsideTheBox(GameTestHelper helper) {
+        EggGameTests.countdownPausesOutsideTheBox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void boxDropsEggsWhenBroken(GameTestHelper helper) {
+        EggGameTests.boxDropsEggsWhenBroken(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void boxRecipe(GameTestHelper helper) {
+        EggGameTests.boxRecipe(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
     }

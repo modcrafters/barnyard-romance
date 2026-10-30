@@ -8,6 +8,10 @@ import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxMenu;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -17,6 +21,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -35,6 +40,9 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 //? if >=1.21.5 {
@@ -55,6 +63,7 @@ public final class EggGameTests {
     // Chickens use the default sizes: females 0.7 to 0.9, so 0.76 is M and 0.9 is XL.
     static final double MEDIUM_HEN = 0.76;
     static final double LARGE_HEN = 0.9;
+    static final BlockPos BOX = new BlockPos(2, 2, 2);
     static final TagKey<Item> COMMON_EGGS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "eggs"));
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
@@ -71,7 +80,14 @@ public final class EggGameTests {
             new BreedingGameTests.Case("thrown_plain_egg_never_hatches", 20, EggGameTests::thrownPlainEggNeverHatches),
             new BreedingGameTests.Case("thrown_fertilized_egg_hatches_tainted", 20, EggGameTests::thrownFertilizedEggHatchesTainted),
             new BreedingGameTests.Case("thrown_fertilized_egg_uses_the_chance", 20, EggGameTests::thrownFertilizedEggUsesTheChance),
-            new BreedingGameTests.Case("excluded_chickens_thrown_eggs_hatch", 20, EggGameTests::excludedChickensThrownEggsHatch)
+            new BreedingGameTests.Case("excluded_chickens_thrown_eggs_hatch", 20, EggGameTests::excludedChickensThrownEggsHatch),
+            new BreedingGameTests.Case("box_takes_ten_eggs", 20, EggGameTests::boxTakesTenEggs),
+            new BreedingGameTests.Case("plain_eggs_stack_in_one_slot", 20, EggGameTests::plainEggsStackInOneSlot),
+            new BreedingGameTests.Case("plain_eggs_cannot_be_put_in", 20, EggGameTests::plainEggsCannotBePutIn),
+            new BreedingGameTests.Case("hopper_pulls_only_plain_eggs", 20, EggGameTests::hopperPullsOnlyPlainEggs),
+            new BreedingGameTests.Case("countdown_pauses_outside_the_box", 20, EggGameTests::countdownPausesOutsideTheBox),
+            new BreedingGameTests.Case("box_drops_eggs_when_broken", 20, EggGameTests::boxDropsEggsWhenBroken),
+            new BreedingGameTests.Case("box_recipe", 20, EggGameTests::boxRecipe)
             //? if >=1.21.5 {
             , new BreedingGameTests.Case("warm_hen_lays_brown_eggs", 20, EggGameTests::warmHenLaysBrownEggs)
             //?}
@@ -278,6 +294,129 @@ public final class EggGameTests {
 
         helper.assertTrue(chickensIn(helper) > 0, "64 eggs thrown with chickens excluded hatched nothing");
         helper.succeed();
+    }
+
+    public static void boxTakesTenEggs(GameTestHelper helper) {
+        NestingBoxBlockEntity fertile = box(helper, BOX);
+        NestingBoxBlockEntity plain = box(helper, BOX.east(2));
+
+        for (int i = 0; i < NestingBoxBlockEntity.SLOTS; i++) {
+            helper.assertTrue(fertile.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L))), "fertilized egg " + (i + 1) + " didn't fit");
+        }
+        boolean eleventh = fertile.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        for (int i = 0; i < NestingBoxBlockEntity.SLOTS * 16; i++) {
+            helper.assertTrue(plain.placeEgg(new ItemStack(Items.EGG)), "plain egg " + (i + 1) + " didn't fit");
+        }
+        boolean extra = plain.placeEgg(new ItemStack(Items.EGG));
+
+        helper.assertTrue(!eleventh, "an eleventh fertilized egg fit");
+        helper.assertTrue(!extra, "a 161st plain egg fit");
+        helper.succeed();
+    }
+
+    public static void plainEggsStackInOneSlot(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+
+        for (int i = 0; i < 3; i++) {
+            box.placeEgg(new ItemStack(Items.EGG));
+        }
+
+        helper.assertTrue(box.getItem(0).getCount() == 3 && box.getItem(1).isEmpty(), "three plain eggs: " + box.getItem(0) + ", " + box.getItem(1));
+        helper.succeed();
+    }
+
+    public static void plainEggsCannotBePutIn(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.placeEgg(new ItemStack(Items.EGG));
+        Player player = holding(helper, Items.EGG);
+        NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
+        ItemStack fertile = FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L));
+
+        boolean plainAllowed = menu.getSlot(0).mayPlace(new ItemStack(Items.EGG));
+        boolean fertileAllowed = menu.getSlot(1).mayPlace(fertile);
+        boolean ontoAnEgg = menu.getSlot(0).mayPlace(fertile);
+        //? if >=1.21.5 {
+        int held = menu.slots.size() - 9 + player.getInventory().getSelectedSlot();
+        //?} else
+        //int held = menu.slots.size() - 9 + player.getInventory().selected;
+        menu.quickMoveStack(player, held);
+
+        helper.assertTrue(!plainAllowed, "a plain egg can be put in a nest by hand");
+        helper.assertTrue(fertileAllowed, "a fertilized egg can't be put in an empty nest");
+        helper.assertTrue(!ontoAnEgg, "a fertilized egg can be put on top of another egg");
+        helper.assertTrue(box.getItem(0).getCount() == 1 && box.getItem(1).isEmpty(), "shift-clicking moved a plain egg into the box");
+        helper.succeed();
+    }
+
+    public static void hopperPullsOnlyPlainEggs(GameTestHelper helper) {
+        helper.setBlock(BOX.below(), Blocks.HOPPER.defaultBlockState());
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.placeEgg(new ItemStack(Items.EGG, 2));
+        box.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        HopperBlockEntity hopper = (HopperBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(BOX.below()));
+
+        for (int i = 0; i < 4; i++) {
+            HopperBlockEntity.suckInItems(helper.getLevel(), hopper);
+        }
+
+        helper.assertTrue(box.getItem(0).isEmpty(), "the hopper left plain eggs: " + box.getItem(0));
+        helper.assertTrue(box.getItem(1).is(BarnyardItems.FERTILIZED_EGG), "the hopper took the fertilized egg");
+        helper.succeed();
+    }
+
+    public static void countdownPausesOutsideTheBox(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        long placed = helper.getLevel().getGameTime();
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        long hatchAt = FertilizedEggItem.data(box.getItem(0)).orElseThrow().hatchAt();
+        helper.assertTrue(hatchAt == placed + 1_000L, "an egg put in at " + placed + " hatches at " + hatchAt);
+
+        helper.runAfterDelay(5, () -> {
+            long taken = helper.getLevel().getGameTime();
+            EggData out = FertilizedEggItem.data(box.removeItemNoUpdate(0)).orElseThrow();
+            helper.assertTrue(!out.inBox() && out.remainingTicks() == 1_000L - (taken - placed), "an egg taken out after " + (taken - placed) + " ticks: " + out);
+            helper.succeed();
+        });
+    }
+
+    public static void boxDropsEggsWhenBroken(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.placeEgg(new ItemStack(Items.EGG, 3));
+        box.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+
+        helper.destroyBlock(BOX);
+
+        List<ItemEntity> dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0));
+        int plain = dropped.stream().filter(item -> item.getItem().is(Items.EGG)).mapToInt(item -> item.getItem().getCount()).sum();
+        List<EggData> fertile = dropped.stream().map(item -> FertilizedEggItem.data(item.getItem())).flatMap(Optional::stream).toList();
+        helper.assertTrue(plain == 3, "breaking the box dropped " + plain + " plain eggs");
+        helper.assertTrue(fertile.size() == 1 && !fertile.getFirst().inBox(), "breaking the box dropped fertilized eggs " + fertile);
+        helper.succeed();
+    }
+
+    public static void boxRecipe(GameTestHelper helper) {
+        ItemStack plank = new ItemStack(Items.OAK_PLANKS);
+        CraftingInput input = CraftingInput.of(3, 3, List.of(
+                plank.copy(), ItemStack.EMPTY, plank.copy(),
+                plank.copy(), new ItemStack(Items.WHEAT), plank.copy(),
+                plank.copy(), plank.copy(), plank.copy()
+        ));
+
+        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+
+        helper.assertTrue(recipe.isPresent(), "planks round wheat craft nothing");
+        //? if >=1.21.2 {
+        ItemStack result = recipe.get().value().assemble(input);
+        //?} else
+        //ItemStack result = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
+        helper.assertTrue(result.is(BarnyardBlocks.NESTING_BOX_ITEM), "planks round wheat craft " + result);
+        helper.succeed();
+    }
+
+    static NestingBoxBlockEntity box(GameTestHelper helper, BlockPos pos) {
+        helper.setBlock(pos, BarnyardBlocks.NESTING_BOX.defaultBlockState());
+        return (NestingBoxBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(pos));
     }
 
     // An egg dropped onto the pen's floor and ticked by hand until it breaks, all within this tick.

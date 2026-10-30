@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.client;
 
+import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
+import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
@@ -30,6 +33,7 @@ public final class BarnyardRomanceNeoForgeClient {
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerReloadListeners);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerLayers);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerParticles);
+        modBus.addListener(BarnyardRomanceNeoForgeClient::registerScreens);
         //? if >=1.21.6
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerPayloads);
     }
@@ -56,6 +60,10 @@ public final class BarnyardRomanceNeoForgeClient {
         event.registerReloadListener(HornShapes.listener());
     }
     *///?}
+
+    private static void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
+    }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(BarnyardParticles.PREGNANCY_HEART, PregnancyHeartParticle.Provider::new);

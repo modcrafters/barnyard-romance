@@ -48,6 +48,8 @@
   "item.barnyard_romance.sheep_milk_bucket": "Bucket of Sheep Milk",
   "item.barnyard_romance.goat_milk_bucket": "Bucket of Goat Milk",
   "item.barnyard_romance.fertilized_egg": "Fertilized Egg",
+  "block.barnyard_romance.nesting_box": "Nesting Box",
+  "container.barnyard_romance.nesting_box": "Nesting Box",
   "item.barnyard_romance.fertilized_egg.time": "Hatches after %s in a nesting box",
   "item.barnyard_romance.fertilized_egg.parents": "Mother %s, father %s",
   "itemGroup.barnyard_romance": "Barnyard Romance",

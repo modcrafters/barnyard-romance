@@ -18,11 +18,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 // Keys are always written out in full in the code, so scanning the sources finds every one.
 class LangFileTest {
-    private static final Pattern KEY = Pattern.compile("\"((?:gui|message|commands|item)\\.barnyard_romance\\.[a-z0-9_.]+)\"");
-    // Keys the code never names in full: the game looks up item names from the registry and tag names from the tag
+    private static final Pattern KEY = Pattern.compile("\"((?:gui|message|commands|item|container)\\.barnyard_romance\\.[a-z0-9_.]+)\"");
+    // Keys the code never names in full: the game looks up item and block names from the registry and tag names from the tag
     // id, and BarnyardItems adds .use and .effect to a superfood's own key for its tooltip.
     // item.minecraft.milk_bucket renames vanilla's milk bucket to cow milk, next to sheep and goat milk.
-    private static final Pattern IMPLICIT = Pattern.compile("item\\.barnyard_romance\\.[a-z0-9_]+(?:\\.use|\\.effect)?|item\\.minecraft\\.milk_bucket|itemGroup\\..*|death\\..*|tag\\..*");
+    private static final Pattern IMPLICIT = Pattern.compile("item\\.barnyard_romance\\.[a-z0-9_]+(?:\\.use|\\.effect)?|block\\.barnyard_romance\\.[a-z0-9_]+|item\\.minecraft\\.milk_bucket|itemGroup\\..*|death\\..*|tag\\..*");
 
     @Test
     void everyKeyInTheCodeIsInTheLangFile() throws IOException {

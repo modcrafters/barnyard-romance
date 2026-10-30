@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
+import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
 import net.modcrafters.minecraft.barnyardromance.neoforge.gametest.NeoForgeBreedingGameTests;
@@ -87,6 +88,10 @@ public class BarnyardRomanceNeoForge {
         event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
         event.register(Registries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.GOAT_MILK_BUCKET);
         event.register(Registries.ITEM, BarnyardItems.FERTILIZED_EGG_ID.identifier(), () -> BarnyardItems.FERTILIZED_EGG);
+        event.register(Registries.BLOCK, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX);
+        event.register(Registries.ITEM, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ITEM);
+        event.register(Registries.BLOCK_ENTITY_TYPE, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ENTITY);
+        event.register(Registries.MENU, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_MENU);
         event.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), () -> BarnyardTab.titled(CreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
