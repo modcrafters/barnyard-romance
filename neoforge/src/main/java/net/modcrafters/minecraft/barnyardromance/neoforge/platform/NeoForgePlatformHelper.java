@@ -1,5 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.platform;
 
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.modcrafters.minecraft.barnyardromance.platform.services.IPlatformHelper;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Animal;
@@ -43,5 +49,18 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
             return null;
         }
         return event.getChild();
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block block) {
+        //? if >=1.21.2 {
+        return new BlockEntityType<>(factory::create, block);
+        //?} else
+        //return BlockEntityType.Builder.of(factory::create, block).build(null);
+    }
+
+    @Override
+    public <T extends AbstractContainerMenu> MenuType<T> menuType(MenuFactory<T> factory) {
+        return new MenuType<>(factory::create, FeatureFlags.VANILLA_SET);
     }
 }

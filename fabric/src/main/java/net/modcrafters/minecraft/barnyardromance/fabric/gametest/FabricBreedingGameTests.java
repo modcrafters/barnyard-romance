@@ -19,6 +19,11 @@ public class FabricBreedingGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void timeSkipMovesPregnanciesOn(GameTestHelper helper) {
+        BreedingGameTests.timeSkipMovesPregnanciesOn(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void sameSexPairsMakeNothing(GameTestHelper helper) {
         BreedingGameTests.sameSexPairsMakeNothing(helper);
     }

@@ -42,6 +42,11 @@ final class SpeciesPresets {
         return PRESETS.get(speciesId);
     }
 
+    // Birds that lay eggs instead of giving birth.
+    static EggSettings eggs(String speciesId) {
+        return "minecraft:chicken".equals(speciesId) ? EggSettings.CHICKEN : EggSettings.NONE;
+    }
+
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {
         return new Preset(new Range(pregnancyMin, pregnancyMax), new Range(litterMin, litterMax));
     }

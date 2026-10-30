@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#minecraft:planks",
+    "W": "minecraft:wheat"
+  },
+  "pattern": [
+    "P P",
+    "PWP",
+    "PPP"
+  ],
+  "result": {
+    "id": "barnyard_romance:nesting_box"
+  }
+}

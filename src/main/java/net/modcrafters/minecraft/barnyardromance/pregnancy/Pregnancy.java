@@ -20,10 +20,28 @@ public record Pregnancy(
         List<CompoundTag> litter,
         PregnancyCare care,
         // Null for pregnancies from older saves; clients never see it.
-        @Nullable UUID fatherId
+        @Nullable UUID fatherId,
+        // Server only, like fatherId.
+        SkippedTime seen
 ) {
     public Pregnancy {
         litter = List.copyOf(litter);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter,
+            PregnancyCare care,
+            @Nullable UUID fatherId
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, SkippedTime.UNSEEN);
     }
 
     public Pregnancy(
@@ -94,14 +112,20 @@ public record Pregnancy(
 
     // Debug steps set an exact elapsed time, so food's gained or lost ticks are dropped.
     public Pregnancy withConceivedAt(long tick) {
-        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care.withoutTicks(), fatherId);
+        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care.withoutTicks(), fatherId, seen);
     }
 
     public Pregnancy withCare(PregnancyCare next) {
-        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, next, fatherId);
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, next, fatherId, seen);
     }
 
     public Pregnancy withFatherId(@Nullable UUID id) {
-        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, id);
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, id, seen);
+    }
+
+    // Moved on by ticks of skipped time: everything that was counting from a tick now counts from that much earlier.
+    public Pregnancy skipped(long ticks, SkippedTime now) {
+        return new Pregnancy(conceivedAt - ticks, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter,
+                care.shifted(ticks), fatherId, now);
     }
 }

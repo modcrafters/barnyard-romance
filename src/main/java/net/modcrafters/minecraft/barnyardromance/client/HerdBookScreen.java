@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
@@ -85,6 +86,9 @@ public class HerdBookScreen extends Screen {
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
     private static final Identifier SHEARS_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/shears");
     private static final Identifier SHEARS_EMPTY = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/shears_empty");
+    private static final Identifier EGG_FERTILIZED = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/egg_fertilized");
+    private static final Identifier EGG_PLAIN = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/egg");
+    private static final Identifier EGG_NONE = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/egg_none");
     private static final Identifier FERTILE_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/fertile");
     private static final Identifier UNKNOWN_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/unknown");
     private static final Identifier RETURN_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/back");
@@ -510,6 +514,12 @@ public class HerdBookScreen extends Screen {
             this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, Component.translatable("gui.barnyard_romance.herd_book.milk_icon")));
             x -= 1;
         }
+        if (entry.eggs().isPresent()) {
+            x -= ICON;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, eggIcon(entry.eggs().get()), x, y - 1, ICON, ICON);
+            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, entry.eggTip()));
+            x -= 1;
+        }
         if (entry.shear() != ShearState.NONE) {
             x -= ICON;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, y - 1, ICON, ICON);
@@ -600,6 +610,7 @@ public class HerdBookScreen extends Screen {
             }
             case FERTILITY -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FERTILE_ICON, x, iconY, ICON, ICON);
             case SHEAR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, iconY, ICON, ICON);
+            case EGGS -> entry.eggs().ifPresent(eggs -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, eggIcon(eggs), x, iconY, ICON, ICON));
             case SIZE, NOTE -> {
             }
         }
@@ -737,6 +748,15 @@ public class HerdBookScreen extends Screen {
             graphics.text(this.font, sure, sureX, y + 3, HUNGRY, false);
             this.hits.add(new Hit(sureX, y, removeX, y + REMOVE_HEIGHT, this::pressRemove, Component.translatable("gui.barnyard_romance.herd_book.remove")));
         }
+    }
+
+    // A speckled egg for fertilized eggs tomorrow, a plain one for plain eggs, and a black one for none.
+    private static Identifier eggIcon(EggOutlook.Kind eggs) {
+        return switch (eggs) {
+            case FERTILIZED -> EGG_FERTILIZED;
+            case PLAIN -> EGG_PLAIN;
+            case NO_EGGS -> EGG_NONE;
+        };
     }
 
     private static String shearKey(ShearState state) {

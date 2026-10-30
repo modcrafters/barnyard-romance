@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.data;
 
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.minecraft.world.entity.animal.Animal;
@@ -16,4 +17,8 @@ public interface EntityDataService {
     void setPregnancy(Animal animal, Pregnancy pregnancy);
 
     void clearPregnancy(Animal animal);
+
+    Optional<Laying> getLaying(Animal animal);
+
+    void setLaying(Animal animal, Laying laying);
 }

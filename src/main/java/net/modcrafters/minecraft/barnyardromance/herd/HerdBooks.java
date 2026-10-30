@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -66,25 +67,35 @@ public final class HerdBooks {
     }
 
     public static void born(Animal mother, List<Animal> young) {
-        if (young.isEmpty() || !(mother.level() instanceof ServerLevel level)) {
+        if (mother.level() instanceof ServerLevel level) {
+            born(level, mother.getUUID(), young);
+        }
+    }
+
+    // By the mother's id, for chicks hatching while she's away or after she has died.
+    public static void born(ServerLevel level, UUID mother, List<Animal> young) {
+        if (young.isEmpty()) {
             return;
         }
         HerdBookData data = HerdBookData.get(level.getServer());
-        if (data.ledger().node(mother.getUUID()) == null) {
+        if (data.ledger().node(mother) == null) {
             return;
         }
         List<HerdLedger.Node> nodes = new ArrayList<>();
         for (Animal child : young) {
             Services.DATA.get(child).ifPresent(traits -> nodes.add(node(child, traits, Familiarity.ready(traits.familiarity()))));
         }
-        if (data.ledger().born(mother.getUUID(), nodes).isEmpty()) {
+        if (data.ledger().born(mother, nodes).isEmpty()) {
             return;
         }
         long now = level.getGameTime();
         for (Animal child : young) {
             HerdRecords.capture(child, now).ifPresent(record -> data.put(child.getUUID(), record));
         }
-        refresh(data, mother, now);
+        Animal loaded = find(level.getServer(), mother);
+        if (loaded != null) {
+            refresh(data, loaded, now);
+        }
         data.setDirty();
     }
 
@@ -101,7 +112,8 @@ public final class HerdBooks {
         }
         long now = level.getGameTime();
         refresh(data, animal, now);
-        if (reason != null && reason.shouldDestroy()) {
+        // A hen going into a nesting box leaves the world for a while but hasn't died.
+        if (reason != null && reason.shouldDestroy() && !NestingBoxes.inNest(animal.getUUID())) {
             HerdRecord record = data.record(animal.getUUID());
             if (record != null) {
                 data.put(animal.getUUID(), record.died(now, level.getOverworldClockTime()));

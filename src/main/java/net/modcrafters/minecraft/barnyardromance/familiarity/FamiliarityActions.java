@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
@@ -204,6 +205,10 @@ public final class FamiliarityActions {
         Optional<AnimalTraits> traits = tracked(animal);
         if (traits.isEmpty()) {
             return true;
+        }
+        // Egg layers never breed by love: hens lay, and a rooster nearby makes the eggs fertile.
+        if (EggLaying.laysEggs(animal)) {
+            return false;
         }
         return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent())
                 && AgeController.allowsLove(animal);

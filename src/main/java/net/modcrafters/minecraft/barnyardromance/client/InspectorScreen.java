@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.Constants;
@@ -123,6 +126,7 @@ public class InspectorScreen extends Screen {
             case HEALTH -> health(graphics, x, rowY, sheet);
             case FERTILITY -> meter(graphics, x, rowY, "fertility", Text.of("gui.barnyard_romance.inspector.fertility"), sheet.fertility(), "fill_pregnant", sheet.fertilityText());
             case MILK -> milk(graphics, x, rowY, sheet);
+            case EGGS -> eggs(graphics, x, rowY, sheet);
             case BREEDING -> breeding(graphics, x, rowY, sheet);
             case DETAIL -> text(graphics, sheet.detailText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
         }
@@ -249,6 +253,15 @@ public class InspectorScreen extends Screen {
         text(graphics, sheet.milkText(), x + InspectorLayout.barX(), rowY + 3, TEXT);
     }
 
+    // A hen counts today's eggs; a rooster says whether he makes them fertile today.
+    private void eggs(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
+        int rowX = x + InspectorLayout.STATS_X;
+        sprite(graphics, "egg", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
+        Text label = Text.of(sheet.female() ? "gui.barnyard_romance.inspector.eggs" : "gui.barnyard_romance.inspector.rooster");
+        text(graphics, label, rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
+        text(graphics, sheet.eggsText(), x + InspectorLayout.barX(), rowY + 3, TEXT);
+    }
+
     private void breeding(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         if (sheet.pregnant()) {
             meter(graphics, x, rowY, "gold_heart", Text.of("gui.barnyard_romance.inspector.pregnant"), sheet.pregnancy(), "fill_pregnant", sheet.pregnancyText());
@@ -258,6 +271,22 @@ public class InspectorScreen extends Screen {
         sprite(graphics, "gold_heart", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
         text(graphics, Text.of("gui.barnyard_romance.inspector.breeding"), rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         text(graphics, sheet.breedingText(), x + InspectorLayout.barX(), rowY + 3, sheet.breedingReady() ? GOOD : BAD);
+    }
+
+    private static Text eggs(Animal animal, AnimalTraits traits, long clock) {
+        if (animal.isBaby() || !EggLaying.laysEggs(animal)) {
+            return Text.EMPTY;
+        }
+        long today = GameDay.of(clock);
+        boolean hungry = traits.hunger().hungryYesterday(today);
+        if (traits.sex() == Sex.MALE) {
+            return InspectorSheet.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, hungry);
+        }
+        if (!EggLaying.isLayingHen(animal)) {
+            return Text.EMPTY;
+        }
+        Laying laying = Services.DATA.getLaying(animal).filter(current -> current.day() == today).orElse(Laying.NONE);
+        return InspectorSheet.eggsText(laying.next(), laying.planned(), hungry);
     }
 
     private InspectorSheet sheet() {
@@ -321,6 +350,7 @@ public class InspectorScreen extends Screen {
                 fertility,
                 Familiarity.percent(fertility),
                 MilkActions.status(this.animal, value, now, clock).map(InspectorSheet::milkText).orElse(Text.EMPTY),
+                eggs(this.animal, value, clock),
                 pregnancy.isPresent(),
                 pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0),
                 pregnancy.map(current -> PregnancyText.clock(PregnancyClock.remainingTicks(now, current))).orElse(Text.EMPTY),

@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Inheritance;
+import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Optional;
 
 public final class PregnancyController {
+    // How far a stopped or set-back clock may fall behind before a pregnancy catches up with it.
+    private static final long RESEEN_BEHIND = 1_200L;
+
     private PregnancyController() {
     }
 
@@ -43,7 +46,7 @@ public final class PregnancyController {
         if (pregnancy.isEmpty() || !animal.isAlive()) {
             return;
         }
-        Pregnancy current = pregnancy.get();
+        Pregnancy current = skipAhead(animal, level, pregnancy.get());
         if (!PregnancyClock.ready(level.getGameTime(), current)) {
             return;
         }
@@ -53,6 +56,21 @@ public final class PregnancyController {
             Constants.LOG.error("Failed to birth {}", AnimalSex.speciesId(animal), exception);
         }
         Services.DATA.clearPregnancy(animal);
+    }
+
+    // Time skipped by sleeping or /time add counts towards the pregnancy, including any skipped while she was unloaded.
+    // A clock that falls behind (a stopped daylight cycle, or set back) takes nothing away; it's caught up with now
+    // and then, so a later skip still counts in full. Otherwise she's only saved when something was skipped.
+    private static Pregnancy skipAhead(Animal mother, ServerLevel level, Pregnancy pregnancy) {
+        long game = level.getGameTime();
+        long clock = level.getOverworldClockTime();
+        long drift = pregnancy.seen().drift(game, clock);
+        if (pregnancy.seen().seen() && drift <= 0L && drift > -RESEEN_BEHIND) {
+            return pregnancy;
+        }
+        Pregnancy moved = pregnancy.skipped(Math.max(0L, drift), new SkippedTime(game, clock));
+        Services.DATA.setPregnancy(mother, moved);
+        return moved;
     }
 
     private static boolean startOrRefuse(Animal self, Animal partner, ServerLevel level) {
@@ -184,23 +202,17 @@ public final class PregnancyController {
         // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
         double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
         Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
-        double scalePercent = inherit(
-                child,
-                ScaleRoll.percent(Sex.FEMALE, motherScale, size),
-                ScaleRoll.percent(Sex.MALE, pregnancy.fatherScale(), size),
-                nutrition
+        AnimalTraits traits = Offspring.traits(
+                sex,
+                size,
+                new Offspring.Parent(motherScale, motherGrowth, motherWeight),
+                new Offspring.Parent(pregnancy.fatherScale(), pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
+                nutrition,
+                child.getRandom(),
+                mother.level().getGameTime(),
+                new Lineage(mother.getUUID(), pregnancy.fatherId())
         );
-        double scale = ScaleRoll.fromPercent(sex, size, scalePercent);
-        int growth = Growth.fromPercent(inherit(child, Growth.percent(motherGrowth), Growth.percent(pregnancy.fatherGrowthTicks()), nutrition));
-        double weight = inherit(child, motherWeight, pregnancy.fatherWeight(), nutrition);
-        Services.DATA.set(child, new AnimalTraits(sex, scale, Familiarity.inherited(nutrition), -1L, growth)
-                .withWeight(weight)
-                .withBornTick(mother.level().getGameTime())
-                .withLineage(new Lineage(mother.getUUID(), pregnancy.fatherId())));
-        return growth;
-    }
-
-    private static double inherit(Animal child, double mother, double father, double nutrition) {
-        return Inheritance.child(mother, father, child.getRandom().nextDouble(), child.getRandom().nextDouble(), nutrition);
+        Services.DATA.set(child, traits);
+        return traits.growthTicks();
     }
 }

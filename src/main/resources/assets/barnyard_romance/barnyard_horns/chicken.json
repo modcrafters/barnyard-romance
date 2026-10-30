@@ -1,0 +1,26 @@
+{
+  "entities": ["minecraft:chicken"],
+  "attach": "head",
+  "texture": "barnyard_romance:textures/entity/horns/chicken.png",
+  "texture_size": [32, 32],
+  "female_chance": 0,
+  "hide": [
+    "head/red_thing",
+    "red_thing"
+  ],
+  "male": [
+    {
+      "pivot": [0, -6, 0], "rotation": [0, 0, 0],
+      "cubes": [
+        { "from": [-0.5, -1, -2.5], "size": [1, 1, 4], "uv": [0, 0] },
+        { "from": [-0.5, -2, -2.5], "size": [1, 1, 1], "uv": [0, 6] },
+        { "from": [-0.5, -2.5, -1], "size": [1, 2, 1], "uv": [0, 9] },
+        { "from": [-0.5, -2, 0.5], "size": [1, 1, 1], "uv": [0, 6] }
+      ]
+    },
+    {
+      "pivot": [0, -2, -3], "rotation": [0, 0, 0],
+      "cubes": [ { "from": [-1, 0, -0.5], "size": [2, 3, 2], "uv": [0, 14] } ]
+    }
+  ]
+}

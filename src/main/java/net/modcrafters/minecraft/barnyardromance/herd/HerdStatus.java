@@ -5,6 +5,8 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.age.Aging;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
@@ -20,6 +22,8 @@ import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearRule;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -49,6 +53,7 @@ public final class HerdStatus {
         ShearState shear = record.alive()
                 ? ShearRule.state(record.shearable(), record.woolly(), record.baby(), traits, clock)
                 : ShearState.NONE;
+        EggOutlook eggs = eggs(record, traits, stage, clock, config);
         HerdPageText.PageFacts facts = new HerdPageText.PageFacts(
                 SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())).name(),
                 stage,
@@ -65,7 +70,8 @@ public final class HerdStatus {
                 familiar,
                 record.alive() ? -1L : diedDay(record),
                 shear,
-                record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity())
+                record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()),
+                eggs
         );
         return new HerdEntry(
                 node.id(),
@@ -79,11 +85,29 @@ public final class HerdStatus {
                 pregnancy == null ? -1 : PregnancyText.percent(progress),
                 milk.map(status -> status.left() > 0).orElse(false),
                 shear,
+                Optional.ofNullable(eggs).map(EggOutlook::kind),
+                eggs == null ? Component.empty() : TextComponents.of(eggs.tooltip()),
                 Optional.ofNullable(node.mother()),
                 Optional.ofNullable(node.father()),
                 HerdPageText.lines(facts).stream()
                         .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
                         .toList()
+        );
+    }
+
+    // What a living adult hen lays tomorrow, from what was around her when the book last saw her; null for others.
+    private static @Nullable EggOutlook eggs(HerdRecord record, AnimalTraits traits, AgeStage stage, long clock, BarnyardConfig config) {
+        EggSettings settings = config.eggsFor(record.species());
+        if (!record.alive() || !settings.enabled() || traits.sex() != Sex.FEMALE || (stage != AgeStage.ADULT && stage != AgeStage.OLD)) {
+            return null;
+        }
+        return EggOutlook.tomorrow(
+                SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())),
+                traits.hunger().lastAteDay() == GameDay.of(clock),
+                Familiarity.ready(traits.familiarity()),
+                record.nest().rooster(),
+                record.nest().boxWithRoom(),
+                settings
         );
     }
 

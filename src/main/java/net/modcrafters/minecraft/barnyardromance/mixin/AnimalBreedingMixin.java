@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
@@ -59,6 +60,7 @@ public class AnimalBreedingMixin {
         AnimalHearts.serverTick(self, level);
         AgeController.serverTick(self, level);
         FamiliarityCare.serverTick(self, level);
+        EggLaying.serverTick(self, level);
     }
 
     @Inject(method = "aiStep", at = @At("TAIL"))

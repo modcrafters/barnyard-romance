@@ -322,6 +322,20 @@ public final class BarnyardConfig {
         return settings == null ? null : settings.diet();
     }
 
+    // The species entry's eggs block over the built-in preset. Only chickens lay by default; a block on any other
+    // species starts from the chicken's numbers but has to switch itself on.
+    public EggSettings eggsFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return EggSettings.NONE;
+        }
+        EggSettings preset = SpeciesPresets.eggs(speciesId);
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings == null || settings.eggs() == null) {
+            return preset;
+        }
+        return EggSettings.from(settings.eggs(), preset.enabled() ? preset : EggSettings.CHICKEN.disabled());
+    }
+
     public SizeSettings sizeFor(String speciesId) {
         SpeciesSettings settings = species.get(speciesId);
         if (settings == null) {
@@ -455,7 +469,8 @@ public final class BarnyardConfig {
             Long deathAfterTicks,
             String diet,
             Double bellyMaxWiden,
-            Double bellyStart
+            Double bellyStart,
+            JsonObject eggs
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -478,7 +493,8 @@ public final class BarnyardConfig {
                     optionalLong(object, "deathAfterTicks"),
                     optionalString(object, "diet"),
                     optionalDouble(object, "bellyMaxWiden"),
-                    optionalDouble(object, "bellyStart")
+                    optionalDouble(object, "bellyStart"),
+                    object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null
             );
         }
 
@@ -525,6 +541,9 @@ public final class BarnyardConfig {
             }
             if (bellyStart != null) {
                 object.addProperty("bellyStart", bellyStart);
+            }
+            if (eggs != null) {
+                object.add("eggs", eggs);
             }
             return object;
         }

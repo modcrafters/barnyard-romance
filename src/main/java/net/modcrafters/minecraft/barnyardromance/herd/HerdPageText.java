@@ -1,10 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
+
+import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +33,17 @@ public final class HerdPageText {
             Familiar familiar,
             long diedDay,
             ShearState shear,
-            boolean grumpy
+            boolean grumpy,
+            // What a hen lays tomorrow; null for everything else.
+            @Nullable EggOutlook eggs
     ) {
+        public PageFacts(String sizeLetter, AgeStage stage, long ageTicks, boolean fedToday, long ticksSinceFed, boolean pregnant, double pregnancy,
+                         long dueTicks, Text milk, double familiarity, double fertility, long seenTicksAgo, Familiar familiar, long diedDay, ShearState shear,
+                         boolean grumpy) {
+            this(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay,
+                    shear, grumpy, null);
+        }
+
         public PageFacts(String sizeLetter, AgeStage stage, long ageTicks, boolean fedToday, long ticksSinceFed, boolean pregnant, double pregnancy,
                          long dueTicks, Text milk, double familiarity, double fertility, long seenTicksAgo, Familiar familiar, long diedDay, ShearState shear) {
             this(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay,
@@ -44,23 +57,27 @@ public final class HerdPageText {
         }
 
         public PageFacts shear(ShearState state) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, state, grumpy);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, state, grumpy, eggs);
         }
 
         public PageFacts seen(long ticksAgo) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, ticksAgo, familiar, diedDay, shear, grumpy);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, ticksAgo, familiar, diedDay, shear, grumpy, eggs);
         }
 
         public PageFacts familiar(Familiar state) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, state, diedDay, shear, grumpy);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, state, diedDay, shear, grumpy, eggs);
         }
 
         public PageFacts grumpy(boolean grumpy) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, eggs);
+        }
+
+        public PageFacts eggs(@Nullable EggOutlook outlook) {
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, outlook);
         }
 
         public PageFacts died(long day) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, day, shear, grumpy);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, day, shear, grumpy, eggs);
         }
     }
 
@@ -73,6 +90,7 @@ public final class HerdPageText {
         PREGNANT,
         MILK,
         SHEAR,
+        EGGS,
         FAMILIARITY,
         FERTILITY
     }
@@ -125,6 +143,10 @@ public final class HerdPageText {
             case REGROWING -> lines.add(Line.of(Kind.SHEAR, Text.of("gui.barnyard_romance.herd_book.wool_regrowing")));
             case NONE -> {
             }
+        }
+        if (facts.eggs() != null) {
+            lines.add(Line.of(Kind.EGGS, facts.eggs().title()));
+            facts.eggs().reasons().forEach(reason -> lines.add(Line.of(Kind.NOTE, reason.text())));
         }
         values(lines, facts);
         if (facts.seenTicksAgo() >= 0L) {
