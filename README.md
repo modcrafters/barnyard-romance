@@ -52,6 +52,23 @@ Tamed wolves, cats and horses never go wild again. Below the familiarity thresho
 
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
+## Egg layers
+
+Chickens lay eggs instead of breeding. Seeds feed them and win familiarity like any other food, but never put them in love.
+
+- **How many:** each day an adult hen lays 1 egg if she's S or M and 2 if she's L or XL, one more if she's familiar, and none on a day after she went hungry. The eggs come at random times between sunrise and sunset, and the count starts again at midnight.
+- **Where:** when an egg is due, a hen looks for a **Nesting Box** within 16 blocks that she can walk to, that no other hen is sitting in and that has room. She walks over, goes in for an in-game hour, and leaves the egg in a nest. With no box she lays on the ground, like vanilla.
+- **Fertilized eggs:** an egg laid in a box is a **Fertilized Egg** if an adult rooster within 16 blocks wasn't hungry yesterday; the closest one is the father. Eggs laid on the ground are always plain.
+- **Hatching:** a fertilized egg left in a box hatches after about a day (sooner from a heavier hen). The chick inherits from both parents like a calf and joins its mother's herd books. Taking the egg out pauses its countdown; putting it back in any box carries on.
+- **Throwing:** plain eggs never hatch. A fertilized egg hatches one time in eight, into a small, light chick with no known parents.
+- **Roosters** are bigger than hens and wear a red comb and big wattles. Hens have no comb.
+
+The **Nesting Box** is planks in a U with wheat in the middle. Right-click it to see its ten nests: a fertilized egg has a nest to itself with its countdown underneath, plain eggs pile up to 16, and a sitting hen's nest is marked. You can take any egg out and put fertilized eggs back, but only hens add plain eggs. Hoppers underneath take plain eggs only. Breaking the box drops its eggs and lets a sitting hen out.
+
+Fertilized eggs never stack. They count as eggs in recipes, so a cake can use one.
+
+Each species entry can have an `eggs` block: `enabled`, `plainEgg` (an item id), `hatchTicksMin`, `hatchTicksMax`, `smallPerDay`, `largePerDay`, `happyBonus`, `boxRange`, `roosterRange` and `thrownHatchChance`. Chickens lay by default. Another bird lays once its entry has `"eggs": { "enabled": true, "plainEgg": "somemod:duck_egg" }`.
+
 ## Leaving species out
 
 Set `"enabled": false` in a species entry to leave one species vanilla. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:parrot", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead. An explicit `"enabled": true` in a species entry wins over both. Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
@@ -105,7 +122,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 
 - `gradlew :26.3:test` runs the unit tests for the pure rules.
 - `gradlew :fabric:26.3:runGametest` and `gradlew :neoforge:26.3:runGameTestServer` start a headless game test server, breed real animals in a small pen, and exit non-zero if any check fails. The shared checks live in `src/.../gametest/`. NeoForge adds three more for `BabyEntitySpawnEvent`. Fabric writes a JUnit report to `fabric/versions/26.3/build/gametest/junit.xml`.
-- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, of rows of animals showing horns and bellies, and of the herd book's pages. It also clicks through the book: an animal's row, the return button, the mouse wheel, Page Up/Page Down, and remove.
+- `gradlew :fabric:26.3:runClientGametest` opens a real client and takes screenshots of the inspector, of rows of animals showing horns and bellies, of the herd book's pages, and of a nesting box with a hen inside, its window, and a rooster beside a hen. It also clicks through the book: an animal's row, the return button, the mouse wheel, Page Up/Page Down, and remove.
 - On 1.21.1 the same checks run with `gradlew :1.21.1:test` and `gradlew :neoforge:1.21.1:runGameTestServer` (NeoForge only). There each test runs in its own batch, and `GameTestCompat` covers the steps that differ, such as test positions counting from one block lower.
 - CI (`.github/workflows/ci.yml`) runs all of these on every pull request. The `all-versions` check passes only when every version passed; it is the check for a ruleset on `main` to require.
 
@@ -117,7 +134,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 ### 1.21.1 test gaps
 
 - Every shared game test runs on 1.21.1.
-- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. On 1.21.1 the herd book has no head close-ups, as designed. For the herd book, check:
+- The Fabric client game tests (`InspectorClientGameTest`, `LooksClientGameTest`, `HerdBookClientGameTest`, `NestingBoxClientGameTest`) run on 26.3 only, because there is no Fabric build for 1.21.1. On 1.21.1 the inspector, herd card, tooltip, bellies, horns and herd book are checked by hand. On 1.21.1 the herd book has no head close-ups, as designed. For the herd book, check:
   - using the book in the air opens it, and an empty book says how to add animals;
   - a familiar cow can be added, and a wild one is refused;
   - after breeding, the calf joins the book under Kids;
@@ -137,3 +154,7 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
   - calves and lambs have no horns;
   - hornless cows and nannies show no vanilla horns either;
   - with `horns` off, vanilla's horns come back.
+  For the nesting box, check:
+  - the box shows its round hole and hay, and a hen sitting in it shows through the hole;
+  - its window shows the straw nests, egg countdowns, plain-egg counts and the sitting hen's nest;
+  - roosters have a comb and big wattles, and hens don't.

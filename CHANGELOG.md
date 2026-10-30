@@ -6,6 +6,13 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- Chickens lay eggs instead of breeding: S and M hens lay one a day, L and XL hens two, one more when they're familiar, and none after a hungry day. Seeds feed chickens but no longer breed them.
+- New Nesting Box (planks round a wheat): hens walk to one to lay, and you can see a hen sitting in it through the hole. Its window shows ten straw nests with each egg's countdown.
+- A rooster nearby makes the eggs laid in a box fertile. Fertilized eggs hatch in the box after about a day into chicks that take after both parents and join their mother's herd books. Eggs laid on the ground are always plain.
+- Thrown eggs: plain ones never hatch, and fertilized ones sometimes hatch a small chick with no known parents.
+- Roosters are bigger than hens and wear a red comb and big wattles.
+- The inspector shows a hen's eggs for the day, and whether a rooster is fertile.
+
 - Familiarity fades: an animal loses some each day it isn't fed, and a little each time it's milked or sheared. Feeding every day keeps it. A cow that went hungry gives no milk the next day.
 - New Dairy Mash: feed it to a dry cow, goat or sheep and she gives milk for three days, without having to breed her first.
 - Sheep and goat milk buckets look like the vanilla milk bucket with creamier or whiter milk, and the vanilla one is now called Bucket of Cow Milk.
