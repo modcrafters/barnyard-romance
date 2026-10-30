@@ -46,9 +46,9 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 
 ## Looking after animals
 
-Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goes without food it loses 5%, and each milking or shearing costs 5%, since animals don't much enjoy them. Feeding every day never loses anything. A female that went hungry yesterday gives no milk today, and like any day she isn't milked it counts towards her drying up. **Dairy Mash** (a bowl, grains, a root and any milk bucket; you get the bowl back) starts a dry, familiar female's milk for three days; milking keeps it going from there. Babies don't go hungry while they're nursing.
+Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goes without food it loses 5%, and each milking or shearing costs 5%, since animals don't much enjoy them. Feeding every day never loses anything. A female that went hungry yesterday gives no milk today, and like any day she isn't milked it counts towards her drying up. **Dairy Mash** (a bowl, grains, a root and any milk bucket; you get the bowl back) starts a dry, familiar female's milk for three days (`milkKeepsFlowingTicks`); milking keeps it going from there. A pack can give any food file `"startsMilk": true` in its effects to do the same as an ordinary meal. Babies don't go hungry while they're nursing.
 
-Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told and wanders instead of following you, and a grumpy wolf sits down and watches while you're attacked. Feed it back above the threshold to win it back. Pets tamed before this change start at the threshold.
+Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told, and a grumpy wolf sits down and watches while you're attacked nearby. A grumpy pet still follows you and still fights back when it's attacked itself. Feed it back above the threshold to win it back. However a pet is tamed, it starts a week's hunger above the threshold, and so do pets tamed before this change.
 
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
@@ -146,7 +146,9 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
 
   For grumpy pets, let a tamed one go unfed (`/time add 24000` once per day) until the inspector shows "· Grumpy", then check on both versions:
   - a grumpy horse rears and won't let you on;
-  - a grumpy wolf won't sit, and sits down to watch while a zombie attacks you;
+  - a grumpy wolf won't sit, and sits down to watch while a zombie attacks you, once per hit, not flickering;
+  - a grumpy wolf that the zombie attacks too fights it, and keeps fighting while the zombie hits you;
+  - a grumpy wolf follows you when you walk away, unless it was sitting before it turned grumpy;
   - the herd book says "Grumpy: won't take orders", and feeding it back above 30% ends it.
 
   For horns and bellies, check:
