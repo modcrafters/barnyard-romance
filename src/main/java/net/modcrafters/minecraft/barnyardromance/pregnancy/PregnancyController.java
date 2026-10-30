@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Optional;
 
 public final class PregnancyController {
+    // How far a stopped or set-back clock may fall behind before a pregnancy catches up with it.
+    private static final long RESEEN_BEHIND = 1_200L;
+
     private PregnancyController() {
     }
 
@@ -43,7 +46,7 @@ public final class PregnancyController {
         if (pregnancy.isEmpty() || !animal.isAlive()) {
             return;
         }
-        Pregnancy current = pregnancy.get();
+        Pregnancy current = skipAhead(animal, level, pregnancy.get());
         if (!PregnancyClock.ready(level.getGameTime(), current)) {
             return;
         }
@@ -53,6 +56,21 @@ public final class PregnancyController {
             Constants.LOG.error("Failed to birth {}", AnimalSex.speciesId(animal), exception);
         }
         Services.DATA.clearPregnancy(animal);
+    }
+
+    // Time skipped by sleeping or /time add counts towards the pregnancy, including any skipped while she was unloaded.
+    // A clock that falls behind (a stopped daylight cycle, or set back) takes nothing away; it's caught up with now
+    // and then, so a later skip still counts in full. Otherwise she's only saved when something was skipped.
+    private static Pregnancy skipAhead(Animal mother, ServerLevel level, Pregnancy pregnancy) {
+        long game = level.getGameTime();
+        long clock = level.getOverworldClockTime();
+        long drift = pregnancy.seen().drift(game, clock);
+        if (pregnancy.seen().seen() && drift <= 0L && drift > -RESEEN_BEHIND) {
+            return pregnancy;
+        }
+        Pregnancy moved = pregnancy.skipped(Math.max(0L, drift), new SkippedTime(game, clock));
+        Services.DATA.setPregnancy(mother, moved);
+        return moved;
     }
 
     private static boolean startOrRefuse(Animal self, Animal partner, ServerLevel level) {

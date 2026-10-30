@@ -45,9 +45,12 @@ public final class PregnancyCodecs {
             Codec.DOUBLE.optionalFieldOf("fatherWeight", 0.5).forGetter(Pregnancy::fatherWeight),
             CompoundTag.CODEC.listOf().optionalFieldOf("litter", List.of()).forGetter(Pregnancy::litter),
             CARE_CODEC.optionalFieldOf("care", PregnancyCare.NONE).forGetter(Pregnancy::care),
-            UUIDUtil.CODEC.optionalFieldOf("fatherId").forGetter(pregnancy -> Optional.ofNullable(pregnancy.fatherId()))
-    ).apply(instance, (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId) ->
-            new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId.orElse(null))));
+            UUIDUtil.CODEC.optionalFieldOf("fatherId").forGetter(pregnancy -> Optional.ofNullable(pregnancy.fatherId())),
+            Codec.LONG.optionalFieldOf("seenAt", Long.MIN_VALUE).forGetter(pregnancy -> pregnancy.seen().game()),
+            Codec.LONG.optionalFieldOf("seenClock", Long.MIN_VALUE).forGetter(pregnancy -> pregnancy.seen().clock())
+    ).apply(instance, (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seenAt, seenClock) ->
+            new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId.orElse(null),
+                    new SkippedTime(seenAt, seenClock))));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
     // The litter stays on the server; clients only see the fields below.
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.

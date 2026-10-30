@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
@@ -44,6 +45,7 @@ public final class BreedingGameTests {
             new Case("excluded_members_are_not_refreshed", 20, BreedingGameTests::excludedMembersAreNotRefreshed),
             new Case("pigs_conceive_a_litter_and_rest", 200, BreedingGameTests::pigsConceiveALitterAndRest),
             new Case("cows_carry_one_calf_for_about_three_days", 20, BreedingGameTests::cowsCarryOneCalfForAboutThreeDays),
+            new Case("time_skip_moves_pregnancies_on", 20, BreedingGameTests::timeSkipMovesPregnanciesOn),
             new Case("same_sex_pairs_make_nothing", 20, BreedingGameTests::sameSexPairsMakeNothing),
             new Case("unfamiliar_animals_do_not_fall_in_love", 20, BreedingGameTests::unfamiliarAnimalsDoNotFallInLove),
             new Case("hurting_an_animal_ends_its_love", 20, BreedingGameTests::hurtingAnAnimalEndsItsLove),
@@ -273,6 +275,28 @@ public final class BreedingGameTests {
         Lineage lineage = traits(helper, calf).lineage();
         helper.assertTrue(mother.getUUID().equals(lineage.mother()), "the calf's mother is " + lineage.mother());
         helper.assertTrue(father.getUUID().equals(lineage.father()), "the calf's father is " + lineage.father());
+        helper.succeed();
+    }
+
+    // /time add and sleeping move the overworld clock without the game time; a pregnancy counts that time too, and
+    // putting the clock back doesn't take it away again. The clock is put back within the tick so the other tests'
+    // days stay where they were.
+    public static void timeSkipMovesPregnanciesOn(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        long now = helper.getLevel().getGameTime();
+        Services.DATA.setPregnancy(cow, new Pregnancy(now, 66_000L, "minecraft:cow", 1.0, 1, 0.5));
+        PregnancyController.catchUp(cow, helper.getLevel());
+        long before = helper.getLevel().getOverworldClockTime();
+        try {
+            GameTestCompat.setOverworldClock(helper, before + 24_000L);
+            PregnancyController.catchUp(cow, helper.getLevel());
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+        PregnancyController.catchUp(cow, helper.getLevel());
+
+        long remaining = PregnancyClock.remainingTicks(now, pregnancy(helper, cow));
+        helper.assertTrue(remaining == 66_000L - 24_000L, "a day went by and " + remaining + " ticks are left of 66000");
         helper.succeed();
     }
 

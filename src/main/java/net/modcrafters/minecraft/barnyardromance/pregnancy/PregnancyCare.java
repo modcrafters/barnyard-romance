@@ -28,6 +28,11 @@ public record PregnancyCare(long bankedTicks, long boostFrom, long boostUntil, d
         return new PregnancyCare(bankedTicks, boostFrom, boostUntil, boostFactor, Math.clamp(nutritionBonus + amount, 0.0, 1.0));
     }
 
+    // A running boost started and ends that many ticks earlier, for time skipped.
+    public PregnancyCare shifted(long ticks) {
+        return new PregnancyCare(bankedTicks, boostFrom - ticks, boostUntil - ticks, boostFactor, nutritionBonus);
+    }
+
     // Keeps the better-fed litter but drops every tick gained or lost.
     public PregnancyCare withoutTicks() {
         return new PregnancyCare(0L, 0L, 0L, 1.0, nutritionBonus);
