@@ -79,6 +79,13 @@ public class LayInNestGoal extends Goal {
             return;
         }
         long now = level.getGameTime();
+        // Put on a lead, or ridden, on her way: she lays where she is.
+        if (!walks(hen)) {
+            TRIPS.remove(hen);
+            EggLaying.resume(hen, level);
+            EggLaying.layOnGround(hen, level);
+            return;
+        }
         if (now - trip.since() > GIVE_UP_TICKS) {
             TRIPS.remove(hen);
             EggLaying.resume(hen, level);

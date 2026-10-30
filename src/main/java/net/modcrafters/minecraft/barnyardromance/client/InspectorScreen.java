@@ -280,7 +280,7 @@ public class InspectorScreen extends Screen {
         long today = GameDay.of(clock);
         boolean hungry = traits.hunger().hungryYesterday(today);
         if (traits.sex() == Sex.MALE) {
-            return InspectorSheet.roosterText(hungry);
+            return InspectorSheet.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, hungry);
         }
         if (!EggLaying.isLayingHen(animal)) {
             return Text.EMPTY;

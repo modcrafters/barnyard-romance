@@ -179,7 +179,11 @@ public record InspectorSheet(
         return planned <= 0 ? Text.EMPTY : Text.of("gui.barnyard_romance.inspector.eggs_today", laid, planned);
     }
 
-    public static Text roosterText(boolean hungryYesterday) {
+    // A young rooster isn't fertile until he's grown, hungry or not.
+    public static Text roosterText(boolean young, boolean hungryYesterday) {
+        if (young) {
+            return Text.of("gui.barnyard_romance.inspector.rooster_young");
+        }
         return Text.of(hungryYesterday ? "gui.barnyard_romance.inspector.rooster_hungry" : "gui.barnyard_romance.inspector.rooster_fertile");
     }
 

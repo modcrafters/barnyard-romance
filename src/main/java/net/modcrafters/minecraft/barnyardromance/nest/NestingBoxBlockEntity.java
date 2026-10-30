@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
+import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 // Ten nests. A fertilized egg has a nest to itself and the box counts it down to hatching (EggData);
@@ -139,7 +141,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
 
     // The hen leaves the world to sit in the box, saved whole, and comes back out with her egg laid.
     public boolean enter(Animal hen, ItemStack egg, long now) {
-        if (occupant != null || !(level instanceof ServerLevel server)) {
+        if (occupant != null || !(level instanceof ServerLevel server) || !LayInNestGoal.walks(hen)) {
             return false;
         }
         int slot = canPlaceEgg(egg);
@@ -154,12 +156,18 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return true;
     }
 
-    // Her time is up: the egg goes in her nest and she comes out.
+    // Her time is up: she comes out and the egg goes in her nest. If she can't be brought back she stays in, and
+    // tries again in an hour.
     public void finishSitting() {
         if (occupant == null || !(level instanceof ServerLevel server)) {
             return;
         }
         NestOccupant done = occupant;
+        if (!release(server, done)) {
+            occupant = new NestOccupant(done.hen(), done.egg(), server.getGameTime() + SIT_TICKS, done.slot(), done.id());
+            setChanged();
+            return;
+        }
         occupant = null;
         ItemStack pile = items.get(done.slot());
         if (pile.isEmpty()) {
@@ -169,23 +177,36 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         } else if (!placeEgg(done.egg())) {
             Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0, getBlockPos().getZ() + 0.5, done.egg().copy());
         }
-        release(server, done);
         sendToClients();
     }
 
-    private void release(ServerLevel server, NestOccupant hen) {
-        NestingBoxes.left(hen.id());
+    // Brings her back into the world in front of the hole. Another entity with her id (a box copied with its hen,
+    // or /clone) would stop her joining, so she takes a new one then.
+    private boolean release(ServerLevel server, NestOccupant hen) {
+        Optional<Entity> loaded = NestCompat.load(server, hen.hen());
+        if (loaded.isEmpty()) {
+            Constants.LOG.error("Couldn't bring back the {} sitting in the nesting box at {}; she stays in it", hen.hen().get("id"), getBlockPos());
+            return false;
+        }
+        Entity entity = loaded.get();
         Vec3 at = exitPos();
-        NestCompat.load(server, hen.hen()).ifPresent(entity -> {
-            //? if >=1.21.5 {
-            entity.snapTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
-            //?} else
-            //entity.moveTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
-            if (entity instanceof Animal animal) {
-                EggLaying.resume(animal, server);
-            }
-            server.addFreshEntity(entity);
-        });
+        //? if >=1.21.5 {
+        entity.snapTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
+        //?} else
+        //entity.moveTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
+        if (entity instanceof Animal animal) {
+            EggLaying.resume(animal, server);
+        }
+        if (server.getEntity(entity.getUUID()) != null) {
+            Constants.LOG.warn("Something else already has the id of the hen in the nesting box at {}, so she comes out with a new one", getBlockPos());
+            entity.setUUID(UUID.randomUUID());
+        }
+        if (!server.addFreshEntity(entity)) {
+            Constants.LOG.error("Couldn't put the hen from the nesting box at {} back in the world; she stays in it", getBlockPos());
+            return false;
+        }
+        NestingBoxes.left(hen.id());
+        return true;
     }
 
     public boolean placeEgg(ItemStack egg) {
@@ -268,11 +289,12 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return stack.is(BarnyardItems.FERTILIZED_EGG);
     }
 
-    // A sitting hen gets out without laying when the box is broken.
+    // Breaking the box drops the egg a sitting hen was about to leave along with the rest, and lets her out.
     void beforeRemoved() {
         if (occupant != null && level instanceof ServerLevel server) {
             NestOccupant hen = occupant;
             occupant = null;
+            Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5, hen.egg().copy());
             release(server, hen);
             sendToClients();
         }

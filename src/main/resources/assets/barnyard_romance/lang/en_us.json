@@ -115,6 +115,7 @@
   "gui.barnyard_romance.inspector.rooster": "Rooster",
   "gui.barnyard_romance.inspector.rooster_fertile": "Fertile today",
   "gui.barnyard_romance.inspector.rooster_hungry": "Not today (hungry yesterday)",
+  "gui.barnyard_romance.inspector.rooster_young": "Not fertile yet",
   "gui.barnyard_romance.inspector.pregnant": "Pregnant",
   "gui.barnyard_romance.inspector.breeding": "Breeding",
   "gui.barnyard_romance.inspector.ready": "Ready",

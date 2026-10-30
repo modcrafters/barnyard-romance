@@ -37,8 +37,11 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
+//? if >=1.21.2
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
 import net.minecraft.world.item.Item;
@@ -122,7 +125,9 @@ public final class EggGameTests {
             new BreedingGameTests.Case("breaking_box_releases_hen_and_eggs", 20, EggGameTests::breakingBoxReleasesHenAndEggs),
             new BreedingGameTests.Case("box_survives_save_with_hen", 20, EggGameTests::boxSurvivesSaveWithHen),
             new BreedingGameTests.Case("egg_due_while_sitting_is_laid_after", 20, EggGameTests::eggDueWhileSittingIsLaidAfter),
-            new BreedingGameTests.Case("walking_hen_keeps_her_next_egg", 40, EggGameTests::walkingHenKeepsHerNextEgg)
+            new BreedingGameTests.Case("walking_hen_keeps_her_next_egg", 40, EggGameTests::walkingHenKeepsHerNextEgg),
+            new BreedingGameTests.Case("leashed_hen_lays_on_the_ground", 100, EggGameTests::leashedHenLaysOnTheGround),
+            new BreedingGameTests.Case("hen_comes_out_despite_a_copy", 20, EggGameTests::henComesOutDespiteACopy)
             //? if >=1.21.5 {
             , new BreedingGameTests.Case("warm_hen_lays_brown_eggs", 20, EggGameTests::warmHenLaysBrownEggs)
             //?}
@@ -673,7 +678,7 @@ public final class EggGameTests {
 
         helper.runAfterDelay(LANDED, () -> {
             NestingBoxBlockEntity taken = boxBeside(helper, second, 4);
-            NestingBoxBlockEntity free = boxAt(helper, second.blockPosition().offset(4, 0, 3));
+            NestingBoxBlockEntity free = boxAt(helper, penFloor(helper, second, 7, 7));
             helper.assertTrue(taken.enter(first, new ItemStack(Items.EGG), helper.getLevel().getGameTime()), "the first hen couldn't get in");
             inPen(() -> EggLaying.layDue(second, helper.getLevel()));
             BlockPos chosen = LayInNestGoal.target(second).orElse(null);
@@ -751,8 +756,9 @@ public final class EggGameTests {
         helper.destroyBlock(BOX);
 
         helper.assertTrue(helper.getLevel().getEntity(id) instanceof Animal, "breaking the box didn't let the hen out");
-        helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0)).stream()
-                .anyMatch(item -> item.getItem().is(BarnyardItems.FERTILIZED_EGG)), "breaking the box lost its egg");
+        List<ItemEntity> dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0));
+        helper.assertTrue(dropped.stream().anyMatch(item -> item.getItem().is(BarnyardItems.FERTILIZED_EGG)), "breaking the box lost its egg");
+        helper.assertTrue(dropped.stream().anyMatch(item -> item.getItem().is(Items.EGG)), "breaking the box lost the sitting hen's egg");
         helper.succeed();
     }
 
@@ -837,14 +843,63 @@ public final class EggGameTests {
         });
     }
 
+    // A hen on a lead doesn't go into a box: leashed on her way, she gives up and lays on the ground.
+    public static void leashedHenLaysOnTheGround(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.0, 2);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+            helper.assertTrue(LayInNestGoal.target(hen).isPresent(), "she didn't set off for the box");
+            BlockPos post = hen.blockPosition().north();
+            helper.getLevel().setBlockAndUpdate(post, Blocks.OAK_FENCE.defaultBlockState());
+            hen.setLeashedTo(LeashFenceKnotEntity.getOrCreateKnot(helper.getLevel(), post), true);
+            boolean took = placed[0].enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+            helper.assertTrue(!took, "the box took a leashed hen");
+        });
+
+        once(helper, () -> eggsNear(helper, hen, Items.EGG) == 1, () -> {
+            helper.assertTrue(LayInNestGoal.target(hen).isEmpty() && !placed[0].occupied(), "a leashed hen still went for the box");
+            helper.succeed();
+        });
+    }
+
+    // Another entity with her id (a copied box, /clone) can't keep her in: she comes out under a new id.
+    public static void henComesOutDespiteACopy(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        Animal hen = hen(helper, MEDIUM_HEN, 0.5);
+        UUID id = hen.getUUID();
+        box.enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+        //? if >=1.21.2 {
+        Animal twin = EntityTypes.CHICKEN.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        //?} else
+        //Animal twin = EntityTypes.CHICKEN.create(helper.getLevel());
+        twin.setUUID(id);
+        twin.setPos(helper.absoluteVec(new Vec3(5.5, 1.0, 6.5)));
+        helper.getLevel().addFreshEntity(twin);
+        int before = chickensIn(helper);
+
+        box.finishSitting();
+
+        helper.assertTrue(chickensIn(helper) == before + 1, "the hen didn't come out: " + before + " chickens before, " + chickensIn(helper) + " after");
+        helper.assertTrue(!box.occupied(), "the hen is still in the box");
+        helper.succeed();
+    }
+
     static EggData fertile(GameTestHelper helper, Animal hen) {
         return EggLaying.fertilizedEgg(hen, helper.getLevel()).flatMap(FertilizedEggItem::data)
                 .orElseThrow(() -> GameTestCompat.failure(helper, "no fertilized egg"));
     }
 
-    // A box on the floor the hen stands on, east of her, its hole towards her.
+    // A box on the floor the hen stands on, east of where she was put in the pen (x 2, z 4), its hole towards her.
+    // It goes by her spawn point, not where she has wandered to, so it always lands inside the pen.
     static NestingBoxBlockEntity boxBeside(GameTestHelper helper, Animal hen, int blocks) {
-        return boxAt(helper, hen.blockPosition().east(blocks));
+        return boxAt(helper, penFloor(helper, hen, 2 + blocks, 4));
+    }
+
+    static BlockPos penFloor(GameTestHelper helper, Animal hen, int x, int z) {
+        return helper.absolutePos(new BlockPos(x, 0, z)).atY(hen.getBlockY());
     }
 
     static NestingBoxBlockEntity boxAt(GameTestHelper helper, BlockPos absolute) {

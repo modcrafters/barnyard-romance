@@ -212,6 +212,16 @@ public class FabricEggGameTests {
         EggGameTests.walkingHenKeepsHerNextEgg(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void leashedHenLaysOnTheGround(GameTestHelper helper) {
+        EggGameTests.leashedHenLaysOnTheGround(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void henComesOutDespiteACopy(GameTestHelper helper) {
+        EggGameTests.henComesOutDespiteACopy(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
