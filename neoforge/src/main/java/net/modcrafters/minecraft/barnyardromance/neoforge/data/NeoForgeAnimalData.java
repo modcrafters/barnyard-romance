@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.data;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
@@ -35,6 +36,16 @@ public final class NeoForgeAnimalData {
                     //?} else
                     //.serialize(PregnancyCodecs.CODEC)
                     .sync(PregnancyCodecs.STREAM_CODEC)
+                    .build()
+    );
+    public static final Supplier<AttachmentType<Laying>> LAYING = ATTACHMENT_TYPES.register(
+            "laying",
+            () -> AttachmentType.builder(() -> Laying.NONE)
+                    //? if >=1.21.6 {
+                    .serialize(Laying.MAP_CODEC)
+                    //?} else
+                    //.serialize(Laying.CODEC)
+                    .sync(Laying.STREAM_CODEC)
                     .build()
     );
 

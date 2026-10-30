@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.data;
 
 import net.modcrafters.minecraft.barnyardromance.data.EntityDataService;
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.minecraft.world.entity.animal.Animal;
@@ -31,5 +32,15 @@ public class NeoForgeEntityDataService implements EntityDataService {
     @Override
     public void clearPregnancy(Animal animal) {
         animal.removeData(NeoForgeAnimalData.PREGNANCY);
+    }
+
+    @Override
+    public Optional<Laying> getLaying(Animal animal) {
+        return Optional.ofNullable(animal.getExistingDataOrNull(NeoForgeAnimalData.LAYING));
+    }
+
+    @Override
+    public void setLaying(Animal animal, Laying laying) {
+        animal.setData(NeoForgeAnimalData.LAYING, laying);
     }
 }

@@ -7,6 +7,7 @@
     ${extra_mixins}"AgeableMobMixin",
     "AnimalBreedingMixin",
     "AnimalLoveMixin",
+    "ChickenEggTimerMixin",
     "GrumpyAttackMixin",
     "GrumpyCatSitMixin",
     "GrumpyDefenceMixin",

@@ -33,6 +33,8 @@ public record InspectorSheet(
         double fertility,
         Text fertilityText,
         Text milkText,
+        // A hen's eggs today, or whether a rooster is fertile today; empty for other animals.
+        Text eggsText,
         boolean pregnant,
         double pregnancy,
         Text pregnancyText,
@@ -67,6 +69,7 @@ public record InspectorSheet(
                 health,
                 maxHealth,
                 0.0,
+                Text.EMPTY,
                 Text.EMPTY,
                 Text.EMPTY,
                 false,
@@ -168,6 +171,18 @@ public record InspectorSheet(
         return Text.of("gui.barnyard_romance.inspector.milk_left", gameTime(status.ticksLeft()), status.left(), status.perDay());
     }
 
+    // Nothing for an animal with no eggs today for any other reason (a chick, or a bird that doesn't lay).
+    public static Text eggsText(int laid, int planned, boolean hungryYesterday) {
+        if (hungryYesterday) {
+            return Text.of("gui.barnyard_romance.inspector.eggs_hungry");
+        }
+        return planned <= 0 ? Text.EMPTY : Text.of("gui.barnyard_romance.inspector.eggs_today", laid, planned);
+    }
+
+    public static Text roosterText(boolean hungryYesterday) {
+        return Text.of(hungryYesterday ? "gui.barnyard_romance.inspector.rooster_hungry" : "gui.barnyard_romance.inspector.rooster_fertile");
+    }
+
     // Minecraft hours and days: under an hour, then hours, then whole days.
     public static Text gameTime(long ticks) {
         long hours = Math.max(0L, ticks) / 1_000L;
@@ -229,6 +244,9 @@ public record InspectorSheet(
         }
         if (!milkText.isEmpty()) {
             rows.add(InspectorRow.MILK);
+        }
+        if (!eggsText.isEmpty()) {
+            rows.add(InspectorRow.EGGS);
         }
         if (showBreeding()) {
             rows.add(InspectorRow.BREEDING);

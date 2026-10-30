@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.data;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
@@ -20,6 +21,11 @@ public final class FabricAnimalData {
             Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pregnancy"),
             builder -> builder.persistent(PregnancyCodecs.CODEC)
                     .syncWith(PregnancyCodecs.STREAM_CODEC, AttachmentSyncPredicate.all())
+    );
+    public static final AttachmentType<Laying> LAYING = AttachmentRegistry.create(
+            Identifier.fromNamespaceAndPath(Constants.MOD_ID, "laying"),
+            builder -> builder.persistent(Laying.CODEC)
+                    .syncWith(Laying.STREAM_CODEC, AttachmentSyncPredicate.all())
     );
 
     private FabricAnimalData() {

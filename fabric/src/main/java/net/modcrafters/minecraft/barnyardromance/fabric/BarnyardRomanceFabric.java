@@ -32,6 +32,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
     public void onInitialize() {
         FabricAnimalData.ANIMAL_TRAITS.identifier();
         FabricAnimalData.PREGNANCY.identifier();
+        FabricAnimalData.LAYING.identifier();
         Registry.register(
                 BuiltInRegistries.DATA_COMPONENT_TYPE,
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_tool"),

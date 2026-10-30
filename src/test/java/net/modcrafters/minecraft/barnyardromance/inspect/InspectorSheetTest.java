@@ -46,12 +46,36 @@ class InspectorSheetTest {
     }
 
     private static InspectorSheet sheet(boolean female, AgeStage stage, boolean pregnant, Text father, Text lastBirth, Text milk) {
+        return sheet(female, stage, pregnant, father, lastBirth, milk, Text.EMPTY);
+    }
+
+    private static InspectorSheet sheet(boolean female, AgeStage stage, boolean pregnant, Text father, Text lastBirth, Text milk, Text eggs) {
         return new InspectorSheet(
                 "Cow", "", true, female, "M", stage, InspectorSheet.scaleText(0.9),
                 0.4, Familiarity.percent(0.4), Familiarity.feedReady(0L, 0L), Text.plain("20m 0s"), 0.4, Text.plain("20m 0s"),
-                0.5, Familiarity.percent(0.5), 8.0F, 10.0F, 1.0, Familiarity.percent(1.0), milk, pregnant, 0.5,
+                0.5, Familiarity.percent(0.5), 8.0F, 10.0F, 1.0, Familiarity.percent(1.0), milk, eggs, pregnant, 0.5,
                 Text.plain("10m 0s"), father, true, InspectorSheet.READY, lastBirth
         );
+    }
+
+    @Test
+    void eggsTextCountsTodaysEggs() {
+        assertEquals("1/3 today", English.of(InspectorSheet.eggsText(1, 3, false)));
+        assertEquals("None today (hungry yesterday)", English.of(InspectorSheet.eggsText(0, 0, true)));
+        assertTrue(InspectorSheet.eggsText(0, 0, false).isEmpty());
+    }
+
+    @Test
+    void roosterTextSaysWhetherHeIsFertile() {
+        assertEquals("Fertile today", English.of(InspectorSheet.roosterText(false)));
+        assertEquals("Not today (hungry yesterday)", English.of(InspectorSheet.roosterText(true)));
+    }
+
+    @Test
+    void eggsRowSitsWhereMilkWould() {
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, FERTILITY, EGGS, BREEDING),
+                sheet(true, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY, Text.EMPTY, InspectorSheet.eggsText(0, 2, false)).rows());
+        assertFalse(sheet(true, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).rows().contains(EGGS));
     }
 
     @Test
