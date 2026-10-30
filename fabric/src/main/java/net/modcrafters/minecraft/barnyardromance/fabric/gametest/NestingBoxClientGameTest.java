@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.modcrafters.minecraft.barnyardromance.client.NestingBoxHen;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
@@ -18,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
@@ -56,6 +58,17 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             });
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(10);
+            // She's drawn between her last and current turn every frame, so both must face out of the hole.
+            String turned = context.computeOnClient(client -> {
+                NestingBoxBlockEntity box = (NestingBoxBlockEntity) client.level.getBlockEntity(client.player.blockPosition().east(3));
+                LivingEntity hen = (LivingEntity) NestingBoxHen.sitting(box);
+                float out = Direction.WEST.toYRot();
+                return hen.yBodyRotO == out && hen.yBodyRot == out && hen.yHeadRotO == out && hen.yHeadRot == out ? null
+                        : "body " + hen.yBodyRotO + " to " + hen.yBodyRot + ", head " + hen.yHeadRotO + " to " + hen.yHeadRot;
+            });
+            if (turned != null) {
+                throw new AssertionError("the hen in the box isn't facing out between frames: " + turned);
+            }
             context.takeScreenshot("nesting_box_hen");
             world.getServer().runOnServer(server -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
