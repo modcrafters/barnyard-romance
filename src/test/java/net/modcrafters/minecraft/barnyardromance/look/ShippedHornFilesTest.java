@@ -33,6 +33,26 @@ class ShippedHornFilesTest {
         assertFalse(cattle.female().isEmpty());
     }
 
+    // Only roosters wear a comb, so a comb at a glance means rooster; hens keep vanilla's head.
+    @Test
+    void chickenCombIsRoostersOnly() throws IOException {
+        HornFile chicken = load("chicken");
+
+        assertEquals(List.of("minecraft:chicken"), chicken.entities());
+        assertEquals(0.0, chicken.femaleChance(), 1.0e-9);
+        assertFalse(chicken.male().isEmpty());
+        assertTrue(chicken.female().isEmpty());
+    }
+
+    // The rooster's bigger wattles replace vanilla's, which is on the head on 26.3 and beside it on 1.21.1.
+    @Test
+    void chickenHidesVanillaWattlesOnEveryVersion() throws IOException {
+        List<HideRule> hide = load("chicken").hide();
+
+        assertTrue(hide.contains(new HideRule(List.of("head", "red_thing"), null, null)));
+        assertTrue(hide.contains(new HideRule(List.of("red_thing"), null, null)));
+    }
+
     @Test
     void cattleHidesEveryVanillaCowHorn() throws IOException {
         List<HideRule> hide = load("cattle").hide();

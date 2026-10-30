@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
@@ -18,7 +19,7 @@ final class NestCompat {
         return tag;
     }
 
-    static Optional<Entity> load(ServerLevel level, CompoundTag tag) {
+    static Optional<Entity> load(Level level, CompoundTag tag) {
         Optional<EntityType<?>> type = EntityType.byString(tag.getString("id"));
         if (type.isEmpty()) {
             return Optional.empty();

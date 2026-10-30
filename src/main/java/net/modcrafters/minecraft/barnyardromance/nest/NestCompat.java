@@ -9,6 +9,7 @@ import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 
@@ -30,7 +31,7 @@ final class NestCompat {
         }
     }
 
-    static Optional<Entity> load(ServerLevel level, CompoundTag tag) {
+    static Optional<Entity> load(Level level, CompoundTag tag) {
         Identifier id = Identifier.tryParse(tag.getStringOr("id", ""));
         Optional<EntityType<?>> type = id == null ? Optional.empty() : BuiltInRegistries.ENTITY_TYPE.getOptional(id);
         if (type.isEmpty()) {

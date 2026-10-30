@@ -8,18 +8,22 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -29,8 +33,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 //?} else {
-/*import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.NbtOps;
+/*import net.minecraft.nbt.NbtOps;
 *///?}
 
 import java.util.Comparator;
@@ -101,6 +104,33 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return sitting;
     }
 
+    public @Nullable NestOccupant occupant() {
+        return occupant;
+    }
+
+    // A copy of the sitting hen, for drawing her in the box on the client.
+    public Optional<Entity> loadSittingHen(NestOccupant hen) {
+        return level == null ? Optional.empty() : NestCompat.load(level, hen.hen());
+    }
+
+    // Clients are told when a hen goes in or comes out, so they can draw her.
+    private void sendToClients() {
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
+    }
+
     // The hen leaves the world to sit in the box, saved whole, and comes back out with her egg laid.
     public boolean enter(Animal hen, ItemStack egg, long now) {
         if (occupant != null || !(level instanceof ServerLevel server)) {
@@ -114,7 +144,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         NestingBoxes.entered(hen.getUUID());
         hen.discard();
         occupant = new NestOccupant(saved, egg.copyWithCount(1), now + SIT_TICKS, slot, hen.getUUID());
-        setChanged();
+        sendToClients();
         return true;
     }
 
@@ -134,7 +164,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0, getBlockPos().getZ() + 0.5, done.egg().copy());
         }
         release(server, done);
-        setChanged();
+        sendToClients();
     }
 
     private void release(ServerLevel server, NestOccupant hen) {
@@ -249,6 +279,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             NestOccupant hen = occupant;
             occupant = null;
             release(server, hen);
+            sendToClients();
         }
     }
 

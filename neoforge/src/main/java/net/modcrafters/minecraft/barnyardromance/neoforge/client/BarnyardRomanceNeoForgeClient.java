@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.client;
 
+import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.modcrafters.minecraft.barnyardromance.Constants;
@@ -34,6 +36,7 @@ public final class BarnyardRomanceNeoForgeClient {
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerLayers);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerParticles);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerScreens);
+        modBus.addListener(BarnyardRomanceNeoForgeClient::registerRenderers);
         //? if >=1.21.6
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerPayloads);
     }
@@ -60,6 +63,10 @@ public final class BarnyardRomanceNeoForgeClient {
         event.registerReloadListener(HornShapes.listener());
     }
     *///?}
+
+    private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(BarnyardBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
+    }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
