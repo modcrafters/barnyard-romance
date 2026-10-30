@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxMenu;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
@@ -26,6 +27,8 @@ import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -47,7 +50,9 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 //? if >=1.21.5 {
@@ -57,6 +62,7 @@ import net.minecraft.world.entity.animal.chicken.ChickenVariants;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
@@ -69,6 +75,8 @@ public final class EggGameTests {
     static final double MEDIUM_HEN = 0.76;
     static final double LARGE_HEN = 0.9;
     static final BlockPos BOX = new BlockPos(2, 2, 2);
+    // Ticks for a freshly spawned chicken to land: a mob in the air can't plan a path.
+    static final int LANDED = 10;
     static final TagKey<Item> COMMON_EGGS = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "eggs"));
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
@@ -97,7 +105,20 @@ public final class EggGameTests {
             new BreedingGameTests.Case("hatched_chick_inherits", 20, EggGameTests::hatchedChickInherits),
             new BreedingGameTests.Case("hatched_chick_joins_mothers_book", 20, EggGameTests::hatchedChickJoinsMothersBook),
             new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
-            new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload)
+            new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload),
+            new BreedingGameTests.Case("hen_lays_into_a_nearby_box", 400, EggGameTests::henLaysIntoANearbyBox),
+            new BreedingGameTests.Case("box_egg_is_fertilized_with_a_fed_rooster", 400, EggGameTests::boxEggIsFertilizedWithAFedRooster),
+            new BreedingGameTests.Case("heavy_hen_egg_hatches_sooner", 20, EggGameTests::heavyHenEggHatchesSooner),
+            new BreedingGameTests.Case("closest_rooster_is_the_father", 20, EggGameTests::closestRoosterIsTheFather),
+            new BreedingGameTests.Case("hungry_rooster_fertilizes_nothing", 20, EggGameTests::hungryRoosterFertilizesNothing),
+            new BreedingGameTests.Case("ground_eggs_are_plain_with_a_rooster", 20, EggGameTests::groundEggsArePlainWithARooster),
+            new BreedingGameTests.Case("far_box_is_ignored", 20, EggGameTests::farBoxIsIgnored),
+            new BreedingGameTests.Case("second_hen_does_not_share_a_box", 40, EggGameTests::secondHenDoesNotShareABox),
+            new BreedingGameTests.Case("unreachable_box_gives_up", 200, EggGameTests::unreachableBoxGivesUp),
+            new BreedingGameTests.Case("sitting_hen_reserves_her_slot", 20, EggGameTests::sittingHenReservesHerSlot),
+            new BreedingGameTests.Case("hen_in_box_stays_in_herd_book", 20, EggGameTests::henInBoxStaysInHerdBook),
+            new BreedingGameTests.Case("breaking_box_releases_hen_and_eggs", 20, EggGameTests::breakingBoxReleasesHenAndEggs),
+            new BreedingGameTests.Case("box_survives_save_with_hen", 20, EggGameTests::boxSurvivesSaveWithHen)
             //? if >=1.21.5 {
             , new BreedingGameTests.Case("warm_hen_lays_brown_eggs", 20, EggGameTests::warmHenLaysBrownEggs)
             //?}
@@ -499,6 +520,271 @@ public final class EggGameTests {
         helper.succeed();
     }
 
+    public static void henLaysIntoANearbyBox(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+        });
+
+        once(helper, () -> placed[0] != null && placed[0].occupied(), () -> {
+            NestingBoxBlockEntity box = placed[0];
+            box.finishSitting();
+            helper.assertTrue(box.getItem(0).is(Items.EGG), "the box holds " + box.getItem(0));
+            helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 0, "she laid on the ground too");
+            helper.assertTrue(!box.occupied(), "she's still in the box");
+            helper.succeed();
+        });
+    }
+
+    public static void boxEggIsFertilizedWithAFedRooster(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 5);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+        });
+
+        once(helper, () -> placed[0] != null && placed[0].occupied(), () -> {
+            NestingBoxBlockEntity box = placed[0];
+            box.finishSitting();
+            EggData egg = FertilizedEggItem.data(box.getItem(0)).orElseThrow(() -> GameTestCompat.failure(helper, "the box egg is " + box.getItem(0)));
+            helper.assertTrue(rooster.getUUID().equals(egg.father()), "the father is " + egg.father());
+            helper.assertTrue(hen.getUUID().equals(egg.mother()), "the mother is " + egg.mother());
+            helper.succeed();
+        });
+    }
+
+    public static void heavyHenEggHatchesSooner(GameTestHelper helper) {
+        Animal heavy = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal light = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 3);
+        chicken(helper, Sex.MALE, 1.2, 0.5, 5);
+        Services.DATA.set(heavy, traits(helper, heavy).withWeight(1.0));
+        Services.DATA.set(light, traits(helper, light).withWeight(0.0));
+        BarnyardConfig config = BarnyardConfig.current();
+        long heavyTotal = 0L;
+        long lightTotal = 0L;
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:chicken\": {\"eggs\": {\"hatchTicksMin\": 100, \"hatchTicksMax\": 200}}}}"));
+            for (int i = 0; i < 20; i++) {
+                heavyTotal += fertile(helper, heavy).totalTicks();
+                lightTotal += fertile(helper, light).totalTicks();
+            }
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(heavyTotal < lightTotal, "heavy hens' eggs take " + heavyTotal + " ticks, light hens' " + lightTotal);
+        helper.succeed();
+    }
+
+    public static void closestRoosterIsTheFather(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal near = chicken(helper, Sex.MALE, 1.2, 0.5, 4);
+        chicken(helper, Sex.MALE, 1.2, 0.5, 8);
+
+        EggData egg = fertile(helper, hen);
+
+        helper.assertTrue(near.getUUID().equals(egg.father()), "the father isn't the closest rooster");
+        helper.succeed();
+    }
+
+    public static void hungryRoosterFertilizesNothing(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 4);
+        long today = 10L;
+        Services.DATA.set(rooster, traits(helper, rooster).withHunger(new Hunger(today, -1L, today - 1L)));
+
+        Optional<ItemStack>[] egg = new Optional[1];
+        long before = helper.getLevel().getOverworldClockTime();
+        try {
+            GameTestCompat.setOverworldClock(helper, afterMidnight(today) + 1_000L);
+            inPen(() -> egg[0] = EggLaying.fertilizedEgg(hen, helper.getLevel()));
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+
+        helper.assertTrue(egg[0].isEmpty(), "a rooster that went hungry yesterday fertilized an egg: father "
+                + egg[0].flatMap(FertilizedEggItem::data).map(EggData::father).orElse(null) + ", the rooster " + rooster.getUUID()
+                + ", hunger " + traits(helper, rooster).hunger() + ", today " + today);
+        helper.succeed();
+    }
+
+    public static void groundEggsArePlainWithARooster(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        chicken(helper, Sex.MALE, 1.2, 0.5, 3);
+
+        inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+
+        helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "no plain egg on the ground");
+        helper.assertTrue(eggsNear(helper, hen, BarnyardItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
+        helper.succeed();
+    }
+
+    public static void farBoxIsIgnored(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        boxBeside(helper, hen, 5);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:chicken\": {\"eggs\": {\"boxRange\": 3}}}}"));
+            EggLaying.layDue(hen, helper.getLevel());
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "a hen went for a box out of range");
+        helper.succeed();
+    }
+
+    public static void secondHenDoesNotShareABox(GameTestHelper helper) {
+        Animal first = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal second = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 3);
+        Animal third = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 4);
+
+        helper.runAfterDelay(LANDED, () -> {
+            NestingBoxBlockEntity taken = boxBeside(helper, second, 4);
+            NestingBoxBlockEntity free = boxAt(helper, second.blockPosition().offset(4, 0, 3));
+            helper.assertTrue(taken.enter(first, new ItemStack(Items.EGG), helper.getLevel().getGameTime()), "the first hen couldn't get in");
+            inPen(() -> EggLaying.layDue(second, helper.getLevel()));
+            BlockPos chosen = LayInNestGoal.target(second).orElse(null);
+            helper.getLevel().removeBlock(free.getBlockPos(), false);
+            inPen(() -> EggLaying.layDue(third, helper.getLevel()));
+
+            helper.assertTrue(free.getBlockPos().equals(chosen), "the second hen headed for " + chosen + ", not the free box at " + free.getBlockPos());
+            helper.assertTrue(eggsNear(helper, third, Items.EGG) == 1 && LayInNestGoal.target(third).isEmpty(), "a hen with only a taken box didn't lay on the ground");
+            helper.succeed();
+        });
+    }
+
+    public static void unreachableBoxGivesUp(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+
+        helper.runAfterDelay(LANDED, () -> {
+            BlockPos at = boxBeside(helper, hen, 5).getBlockPos();
+            for (Direction side : Direction.Plane.HORIZONTAL) {
+                helper.getLevel().setBlockAndUpdate(at.relative(side), Blocks.STONE.defaultBlockState());
+                helper.getLevel().setBlockAndUpdate(at.relative(side).above(), Blocks.STONE.defaultBlockState());
+            }
+            helper.getLevel().setBlockAndUpdate(at.above(), Blocks.STONE.defaultBlockState());
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel()));
+        });
+
+        once(helper, () -> eggsNear(helper, hen, Items.EGG) == 1, () -> {
+            helper.assertTrue(LayInNestGoal.target(hen).isEmpty(), "she's still heading for the walled-in box");
+            helper.succeed();
+        });
+    }
+
+    public static void sittingHenReservesHerSlot(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        for (int i = 0; i < NestingBoxBlockEntity.SLOTS - 1; i++) {
+            box.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        }
+        Animal hen = hen(helper, MEDIUM_HEN, 0.5);
+        box.enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+        NestingBoxMenu menu = new NestingBoxMenu(1, holding(helper, Items.STICK).getInventory(), box);
+
+        boolean playerFits = menu.getSlot(NestingBoxBlockEntity.SLOTS - 1).mayPlace(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        boolean boxFits = box.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+
+        helper.assertTrue(!playerFits && !boxFits, "the sitting hen's nest was taken");
+        helper.succeed();
+    }
+
+    public static void henInBoxStaysInHerdBook(GameTestHelper helper) {
+        Animal hen = hen(helper, MEDIUM_HEN, 0.6);
+        hen.setCustomName(net.minecraft.network.chat.Component.literal("Henrietta"));
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), hen);
+        UUID id = hen.getUUID();
+        NestingBoxBlockEntity box = box(helper, BOX);
+        HerdBookData herd = HerdBookData.get(helper.getLevel().getServer());
+
+        box.enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+        boolean aliveInside = herd.record(id).alive() && herd.ledger().node(id).alive();
+        box.finishSitting();
+
+        Entity back = helper.getLevel().getEntity(id);
+        helper.assertTrue(aliveInside, "the herd book thinks the hen in the box died");
+        helper.assertTrue(back instanceof Animal, "the hen didn't come back out");
+        helper.assertTrue(back.getCustomName() != null && back.getCustomName().getString().equals("Henrietta"), "the hen lost her name");
+        helper.assertTrue(traits(helper, (Animal) back).familiarity() == 0.6, "the hen lost her familiarity");
+        helper.succeed();
+    }
+
+    public static void breakingBoxReleasesHenAndEggs(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.placeEgg(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        Animal hen = hen(helper, MEDIUM_HEN, 0.5);
+        UUID id = hen.getUUID();
+        box.enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+
+        helper.destroyBlock(BOX);
+
+        helper.assertTrue(helper.getLevel().getEntity(id) instanceof Animal, "breaking the box didn't let the hen out");
+        helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0)).stream()
+                .anyMatch(item -> item.getItem().is(BarnyardItems.FERTILIZED_EGG)), "breaking the box lost its egg");
+        helper.succeed();
+    }
+
+    public static void boxSurvivesSaveWithHen(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        Animal hen = hen(helper, MEDIUM_HEN, 0.5);
+        UUID id = hen.getUUID();
+        box.enter(hen, new ItemStack(Items.EGG), helper.getLevel().getGameTime());
+        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
+
+        BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        helper.getLevel().setBlockEntity(loaded);
+        ((NestingBoxBlockEntity) loaded).finishSitting();
+
+        helper.assertTrue(helper.getLevel().getEntity(id) instanceof Animal, "the hen was lost when the box was saved");
+        helper.assertTrue(((NestingBoxBlockEntity) loaded).getItem(0).is(Items.EGG), "the saved box lost her egg");
+        helper.succeed();
+    }
+
+    // Box and rooster ranges small enough that other tests' pens, laid out alongside, are out of reach. Swapped in
+    // and back within the tick, like every config change in these tests.
+    static void inPen(Runnable action) {
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:chicken\": {\"eggs\": {\"boxRange\": 8, \"roosterRange\": 4}}}}"));
+            action.run();
+        } finally {
+            BarnyardConfig.set(config);
+        }
+    }
+
+    static EggData fertile(GameTestHelper helper, Animal hen) {
+        return EggLaying.fertilizedEgg(hen, helper.getLevel()).flatMap(FertilizedEggItem::data)
+                .orElseThrow(() -> GameTestCompat.failure(helper, "no fertilized egg"));
+    }
+
+    // A box on the floor the hen stands on, east of her, its hole towards her.
+    static NestingBoxBlockEntity boxBeside(GameTestHelper helper, Animal hen, int blocks) {
+        return boxAt(helper, hen.blockPosition().east(blocks));
+    }
+
+    static NestingBoxBlockEntity boxAt(GameTestHelper helper, BlockPos absolute) {
+        helper.getLevel().setBlockAndUpdate(absolute, BarnyardBlocks.NESTING_BOX.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST));
+        return (NestingBoxBlockEntity) helper.getLevel().getBlockEntity(absolute);
+    }
+
+    // Runs then once, on the first tick when is true.
+    static void once(GameTestHelper helper, BooleanSupplier is, Runnable then) {
+        boolean[] done = {false};
+        helper.onEachTick(() -> {
+            if (!done[0] && is.getAsBoolean()) {
+                done[0] = true;
+                then.run();
+            }
+        });
+    }
+
     static Animal chickIn(GameTestHelper helper, BlockPos pos) {
         List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(pos)));
         if (chicks.size() != 1) {
@@ -549,13 +835,17 @@ public final class EggGameTests {
     }
 
     // One tick of the hen's day at the given overworld clock time: hunger is settled first, as the real tick does.
+    // No boxes or roosters in reach, so a due egg is laid on the ground at once.
     static Laying tickAt(GameTestHelper helper, Animal hen, long clock) {
         long before = helper.getLevel().getOverworldClockTime();
+        BarnyardConfig config = BarnyardConfig.current();
         try {
             GameTestCompat.setOverworldClock(helper, clock);
             FamiliarityCare.settle(hen, clock);
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:chicken\": {\"eggs\": {\"boxRange\": 0, \"roosterRange\": 0}}}}"));
             EggLaying.serverTick(hen, helper.getLevel());
         } finally {
+            BarnyardConfig.set(config);
             GameTestCompat.setOverworldClock(helper, before);
         }
         return Services.DATA.getLaying(hen).orElse(Laying.NONE);

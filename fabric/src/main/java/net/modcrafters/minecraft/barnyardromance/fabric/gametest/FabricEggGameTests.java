@@ -137,6 +137,71 @@ public class FabricEggGameTests {
         EggGameTests.hatchingCatchesUpAfterUnload(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void henLaysIntoANearbyBox(GameTestHelper helper) {
+        EggGameTests.henLaysIntoANearbyBox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void boxEggIsFertilizedWithAFedRooster(GameTestHelper helper) {
+        EggGameTests.boxEggIsFertilizedWithAFedRooster(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void heavyHenEggHatchesSooner(GameTestHelper helper) {
+        EggGameTests.heavyHenEggHatchesSooner(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void closestRoosterIsTheFather(GameTestHelper helper) {
+        EggGameTests.closestRoosterIsTheFather(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hungryRoosterFertilizesNothing(GameTestHelper helper) {
+        EggGameTests.hungryRoosterFertilizesNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void groundEggsArePlainWithARooster(GameTestHelper helper) {
+        EggGameTests.groundEggsArePlainWithARooster(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void farBoxIsIgnored(GameTestHelper helper) {
+        EggGameTests.farBoxIsIgnored(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void secondHenDoesNotShareABox(GameTestHelper helper) {
+        EggGameTests.secondHenDoesNotShareABox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 200)
+    public void unreachableBoxGivesUp(GameTestHelper helper) {
+        EggGameTests.unreachableBoxGivesUp(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void sittingHenReservesHerSlot(GameTestHelper helper) {
+        EggGameTests.sittingHenReservesHerSlot(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void henInBoxStaysInHerdBook(GameTestHelper helper) {
+        EggGameTests.henInBoxStaysInHerdBook(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void breakingBoxReleasesHenAndEggs(GameTestHelper helper) {
+        EggGameTests.breakingBoxReleasesHenAndEggs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void boxSurvivesSaveWithHen(GameTestHelper helper) {
+        EggGameTests.boxSurvivesSaveWithHen(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);

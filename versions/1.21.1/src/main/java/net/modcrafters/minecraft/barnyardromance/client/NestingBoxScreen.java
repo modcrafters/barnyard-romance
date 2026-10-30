@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 public class NestingBoxScreen extends AbstractContainerScreen<NestingBoxMenu> {
     private static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/container/nesting_box.png");
     private static final ResourceLocation NEST_FRONT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "nesting_box/nest_front");
+    private static final ResourceLocation HEN = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "nesting_box/hen");
     private static final int TIMER = 0xFF404040;
     private static final int COUNT = 0xFFFFFFFF;
 
@@ -46,6 +47,9 @@ public class NestingBoxScreen extends AbstractContainerScreen<NestingBoxMenu> {
             Slot slot = this.menu.getSlot(index);
             graphics.pose().pushPose();
             graphics.pose().translate(0.0F, 0.0F, 200.0F);
+            if (index == this.menu.sittingSlot()) {
+                graphics.blitSprite(HEN, slot.x, slot.y, 16, 16);
+            }
             graphics.blitSprite(NEST_FRONT, slot.x, slot.y, 16, 16);
             ItemStack stack = slot.getItem();
             if (stack.getCount() > 1) {

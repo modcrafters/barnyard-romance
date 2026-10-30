@@ -7,11 +7,17 @@ import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
+import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -28,6 +34,7 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 // Hens lay a few eggs a day instead of breeding (see EggRules for how many). The day is planned on the hen's first
 // tick after midnight, after her hunger is settled, and each egg is laid when its time comes round.
@@ -96,8 +103,89 @@ public final class EggLaying {
         return new Laying(today, EggSchedule.plan(sinceMidnight, count, rolls), 0);
     }
 
+    // The egg is fertilized if a fed rooster is near. A hen that can walk to a box with room goes and lays it there;
+    // otherwise it's laid on the ground, where it's always plain: it has been out in the weather.
     public static void layDue(Animal hen, ServerLevel level) {
+        ItemStack egg = fertilizedEgg(hen, level).orElseGet(() -> plainEgg(hen, level));
+        if (LayInNestGoal.walks(hen) && headForBox(hen, level, egg, Set.of(), false)) {
+            return;
+        }
+        layOnGround(hen, level);
+    }
+
+    public static boolean headForBox(Animal hen, ServerLevel level, ItemStack egg, Set<BlockPos> skip, boolean retried) {
+        for (NestingBoxBlockEntity box : NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange())) {
+            if (skip.contains(box.getBlockPos()) || box.occupied() || box.canPlaceEgg(egg) < 0) {
+                continue;
+            }
+            if (LayInNestGoal.headFor(hen, egg, box.getBlockPos(), level.getGameTime(), retried)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void layOnGround(Animal hen, ServerLevel level) {
         drop(hen, level, plainEgg(hen, level));
+    }
+
+    // An egg fathered by the closest adult rooster in range that wasn't hungry yesterday, or nothing.
+    public static Optional<ItemStack> fertilizedEgg(Animal hen, ServerLevel level) {
+        Optional<AnimalTraits> mother = Services.DATA.get(hen);
+        EggSettings settings = settings(hen);
+        if (mother.isEmpty() || !settings.enabled()) {
+            return Optional.empty();
+        }
+        long today = GameDay.of(level.getOverworldClockTime());
+        double rangeSqr = (double) settings.roosterRange() * settings.roosterRange();
+        Animal father = null;
+        AnimalTraits fatherTraits = null;
+        for (Animal other : level.getEntitiesOfClass(Animal.class, hen.getBoundingBox().inflate(settings.roosterRange()),
+                other -> other != hen && other.getType() == hen.getType() && other.isAlive() && !other.isBaby())) {
+            double distance = other.distanceToSqr(hen);
+            if (distance > rangeSqr || (father != null && distance >= father.distanceToSqr(hen))) {
+                continue;
+            }
+            Optional<AnimalTraits> traits = FamiliarityCare.settle(other);
+            if (traits.isEmpty() || traits.get().sex() != Sex.MALE || traits.get().hunger().hungryYesterday(today)) {
+                continue;
+            }
+            AgeStage stage = AgeController.stage(other, traits.get());
+            if (stage == AgeStage.ADULT || stage == AgeStage.OLD) {
+                father = other;
+                fatherTraits = traits.get();
+            }
+        }
+        if (father == null) {
+            return Optional.empty();
+        }
+        AnimalTraits motherTraits = mother.get();
+        long hatchTicks = LitterRoll.pickTicks(settings.hatchTicks(), motherTraits.weight(), hen.getRandom().nextDouble());
+        return Optional.of(FertilizedEggItem.create(new EggData(
+                AnimalSex.speciesId(hen),
+                hen.getUUID(),
+                father.getUUID(),
+                motherTraits.scale(),
+                motherTraits.growthTicks(),
+                motherTraits.weight(),
+                motherTraits.familiarity(),
+                fatherTraits.scale(),
+                fatherTraits.growthTicks(),
+                fatherTraits.weight(),
+                variant(hen),
+                hatchTicks,
+                hatchTicks,
+                -1L
+        )));
+    }
+
+    private static String variant(Animal hen) {
+        //? if >=1.21.5 {
+        if (hen instanceof Chicken chicken) {
+            return chicken.getVariant().unwrapKey().map(key -> key.identifier().toString()).orElse("");
+        }
+        //?}
+        return "";
     }
 
     // Laid where she stands, the way vanilla lays.

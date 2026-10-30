@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -111,7 +112,8 @@ public final class HerdBooks {
         }
         long now = level.getGameTime();
         refresh(data, animal, now);
-        if (reason != null && reason.shouldDestroy()) {
+        // A hen going into a nesting box leaves the world for a while but hasn't died.
+        if (reason != null && reason.shouldDestroy() && !NestingBoxes.inNest(animal.getUUID())) {
             HerdRecord record = data.record(animal.getUUID());
             if (record != null) {
                 data.put(animal.getUUID(), record.died(now, level.getOverworldClockTime()));

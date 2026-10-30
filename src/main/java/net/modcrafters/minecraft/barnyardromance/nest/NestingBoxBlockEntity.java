@@ -8,12 +8,16 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
@@ -26,7 +30,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 //?} else {
 /*import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 *///?}
 
 import java.util.Comparator;
@@ -40,28 +44,109 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
     public static final int SLOTS = 10;
     private static final int[] ALL_SLOTS = IntStream.range(0, SLOTS).toArray();
 
+    // A hen sits for an in-game hour before her egg is in the nest.
+    public static final int SIT_TICKS = 1_000;
+
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+    private @Nullable NestOccupant occupant;
+    // For the window: 0 for an empty box, else the sitting hen's nest plus one.
+    private final ContainerData sitting = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return occupant == null ? 0 : occupant.slot() + 1;
+        }
+
+        @Override
+        public void set(int index, int value) {
+        }
+
+        @Override
+        public int getCount() {
+            return 1;
+        }
+    };
 
     public NestingBoxBlockEntity(BlockPos pos, BlockState state) {
         super(BarnyardBlocks.NESTING_BOX_ENTITY, pos, state);
     }
 
-    // The nest an egg would go in, or -1 when there's no room: a pile of the same plain egg with room, else an empty nest.
+    // The nest an egg would go in, or -1 when there's no room: a pile of the same plain egg with room, else an empty
+    // nest. The nest of a hen sitting in the box is hers.
     public int canPlaceEgg(ItemStack egg) {
         if (!egg.is(BarnyardItems.FERTILIZED_EGG)) {
             for (int slot = 0; slot < SLOTS; slot++) {
                 ItemStack pile = items.get(slot);
-                if (!pile.isEmpty() && ItemStack.isSameItemSameComponents(pile, egg) && pile.getCount() < pile.getMaxStackSize()) {
+                if (!reserved(slot) && !pile.isEmpty() && ItemStack.isSameItemSameComponents(pile, egg) && pile.getCount() < pile.getMaxStackSize()) {
                     return slot;
                 }
             }
         }
         for (int slot = 0; slot < SLOTS; slot++) {
-            if (items.get(slot).isEmpty()) {
+            if (!reserved(slot) && items.get(slot).isEmpty()) {
                 return slot;
             }
         }
         return -1;
+    }
+
+    public boolean occupied() {
+        return occupant != null;
+    }
+
+    private boolean reserved(int slot) {
+        return occupant != null && occupant.slot() == slot;
+    }
+
+    ContainerData sitting() {
+        return sitting;
+    }
+
+    // The hen leaves the world to sit in the box, saved whole, and comes back out with her egg laid.
+    public boolean enter(Animal hen, ItemStack egg, long now) {
+        if (occupant != null || !(level instanceof ServerLevel server)) {
+            return false;
+        }
+        int slot = canPlaceEgg(egg);
+        if (slot < 0) {
+            return false;
+        }
+        CompoundTag saved = NestCompat.save(hen, server);
+        NestingBoxes.entered(hen.getUUID());
+        hen.discard();
+        occupant = new NestOccupant(saved, egg.copyWithCount(1), now + SIT_TICKS, slot, hen.getUUID());
+        setChanged();
+        return true;
+    }
+
+    // Her time is up: the egg goes in her nest and she comes out.
+    public void finishSitting() {
+        if (occupant == null || !(level instanceof ServerLevel server)) {
+            return;
+        }
+        NestOccupant done = occupant;
+        occupant = null;
+        ItemStack pile = items.get(done.slot());
+        if (pile.isEmpty()) {
+            setItem(done.slot(), done.egg().copy());
+        } else if (ItemStack.isSameItemSameComponents(pile, done.egg()) && pile.getCount() < pile.getMaxStackSize()) {
+            pile.grow(1);
+        } else if (!placeEgg(done.egg())) {
+            Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 1.0, getBlockPos().getZ() + 0.5, done.egg().copy());
+        }
+        release(server, done);
+        setChanged();
+    }
+
+    private void release(ServerLevel server, NestOccupant hen) {
+        NestingBoxes.left(hen.id());
+        Vec3 at = exitPos();
+        NestCompat.load(server, hen.hen()).ifPresent(entity -> {
+            //? if >=1.21.5 {
+            entity.snapTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
+            //?} else
+            //entity.moveTo(at.x, at.y, at.z, entity.getYRot(), 0.0F);
+            server.addFreshEntity(entity);
+        });
     }
 
     public boolean placeEgg(ItemStack egg) {
@@ -88,6 +173,9 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             return;
         }
         long now = level.getGameTime();
+        if (box.occupant != null && box.occupant.exitAt() <= now) {
+            box.finishSitting();
+        }
         for (int slot = 0; slot < SLOTS; slot++) {
             Optional<EggData> data = FertilizedEggItem.data(box.items.get(slot));
             if (data.isPresent() && data.get().inBox() && data.get().hatchAt() <= now) {
@@ -152,10 +240,15 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return stack;
     }
 
-    // Eggs leave with their countdowns stopped when the box is broken.
+    // Eggs leave with their countdowns stopped when the box is broken, and a sitting hen gets out without laying.
     void beforeRemoved() {
         for (int slot = 0; slot < SLOTS; slot++) {
             countDown(items.get(slot), false);
+        }
+        if (occupant != null && level instanceof ServerLevel server) {
+            NestOccupant hen = occupant;
+            occupant = null;
+            release(server, hen);
         }
     }
 
@@ -209,7 +302,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
 
     @Override
     protected AbstractContainerMenu createMenu(int containerId, Inventory inventory) {
-        return new NestingBoxMenu(containerId, inventory, this);
+        return new NestingBoxMenu(containerId, inventory, this, sitting);
     }
 
     //? if >=1.21.6 {
@@ -218,12 +311,14 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         super.loadAdditional(input);
         items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
+        occupant = input.read("occupant", NestOccupant.CODEC).orElse(null);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
+        output.storeNullable("occupant", NestOccupant.CODEC, occupant);
     }
     //?} else {
     /*@Override
@@ -231,12 +326,18 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         super.loadAdditional(tag, registries);
         items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, items, registries);
+        occupant = tag.contains("occupant")
+                ? NestOccupant.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("occupant")).result().orElse(null)
+                : null;
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
+        if (occupant != null) {
+            NestOccupant.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), occupant).result().ifPresent(saved -> tag.put("occupant", saved));
+        }
     }
     *///?}
 }
