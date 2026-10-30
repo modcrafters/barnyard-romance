@@ -433,11 +433,14 @@ public final class ProductGameTests {
 
     // Felines take meat at half the value of fish: 0.2 x 0.5.
     public static void felinesEatMeatForLess(GameTestHelper helper) {
-        Animal cat = FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.CAT), 0.4);
+        // Below the threshold, so the feed doesn't also tame it, which would lift it to the taming grace.
+        Animal cat = FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.CAT), 0.0);
 
-        FamiliarityActions.interact(cat, FoodGameTests.holding(helper, Items.BEEF), InteractionHand.MAIN_HAND);
+        Player player = FoodGameTests.holding(helper, Items.BEEF);
+        player.setShiftKeyDown(true);
+        FamiliarityActions.interact(cat, player, InteractionHand.MAIN_HAND);
 
-        FoodGameTests.assertFamiliarity(helper, cat, 0.5);
+        FoodGameTests.assertFamiliarity(helper, cat, 0.1);
         helper.succeed();
     }
 

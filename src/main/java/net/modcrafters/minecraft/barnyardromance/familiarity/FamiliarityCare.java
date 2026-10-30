@@ -19,6 +19,9 @@ import java.util.Optional;
 // Looking after an animal day by day: hungry days cost familiarity (see Hunger), and a tamed animal that has lost
 // too much is grumpy rather than wild. Settling runs every server tick but only changes anything after midnight.
 public final class FamiliarityCare {
+    // A pet that has just been tamed can miss a week of meals before it turns grumpy.
+    public static final int TAMING_GRACE_DAYS = 7;
+
     private FamiliarityCare() {
     }
 
@@ -50,9 +53,9 @@ public final class FamiliarityCare {
         }
         Tuning tuning = BarnyardConfig.current().tuning();
         double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), tuning.familiarityHungerLoss());
-        // A pet tamed before hunger was kept starts at the threshold, so it isn't grumpy the day this arrives.
+        // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && tamed(animal)) {
-            familiarity = Math.max(familiarity, Familiarity.threshold());
+            familiarity = Math.max(familiarity, tamingGrace());
         }
         AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
         Services.DATA.set(animal, updated);
@@ -86,13 +89,18 @@ public final class FamiliarityCare {
         });
     }
 
-    // However an animal is tamed (familiarity, riding a horse, another mod), it starts out at least familiar.
-    public static void raiseToThreshold(Animal animal) {
+    // However an animal is tamed (familiarity, riding a horse, another mod), it starts out a week's hunger above the
+    // threshold.
+    public static void raiseToTamingGrace(Animal animal) {
         tracked(animal).ifPresent(traits -> {
-            if (!Familiarity.ready(traits.familiarity())) {
-                Services.DATA.set(animal, traits.fed(Familiarity.threshold(), traits.lastFedTick()));
+            if (traits.familiarity() < tamingGrace()) {
+                Services.DATA.set(animal, traits.fed(tamingGrace(), traits.lastFedTick()));
             }
         });
+    }
+
+    public static double tamingGrace() {
+        return Math.min(1.0, Familiarity.threshold() + TAMING_GRACE_DAYS * BarnyardConfig.current().tuning().familiarityHungerLoss());
     }
 
     // Only the animals familiarity tames (wolves, cats, horses and the rest of the horse family) count: a parrot tamed
