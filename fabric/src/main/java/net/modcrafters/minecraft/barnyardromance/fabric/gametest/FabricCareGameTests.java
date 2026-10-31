@@ -33,8 +33,8 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void oldTamedWolfStartsAtThreshold(GameTestHelper helper) {
-        CareGameTests.oldTamedWolfStartsAtThreshold(helper);
+    public void oldTamedWolfGetsTamingGrace(GameTestHelper helper) {
+        CareGameTests.oldTamedWolfGetsTamingGrace(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
@@ -108,8 +108,8 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void grumpyWolfDoesNotFollow(GameTestHelper helper) {
-        CareGameTests.grumpyWolfDoesNotFollow(helper);
+    public void grumpyWolfFollows(GameTestHelper helper) {
+        CareGameTests.grumpyWolfFollows(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
@@ -145,5 +145,25 @@ public class FabricCareGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void frozenMemberIsNotChargedTwice(GameTestHelper helper) {
         CareGameTests.frozenMemberIsNotChargedTwice(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void tamedWolfLastsAWeekUnfed(GameTestHelper helper) {
+        CareGameTests.tamedWolfLastsAWeekUnfed(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void sulkingWolfDoesNotFollow(GameTestHelper helper) {
+        CareGameTests.sulkingWolfDoesNotFollow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void farOwnerGetsNoSulk(GameTestHelper helper) {
+        CareGameTests.farOwnerGetsNoSulk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void fightingWolfDoesNotSulk(GameTestHelper helper) {
+        CareGameTests.fightingWolfDoesNotSulk(helper);
     }
 }

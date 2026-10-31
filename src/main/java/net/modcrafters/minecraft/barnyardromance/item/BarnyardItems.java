@@ -70,7 +70,7 @@ public final class BarnyardItems {
     // so crafted stacks show it too; it is translatable, so a pack that changes the food files can reword it.
     public static final Item BREEDERS_MASH = new Item(superfood(BREEDERS_MASH_ID));
     public static final Item GOLDEN_BRAN = new Item(superfood(GOLDEN_BRAN_ID));
-    public static final Item DAIRY_MASH = new Item(superfood(DAIRY_MASH_ID));
+    public static final Item DAIRY_MASH = new DairyMashItem(superfood(DAIRY_MASH_ID, false));
     // Drink like cow milk; the barnyard_romance:milk_buckets tag lets them stand in for it in cake.
     //? if >=1.21.2 {
     public static final Item SHEEP_MILK_BUCKET = new Item(milk(SHEEP_MILK_BUCKET_ID));
@@ -102,13 +102,18 @@ public final class BarnyardItems {
     }
 
     private static Item.Properties superfood(ResourceKey<Item> id) {
+        return superfood(id, true);
+    }
+
+    // A superfood whose effect line depends on the config writes it itself (see DairyMashItem).
+    private static Item.Properties superfood(ResourceKey<Item> id, boolean effectLine) {
         String key = "item." + Constants.MOD_ID + "." + id.identifier().getPath();
+        List<Component> lore = effectLine
+                ? List.of(Component.translatable(key + ".use"), Component.translatable(key + ".effect"))
+                : List.of(Component.translatable(key + ".use"));
         return properties(id)
                 .rarity(Rarity.UNCOMMON)
-                .component(DataComponents.LORE, new ItemLore(List.of(
-                        Component.translatable(key + ".use"),
-                        Component.translatable(key + ".effect")
-                )));
+                .component(DataComponents.LORE, new ItemLore(lore));
     }
 
     // Our items that act on an animal before it does, so a horse doesn't rear and a tamed cat doesn't sit instead.

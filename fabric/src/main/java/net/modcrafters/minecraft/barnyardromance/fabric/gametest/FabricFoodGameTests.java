@@ -101,4 +101,9 @@ public class FabricFoodGameTests {
     public void dairyMashNeedsFamiliarity(GameTestHelper helper) {
         FoodGameTests.dairyMashNeedsFamiliarity(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void ordinaryFoodCanStartMilk(GameTestHelper helper) {
+        FoodGameTests.ordinaryFoodCanStartMilk(helper);
+    }
 }

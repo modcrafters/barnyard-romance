@@ -10,6 +10,12 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 - A chick that hatched in a box while no one was nearby is as old as it would be if you had watched it hatch.
 - The inspector counts only the eggs a hen really laid, not the ones she missed while her chunk was unloaded.
 
+- A newly tamed wolf, cat or horse can go a week without food before it turns grumpy, instead of turning grumpy after its first missed meal. Pets from before familiarity faded get the same week.
+- A grumpy wolf fights back properly when it's attacked, even while you're being attacked too, and only sulks when you're hurt nearby.
+- Grumpy wolves and cats follow you again, unless they were told to sit. They're grumpy, not wild.
+- An animal showing 30% familiarity is always familiar; some used to count as just under.
+- Dairy Mash's tooltip gives the number of days from the config, and mod packs can give any food the power to start milk.
+
 - Chickens lay eggs instead of breeding: S and M hens lay one a day, L and XL hens two, one more when they're familiar, and none after a hungry day. Seeds feed chickens but no longer breed them.
 - New Nesting Box (planks round a wheat): hens walk to one to lay, and you can see a hen sitting in it through the hole. Its window shows sixteen straw nests with each egg's countdown.
 - A rooster nearby makes the eggs laid in a box fertile. Fertilized eggs hatch in the box after about a day into chicks that take after both parents and join their mother's herd books. Eggs laid on the ground are always plain.

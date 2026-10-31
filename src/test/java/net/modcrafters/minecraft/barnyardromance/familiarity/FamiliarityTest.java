@@ -13,6 +13,19 @@ class FamiliarityTest {
         assertFalse(Familiarity.ready(0.0));
     }
 
+    // Fourteen 5% losses from 100% leave a hair under 0.3 in doubles; that is still 30%, so still familiar.
+    @Test
+    void fourteenLossesFromFullAreStillFamiliar() {
+        double familiarity = 1.0;
+        for (int day = 0; day < 14; day++) {
+            familiarity -= 0.05;
+        }
+
+        assertTrue(familiarity < 0.3);
+        assertTrue(Familiarity.ready(familiarity));
+        assertFalse(Familiarity.ready(familiarity - 0.05));
+    }
+
     @Test
     void twoFeedsAreEnoughToWorkAndFiveFillTheBar() {
         double once = Familiarity.gain(0.0);
