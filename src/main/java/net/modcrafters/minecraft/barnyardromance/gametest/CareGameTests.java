@@ -50,7 +50,8 @@ public final class CareGameTests {
             new BreedingGameTests.Case("feeding_marks_the_day_eaten", 20, CareGameTests::feedingMarksTheDayEaten),
             new BreedingGameTests.Case("superfood_counts_as_eating", 20, CareGameTests::superfoodCountsAsEating),
             new BreedingGameTests.Case("calf_does_not_go_hungry", 20, CareGameTests::calfDoesNotGoHungry),
-            new BreedingGameTests.Case("old_tamed_wolf_starts_at_threshold", 20, CareGameTests::oldTamedWolfStartsAtThreshold),
+            new BreedingGameTests.Case("old_tamed_wolf_gets_taming_grace", 20, CareGameTests::oldTamedWolfGetsTamingGrace),
+            new BreedingGameTests.Case("tamed_wolf_lasts_a_week_unfed", 20, CareGameTests::tamedWolfLastsAWeekUnfed),
             new BreedingGameTests.Case("horse_tamed_by_riding_is_not_grumpy", 20, CareGameTests::horseTamedByRidingIsNotGrumpy),
             new BreedingGameTests.Case("unloaded_member_shows_projected_familiarity", 20, CareGameTests::unloadedMemberShowsProjectedFamiliarity),
             new BreedingGameTests.Case("milking_costs_familiarity", 20, CareGameTests::milkingCostsFamiliarity),
@@ -65,7 +66,10 @@ public final class CareGameTests {
             new BreedingGameTests.Case("content_horse_takes_rider", 20, CareGameTests::contentHorseTakesRider),
             new BreedingGameTests.Case("grumpy_wolf_ignores_sit", 20, CareGameTests::grumpyWolfIgnoresSit),
             new BreedingGameTests.Case("wolf_stands_up_when_grumpy", 20, CareGameTests::wolfStandsUpWhenGrumpy),
-            new BreedingGameTests.Case("grumpy_wolf_does_not_follow", 20, CareGameTests::grumpyWolfDoesNotFollow),
+            new BreedingGameTests.Case("grumpy_wolf_follows", 20, CareGameTests::grumpyWolfFollows),
+            new BreedingGameTests.Case("sulking_wolf_does_not_follow", 20, CareGameTests::sulkingWolfDoesNotFollow),
+            new BreedingGameTests.Case("far_owner_gets_no_sulk", 20, CareGameTests::farOwnerGetsNoSulk),
+            new BreedingGameTests.Case("fighting_wolf_does_not_sulk", 20, CareGameTests::fightingWolfDoesNotSulk),
             new BreedingGameTests.Case("grumpy_wolf_sulks_when_owner_hurt", 20, CareGameTests::grumpyWolfSulksWhenOwnerHurt),
             new BreedingGameTests.Case("hurt_wolf_stops_sulking", 20, CareGameTests::hurtWolfStopsSulking),
             new BreedingGameTests.Case("grumpy_wolf_fights_back", 20, CareGameTests::grumpyWolfFightsBack),
@@ -78,16 +82,22 @@ public final class CareGameTests {
     private CareGameTests() {
     }
 
+    // Fed for real each day, by hand: no day is hungry, so it only gains. The clock is put back within the tick.
     public static void fedCowKeepsFamiliarityOverDays(GameTestHelper helper) {
         Animal cow = withFamiliarity(helper, female(helper, EntityTypes.COW), 0.8);
-        FamiliarityCare.settle(cow, clock(10L));
-
-        for (long day = 10L; day < 15L; day++) {
-            FamiliarityCare.markEaten(cow, clock(day) + 10_000L);
-            FamiliarityCare.settle(cow, clock(day + 1L));
+        long before = helper.getLevel().getOverworldClockTime();
+        try {
+            for (long day = 10L; day < 15L; day++) {
+                GameTestCompat.setOverworldClock(helper, clock(day) + 10_000L);
+                FamiliarityCare.settle(cow);
+                FamiliarityActions.interact(cow, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
+            }
+            FamiliarityCare.settle(cow, clock(15L) + 10_000L);
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
         }
 
-        assertFamiliarity(helper, cow, 0.8);
+        assertFamiliarity(helper, cow, 1.0);
         helper.succeed();
     }
 
@@ -134,15 +144,30 @@ public final class CareGameTests {
     }
 
     // A pet tamed before hunger was kept starts at the threshold, so it isn't grumpy the moment this ships.
-    public static void oldTamedWolfStartsAtThreshold(GameTestHelper helper) {
+    // A pet tamed before hunger was kept gets a newly tamed pet's week of grace.
+    public static void oldTamedWolfGetsTamingGrace(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         wolf.tame(helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL));
         Services.DATA.set(wolf, traits(helper, wolf).fed(0.0, -1L).withHunger(Hunger.NONE));
 
         FamiliarityCare.settle(wolf, clock(10L));
 
-        assertFamiliarity(helper, wolf, 0.3);
+        assertFamiliarity(helper, wolf, FamiliarityCare.tamingGrace());
         helper.assertTrue(!FamiliarityCare.grumpy(wolf), "an old tamed wolf is grumpy");
+        helper.succeed();
+    }
+
+    // However it is tamed, a pet can go a week unfed before it turns grumpy, and not a day longer.
+    public static void tamedWolfLastsAWeekUnfed(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
+        Services.DATA.set(wolf, traits(helper, wolf).fed(0.0, -1L));
+        wolf.tame(helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL));
+        FamiliarityCare.settle(wolf, clock(10L));
+
+        FamiliarityCare.settle(wolf, clock(10L + FamiliarityCare.TAMING_GRACE_DAYS));
+        helper.assertTrue(!FamiliarityCare.grumpy(wolf), "a week unfed made a newly tamed wolf grumpy: " + traits(helper, wolf).familiarity());
+        FamiliarityCare.settle(wolf, clock(11L + FamiliarityCare.TAMING_GRACE_DAYS));
+        helper.assertTrue(FamiliarityCare.grumpy(wolf), "eight days unfed and a wolf isn't grumpy: " + traits(helper, wolf).familiarity());
         helper.succeed();
     }
 
@@ -152,8 +177,11 @@ public final class CareGameTests {
 
         horse.tameWithName(player);
 
-        helper.assertTrue(traits(helper, horse).familiarity() >= 0.3, "a horse tamed by riding has familiarity " + traits(helper, horse).familiarity());
+        assertFamiliarity(helper, horse, FamiliarityCare.tamingGrace());
         helper.assertTrue(!FamiliarityCare.grumpy(horse), "a horse tamed by riding is grumpy");
+        FamiliarityCare.settle(horse, clock(10L));
+        FamiliarityCare.settle(horse, clock(11L));
+        helper.assertTrue(!FamiliarityCare.grumpy(horse), "a horse tamed by riding is grumpy after one hungry day");
         helper.succeed();
     }
 
@@ -311,6 +339,8 @@ public final class CareGameTests {
     public static void wolfStandsUpWhenGrumpy(GameTestHelper helper) {
         ServerPlayer owner = helper.makeMockServerPlayerInLevel();
         TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
+        // Already settled, so it doesn't get an old pet's taming grace.
+        Services.DATA.set(wolf, traits(helper, wolf).withHunger(new Hunger(9L, 9L, -1L)));
         wolf.setOrderedToSit(true);
         FamiliarityCare.settle(wolf, clock(10L));
 
@@ -321,15 +351,61 @@ public final class CareGameTests {
         helper.succeed();
     }
 
-    public static void grumpyWolfDoesNotFollow(GameTestHelper helper) {
+    // Grumpy isn't untamed: a grumpy wolf still comes after its owner, unless it was told to sit before.
+    public static void grumpyWolfFollows(GameTestHelper helper) {
         ServerPlayer owner = helper.makeMockServerPlayerInLevel();
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         owner.setPos(wolf.getX() + 20.0, wolf.getY(), wolf.getZ());
 
-        helper.assertTrue(!new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a grumpy wolf follows its owner");
-        Services.DATA.set(wolf, traits(helper, wolf).fed(0.5, -1L));
-        helper.assertTrue(new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a content wolf doesn't follow its owner");
+        helper.assertTrue(new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a grumpy wolf doesn't follow its owner");
+        wolf.setOrderedToSit(true);
+        helper.assertTrue(!new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a grumpy wolf told to sit follows its owner");
+        helper.succeed();
+    }
+
+    // While it sits sulking it stays put.
+    public static void sulkingWolfDoesNotFollow(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        owner.setPos(wolf.getX() + 12.0, wolf.getY(), wolf.getZ());
+
+        Sulk.ownerHurt(wolf, owner, helper.getLevel().getGameTime());
+
+        helper.assertTrue(Sulk.sulking(wolf), "the wolf didn't sulk");
+        helper.assertTrue(!new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a sulking wolf follows its owner");
+        helper.succeed();
+    }
+
+    // An owner hurt far away isn't watched.
+    public static void farOwnerGetsNoSulk(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        owner.setPos(wolf.getX() + Sulk.WATCH_RANGE + 4.0, wolf.getY(), wolf.getZ());
+
+        Sulk.ownerHurt(wolf, owner, helper.getLevel().getGameTime());
+
+        helper.assertTrue(!Sulk.sulking(wolf) && !wolf.isInSittingPose(), "a wolf sulked about an owner out of sight");
+        helper.succeed();
+    }
+
+    // A grumpy wolf in a fight of its own keeps its target when its owner is hit too.
+    public static void fightingWolfDoesNotSulk(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
+        wolf.setOrderedToSit(false);
+        owner.setPos(wolf.getX() + 2.0, wolf.getY(), wolf.getZ());
+        Mob zombie = GameTestCompat.spawn(helper, EntityTypes.ZOMBIE, 1, 1, 1);
+        wolf.tickCount = 5;
+        wolf.setLastHurtByMob(zombie);
+        wolf.setTarget(zombie);
+
+        Sulk.ownerHurt(wolf, owner, helper.getLevel().getGameTime());
+
+        helper.assertTrue(!Sulk.sulking(wolf) && wolf.getTarget() == zombie, "a wolf in a fight sat down to sulk");
+        zombie.discard();
         helper.succeed();
     }
 

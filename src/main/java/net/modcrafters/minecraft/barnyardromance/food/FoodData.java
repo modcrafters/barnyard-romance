@@ -30,6 +30,10 @@ public final class FoodData {
         foods = List.copyOf(loaded);
     }
 
+    public static List<FoodFile> foods() {
+        return foods;
+    }
+
     public static Map<String, Diet> diets() {
         return diets;
     }

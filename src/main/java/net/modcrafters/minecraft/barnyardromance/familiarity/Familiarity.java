@@ -31,8 +31,12 @@ public final class Familiarity {
         SCARE
     }
 
+    // Familiarity moves in 5% steps, which doubles can't hold exactly: fourteen hungry days from 100% leave a hair
+    // under 30%, which must still count as 30%.
+    private static final double EPSILON = 1e-9;
+
     public static boolean ready(double familiarity) {
-        return familiarity >= threshold();
+        return familiarity >= threshold() - EPSILON;
     }
 
     public static double gain(double familiarity) {

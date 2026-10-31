@@ -128,6 +128,9 @@ public final class FamiliarityActions {
         double gained = Familiarity.gain(current.familiarity(), amount);
         Services.DATA.set(animal, current.fed(gained, now));
         FamiliarityCare.markEaten(animal);
+        if (eaten.effects().startsMilk()) {
+            MilkActions.startMilkWithMeal(animal);
+        }
         tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
             animal.setInLove(player);
