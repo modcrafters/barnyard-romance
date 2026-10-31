@@ -201,4 +201,39 @@ public class FabricCareGameTests {
     public void herdStickUpStopsAtTheCap(GameTestHelper helper) {
         CareGameTests.herdStickUpStopsAtTheCap(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedMilkingSpendsTheDay(GameTestHelper helper) {
+        CareGameTests.refusedMilkingSpendsTheDay(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedShearingSpendsTheDay(GameTestHelper helper) {
+        CareGameTests.refusedShearingSpendsTheDay(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedShearingStopsADispenser(GameTestHelper helper) {
+        CareGameTests.refusedShearingStopsADispenser(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void milkAndShearRefusalsAreSeparate(GameTestHelper helper) {
+        CareGameTests.milkAndShearRefusalsAreSeparate(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void noRefusalAtFiftyPercent(GameTestHelper helper) {
+        CareGameTests.noRefusalAtFiftyPercent(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusalNeverRollsForADryCow(GameTestHelper helper) {
+        CareGameTests.refusalNeverRollsForADryCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void mooshroomRefusalBlocksStew(GameTestHelper helper) {
+        CareGameTests.mooshroomRefusalBlocksStew(helper);
+    }
 }

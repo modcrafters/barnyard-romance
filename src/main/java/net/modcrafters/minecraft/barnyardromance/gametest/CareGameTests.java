@@ -6,6 +6,12 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
+//? if >=1.21.2
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarShearing;
+import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
+import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Sulk;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
@@ -91,7 +97,14 @@ public final class CareGameTests {
             new BreedingGameTests.Case("horse_tamed_by_riding_gets_capped_grace", 20, CareGameTests::horseTamedByRidingGetsCappedGrace),
             new BreedingGameTests.Case("unknown_adult_above_the_cap_drops_on_next_feed", 20, CareGameTests::unknownAdultAboveTheCapDropsOnNextFeed),
             new BreedingGameTests.Case("newborn_of_a_familiar_mother_is_farm_raised", 20, CareGameTests::newbornOfAFamiliarMotherIsFarmRaised),
-            new BreedingGameTests.Case("herd_stick_up_stops_at_the_cap", 20, CareGameTests::herdStickUpStopsAtTheCap)
+            new BreedingGameTests.Case("herd_stick_up_stops_at_the_cap", 20, CareGameTests::herdStickUpStopsAtTheCap),
+            new BreedingGameTests.Case("refused_milking_spends_the_day", 20, CareGameTests::refusedMilkingSpendsTheDay),
+            new BreedingGameTests.Case("refused_shearing_spends_the_day", 20, CareGameTests::refusedShearingSpendsTheDay),
+            new BreedingGameTests.Case("refused_shearing_stops_a_dispenser", 20, CareGameTests::refusedShearingStopsADispenser),
+            new BreedingGameTests.Case("milk_and_shear_refusals_are_separate", 20, CareGameTests::milkAndShearRefusalsAreSeparate),
+            new BreedingGameTests.Case("no_refusal_at_fifty_percent", 20, CareGameTests::noRefusalAtFiftyPercent),
+            new BreedingGameTests.Case("refusal_never_rolls_for_a_dry_cow", 20, CareGameTests::refusalNeverRollsForADryCow),
+            new BreedingGameTests.Case("mooshroom_refusal_blocks_stew", 20, CareGameTests::mooshroomRefusalBlocksStew)
     );
 
     private CareGameTests() {
@@ -627,6 +640,98 @@ public final class CareGameTests {
         HerdStick.create(HerdTool.familiarity(1)).interactLivingEntity(player, cow, InteractionHand.MAIN_HAND);
 
         assertFamiliarity(helper, cow, 0.4);
+        helper.succeed();
+    }
+
+    // A refusal gives nothing and costs nothing, and the next try today is turned away without a roll.
+    public static void refusedMilkingSpendsTheDay(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.COW, 0.5), 0.4);
+        Player player = holding(helper, Items.BUCKET);
+
+        MilkActions.refuseMilking(cow, player);
+        GameTestCompat.interact(cow, player);
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a cow that refused today gave " + player.getMainHandItem());
+        assertFamiliarity(helper, cow, 0.4);
+        long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+        helper.assertTrue(traits(helper, cow).refusals().milkRefused(today), "the refusal wasn't kept for today");
+        helper.succeed();
+    }
+
+    public static void refusedShearingSpendsTheDay(GameTestHelper helper) {
+        Sheep sheep = (Sheep) withFamiliarity(helper, female(helper, EntityTypes.SHEEP), 0.4);
+        Player player = holding(helper, Items.SHEARS);
+
+        ShearActions.refuseShearing(sheep, player);
+        GameTestCompat.useOn(sheep, player);
+
+        helper.assertTrue(!sheep.isSheared(), "a sheep that refused today was sheared");
+        helper.assertTrue(player.getMainHandItem().getDamageValue() == 0, "the shears were worn by a refusal");
+        assertFamiliarity(helper, sheep, 0.4);
+        helper.succeed();
+    }
+
+    // Every dispenser path asks ShearActions.withholds.
+    public static void refusedShearingStopsADispenser(GameTestHelper helper) {
+        Sheep sheep = (Sheep) withFamiliarity(helper, female(helper, EntityTypes.SHEEP), 0.6);
+
+        ShearActions.refuseShearing(sheep, null);
+
+        helper.assertTrue(ShearActions.withholds(sheep), "a sheep that refused today isn't withheld from a dispenser");
+        //? if >=1.21.2 {
+        helper.assertTrue(!FamiliarShearing.tryShear(helper.getLevel(), sheep.blockPosition(), new ItemStack(Items.SHEARS)), "the dispenser sheared");
+        helper.assertTrue(!sheep.isSheared(), "a sheep that refused today was sheared by a dispenser");
+        //?}
+        helper.succeed();
+    }
+
+    public static void milkAndShearRefusalsAreSeparate(GameTestHelper helper) {
+        Animal ewe = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.SHEEP, 0.5), 0.6);
+
+        ShearActions.refuseShearing(ewe, null);
+
+        ProductGameTests.assertMilks(helper, ewe, BarnyardItems.SHEEP_MILK_BUCKET);
+        helper.succeed();
+    }
+
+    // At 50% an animal never refuses: fifty tries, each with today's milking given back.
+    public static void noRefusalAtFiftyPercent(GameTestHelper helper) {
+        Animal cow = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.COW, 0.5), 0.5);
+        for (int i = 0; i < 50; i++) {
+            AnimalTraits traits = traits(helper, cow);
+            Lactation lactation = traits.lactation();
+            Services.DATA.set(cow, traits.fed(0.5, traits.lastFedTick())
+                    .withLactation(new Lactation(lactation.milkUntil(), lactation.youngUntil(), -1L, 0, lactation.graceGiven())));
+            ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
+        }
+        helper.assertTrue(traits(helper, cow).refusals().equals(Refusals.NONE), "a cow at 50% refused");
+        helper.succeed();
+    }
+
+    // A cow with no milk gives the usual reply; a refusal never covers up another reason.
+    public static void refusalNeverRollsForADryCow(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.35, -1L).withOrigin(Origin.FARM).withLactation(Lactation.NONE.withGraceGiven()));
+        Player player = holding(helper, Items.BUCKET);
+
+        for (int i = 0; i < 50; i++) {
+            GameTestCompat.interact(cow, player);
+        }
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a dry cow gave " + player.getMainHandItem());
+        helper.assertTrue(traits(helper, cow).refusals().equals(Refusals.NONE), "a dry cow refused");
+        helper.succeed();
+    }
+
+    public static void mooshroomRefusalBlocksStew(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        Player player = holding(helper, Items.BOWL);
+
+        MilkActions.refuseMilking(mooshroom, null);
+        GameTestCompat.interact(mooshroom, player);
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BOWL), "a mooshroom that refused today gave " + player.getMainHandItem());
+        assertFamiliarity(helper, mooshroom, 0.8);
         helper.succeed();
     }
 

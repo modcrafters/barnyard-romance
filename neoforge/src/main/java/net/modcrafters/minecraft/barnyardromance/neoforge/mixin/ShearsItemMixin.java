@@ -23,6 +23,6 @@ public class ShearsItemMixin {
             )
     )
     private boolean barnyardromance$familiar(boolean shearable, @Local(argsOnly = true) LivingEntity entity) {
-        return shearable && !(entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.shearedToday(animal)));
+        return shearable && !(entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.blocked(animal)));
     }
 }
