@@ -286,7 +286,7 @@ public class InspectorScreen extends Screen {
             return Text.EMPTY;
         }
         Laying laying = Services.DATA.getLaying(animal).filter(current -> current.day() == today).orElse(Laying.NONE);
-        return InspectorSheet.eggsText(laying.next(), laying.planned(), hungry);
+        return InspectorSheet.eggsText(laying.laid(), laying.planned(), hungry);
     }
 
     private InspectorSheet sheet() {

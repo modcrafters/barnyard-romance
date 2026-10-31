@@ -66,6 +66,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.animal.chicken.ChickenVariants;
 //?}
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -116,6 +120,10 @@ public final class EggGameTests {
             new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
             new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload),
             new BreedingGameTests.Case("time_skip_counts_eggs_down", 20, EggGameTests::timeSkipCountsEggsDown),
+            new BreedingGameTests.Case("late_hatch_is_born_when_due", 20, EggGameTests::lateHatchIsBornWhenDue),
+            new BreedingGameTests.Case("failed_hatch_keeps_the_egg", 20, EggGameTests::failedHatchKeepsTheEgg),
+            new BreedingGameTests.Case("skipped_eggs_are_not_laid", 20, EggGameTests::skippedEggsAreNotLaid),
+            new BreedingGameTests.Case("old_laying_counts_every_egg_as_laid", 20, EggGameTests::oldLayingCountsEveryEggAsLaid),
             new BreedingGameTests.Case("hen_lays_into_a_nearby_box", 400, EggGameTests::henLaysIntoANearbyBox),
             new BreedingGameTests.Case("hen_uses_a_box_with_a_fence_on_top", 400, EggGameTests::henUsesABoxWithAFenceOnTop),
             new BreedingGameTests.Case("box_egg_is_fertilized_with_a_fed_rooster", 400, EggGameTests::boxEggIsFertilizedWithAFedRooster),
@@ -157,8 +165,31 @@ public final class EggGameTests {
         helper.assertTrue(planned.day() == 10L && planned.times().size() == 1, "an M hen planned " + planned);
         Laying after = tickAt(helper, hen, at(10L, planned.times().getFirst()));
 
-        helper.assertTrue(after.next() == 1, "the egg wasn't counted: " + after);
+        helper.assertTrue(after.next() == 1 && after.laid() == 1, "the egg wasn't counted: " + after);
         helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "an M hen laid " + eggsNear(helper, hen, Items.EGG) + " eggs");
+        helper.succeed();
+    }
+
+    // An egg due while she wasn't loaded is skipped: behind her, but not laid, so the inspector doesn't count it.
+    public static void skippedEggsAreNotLaid(GameTestHelper helper) {
+        Animal hen = hen(helper, MEDIUM_HEN, 0.0);
+        long day = 10L;
+        Services.DATA.setLaying(hen, new Laying(day, List.of(7_000, 9_000), 0, 0));
+
+        Laying after = tickAt(helper, hen, at(day, 9_000));
+
+        helper.assertTrue(after.next() == 2 && after.laid() == 1, "one skipped and one laid, but " + after);
+        helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "she laid " + eggsNear(helper, hen, Items.EGG) + " eggs");
+        helper.succeed();
+    }
+
+    // Saves from before laid was kept counted every egg behind the hen as laid.
+    public static void oldLayingCountsEveryEggAsLaid(GameTestHelper helper) {
+        JsonObject saved = JsonParser.parseString("{\"day\": 3, \"times\": [7000, 9000], \"next\": 2}").getAsJsonObject();
+
+        Laying laying = Laying.CODEC.parse(JsonOps.INSTANCE, saved).getOrThrow();
+
+        helper.assertTrue(laying.laid() == 2, "an old save's laid eggs: " + laying);
         helper.succeed();
     }
 
@@ -563,6 +594,44 @@ public final class EggGameTests {
         helper.assertTrue(loaded.getItem(0).isEmpty(), "an egg that ran out while unloaded didn't hatch: " + FertilizedEggItem.data(loaded.getItem(0))
                 + ", saved lastCounted " + saved.get("lastCounted") + ", now " + helper.getLevel().getGameTime());
         chickIn(helper, BOX.north());
+        helper.succeed();
+    }
+
+    // A box that was unloaded when its egg ran out dates the chick from then, and it has grown since.
+    public static void lateHatchIsBornWhenDue(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        saved.putLong("lastCounted", helper.getLevel().getGameTime() - 5_000L);
+        helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
+
+        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        helper.getLevel().setBlockEntity(loaded);
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), loaded);
+
+        Animal chick = chickIn(helper, BOX.north());
+        AnimalTraits traits = traits(helper, chick);
+        long hatched = helper.getLevel().getGameTime() - 4_000L;
+        helper.assertTrue(traits.bornTick() == hatched, "the chick was born at " + traits.bornTick() + ", not " + hatched);
+        helper.assertTrue(chick.getAge() == -(traits.growthTicks() - 4_000), "the chick hasn't grown since it hatched: age " + chick.getAge()
+                + " of " + traits.growthTicks());
+        helper.succeed();
+    }
+
+    // An egg whose animal doesn't exist (its mod was removed, say) stays in its nest instead of vanishing.
+    public static void failedHatchKeepsTheEgg(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        EggData data = new EggData("barnyard_romance:no_such_bird", UUID.randomUUID(), null, LARGE_HEN, Growth.wild(), 0.5, 0.5,
+                1.2, Growth.wild(), 0.5, "", 1_000L, 0L);
+        box.setItem(0, FertilizedEggItem.create(data));
+
+        for (int i = 0; i < 3; i++) {
+            NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+        }
+
+        helper.assertTrue(FertilizedEggItem.data(box.getItem(0)).isPresent(), "the egg that couldn't hatch is gone: " + box.getItem(0));
+        helper.assertTrue(chickensIn(helper) == 0, "something hatched from it");
         helper.succeed();
     }
 

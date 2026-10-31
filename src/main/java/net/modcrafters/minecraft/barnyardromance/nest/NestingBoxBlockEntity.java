@@ -39,9 +39,12 @@ import net.minecraft.world.level.storage.ValueOutput;
 /*import net.minecraft.nbt.NbtOps;
 *///?}
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -62,6 +65,9 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
     private static final long NEVER = Long.MIN_VALUE;
     private long lastCounted = NEVER;
     private long lastClock = NEVER;
+    // Eggs whose chick couldn't be made, say because its animal's mod is gone. They stay in their nests and are tried
+    // again when the box loads or the egg is put back, which makes a new stack.
+    private final Set<ItemStack> stuck = Collections.newSetFromMap(new IdentityHashMap<>());
     // For the window: 0 for an empty box, else the sitting hen's nest plus one.
     private final ContainerData sitting = new ContainerData() {
         @Override
@@ -274,8 +280,18 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             }
             EggData left = counting ? data.get().counted(elapsed) : data.get();
             if (left.remainingTicks() <= 0L) {
-                box.items.set(slot, ItemStack.EMPTY);
-                Hatching.hatch(server, left, box.exitPos());
+                if (box.stuck.contains(egg)) {
+                    continue;
+                }
+                // A chick that hatched while the box was unloaded, or while the night was slept through, was born
+                // when its time ran out.
+                long overdue = counting ? Math.max(0L, elapsed - data.get().remainingTicks()) : 0L;
+                if (Hatching.hatch(server, left, box.exitPos(), now - overdue).isPresent()) {
+                    box.items.set(slot, ItemStack.EMPTY);
+                } else {
+                    egg.set(BarnyardComponents.EGG_DATA, left);
+                    box.stuck.add(egg);
+                }
             } else if (counting) {
                 egg.set(BarnyardComponents.EGG_DATA, left);
             }

@@ -20,12 +20,12 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.core.Direction;
 import org.jspecify.annotations.Nullable;
-//? if >=1.21.2 {
+//? if >=1.21.5 {
 import net.minecraft.server.level.ServerLevel;
-//?} else {
-/*import com.mojang.serialization.MapCodec;
-import net.minecraft.world.Containers;
-*///?}
+//?} else
+//import net.minecraft.world.Containers;
+//? if <1.21.2
+//import com.mojang.serialization.MapCodec;
 
 // A plank crate with a round hole in the front and hay inside, where hens lay. Placed with the hole facing the player.
 public class NestingBoxBlock extends BaseEntityBlock {
@@ -52,7 +52,7 @@ public class NestingBoxBlock extends BaseEntityBlock {
         return InteractionResult.SUCCESS;
     }
 
-    //? if >=1.21.2 {
+    //? if >=1.21.5 {
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         net.minecraft.world.Containers.updateNeighboursAfterDestroy(state, level, pos);

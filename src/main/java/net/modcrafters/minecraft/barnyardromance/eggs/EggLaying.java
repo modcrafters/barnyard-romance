@@ -89,7 +89,7 @@ public final class EggLaying {
                 return;
             }
             int eggs = due.layNow() ? laying.planned() - laying.next() - due.skip() : 0;
-            Services.DATA.setLaying(animal, laying.advance(due.skip() + eggs));
+            Services.DATA.setLaying(animal, laying.advance(due.skip(), eggs));
             if (eggs > 0) {
                 layDue(animal, level, eggs);
             }
@@ -136,7 +136,7 @@ public final class EggLaying {
     public static void resume(Animal hen, ServerLevel level) {
         long clock = level.getOverworldClockTime();
         Services.DATA.getLaying(hen).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.setLaying(hen,
-                new Laying(laying.day(), EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)), laying.next())));
+                laying.withTimes(EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)))));
     }
 
     // For the herd book: the best adult rooster in range, by whether he ate today (so he's fertile tomorrow).
