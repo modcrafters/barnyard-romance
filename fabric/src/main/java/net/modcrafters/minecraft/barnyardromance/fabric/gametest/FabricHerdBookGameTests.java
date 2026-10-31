@@ -118,4 +118,9 @@ public class FabricHerdBookGameTests {
     public void memberOrderSurvivesSave(GameTestHelper helper) {
         HerdBookGameTests.memberOrderSurvivesSave(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void herdBookRecordKeepsTheFreshOrigin(GameTestHelper helper) {
+        HerdBookGameTests.herdBookRecordKeepsTheFreshOrigin(helper);
+    }
 }

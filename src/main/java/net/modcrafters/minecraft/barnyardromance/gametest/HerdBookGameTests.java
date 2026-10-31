@@ -16,6 +16,8 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdLedger;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdRecords;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -69,7 +71,8 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("died_day_uses_the_overworld_clock", 20, HerdBookGameTests::diedDayUsesTheOverworldClock),
             new BreedingGameTests.Case("vanilla_birth_records_parents", 20, HerdBookGameTests::vanillaBirthRecordsParents),
             new BreedingGameTests.Case("save_refreshes_loaded_members", 20, HerdBookGameTests::saveRefreshesLoadedMembers),
-            new BreedingGameTests.Case("member_order_survives_save", 20, HerdBookGameTests::memberOrderSurvivesSave)
+            new BreedingGameTests.Case("member_order_survives_save", 20, HerdBookGameTests::memberOrderSurvivesSave),
+            new BreedingGameTests.Case("herd_book_record_keeps_the_fresh_origin", 20, HerdBookGameTests::herdBookRecordKeepsTheFreshOrigin)
     );
 
     private HerdBookGameTests() {
@@ -448,6 +451,27 @@ public final class HerdBookGameTests {
 
     private static MinecraftServer server(GameTestHelper helper) {
         return helper.getLevel().getServer();
+    }
+
+    // A record frozen below the threshold keeps its old values, but the origin comes from the animal as it is now.
+    public static void herdBookRecordKeepsTheFreshOrigin(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.5, -1L));
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdRecord record = data(helper).record(cow.getUUID());
+        HerdRecord old = withTraits(record, record.traits().fed(0.5, 100L).withOrigin(Origin.UNKNOWN));
+        HerdRecord fresh = withTraits(record, record.traits().fed(0.2, 200L).withOrigin(Origin.WILD));
+
+        HerdRecord kept = HerdRecords.refreshed(old, fresh);
+
+        helper.assertTrue(kept.traits().lastFedTick() == 100L, "the frozen record took the fresh feeding time");
+        helper.assertTrue(kept.traits().origin() == Origin.WILD, "the frozen record kept origin " + kept.traits().origin());
+        helper.succeed();
+    }
+
+    private static HerdRecord withTraits(HerdRecord record, AnimalTraits traits) {
+        return new HerdRecord(record.species(), record.name(), traits, record.pregnancy(), record.baby(), record.milkable(), record.shearable(),
+                record.woolly(), record.refreshedAt(), record.diedAt(), record.diedClock(), record.tamed(), record.nest());
     }
 
     private static HerdBookData data(GameTestHelper helper) {

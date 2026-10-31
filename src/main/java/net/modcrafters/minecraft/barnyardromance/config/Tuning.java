@@ -32,7 +32,11 @@ public record Tuning(
         double yieldScaleExponent,
         double familiarityHungerLoss,
         double familiarityMilkingCost,
-        double familiarityShearingCost
+        double familiarityShearingCost,
+        double wildFamiliarityCap,
+        double wildPetFamiliarityCap,
+        double refusalBelow,
+        double refusalChance
 ) {
     private static final double MAX_FOOD_HEAL = 20.0;
     private static final long MAX_MILK_TICKS = 2_400_000L;
@@ -40,7 +44,7 @@ public record Tuning(
     private static final double MAX_YIELD = 4.0;
 
     public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
-            72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05);
+            72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -79,7 +83,11 @@ public record Tuning(
                 yieldFactor(object, "yieldScaleExponent", DEFAULTS.yieldScaleExponent),
                 unit(object, "familiarityHungerLoss", DEFAULTS.familiarityHungerLoss),
                 unit(object, "familiarityMilkingCost", DEFAULTS.familiarityMilkingCost),
-                unit(object, "familiarityShearingCost", DEFAULTS.familiarityShearingCost)
+                unit(object, "familiarityShearingCost", DEFAULTS.familiarityShearingCost),
+                unit(object, "wildFamiliarityCap", DEFAULTS.wildFamiliarityCap),
+                unit(object, "wildPetFamiliarityCap", DEFAULTS.wildPetFamiliarityCap),
+                unit(object, "refusalBelow", DEFAULTS.refusalBelow),
+                unit(object, "refusalChance", DEFAULTS.refusalChance)
         );
     }
 
@@ -112,6 +120,10 @@ public record Tuning(
         object.addProperty("familiarityHungerLoss", familiarityHungerLoss);
         object.addProperty("familiarityMilkingCost", familiarityMilkingCost);
         object.addProperty("familiarityShearingCost", familiarityShearingCost);
+        object.addProperty("wildFamiliarityCap", wildFamiliarityCap);
+        object.addProperty("wildPetFamiliarityCap", wildPetFamiliarityCap);
+        object.addProperty("refusalBelow", refusalBelow);
+        object.addProperty("refusalChance", refusalChance);
         return object;
     }
 
