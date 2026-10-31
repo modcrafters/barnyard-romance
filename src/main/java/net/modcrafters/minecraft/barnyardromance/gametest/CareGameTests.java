@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Sulk;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
@@ -16,6 +17,13 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
+import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
+import net.minecraft.util.RandomSource;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerPlayer;
@@ -76,7 +84,14 @@ public final class CareGameTests {
             new BreedingGameTests.Case("fed_grumpy_wolf_obeys_again", 20, CareGameTests::fedGrumpyWolfObeysAgain),
             new BreedingGameTests.Case("grumpy_pet_shows_in_the_book", 20, CareGameTests::grumpyPetShowsInTheBook),
             new BreedingGameTests.Case("tamed_parrot_is_never_grumpy", 20, CareGameTests::tamedParrotIsNeverGrumpy),
-            new BreedingGameTests.Case("frozen_member_is_not_charged_twice", 20, CareGameTests::frozenMemberIsNotChargedTwice)
+            new BreedingGameTests.Case("frozen_member_is_not_charged_twice", 20, CareGameTests::frozenMemberIsNotChargedTwice),
+            new BreedingGameTests.Case("wild_adult_cow_stops_at_forty_percent", 20, CareGameTests::wildAdultCowStopsAtFortyPercent),
+            new BreedingGameTests.Case("calf_fed_while_young_passes_forty", 20, CareGameTests::calfFedWhileYoungPassesForty),
+            new BreedingGameTests.Case("wild_adult_wolf_stops_at_eighty_percent", 20, CareGameTests::wildAdultWolfStopsAtEightyPercent),
+            new BreedingGameTests.Case("horse_tamed_by_riding_gets_capped_grace", 20, CareGameTests::horseTamedByRidingGetsCappedGrace),
+            new BreedingGameTests.Case("unknown_adult_above_the_cap_drops_on_next_feed", 20, CareGameTests::unknownAdultAboveTheCapDropsOnNextFeed),
+            new BreedingGameTests.Case("newborn_of_a_familiar_mother_is_farm_raised", 20, CareGameTests::newbornOfAFamiliarMotherIsFarmRaised),
+            new BreedingGameTests.Case("herd_stick_up_stops_at_the_cap", 20, CareGameTests::herdStickUpStopsAtTheCap)
     );
 
     private CareGameTests() {
@@ -529,13 +544,128 @@ public final class CareGameTests {
         return wolf;
     }
 
+    // An adult first fed in the wild tops out at 40%, however long it's fed.
+    public static void wildAdultCowStopsAtFortyPercent(GameTestHelper helper) {
+        Animal cow = unknown(helper, female(helper, EntityTypes.COW), 0.0);
+
+        feedOnDays(helper, cow, Items.WHEAT, 3);
+
+        assertFamiliarity(helper, cow, 0.4);
+        assertOrigin(helper, cow, Origin.WILD);
+        helper.succeed();
+    }
+
+    // A calf fed while young is farm-raised for life: it passes 40%, and keeps going once grown.
+    public static void calfFedWhileYoungPassesForty(GameTestHelper helper) {
+        Animal calf = unknown(helper, female(helper, EntityTypes.COW), 0.0);
+        calf.setBaby(true);
+
+        feedOnDays(helper, calf, Items.WHEAT, 3);
+        assertFamiliarity(helper, calf, 0.6);
+        assertOrigin(helper, calf, Origin.FARM);
+
+        calf.setAge(0);
+        feedOnDays(helper, calf, Items.WHEAT, 1);
+        assertFamiliarity(helper, calf, 0.8);
+        assertOrigin(helper, calf, Origin.FARM);
+        helper.succeed();
+    }
+
+    // A wolf won over as an adult is tamed on the way, and tops out at the pet cap of 80%.
+    public static void wildAdultWolfStopsAtEightyPercent(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) unknown(helper, female(helper, EntityTypes.WOLF), 0.0);
+
+        feedOnDays(helper, wolf, Items.BEEF, 6);
+
+        helper.assertTrue(wolf.isTame(), "the fed wolf wasn't tamed");
+        assertFamiliarity(helper, wolf, 0.8);
+        assertOrigin(helper, wolf, Origin.WILD);
+        helper.succeed();
+    }
+
+    public static void horseTamedByRidingGetsCappedGrace(GameTestHelper helper) {
+        AbstractHorse horse = (AbstractHorse) unknown(helper, female(helper, EntityTypes.HORSE), 0.0);
+
+        horse.tameWithName(holding(helper, Items.AIR));
+
+        assertFamiliarity(helper, horse, FamiliarityCare.tamingGrace());
+        assertOrigin(helper, horse, Origin.WILD);
+        helper.succeed();
+    }
+
+    // An adult from before origins were kept keeps its familiarity until it next gains some.
+    public static void unknownAdultAboveTheCapDropsOnNextFeed(GameTestHelper helper) {
+        Animal cow = unknown(helper, female(helper, EntityTypes.COW), 0.9);
+        FamiliarityCare.settle(cow, clock(10L));
+        assertFamiliarity(helper, cow, 0.9);
+
+        feedOnDays(helper, cow, Items.WHEAT, 1);
+
+        assertFamiliarity(helper, cow, 0.4);
+        assertOrigin(helper, cow, Origin.WILD);
+        helper.succeed();
+    }
+
+    public static void newbornOfAFamiliarMotherIsFarmRaised(GameTestHelper helper) {
+        SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
+        Offspring.Parent parent = new Offspring.Parent(1.0, 24_000, 0.5);
+        RandomSource random = helper.getLevel().getRandom();
+
+        AnimalTraits familiar = Offspring.traits(Sex.FEMALE, size, parent, parent, 0.6, random, 0L, Lineage.UNKNOWN);
+        AnimalTraits unfed = Offspring.traits(Sex.FEMALE, size, parent, parent, 0.0, random, 0L, Lineage.UNKNOWN);
+
+        helper.assertTrue(familiar.origin() == Origin.FARM, "a familiar mother's calf is " + familiar.origin());
+        helper.assertTrue(unfed.origin() == Origin.UNKNOWN, "an unfamiliar mother's calf is " + unfed.origin());
+        helper.succeed();
+    }
+
+    public static void herdStickUpStopsAtTheCap(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.4, -1L).withOrigin(Origin.WILD));
+        Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
+
+        HerdStick.create(HerdTool.familiarity(1)).interactLivingEntity(player, cow, InteractionHand.MAIN_HAND);
+
+        assertFamiliarity(helper, cow, 0.4);
+        helper.succeed();
+    }
+
+    // Fed by hand once a day for the given number of days, from day 10. The clock is put back within the tick.
+    private static void feedOnDays(GameTestHelper helper, Animal animal, net.minecraft.world.item.Item food, int days) {
+        long before = helper.getLevel().getOverworldClockTime();
+        try {
+            for (long day = 10L; day < 10L + days; day++) {
+                GameTestCompat.setOverworldClock(helper, clock(day) + 10_000L);
+                FamiliarityCare.settle(animal);
+                // Sneaking, so an animal that isn't familiar yet takes the food instead of shying away.
+                Player player = holding(helper, food);
+                player.setShiftKeyDown(true);
+                FamiliarityActions.interact(animal, player, InteractionHand.MAIN_HAND);
+            }
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+    }
+
+    // An animal whose origin isn't known yet, as every animal is before it first gains familiarity.
+    private static Animal unknown(GameTestHelper helper, Animal animal, double familiarity) {
+        Services.DATA.set(animal, traits(helper, animal).fed(familiarity, -1L).withOrigin(Origin.UNKNOWN));
+        return animal;
+    }
+
+    private static void assertOrigin(GameTestHelper helper, Animal animal, Origin expected) {
+        Origin origin = traits(helper, animal).origin();
+        helper.assertTrue(origin == expected, "the " + animal.getType().getDescription().getString() + " is " + origin + ", not " + expected);
+    }
+
     static long clock(long day) {
         return day * GameDay.TICKS;
     }
 
     static Animal withFamiliarity(GameTestHelper helper, Animal animal, double familiarity) {
         AnimalTraits traits = traits(helper, animal);
-        Services.DATA.set(animal, traits.fed(familiarity, traits.lastFedTick()));
+        // Farm-raised, so feeding it on isn't held at the wild-caught cap.
+        Services.DATA.set(animal, traits.fed(familiarity, traits.lastFedTick()).withOrigin(Origin.FARM));
         return animal;
     }
 }

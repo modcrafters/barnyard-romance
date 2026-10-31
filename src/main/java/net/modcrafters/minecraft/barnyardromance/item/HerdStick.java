@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.command.HerdToolRules;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -100,9 +101,14 @@ public class HerdStick extends Item {
             double next = tool.sets()
                     ? DebugSteps.familiarityAt(tool.percent())
                     : DebugSteps.familiarity(traits.familiarity(), tool.direction());
-            Services.DATA.set(animal, traits.fed(next, traits.lastFedTick()));
-            FamiliarityActions.tameIfFamiliar(animal, player, next);
-            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(traits.familiarity()), Familiarity.percent(next)));
+            // Going up obeys the wild-caught cap, as feeding would.
+            AnimalTraits updated = next > traits.familiarity()
+                    ? FamiliarityCare.raise(animal, traits, next, traits.lastFedTick())
+                    : traits.fed(next, traits.lastFedTick());
+            Services.DATA.set(animal, updated);
+            FamiliarityActions.tameIfFamiliar(animal, player, updated.familiarity());
+            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(traits.familiarity()),
+                    Familiarity.percent(updated.familiarity())));
         }
         Pregnancy current = Services.DATA.getPregnancy(animal).orElse(null);
         if (current == null) {

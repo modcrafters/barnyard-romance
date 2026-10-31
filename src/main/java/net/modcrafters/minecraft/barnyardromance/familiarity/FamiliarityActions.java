@@ -125,8 +125,9 @@ public final class FamiliarityActions {
         }
         PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
-        double gained = Familiarity.gain(current.familiarity(), amount);
-        Services.DATA.set(animal, current.fed(gained, now));
+        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.familiarity(), amount), now);
+        double gained = fed.familiarity();
+        Services.DATA.set(animal, fed);
         FamiliarityCare.markEaten(animal);
         if (eaten.effects().startsMilk()) {
             MilkActions.startMilkWithMeal(animal);
