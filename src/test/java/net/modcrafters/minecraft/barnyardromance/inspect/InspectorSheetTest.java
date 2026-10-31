@@ -59,6 +59,15 @@ class InspectorSheetTest {
     }
 
     @Test
+    void aWildCaughtAnimalGetsARowUnderFamiliar() {
+        InspectorSheet wild = sheet(true, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).withCap(0.4);
+
+        assertEquals(List.of(FAMILIAR, WILD, FEED, GROWTH, WEIGHT, HEALTH, FERTILITY, BREEDING), wild.rows());
+        assertEquals("Wild-caught, max 40%", English.of(wild.wildText()));
+        assertFalse(sheet(true, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).rows().contains(WILD));
+    }
+
+    @Test
     void eggsTextCountsTodaysEggs() {
         assertEquals("1/3 today", English.of(InspectorSheet.eggsText(1, 3, false)));
         assertEquals("None today (hungry yesterday)", English.of(InspectorSheet.eggsText(0, 0, true)));
