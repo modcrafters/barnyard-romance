@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.network.chat.Component;
@@ -59,7 +60,9 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                 player.setItemInHand(InteractionHand.MAIN_HAND, book);
                 Animal bess = cow(level, player, "Old Bess", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 0.9, 1.0, -1L).withBornTick(now - 900_000L));
                 Animal tom = cow(level, player, "Big Tom", Sex.MALE, false, new AnimalTraits(Sex.MALE, 1.3, 1.0, clock).withBornTick(now - 400_000L));
-                Animal daisyCow = cow(level, player, "Daisy", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 1.0, 0.8, clock)
+                // Daisy was caught wild as an adult, so her page notes her cap.
+                Animal daisyCow = cow(level, player, "Daisy", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 1.0, 0.4, clock)
+                        .withOrigin(Origin.WILD)
                         .withBornTick(now - 430_000L)
                         .withFertility(0.9, now)
                         .withLineage(new Lineage(bess.getUUID(), null)));

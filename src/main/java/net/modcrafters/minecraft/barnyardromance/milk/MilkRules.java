@@ -18,6 +18,8 @@ public final class MilkRules {
     public static final Text START_NO_MILK_SPECIES_TEXT = Text.of("message.barnyard_romance.dairy_mash.no_milk_species");
     public static final Text START_ALREADY_TEXT = Text.of("message.barnyard_romance.dairy_mash.already");
     public static final Text START_NOT_FAMILIAR_TEXT = Text.of("message.barnyard_romance.not_familiar");
+    public static final Text REFUSED_TEXT = Text.of("message.barnyard_romance.refused.milk");
+    public static final Text REFUSED_TODAY_TEXT = Text.of("message.barnyard_romance.refused.today");
 
     public enum Check {
         OK,

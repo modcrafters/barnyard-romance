@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.WildCaught;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
@@ -72,7 +73,7 @@ public final class HerdStatus {
                 shear,
                 record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()),
                 eggs
-        );
+        ).withCap(WildCaught.cap(traits.origin(), record.tamed(), config.tuning()));
         return new HerdEntry(
                 node.id(),
                 record.species(),

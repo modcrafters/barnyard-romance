@@ -9,7 +9,20 @@ class TuningTest {
     void defaultsMatchTodaysBehaviour() {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
         assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
-                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05), Tuning.DEFAULTS);
+                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2), Tuning.DEFAULTS);
+    }
+
+    @Test
+    void wildCaughtTuningIsReadWrittenAndClamped() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "wildFamiliarityCap": 0.35, "wildPetFamiliarityCap": 2, "refusalBelow": 0.6, "refusalChance": -1 } }
+                """).tuning();
+
+        assertEquals(0.35, tuning.wildFamiliarityCap(), 1.0e-9);
+        assertEquals(1.0, tuning.wildPetFamiliarityCap(), 1.0e-9);
+        assertEquals(0.6, tuning.refusalBelow(), 1.0e-9);
+        assertEquals(0.0, tuning.refusalChance(), 1.0e-9);
+        assertEquals(Tuning.DEFAULTS, BarnyardConfig.parse(BarnyardConfig.defaults().toJson()).tuning());
     }
 
     @Test

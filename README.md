@@ -52,6 +52,21 @@ Tamed wolves, cats and horses never go wild again. Below the familiarity thresho
 
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
+### Wild-caught animals
+
+An animal first won over as an adult stays a little wild. Livestock top out at 40% familiarity, and wolves, cats and the horse family, who live closer to you, at 80%. Animals first fed while they're young, including every one born to your own animals, can reach 100%. Which kind an animal is gets settled the first time it gains any familiarity, and never changes after. The inspector shows "Wild-caught, max 40%" under the familiarity bar, and the herd book notes it on the animal's page.
+
+Below 50% familiarity an animal sometimes won't be milked or sheared: one try in five, it refuses. That try is spent until midnight, and it costs no familiarity. Shears from a dispenser get the same answer. Wild-caught livestock never get past 40%, so they always carry that risk.
+
+| Key (`tuning`) | Default | Meaning |
+|---|---|---|
+| `wildFamiliarityCap` | 0.4 | Highest familiarity for wild-caught livestock (1 turns the cap off) |
+| `wildPetFamiliarityCap` | 0.8 | Highest familiarity for wild-caught wolves, cats and the horse family |
+| `refusalBelow` | 0.5 | Below this familiarity, milking and shearing can be refused |
+| `refusalChance` | 0.2 | Chance of a refusal per try below that line (0 turns refusals off) |
+
+A cap below `familiarityThreshold` (0.3) means wild-caught animals can never breed or give milk or wool.
+
 ## Egg layers
 
 Chickens lay eggs instead of breeding. Seeds feed them and win familiarity like any other food, but never put them in love.
@@ -143,6 +158,10 @@ The build uses [Stonecutter](https://stonecutter.kikugie.dev) so one codebase ca
   - after the mother dies, the calf's Mother link still opens her page;
   - ✕ asks "Sure?" and then removes the animal;
   - the mouse wheel and Page Up/Page Down turn pages, on the contents and on an animal's page.
+
+  For wild-caught animals, on 1.21.1:
+  - a cow fed up as an adult stops at 40%, and the inspector says "Wild-caught, max 40%";
+  - after a refusal, a dispenser with shears in front of that sheep leaves it alone until the next day.
 
   For grumpy pets, let a tamed one go unfed (`/time add 24000` once per day) until the inspector shows "· Grumpy", then check on both versions:
   - a grumpy horse rears and won't let you on;

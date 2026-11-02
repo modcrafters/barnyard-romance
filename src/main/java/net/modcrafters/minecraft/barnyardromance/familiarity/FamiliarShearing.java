@@ -26,7 +26,7 @@ public final class FamiliarShearing {
             if (!entity.isAlive() || !(entity instanceof Shearable shearable) || !shearable.readyForShearing()) {
                 continue;
             }
-            if (entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.shearedToday(animal))) {
+            if (entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.withholds(animal))) {
                 continue;
             }
             shearable.shear(level, SoundSource.BLOCKS, tool);

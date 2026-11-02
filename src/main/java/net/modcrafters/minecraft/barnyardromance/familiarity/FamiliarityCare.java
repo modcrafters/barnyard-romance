@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
@@ -53,11 +55,11 @@ public final class FamiliarityCare {
         }
         Tuning tuning = BarnyardConfig.current().tuning();
         double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), tuning.familiarityHungerLoss());
+        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && tamed(animal)) {
-            familiarity = Math.max(familiarity, tamingGrace());
+            updated = toTamingGrace(animal, updated);
         }
-        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
         Services.DATA.set(animal, updated);
         // A pet that has just turned grumpy stops obeying, so one left sitting gets up and wanders off.
         if (animal instanceof TamableAnimal pet && pet.isOrderedToSit() && grumpy(animal)) {
@@ -92,11 +94,32 @@ public final class FamiliarityCare {
     // However an animal is tamed (familiarity, riding a horse, another mod), it starts out a week's hunger above the
     // threshold.
     public static void raiseToTamingGrace(Animal animal) {
-        tracked(animal).ifPresent(traits -> {
-            if (traits.familiarity() < tamingGrace()) {
-                Services.DATA.set(animal, traits.fed(tamingGrace(), traits.lastFedTick()));
-            }
-        });
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, toTamingGrace(animal, traits)));
+    }
+
+    // The grace never takes a wild-caught pet past its cap, and never lowers a pet already above it.
+    private static AnimalTraits toTamingGrace(Animal animal, AnimalTraits traits) {
+        double grace = WildCaught.tamingGrace(tamingGrace(), traits.origin(), grown(animal), BarnyardConfig.current().tuning());
+        return traits.familiarity() < grace ? raise(animal, traits, grace, traits.lastFedTick()) : traits;
+    }
+
+    // Every familiarity gain goes through here, so an animal won over as an adult stays a little wild (see WildCaught).
+    public static AnimalTraits raise(Animal animal, AnimalTraits traits, double familiarity, long lastFedTick) {
+        return WildCaught.raise(traits, familiarity, lastFedTick, grown(animal), pet(animal), BarnyardConfig.current().tuning());
+    }
+
+    public static double cap(Animal animal, AnimalTraits traits) {
+        return WildCaught.cap(traits.origin(), pet(animal), BarnyardConfig.current().tuning());
+    }
+
+    // The animals familiarity tames, tamed yet or not: they live close to you, so they get the higher wild cap.
+    public static boolean pet(Animal animal) {
+        return animal instanceof Wolf || animal instanceof Cat || animal instanceof AbstractHorse;
+    }
+
+    public static boolean grown(Animal animal) {
+        AgeStage stage = AgeController.stage(animal);
+        return stage == AgeStage.ADULT || stage == AgeStage.OLD;
     }
 
     public static double tamingGrace() {

@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodFile;
 import net.modcrafters.minecraft.barnyardromance.food.FoodJson;
@@ -174,7 +175,8 @@ public final class FoodGameTests {
     }
 
     static Animal withFamiliarity(GameTestHelper helper, Animal animal, double familiarity) {
-        Services.DATA.set(animal, BreedingGameTests.traits(helper, animal).fed(familiarity, -1L));
+        // Farm-raised, so feeding it on isn't held at the wild-caught cap.
+        Services.DATA.set(animal, BreedingGameTests.traits(helper, animal).fed(familiarity, -1L).withOrigin(Origin.FARM));
         return animal;
     }
 

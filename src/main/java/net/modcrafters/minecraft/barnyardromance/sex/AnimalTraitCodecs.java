@@ -5,6 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -63,12 +65,25 @@ public final class AnimalTraitCodecs {
             Hunger::lastHungryDay,
             Hunger::new
     );
-    // A codec group takes at most 16 fields, so the newest two are saved inline as a pair.
-    private record Care(long lastShearedClock, Hunger hunger) {
+    // An origin saved by a later version, or mistyped, reads as unknown.
+    public static final Codec<Origin> ORIGIN_CODEC = Codec.STRING.xmap(
+            name -> {
+                try {
+                    return Origin.valueOf(name);
+                } catch (IllegalArgumentException exception) {
+                    return Origin.UNKNOWN;
+                }
+            },
+            Origin::name);
+    // A codec group takes at most 16 fields, so the newest ones are saved inline as a group of their own.
+    private record Care(long lastShearedClock, Hunger hunger, Origin origin, long milkRefusedDay, long shearRefusedDay) {
     }
     private static final MapCodec<Care> CARE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.LONG.optionalFieldOf("lastShearedClock", -1L).forGetter(Care::lastShearedClock),
-            HUNGER_CODEC.optionalFieldOf("hunger", Hunger.NONE).forGetter(Care::hunger)
+            HUNGER_CODEC.optionalFieldOf("hunger", Hunger.NONE).forGetter(Care::hunger),
+            ORIGIN_CODEC.optionalFieldOf("origin", Origin.UNKNOWN).forGetter(Care::origin),
+            Codec.LONG.optionalFieldOf("milkRefusedDay", -1L).forGetter(Care::milkRefusedDay),
+            Codec.LONG.optionalFieldOf("shearRefusedDay", -1L).forGetter(Care::shearRefusedDay)
     ).apply(instance, Care::new));
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
@@ -86,11 +101,12 @@ public final class AnimalTraitCodecs {
             Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
             LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation),
             LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage),
-            CARE_MAP_CODEC.forGetter(traits -> new Care(traits.lastShearedClock(), traits.hunger()))
+            CARE_MAP_CODEC.forGetter(traits -> new Care(traits.lastShearedClock(), traits.hunger(), traits.origin(), traits.refusals().milkDay(),
+                    traits.refusals().shearDay()))
     ).apply(instance, (sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight,
                        fertility, fertilityTick, bornTick, lactation, lineage, care) -> new AnimalTraits(sex, scale, familiarity, lastFedTick,
             growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage,
-            care.lastShearedClock(), care.hunger())));
+            care.lastShearedClock(), care.hunger(), care.origin(), new Refusals(care.milkRefusedDay(), care.shearRefusedDay()))));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
@@ -113,6 +129,9 @@ public final class AnimalTraitCodecs {
                 LINEAGE_STREAM_CODEC.encode(buf, traits.lineage());
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.lastShearedClock());
                 HUNGER_STREAM_CODEC.encode(buf, traits.hunger());
+                ByteBufCodecs.VAR_INT.encode(buf, traits.origin().ordinal());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.refusals().milkDay());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.refusals().shearDay());
             },
             // Arguments are evaluated left to right, so this reads the fields in the order they were written.
             buf -> new AnimalTraits(
@@ -132,7 +151,9 @@ public final class AnimalTraitCodecs {
                     LACTATION_STREAM_CODEC.decode(buf),
                     LINEAGE_STREAM_CODEC.decode(buf),
                     ByteBufCodecs.VAR_LONG.decode(buf),
-                    HUNGER_STREAM_CODEC.decode(buf)
+                    HUNGER_STREAM_CODEC.decode(buf),
+                    Origin.values()[ByteBufCodecs.VAR_INT.decode(buf)],
+                    new Refusals(ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf))
             )
     );
 

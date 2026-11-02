@@ -44,7 +44,7 @@ public final class InspectorLayout {
         return switch (row) {
             case GROWTH -> 26;
             case HEALTH -> 6 + 10 * Math.max(1, heartRows);
-            case BREEDING, DETAIL -> 12;
+            case WILD, BREEDING, DETAIL -> 12;
             default -> 16;
         };
     }

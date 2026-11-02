@@ -17,7 +17,9 @@ import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
@@ -125,8 +127,9 @@ public final class FamiliarityActions {
         }
         PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
-        double gained = Familiarity.gain(current.familiarity(), amount);
-        Services.DATA.set(animal, current.fed(gained, now));
+        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.familiarity(), amount), now);
+        double gained = fed.familiarity();
+        Services.DATA.set(animal, fed);
         FamiliarityCare.markEaten(animal);
         if (eaten.effects().startsMilk()) {
             MilkActions.startMilkWithMeal(animal);
@@ -233,6 +236,15 @@ public final class FamiliarityActions {
             return false;
         }
         return denies(animal);
+    }
+
+    // An animal refusing to be milked or sheared makes its noise and looks cross, so the player sees why.
+    public static void refusalCue(Animal animal) {
+        if (!(animal.level() instanceof ServerLevel level)) {
+            return;
+        }
+        animal.playAmbientSound();
+        level.sendParticles(ParticleTypes.ANGRY_VILLAGER, animal.getX(), animal.getEyeY() + 0.3, animal.getZ(), 5, 0.3, 0.2, 0.3, 0.0);
     }
 
     public static boolean denies(Animal animal) {

@@ -124,6 +124,13 @@ class HerdPageTextTest {
     }
 
     @Test
+    void aWildCaughtAnimalSaysSo() {
+        assertEquals(List.of("Size L · Adult · 18d old", "Wild: max 40%", "Fed today", "Pregnant 62% · 10m 0s",
+                "Familiar 80%", "Fertile 90%"), english(cow().withCap(0.4)));
+        assertEquals(english(cow()), english(cow().withCap(1.0)));
+    }
+
+    @Test
     void aGrumpyPetSaysSo() {
         HerdPageText.PageFacts wolf = new HerdPageText.PageFacts("L", AgeStage.ADULT, -1L, false, 2 * DAY, false, 0.0, 0L, Text.EMPTY,
                 0.2, -1.0, -1L, Familiar.NO_LONGER, -1L);

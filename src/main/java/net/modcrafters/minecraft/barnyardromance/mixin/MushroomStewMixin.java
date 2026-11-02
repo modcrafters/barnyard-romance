@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
@@ -19,10 +20,16 @@ public class MushroomStewMixin {
     @Unique
     private boolean barnyardromance$bowl;
 
-    @Inject(method = "mobInteract", at = @At("HEAD"))
+    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
     private void barnyardromance$holdingBowl(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> callback) {
         MushroomCow mooshroom = (MushroomCow) (Object) this;
         this.barnyardromance$bowl = !mooshroom.isBaby() && player.getItemInHand(hand).is(Items.BOWL);
+        // A mooshroom can refuse its stew like a cow its milk.
+        InteractionResult refused = this.barnyardromance$bowl ? MilkActions.refusesStew(mooshroom, player) : null;
+        if (refused != null) {
+            this.barnyardromance$bowl = false;
+            callback.setReturnValue(refused);
+        }
     }
 
     @Inject(method = "mobInteract", at = @At("RETURN"))

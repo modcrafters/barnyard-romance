@@ -23,6 +23,6 @@ public class ShearsDispenseMixin {
             )
     )
     private static boolean barnyardromance$familiar(boolean shearable, @Local LivingEntity entity) {
-        return shearable && !(entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.shearedToday(animal)));
+        return shearable && !(entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.withholds(animal)));
     }
 }

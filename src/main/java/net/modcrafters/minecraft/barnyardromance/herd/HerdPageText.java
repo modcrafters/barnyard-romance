@@ -35,8 +35,17 @@ public final class HerdPageText {
             ShearState shear,
             boolean grumpy,
             // What a hen lays tomorrow; null for everything else.
-            @Nullable EggOutlook eggs
+            @Nullable EggOutlook eggs,
+            // The highest familiarity a wild-caught animal can reach; 1 for everything else.
+            double cap
     ) {
+        public PageFacts(String sizeLetter, AgeStage stage, long ageTicks, boolean fedToday, long ticksSinceFed, boolean pregnant, double pregnancy,
+                         long dueTicks, Text milk, double familiarity, double fertility, long seenTicksAgo, Familiar familiar, long diedDay, ShearState shear,
+                         boolean grumpy, @Nullable EggOutlook eggs) {
+            this(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay,
+                    shear, grumpy, eggs, 1.0);
+        }
+
         public PageFacts(String sizeLetter, AgeStage stage, long ageTicks, boolean fedToday, long ticksSinceFed, boolean pregnant, double pregnancy,
                          long dueTicks, Text milk, double familiarity, double fertility, long seenTicksAgo, Familiar familiar, long diedDay, ShearState shear,
                          boolean grumpy) {
@@ -57,27 +66,31 @@ public final class HerdPageText {
         }
 
         public PageFacts shear(ShearState state) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, state, grumpy, eggs);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, state, grumpy, eggs, cap);
         }
 
         public PageFacts seen(long ticksAgo) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, ticksAgo, familiar, diedDay, shear, grumpy, eggs);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, ticksAgo, familiar, diedDay, shear, grumpy, eggs, cap);
         }
 
         public PageFacts familiar(Familiar state) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, state, diedDay, shear, grumpy, eggs);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, state, diedDay, shear, grumpy, eggs, cap);
         }
 
         public PageFacts grumpy(boolean grumpy) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, eggs);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, eggs, cap);
         }
 
         public PageFacts eggs(@Nullable EggOutlook outlook) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, outlook);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, outlook, cap);
+        }
+
+        public PageFacts withCap(double cap) {
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, diedDay, shear, grumpy, eggs, cap);
         }
 
         public PageFacts died(long day) {
-            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, day, shear, grumpy, eggs);
+            return new PageFacts(sizeLetter, stage, ageTicks, fedToday, ticksSinceFed, pregnant, pregnancy, dueTicks, milk, familiarity, fertility, seenTicksAgo, familiar, day, shear, grumpy, eggs, cap);
         }
     }
 
@@ -123,6 +136,9 @@ public final class HerdPageText {
         }
         if (facts.grumpy()) {
             lines.add(Line.of(Kind.NOTE, Text.of("gui.barnyard_romance.herd_book.grumpy")));
+        }
+        if (facts.cap() < 1.0) {
+            lines.add(Line.of(Kind.NOTE, Text.of("gui.barnyard_romance.herd_book.wild_caught", Familiarity.percent(facts.cap()))));
         }
         if (facts.fedToday()) {
             lines.add(Line.of(Kind.FED, Text.of("gui.barnyard_romance.herd_book.fed_today")));

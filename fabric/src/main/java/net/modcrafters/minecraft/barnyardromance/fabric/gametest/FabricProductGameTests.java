@@ -141,4 +141,9 @@ public class FabricProductGameTests {
     public void oldTraitsLoadWithoutHunger(GameTestHelper helper) {
         ProductGameTests.oldTraitsLoadWithoutHunger(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void oldTraitsLoadWithUnknownOrigin(GameTestHelper helper) {
+        ProductGameTests.oldTraitsLoadWithUnknownOrigin(helper);
+    }
 }

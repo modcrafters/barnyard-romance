@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -62,6 +63,8 @@ public class InspectorClientGameTest implements FabricClientGameTest {
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
             inspect(context, world, "inspector_milking_cow", Sex.FEMALE, false,
                     traits -> traits.withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)), false);
+            inspect(context, world, "inspector_wild_caught_cow", Sex.FEMALE, false,
+                    traits -> traits.fed(0.4, -1L).withOrigin(Origin.WILD), false);
             oldHearts(context, world, now);
             superfoods(context, world);
             creativeTab(context, world);

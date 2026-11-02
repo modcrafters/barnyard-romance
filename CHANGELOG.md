@@ -6,6 +6,10 @@ To release, rename **Unreleased** to the version (for example `## 0.2.0`), use t
 
 ## Unreleased
 
+- Animals caught wild as adults never become fully familiar: livestock top out at 40%, and wolves, cats and horses at 80%. Animals raised from young, including wild babies you start feeding early, can still reach 100%.
+- Below 50% familiarity, an animal refuses milking or shearing one time in five. That try is gone until tomorrow, but it costs nothing.
+- The inspector and the herd book mark wild-caught animals and show how familiar they can get.
+
 - An egg that can't hatch, say because its animal's mod was removed, stays in its nest instead of disappearing.
 - A chick that hatched in a box while no one was nearby is as old as it would be if you had watched it hatch.
 - The inspector counts only the eggs a hen really laid, not the ones she missed while her chunk was unloaded.

@@ -7,7 +7,9 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Refusal;
 import net.modcrafters.minecraft.barnyardromance.food.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
@@ -35,6 +37,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -91,8 +95,19 @@ public final class MilkActions {
             }
             return InteractionResult.CONSUME;
         }
+        if (traits.refusals().milkRefused(GameDay.of(clock))) {
+            if (!animal.level().isClientSide()) {
+                VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
+            }
+            return InteractionResult.CONSUME;
+        }
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
+        }
+        // Only once every other reason has passed, so a refusal never covers up a dry or already milked cow.
+        if (Refusal.refuses(traits.familiarity(), animal.getRandom().nextDouble(), tuning)) {
+            refuseMilking(animal, player);
+            return InteractionResult.CONSUME;
         }
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
@@ -203,6 +218,39 @@ public final class MilkActions {
             return goat.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_MILK : SoundEvents.GOAT_MILK;
         }
         return SoundEvents.COW_MILK;
+    }
+
+    // A refused milking gives nothing and costs no familiarity, but the animal's milking is over until midnight. A
+    // mooshroom's stew counts as milking.
+    public static void refuseMilking(Animal animal, @Nullable Player player) {
+        long today = GameDay.of(animal.level().getOverworldClockTime());
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, traits.withRefusals(traits.refusals().withMilk(today))));
+        if (player != null) {
+            VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TEXT));
+        }
+        FamiliarityActions.refusalCue(animal);
+    }
+
+    // A bowl held out to a mooshroom: null lets vanilla give the stew. Unfamiliar mooshrooms are turned away earlier.
+    public static @Nullable InteractionResult refusesStew(Animal animal, Player player) {
+        Optional<AnimalTraits> tracked = tracked(animal);
+        if (tracked.isEmpty() || animal.isBaby()) {
+            return null;
+        }
+        AnimalTraits traits = FamiliarityCare.settle(animal).orElse(tracked.get());
+        long clock = animal.level().getOverworldClockTime();
+        if (traits.refusals().milkRefused(GameDay.of(clock))) {
+            if (!animal.level().isClientSide()) {
+                VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
+            }
+            return InteractionResult.CONSUME;
+        }
+        if (!animal.level().isClientSide() && Familiarity.ready(traits.familiarity())
+                && Refusal.refuses(traits.familiarity(), animal.getRandom().nextDouble(), BarnyardConfig.current().tuning())) {
+            refuseMilking(animal, player);
+            return InteractionResult.CONSUME;
+        }
+        return null;
     }
 
     private static Optional<AnimalTraits> tracked(Animal animal) {

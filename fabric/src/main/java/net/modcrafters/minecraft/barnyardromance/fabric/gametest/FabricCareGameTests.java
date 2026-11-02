@@ -166,4 +166,74 @@ public class FabricCareGameTests {
     public void fightingWolfDoesNotSulk(GameTestHelper helper) {
         CareGameTests.fightingWolfDoesNotSulk(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wildAdultCowStopsAtFortyPercent(GameTestHelper helper) {
+        CareGameTests.wildAdultCowStopsAtFortyPercent(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void calfFedWhileYoungPassesForty(GameTestHelper helper) {
+        CareGameTests.calfFedWhileYoungPassesForty(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wildAdultWolfStopsAtEightyPercent(GameTestHelper helper) {
+        CareGameTests.wildAdultWolfStopsAtEightyPercent(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void horseTamedByRidingGetsCappedGrace(GameTestHelper helper) {
+        CareGameTests.horseTamedByRidingGetsCappedGrace(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void unknownAdultAboveTheCapDropsOnNextFeed(GameTestHelper helper) {
+        CareGameTests.unknownAdultAboveTheCapDropsOnNextFeed(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void newbornOfAFamiliarMotherIsFarmRaised(GameTestHelper helper) {
+        CareGameTests.newbornOfAFamiliarMotherIsFarmRaised(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void herdStickUpStopsAtTheCap(GameTestHelper helper) {
+        CareGameTests.herdStickUpStopsAtTheCap(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedMilkingSpendsTheDay(GameTestHelper helper) {
+        CareGameTests.refusedMilkingSpendsTheDay(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedShearingSpendsTheDay(GameTestHelper helper) {
+        CareGameTests.refusedShearingSpendsTheDay(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusedShearingStopsADispenser(GameTestHelper helper) {
+        CareGameTests.refusedShearingStopsADispenser(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void milkAndShearRefusalsAreSeparate(GameTestHelper helper) {
+        CareGameTests.milkAndShearRefusalsAreSeparate(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void noRefusalAtFiftyPercent(GameTestHelper helper) {
+        CareGameTests.noRefusalAtFiftyPercent(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void refusalNeverRollsForADryCow(GameTestHelper helper) {
+        CareGameTests.refusalNeverRollsForADryCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void mooshroomRefusalBlocksStew(GameTestHelper helper) {
+        CareGameTests.mooshroomRefusalBlocksStew(helper);
+    }
 }

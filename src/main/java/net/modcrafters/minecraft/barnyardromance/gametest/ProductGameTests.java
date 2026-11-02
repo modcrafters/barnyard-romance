@@ -5,6 +5,8 @@ import net.modcrafters.minecraft.barnyardromance.drops.MeatDrop;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
@@ -58,6 +60,7 @@ public final class ProductGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("old_traits_load_without_lactation", 20, ProductGameTests::oldTraitsLoadWithoutLactation),
             new BreedingGameTests.Case("old_traits_load_without_hunger", 20, ProductGameTests::oldTraitsLoadWithoutHunger),
+            new BreedingGameTests.Case("old_traits_load_with_unknown_origin", 20, ProductGameTests::oldTraitsLoadWithUnknownOrigin),
             new BreedingGameTests.Case("cake_takes_every_milk", 20, ProductGameTests::cakeTakesEveryMilk),
             new BreedingGameTests.Case("milk_buckets_are_in_the_common_tag", 20, ProductGameTests::milkBucketsAreInTheCommonTag),
             new BreedingGameTests.Case("goat_milk_clears_effects", 20, ProductGameTests::goatMilkClearsEffects),
@@ -107,6 +110,29 @@ public final class ProductGameTests {
         AnimalTraitCodecs.STREAM_CODEC.encode(buffer, hungry);
         AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
         helper.assertTrue(synced.equals(hungry), "hunger synced as " + synced.hunger());
+        helper.succeed();
+    }
+
+    // Traits saved before wild-caught animals have no origin and no refusals, and load as unknown.
+    public static void oldTraitsLoadWithUnknownOrigin(GameTestHelper helper) {
+        AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L).sheared(40L);
+        CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
+        tag.remove("origin");
+        tag.remove("milkRefusedDay");
+        tag.remove("shearRefusedDay");
+
+        AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
+        helper.assertTrue(loaded.origin() == Origin.UNKNOWN, "old traits loaded as " + loaded.origin());
+        helper.assertTrue(loaded.refusals().equals(Refusals.NONE), "old traits loaded with " + loaded.refusals());
+
+        AnimalTraits wild = saved.withOrigin(Origin.WILD).withRefusals(new Refusals(12L, 13L));
+        CompoundTag wildTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, wild).getOrThrow();
+        AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, wildTag).getOrThrow();
+        helper.assertTrue(reloaded.equals(wild), "came back as " + reloaded.origin() + " " + reloaded.refusals());
+        ByteBuf buffer = Unpooled.buffer();
+        AnimalTraitCodecs.STREAM_CODEC.encode(buffer, wild);
+        AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
+        helper.assertTrue(synced.equals(wild), "synced as " + synced.origin() + " " + synced.refusals());
         helper.succeed();
     }
 

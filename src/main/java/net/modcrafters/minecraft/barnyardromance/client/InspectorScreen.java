@@ -128,6 +128,7 @@ public class InspectorScreen extends Screen {
             case MILK -> milk(graphics, x, rowY, sheet);
             case EGGS -> eggs(graphics, x, rowY, sheet);
             case BREEDING -> breeding(graphics, x, rowY, sheet);
+            case WILD -> text(graphics, sheet.wildText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
             case DETAIL -> text(graphics, sheet.detailText(), x + InspectorLayout.barX(), rowY + 3, MUTED);
         }
     }
@@ -358,7 +359,7 @@ public class InspectorScreen extends Screen {
                 InspectorSheet.readyToBreed(breeding),
                 breeding,
                 InspectorSheet.lastBirth(offspring, value.lastBirthTick(), now)
-        );
+        ).withCap(FamiliarityCare.cap(this.animal, value));
     }
 
     private void text(GuiGraphicsExtractor graphics, Text value, int x, int y, int color) {
