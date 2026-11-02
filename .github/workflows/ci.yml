@@ -1,13 +1,23 @@
 name: CI
 
 # Every pull request must build and pass on every Minecraft version before it can merge.
-# `all-versions` only passes when every version job did, so it is the one check for a ruleset on main to require.
+# `all-versions` requires every version job and the release-script checks, so it is the one check for a ruleset on main to require.
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
 
 jobs:
+  release-scripts:
+    name: Release script checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 .github/scripts/test_release_changelog.py
+      - run: python3 .github/scripts/test_release_commit.py
+      - run: python3 .github/scripts/test_curseforge_versions.py
+
   mc-26-3:
     name: Minecraft 26.3 (Fabric + NeoForge)
     runs-on: ubuntu-latest
@@ -88,10 +98,10 @@ jobs:
   all-versions:
     name: all-versions
     if: always()
-    needs: [mc-26-3, mc-1-21-1]
+    needs: [mc-26-3, mc-1-21-1, release-scripts]
     runs-on: ubuntu-latest
     steps:
-      - name: Every version passed
+      - name: Every check passed
         run: |
           echo '${{ toJSON(needs) }}'
           [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}" = "false" ]
