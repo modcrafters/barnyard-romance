@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+## 0.0.1-alpha
+
 - Animals caught wild as adults never become fully familiar: livestock top out at 40%, and wolves, cats and horses at 80%. Animals raised from young, including wild babies you start feeding early, can still reach 100%.
 - Below 50% familiarity, an animal refuses milking or shearing one time in five. That try is gone until tomorrow, but it costs nothing.
 - The inspector and the herd book mark wild-caught animals and show how familiar they can get.
