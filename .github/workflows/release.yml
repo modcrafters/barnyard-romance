@@ -5,7 +5,8 @@ name: Release
 # on the commit you tagged. After the upload, the action commits the next patch to main
 # and moves the published notes under that version.
 #
-# Repository secrets: MODRINTH_TOKEN, CURSEFORGE_TOKEN.
+# Repository secrets: MODRINTH_TOKEN, CURSEFORGE_TOKEN, RELEASE_PUSH_KEY (private half of a
+# write deploy key, which the ruleset on main lets through; see release-commit.sh).
 # Repository variables: MODRINTH_PROJECT_ID, CURSEFORGE_PROJECT_ID.
 # Tag a commit that is already on main. This file, on that commit, is what runs.
 on:
@@ -207,6 +208,7 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          ssh-key: ${{ secrets.RELEASE_PUSH_KEY }}
 
       - name: Validate and commit the next version to main
         env:
