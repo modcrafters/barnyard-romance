@@ -69,6 +69,12 @@ bash .github/scripts/release-commit.sh 0.0.1-alpha 0.0.2 0.0.1-alpha
             self.assertNotEqual(result.returncode, 0)
         return result
 
+    def test_workflows_that_push_to_main_use_the_deploy_key(self):
+        workflows = SCRIPTS.parent / "workflows"
+        for name in ("release.yml", "retry-release.yml"):
+            text = (workflows / name).read_text(encoding="utf-8")
+            self.assertIn("ssh-key: ${{ secrets.RELEASE_PUSH_KEY }}", text, name)
+
     def test_direct_commit_and_idempotent_rerun(self):
         tagged = self.git(self.remote, "rev-parse", "0.0.1-alpha")
         self.bump()

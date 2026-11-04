@@ -28,8 +28,10 @@ fi
 git add gradle.properties CHANGELOG.md
 git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
   commit -m "Set the development version to ${next} after publishing ${tag}."
-# Main requires all-versions from GitHub Actions, even for generated commits.
-# GITHUB_TOKEN pushes do not trigger push workflows, so dispatch CI explicitly.
+# GitHub rejects a direct push to main even when all-versions passed on that commit
+# in a dispatched run, so the job pushes with a deploy key that bypasses the rule.
+# That makes this script the gate: main only moves once CI passes on this exact commit.
+# A push to this branch does not start CI, so dispatch it explicitly.
 commit=$(git rev-parse HEAD)
 branch="release-next/${tag}-${commit:0:12}"
 git push origin "HEAD:refs/heads/${branch}"
@@ -46,6 +48,6 @@ gh run watch "$run_id" --exit-status --interval 15 || die "CI did not pass for $
 
 # Never force-push: concurrent commits must survive. Rerunning the job fetches
 # fresh main and computes the update again instead of replaying a stale edit.
-git push origin HEAD:refs/heads/main || die "Could not update main. If main advanced, rerun this job; otherwise check the action's push permissions."
+git push origin HEAD:refs/heads/main || die "Could not update main. If main advanced, rerun this job; otherwise check the RELEASE_PUSH_KEY deploy key and that the ruleset on main lets deploy keys bypass it."
 
 git push origin --delete "$branch"
