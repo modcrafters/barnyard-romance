@@ -258,7 +258,7 @@ public class InspectorScreen extends Screen {
     private void eggs(GuiGraphicsExtractor graphics, int x, int rowY, InspectorSheet sheet) {
         int rowX = x + InspectorLayout.STATS_X;
         sprite(graphics, "egg", rowX, rowY, InspectorLayout.ICON, InspectorLayout.ICON);
-        Text label = Text.of(sheet.female() ? "gui.barnyard_romance.inspector.eggs" : "gui.barnyard_romance.inspector.rooster");
+        Text label = InspectorSheet.eggRowLabel(sheet.female(), AnimalSex.speciesId(this.animal));
         text(graphics, label, rowX + InspectorLayout.ICON + 4, rowY + 3, TEXT);
         text(graphics, sheet.eggsText(), x + InspectorLayout.barX(), rowY + 3, TEXT);
     }

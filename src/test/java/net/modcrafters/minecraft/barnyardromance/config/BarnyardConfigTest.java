@@ -7,8 +7,11 @@ import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -392,5 +395,79 @@ class BarnyardConfigTest {
 
         assertEquals(EggSettings.NONE, config.eggsFor("minecraft:chicken"));
         assertFalse(config.eggsFor("minecraft:chicken").enabled());
+    }
+
+    @Test
+    void naturalistLivestockIsTracked() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String id : List.of("deer", "boar", "duck", "turkey", "ostrich")) {
+            assertTrue(config.speciesEnabled("naturalist:" + id), id);
+        }
+    }
+
+    @Test
+    void otherNaturalistCreaturesAreIgnored() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String id : List.of("firefly", "whale", "capybara", "zebra", "some_future_creature")) {
+            assertFalse(config.speciesEnabled("naturalist:" + id), id);
+        }
+    }
+
+    @Test
+    void otherModsAreStillTracked() {
+        assertTrue(BarnyardConfig.parse("{}").speciesEnabled("somemod:firefly"));
+    }
+
+    @Test
+    void explicitEntryTurnsANaturalistCreatureOn() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "naturalist:capybara": { "enabled": true } } }
+                """);
+
+        assertTrue(config.speciesEnabled("naturalist:capybara"));
+    }
+
+    @Test
+    void packCanExcludeNaturalistLivestock() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "exclude": ["naturalist:duck"] }
+                """);
+
+        assertFalse(config.speciesEnabled("naturalist:duck"));
+        assertFalse(config.eggsFor("naturalist:duck").enabled());
+    }
+
+    @Test
+    void deerAndBoarHavePregnancyPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertEquals(Range.of(36_000L, 48_000L), config.pregnancyRange("naturalist:deer"));
+        assertEquals(Range.of(1L, 2L), config.litterRange("naturalist:deer"));
+        assertEquals(Range.of(30_000L, 36_000L), config.pregnancyRange("naturalist:boar"));
+        assertEquals(Range.of(2L, 4L), config.litterRange("naturalist:boar"));
+    }
+
+    @Test
+    void ducksAndTurkeysLayLikeChickens() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        EggSettings duck = config.eggsFor("naturalist:duck");
+        assertTrue(duck.enabled());
+        assertEquals("naturalist:duck_egg", duck.plainEgg());
+        assertEquals(EggSettings.CHICKEN.hatchTicks(), duck.hatchTicks());
+        EggSettings turkey = config.eggsFor("naturalist:turkey");
+        assertTrue(turkey.enabled());
+        assertNull(turkey.plainEgg());
+    }
+
+    @Test
+    void deerBoarAndOstrichDoNotLay() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String id : List.of("deer", "boar", "ostrich")) {
+            assertFalse(config.eggsFor("naturalist:" + id).enabled(), id);
+        }
     }
 }

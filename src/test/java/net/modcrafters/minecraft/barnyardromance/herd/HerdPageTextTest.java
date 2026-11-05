@@ -72,7 +72,7 @@ class HerdPageTextTest {
     void aHenSaysWhatSheLaysTomorrowAndWhy() {
         HerdPageText.PageFacts hen = new HerdPageText.PageFacts("M", AgeStage.ADULT, -1L, true, 0L, false, 0.0, 0L, Text.EMPTY,
                 0.2, 0.9, -1L, Familiar.FAMILIAR, -1L)
-                .eggs(EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN));
+                .eggs(EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN, "minecraft:chicken"));
 
         assertEquals(List.of("Size M · Adult", "Fed today", "Plain eggs tomorrow (1)", "No rooster nearby", "Not familiar: one egg fewer",
                 "Familiar 20%", "Fertile 90%"), english(hen));

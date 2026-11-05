@@ -16,6 +16,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
@@ -98,6 +99,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("hungry_hen_plans_none", 20, EggGameTests::hungryHenPlansNone),
             new BreedingGameTests.Case("rooster_and_chick_lay_nothing", 20, EggGameTests::roosterAndChickLayNothing),
             new BreedingGameTests.Case("vanilla_egg_timer_is_off", 20, EggGameTests::vanillaEggTimerIsOff),
+            new BreedingGameTests.Case("other_layers_walk_to_a_box", 20, EggGameTests::otherLayersWalkToABox),
             new BreedingGameTests.Case("seeds_never_breed_chickens", 20, EggGameTests::seedsNeverBreedChickens),
             new BreedingGameTests.Case("old_chicken_pregnancy_is_cleared", 20, EggGameTests::oldChickenPregnancyIsCleared),
             new BreedingGameTests.Case("excluded_chickens_lay_like_vanilla", 20, EggGameTests::excludedChickensLayLikeVanilla),
@@ -222,6 +224,23 @@ public final class EggGameTests {
 
         helper.assertTrue(roosterPlan.times().isEmpty(), "a rooster planned " + roosterPlan);
         helper.assertTrue(chickPlan.times().isEmpty(), "a chick planned " + chickPlan);
+        helper.succeed();
+    }
+
+    // The nesting box isn't only for chickens: any species with eggs switched on walks to one. Only the pig's own
+    // config changes, and it's put back before the tick ends, so tests running beside this one never see it.
+    public static void otherLayersWalkToABox(GameTestHelper helper) {
+        Animal pig = GameTestCompat.spawn(helper, EntityTypes.PIG, 1, 1, 4);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:pig\": {\"eggs\": {\"enabled\": true}}}}"));
+            helper.assertTrue(LayInNestGoal.walks(pig), "a pig that lays should walk to a box");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.assertTrue(!LayInNestGoal.walks(pig), "a pig that doesn't lay has no reason to walk to a box");
+        helper.assertTrue(((MobGoalsAccessor) pig).barnyardromance$goalSelector().getAvailableGoals().stream()
+                .anyMatch(goal -> goal.getGoal() instanceof LayInNestGoal), "the pig has no nesting goal");
         helper.succeed();
     }
 

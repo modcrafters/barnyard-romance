@@ -54,6 +54,7 @@ loom {
             server()
             setConfigName('Fabric Game Test (Naturalist)')
             vmArg('-Dfabric-api.gametest')
+            vmArg('-Dbarnyard_romance.expect_naturalist=true')
             vmArg("-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get().asFile}/gametest-naturalist/junit.xml")
             runDir('runs/naturalist-gametest')
         }

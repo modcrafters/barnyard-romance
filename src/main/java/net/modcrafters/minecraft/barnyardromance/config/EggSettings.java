@@ -24,6 +24,10 @@ public record EggSettings(
     private static final int MAX_PER_DAY = 16;
     private static final int MAX_RANGE = 64;
 
+    EggSettings withPlainEgg(String egg) {
+        return new EggSettings(enabled, egg, hatchTicks, smallPerDay, largePerDay, happyBonus, boxRange, roosterRange, thrownHatchChance);
+    }
+
     EggSettings disabled() {
         return new EggSettings(false, plainEgg, hatchTicks, smallPerDay, largePerDay, happyBonus, boxRange, roosterRange, thrownHatchChance);
     }

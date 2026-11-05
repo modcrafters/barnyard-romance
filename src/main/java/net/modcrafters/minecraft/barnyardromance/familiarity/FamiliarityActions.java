@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
@@ -162,6 +163,11 @@ public final class FamiliarityActions {
             pet.getNavigation().stop();
             pet.setTarget(null);
             pet.setOrderedToSit(true);
+            pet.level().broadcastEntityEvent(pet, (byte) 7);
+        } else if (animal instanceof TamableAnimal pet && NaturalistCompat.LIVESTOCK.contains(AnimalSex.speciesId(animal))
+                && Familiarity.tames(pet.isTame(), familiarity)) {
+            // Naturalist tames these while feeding them, which the mod's feeding runs ahead of.
+            pet.tame(player);
             pet.level().broadcastEntityEvent(pet, (byte) 7);
         } else if (animal instanceof Ocelot ocelot && ocelot instanceof OcelotAccessor trust
                 && Familiarity.tames(trust.barnyardromance$isTrusting(), familiarity)) {

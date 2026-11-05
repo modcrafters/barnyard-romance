@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EggOutlookTest {
     @Test
     void fedFamiliarHenWithRoosterAndBoxLaysFertilizedEggs() {
-        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.L, true, true, RoosterNear.FED, true, EggSettings.CHICKEN);
+        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.L, true, true, RoosterNear.FED, true, EggSettings.CHICKEN, "minecraft:chicken");
 
         assertEquals(EggOutlook.Kind.FERTILIZED, outlook.kind());
         assertEquals(3, outlook.count());
@@ -21,8 +21,16 @@ class EggOutlookTest {
     }
 
     @Test
+    void otherBirdsNeedAMaleNotARooster() {
+        assertEquals("Plain eggs tomorrow (2). No male nearby",
+                English.of(EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.NONE, true, EggSettings.CHICKEN, "naturalist:duck").tooltip()));
+        assertEquals("Plain eggs tomorrow (2). The male hasn't eaten today",
+                English.of(EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.HUNGRY, true, EggSettings.CHICKEN, "naturalist:turkey").tooltip()));
+    }
+
+    @Test
     void noRoosterMeansPlainEggs() {
-        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.NONE, true, EggSettings.CHICKEN);
+        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.NONE, true, EggSettings.CHICKEN, "minecraft:chicken");
 
         assertEquals(EggOutlook.Kind.PLAIN, outlook.kind());
         assertEquals(List.of(EggOutlook.Reason.NO_ROOSTER), outlook.reasons());
@@ -32,14 +40,14 @@ class EggOutlookTest {
     @Test
     void hungryRoosterOrNoBoxMeansPlainEggs() {
         assertEquals(List.of(EggOutlook.Reason.ROOSTER_HUNGRY),
-                EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.HUNGRY, true, EggSettings.CHICKEN).reasons());
+                EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.HUNGRY, true, EggSettings.CHICKEN, "minecraft:chicken").reasons());
         assertEquals(List.of(EggOutlook.Reason.NO_BOX),
-                EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.FED, false, EggSettings.CHICKEN).reasons());
+                EggOutlook.tomorrow(SizeClass.M, true, true, RoosterNear.FED, false, EggSettings.CHICKEN, "minecraft:chicken").reasons());
     }
 
     @Test
     void unfamiliarHenLaysOneFewerAndSaysSo() {
-        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.FED, true, EggSettings.CHICKEN);
+        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.FED, true, EggSettings.CHICKEN, "minecraft:chicken");
 
         assertEquals(EggOutlook.Kind.FERTILIZED, outlook.kind());
         assertEquals(1, outlook.count());
@@ -49,7 +57,7 @@ class EggOutlookTest {
 
     @Test
     void unfedHenLaysNothingTomorrow() {
-        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.XL, false, true, RoosterNear.FED, true, EggSettings.CHICKEN);
+        EggOutlook outlook = EggOutlook.tomorrow(SizeClass.XL, false, true, RoosterNear.FED, true, EggSettings.CHICKEN, "minecraft:chicken");
 
         assertEquals(EggOutlook.Kind.NO_EGGS, outlook.kind());
         assertEquals(0, outlook.count());

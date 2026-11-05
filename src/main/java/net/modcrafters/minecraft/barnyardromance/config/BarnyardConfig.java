@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.config;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
+import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -231,7 +232,7 @@ public final class BarnyardConfig {
         if (settings != null && settings.enabled() != null) {
             return settings.enabled();
         }
-        return !excluded(speciesId) && !excludedByTag.test(speciesId);
+        return !excluded(speciesId) && !excludedByTag.test(speciesId) && !NaturalistCompat.ignoredByDefault(speciesId);
     }
 
     public List<String> exclude() {

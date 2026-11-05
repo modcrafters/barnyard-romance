@@ -46,6 +46,7 @@ neoForge {
         gameTestServerNaturalist {
             type = 'gameTestServer'
             gameDirectory = this.mkdir(this.file('runs/naturalist-gametest'))
+            systemProperty('barnyard_romance.expect_naturalist', 'true')
         }
     }
     mods {

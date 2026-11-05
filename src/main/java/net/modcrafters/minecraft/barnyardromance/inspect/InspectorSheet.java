@@ -121,6 +121,14 @@ public record InspectorSheet(
         return Text.of("gui.barnyard_romance.inspector.father", sizeLetter, mate(speciesId));
     }
 
+    // A hen's row counts her eggs; a male's says whether he makes them fertile.
+    public static Text eggRowLabel(boolean female, String speciesId) {
+        if (female) {
+            return Text.of("gui.barnyard_romance.inspector.eggs");
+        }
+        return Text.of("minecraft:chicken".equals(speciesId) ? "gui.barnyard_romance.inspector.rooster" : "gui.barnyard_romance.inspector.male");
+    }
+
     public static Text mate(String speciesId) {
         if (speciesId == null || speciesId.isBlank()) {
             return Text.of("gui.barnyard_romance.mate.unknown");

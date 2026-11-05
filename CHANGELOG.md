@@ -8,6 +8,10 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- With Naturalist installed, its deer, boar, ducks, turkeys and ostriches get sexes, sizes and familiarity. Its other creatures are left alone.
+- Naturalist's deer and boar carry pregnancies. Its ducks and turkeys lay in nesting boxes and need a male nearby for eggs that hatch, the same as chickens. Its ostriches keep their own eggs.
+- Naturalist's ducks and ostriches tame through familiarity, like wolves and cats.
+
 - Cake made with sheep or goat milk, or with a fertilized egg, keeps working alongside other mods that change the cake recipe, such as Naturalist.
 
 ## 0.0.1-alpha

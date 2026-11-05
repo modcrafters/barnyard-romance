@@ -86,6 +86,20 @@ In the herd book, each adult hen has an egg icon for tomorrow: speckled for fert
 
 Each species entry can have an `eggs` block: `enabled`, `plainEgg` (an item id), `hatchTicksMin`, `hatchTicksMax`, `smallPerDay`, `largePerDay`, `happyBonus`, `boxRange`, `roosterRange` and `thrownHatchChance`. Chickens lay by default. Another bird lays once its entry has `"eggs": { "enabled": true, "plainEgg": "somemod:duck_egg" }`.
 
+## Naturalist
+
+With [Naturalist](https://modrinth.com/mod/naturalist) installed, five of its creatures count as livestock. They get sexes, sizes and familiarity, and males are only different in size.
+
+| Creature | How young arrive |
+| --- | --- |
+| Deer, boar | Pregnancy, like cows and pigs |
+| Duck, turkey | Eggs in a Nesting Box, like chickens |
+| Ostrich | Naturalist's own eggs, but it takes a male and a female |
+
+Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg still follows Naturalist's rules.
+
+Naturalist's other creatures are left alone, including any it adds later. To include one, give it a species entry with `"enabled": true`. To leave one of the five out, list it in `exclude`.
+
 ## Leaving species out
 
 Set `"enabled": false` in a species entry to leave one species vanilla. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:parrot", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead. An explicit `"enabled": true` in a species entry wins over both. Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
