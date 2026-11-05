@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+## 0.0.2
+
 - Animals that shy away from players, such as rabbits and Naturalist's deer, boar and turkeys, stop doing so once they're familiar with you. Before that, they hold still if you sneak up holding food they eat.
 
 - With Naturalist installed, its deer, boar, ducks, turkeys and ostriches get sexes, sizes and familiarity. Its other creatures are left alone.
