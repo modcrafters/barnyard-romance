@@ -50,6 +50,8 @@ Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goe
 
 Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told, and a grumpy wolf sits down and watches while you're attacked nearby. A grumpy pet still follows you and still fights back when it's attacked itself. Feed it back above the threshold to win it back. However a pet is tamed, it starts a week's hunger above the threshold, and so do pets tamed before this change.
 
+Animals that shy away from players, such as rabbits or Naturalist's deer, stop running from you once they're familiar. Before that, they hold still if you sneak up holding food they eat.
+
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
 ### Wild-caught animals

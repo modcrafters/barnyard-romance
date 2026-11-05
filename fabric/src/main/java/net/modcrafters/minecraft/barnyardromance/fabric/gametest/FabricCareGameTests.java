@@ -236,4 +236,29 @@ public class FabricCareGameTests {
     public void mooshroomRefusalBlocksStew(GameTestHelper helper) {
         CareGameTests.mooshroomRefusalBlocksStew(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void unfamiliarAnimalRunsFromPlayers(GameTestHelper helper) {
+        CareGameTests.unfamiliarAnimalRunsFromPlayers(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void familiarAnimalStaysNearPlayers(GameTestHelper helper) {
+        CareGameTests.familiarAnimalStaysNearPlayers(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void sneakingWithFoodCalmsAnUnfamiliarAnimal(GameTestHelper helper) {
+        CareGameTests.sneakingWithFoodCalmsAnUnfamiliarAnimal(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void animalStillRunsFromAnotherPlayer(GameTestHelper helper) {
+        CareGameTests.animalStillRunsFromAnotherPlayer(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void excludedAnimalKeepsRunning(GameTestHelper helper) {
+        CareGameTests.excludedAnimalKeepsRunning(helper);
+    }
 }

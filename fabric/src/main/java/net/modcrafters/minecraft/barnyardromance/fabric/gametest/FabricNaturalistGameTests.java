@@ -81,4 +81,9 @@ public class FabricNaturalistGameTests {
     public void sittingDuckLaysWhereSheSits(GameTestHelper helper) {
         NaturalistGameTests.sittingDuckLaysWhereSheSits(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void familiarLivestockStaysNearPlayers(GameTestHelper helper) {
+        NaturalistGameTests.familiarLivestockStaysNearPlayers(helper);
+    }
 }

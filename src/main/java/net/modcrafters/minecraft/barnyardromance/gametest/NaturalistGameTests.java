@@ -24,6 +24,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
@@ -63,7 +64,8 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_rooster_does_not_fertilize_other_birds", 20, NaturalistGameTests::roosterDoesNotFertilizeOtherBirds),
             new BreedingGameTests.Case("naturalist_familiarity_tames_ducks_and_ostriches", 20, NaturalistGameTests::familiarityTamesDucksAndOstriches),
             new BreedingGameTests.Case("naturalist_duck_on_water_uses_a_box", WALK_TICKS, NaturalistGameTests::duckOnWaterUsesABox),
-            new BreedingGameTests.Case("naturalist_sitting_duck_lays_where_she_sits", 20, NaturalistGameTests::sittingDuckLaysWhereSheSits)
+            new BreedingGameTests.Case("naturalist_sitting_duck_lays_where_she_sits", 20, NaturalistGameTests::sittingDuckLaysWhereSheSits),
+            new BreedingGameTests.Case("naturalist_familiar_livestock_stays_near_players", 20, NaturalistGameTests::familiarLivestockStaysNearPlayers)
     );
 
     private NaturalistGameTests() {
@@ -328,6 +330,24 @@ public final class NaturalistGameTests {
 
         helper.assertTrue(eggsNear(helper, duck, duckEgg(helper)) == 1, "a sitting duck laid nothing");
         helper.assertTrue(!box.occupied(), "a sitting duck reached a box");
+        helper.succeed();
+    }
+
+    public static void familiarLivestockStaysNearPlayers(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        // All in the same spot: further along, the test's player would stand in the pen's wall, out of sight.
+        for (String id : List.of(DEER, BOAR, TURKEY)) {
+            Animal wild = bird(helper, id, Sex.FEMALE, 0.0, 2);
+            Animal familiar = bird(helper, id, Sex.FEMALE, 1.0, 3);
+            Player player = holding(helper, Items.STICK);
+
+            helper.assertTrue(CareGameTests.runsFrom(helper, wild, player) == player, "an unfamiliar " + id + " stayed");
+            helper.assertTrue(CareGameTests.runsFrom(helper, familiar, holding(helper, Items.STICK)) == null, "a familiar " + id + " ran");
+            wild.discard();
+            familiar.discard();
+        }
         helper.succeed();
     }
 

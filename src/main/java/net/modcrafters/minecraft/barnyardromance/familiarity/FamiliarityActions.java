@@ -152,6 +152,26 @@ public final class FamiliarityActions {
         }
     }
 
+    // Only matters for animals that shy away from players at all. A familiar one has no reason to, and a wild one holds
+    // still for someone sneaking up with its food, or feeding it could never start.
+    public static boolean runsFrom(Animal animal, Player player) {
+        Optional<AnimalTraits> traits = tracked(animal);
+        if (traits.isEmpty()) {
+            return true;
+        }
+        return !Familiarity.ready(traits.get().familiarity()) && !sneakingWithFood(animal, player);
+    }
+
+    private static boolean sneakingWithFood(Animal animal, Player player) {
+        try {
+            return player.isShiftKeyDown()
+                    && (FoodData.eats(animal, player.getMainHandItem()) || FoodData.eats(animal, player.getOffhandItem()));
+        } catch (RuntimeException exception) {
+            Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
+            return false;
+        }
+    }
+
     // Horses, donkeys, mules, llamas, camels, wolves and cats only breed when tamed, so familiarity tames them.
     // Ocelots never become pets in vanilla; familiarity gives them the same trust their fish roll would.
     public static void tameIfFamiliar(Animal animal, Player player, double familiarity) {
