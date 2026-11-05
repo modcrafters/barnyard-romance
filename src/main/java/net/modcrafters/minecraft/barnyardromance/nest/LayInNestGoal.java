@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.TamableAnimal;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,17 +42,24 @@ public class LayInNestGoal extends Goal {
         this.setFlags(EnumSet.of(Flag.MOVE));
     }
 
-    // Only species that lay by the mod's rules walk to a box, and a hen that's leashed, ridden or riding stays where
-    // she is.
+    // Only species that lay by the mod's rules walk to a box, and a hen that's leashed, ridden, riding or told to sit
+    // stays where she is.
     public static boolean walks(Animal hen) {
-        return EggLaying.laysEggs(hen) && !hen.isPassenger() && !hen.isVehicle() && !hen.isLeashed();
+        return EggLaying.laysEggs(hen) && !hen.isPassenger() && !hen.isVehicle() && !hen.isLeashed()
+                && !(hen instanceof TamableAnimal pet && pet.isOrderedToSit());
+    }
+
+    // A duck on a pond is never on the ground, so she plans from the water. Chickens keep waiting to land.
+    private static boolean canPlan(Animal hen) {
+        return hen.onGround() || hen.isInWater() && !(hen instanceof Chicken);
     }
 
     // Starts her off towards the box if she can get there. A hen flapping in the air can't plan a path yet, so she
     // sets off anyway and finds her way once she lands, or gives up in time.
     public static boolean headFor(Animal hen, List<ItemStack> eggs, BlockPos box, long now, boolean retried) {
-        Path path = hen.onGround() ? pathTo(hen, box) : null;
-        if (hen.onGround() && path == null) {
+        boolean ready = canPlan(hen);
+        Path path = ready ? pathTo(hen, box) : null;
+        if (ready && path == null) {
             return false;
         }
         TRIPS.put(hen, new Trip(List.copyOf(eggs), box.immutable(), now, retried, path != null));
@@ -120,7 +129,7 @@ public class LayInNestGoal extends Goal {
             return;
         }
         if (!trip.planned()) {
-            if (!hen.onGround()) {
+            if (!canPlan(hen)) {
                 return;
             }
             Path path = pathTo(hen, trip.box());

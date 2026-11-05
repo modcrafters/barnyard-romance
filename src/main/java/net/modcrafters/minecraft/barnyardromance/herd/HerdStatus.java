@@ -108,7 +108,8 @@ public final class HerdStatus {
                 Familiarity.ready(traits.familiarity()),
                 record.nest().rooster(),
                 record.nest().boxWithRoom(),
-                settings
+                settings,
+                record.species()
         );
     }
 

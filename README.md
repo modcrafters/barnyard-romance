@@ -96,7 +96,7 @@ With [Naturalist](https://modrinth.com/mod/naturalist) installed, five of its cr
 | Duck, turkey | Eggs in a Nesting Box, like chickens |
 | Ostrich | Naturalist's own eggs, but it takes a male and a female |
 
-Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg still follows Naturalist's rules.
+Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg still follows Naturalist's rules.
 
 Naturalist's other creatures are left alone, including any it adds later. To include one, give it a species entry with `"enabled": true`. To leave one of the five out, list it in `exclude`.
 

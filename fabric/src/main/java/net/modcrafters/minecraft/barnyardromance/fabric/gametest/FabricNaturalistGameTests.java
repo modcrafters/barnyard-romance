@@ -66,4 +66,19 @@ public class FabricNaturalistGameTests {
     public void roosterDoesNotFertilizeOtherBirds(GameTestHelper helper) {
         NaturalistGameTests.roosterDoesNotFertilizeOtherBirds(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void familiarityTamesDucksAndOstriches(GameTestHelper helper) {
+        NaturalistGameTests.familiarityTamesDucksAndOstriches(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void duckOnWaterUsesABox(GameTestHelper helper) {
+        NaturalistGameTests.duckOnWaterUsesABox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void sittingDuckLaysWhereSheSits(GameTestHelper helper) {
+        NaturalistGameTests.sittingDuckLaysWhereSheSits(helper);
+    }
 }

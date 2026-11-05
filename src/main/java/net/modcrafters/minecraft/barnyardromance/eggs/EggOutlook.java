@@ -23,7 +23,9 @@ public record EggOutlook(Kind kind, int count, List<Reason> reasons) {
         NO_ROOSTER("gui.barnyard_romance.herd_book.eggs_no_rooster"),
         ROOSTER_HUNGRY("gui.barnyard_romance.herd_book.eggs_rooster_hungry"),
         NO_BOX("gui.barnyard_romance.herd_book.eggs_no_box"),
-        NOT_FAMILIAR("gui.barnyard_romance.herd_book.eggs_not_familiar");
+        NOT_FAMILIAR("gui.barnyard_romance.herd_book.eggs_not_familiar"),
+        NO_MALE("gui.barnyard_romance.herd_book.eggs_no_male"),
+        MALE_HUNGRY("gui.barnyard_romance.herd_book.eggs_male_hungry");
 
         private final String key;
 
@@ -40,16 +42,18 @@ public record EggOutlook(Kind kind, int count, List<Reason> reasons) {
         reasons = List.copyOf(reasons);
     }
 
-    public static EggOutlook tomorrow(SizeClass size, boolean ateToday, boolean familiar, RoosterNear rooster, boolean boxWithRoom, EggSettings settings) {
+    public static EggOutlook tomorrow(SizeClass size, boolean ateToday, boolean familiar, RoosterNear rooster, boolean boxWithRoom, EggSettings settings, String speciesId) {
         int count = EggRules.perDay(size, !ateToday, familiar, settings);
         if (count <= 0) {
             return new EggOutlook(Kind.NO_EGGS, 0, List.of(Reason.NOT_FED));
         }
         List<Reason> reasons = new ArrayList<>();
+        // Only a chicken's mate is a rooster; a duck's herd book mustn't send you looking for one.
+        boolean chicken = "minecraft:chicken".equals(speciesId);
         if (rooster == RoosterNear.NONE) {
-            reasons.add(Reason.NO_ROOSTER);
+            reasons.add(chicken ? Reason.NO_ROOSTER : Reason.NO_MALE);
         } else if (rooster == RoosterNear.HUNGRY) {
-            reasons.add(Reason.ROOSTER_HUNGRY);
+            reasons.add(chicken ? Reason.ROOSTER_HUNGRY : Reason.MALE_HUNGRY);
         }
         if (!boxWithRoom) {
             reasons.add(Reason.NO_BOX);

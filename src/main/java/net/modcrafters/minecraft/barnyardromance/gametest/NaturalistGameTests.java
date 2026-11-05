@@ -19,6 +19,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
@@ -57,7 +60,10 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_duck_uses_a_box_and_eggs_are_fertilized", WALK_TICKS, NaturalistGameTests::duckUsesABoxAndEggsAreFertilized),
             new BreedingGameTests.Case("naturalist_turkey_lays_vanilla_eggs_with_no_male", WALK_TICKS, NaturalistGameTests::turkeyLaysVanillaEggsWithNoMale),
             new BreedingGameTests.Case("naturalist_turkey_hatches_turkeys", WALK_TICKS, NaturalistGameTests::turkeyHatchesTurkeys),
-            new BreedingGameTests.Case("naturalist_rooster_does_not_fertilize_other_birds", 20, NaturalistGameTests::roosterDoesNotFertilizeOtherBirds)
+            new BreedingGameTests.Case("naturalist_rooster_does_not_fertilize_other_birds", 20, NaturalistGameTests::roosterDoesNotFertilizeOtherBirds),
+            new BreedingGameTests.Case("naturalist_familiarity_tames_ducks_and_ostriches", 20, NaturalistGameTests::familiarityTamesDucksAndOstriches),
+            new BreedingGameTests.Case("naturalist_duck_on_water_uses_a_box", WALK_TICKS, NaturalistGameTests::duckOnWaterUsesABox),
+            new BreedingGameTests.Case("naturalist_sitting_duck_lays_where_she_sits", 20, NaturalistGameTests::sittingDuckLaysWhereSheSits)
     );
 
     private NaturalistGameTests() {
@@ -265,6 +271,63 @@ public final class NaturalistGameTests {
             inPen(BuiltInRegistries.ENTITY_TYPE.getKey(hen.getType()).toString(), () ->
                     helper.assertTrue(EggLaying.roosterNear(hen, helper.getLevel()) == RoosterNear.NONE, "a rooster counts for a " + hen.getType()));
         }
+        helper.succeed();
+    }
+
+    // Naturalist's own taming sits behind the mod's feeding, so familiarity tames them, as it does wolves and cats.
+    public static void familiarityTamesDucksAndOstriches(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        Animal duck = bird(helper, DUCK, Sex.FEMALE, 1.0, 2);
+        Animal ostrich = bird(helper, OSTRICH, Sex.FEMALE, 1.0, 4);
+        Animal wary = bird(helper, DUCK, Sex.FEMALE, 0.0, 6);
+
+        FamiliarityActions.interact(duck, holding(helper, Items.COD), InteractionHand.MAIN_HAND);
+        FamiliarityActions.interact(ostrich, holding(helper, Items.WHEAT_SEEDS), InteractionHand.MAIN_HAND);
+        FamiliarityActions.interact(wary, holding(helper, Items.COD), InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(((TamableAnimal) duck).isTame(), "a familiar duck didn't tame");
+        helper.assertTrue(((TamableAnimal) ostrich).isTame(), "a familiar ostrich didn't tame");
+        helper.assertTrue(!((TamableAnimal) wary).isTame(), "an unfamiliar duck tamed");
+        helper.succeed();
+    }
+
+    public static void duckOnWaterUsesABox(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        Animal duck = bird(helper, DUCK, Sex.FEMALE, 0.5, 2);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+        helper.runAfterDelay(EggGameTests.LANDED, () -> {
+            BlockPos feet = duck.blockPosition();
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    helper.getLevel().setBlockAndUpdate(feet.offset(dx, 0, dz), Blocks.WATER.defaultBlockState());
+                    helper.getLevel().setBlockAndUpdate(feet.offset(dx, -1, dz), Blocks.WATER.defaultBlockState());
+                }
+            }
+        });
+        once(helper, () -> placed[0] == null && duck.isInWater() && !duck.onGround(), () -> {
+            placed[0] = boxBeside(helper, duck, 5);
+            inPen(DUCK, () -> EggLaying.layDue(duck, helper.getLevel(), 1));
+        });
+        once(helper, () -> placed[0] != null && placed[0].occupied(), helper::succeed);
+    }
+
+    public static void sittingDuckLaysWhereSheSits(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        Animal duck = bird(helper, DUCK, Sex.FEMALE, 0.5, 2);
+        ((TamableAnimal) duck).tame(holding(helper, Items.COD));
+        ((TamableAnimal) duck).setOrderedToSit(true);
+        NestingBoxBlockEntity box = boxBeside(helper, duck, 5);
+
+        inPen(DUCK, () -> EggLaying.layDue(duck, helper.getLevel(), 1));
+
+        helper.assertTrue(eggsNear(helper, duck, duckEgg(helper)) == 1, "a sitting duck laid nothing");
+        helper.assertTrue(!box.occupied(), "a sitting duck reached a box");
         helper.succeed();
     }
 

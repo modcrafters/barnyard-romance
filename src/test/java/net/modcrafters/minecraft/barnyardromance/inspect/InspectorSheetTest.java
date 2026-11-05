@@ -224,4 +224,11 @@ class InspectorSheetTest {
     void anAnimalWithoutTraitsOnlyListsHealth() {
         assertEquals(List.of(HEALTH), InspectorSheet.unknown("Cow", "Cow", false, false, 10.0F, 10.0F).rows());
     }
+
+    @Test
+    void eggRowIsLabelledForTheBird() {
+        assertEquals("Rooster", English.of(InspectorSheet.eggRowLabel(false, "minecraft:chicken")));
+        assertEquals("Male", English.of(InspectorSheet.eggRowLabel(false, "naturalist:duck")));
+        assertEquals("Eggs", English.of(InspectorSheet.eggRowLabel(true, "naturalist:duck")));
+    }
 }
