@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Cake made with sheep or goat milk, or with a fertilized egg, keeps working alongside other mods that change the cake recipe, such as Naturalist.
+
 ## 0.0.1-alpha
 
 - Animals caught wild as adults never become fully familiar: livestock top out at 40%, and wolves, cats and horses at 80%. Animals raised from young, including wild babies you start feeding early, can still reach 100%.
