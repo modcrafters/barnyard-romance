@@ -34,7 +34,10 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
@@ -45,6 +48,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -54,11 +58,17 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.assertFamiliarity;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.holding;
+import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.withFamiliarity;
 
 // In-game checks for looking after animals: hunger, familiarity costs, and grumpy pets.
 // Days are driven by passing overworld clock times, so a test can live through a week in one tick.
 public final class CareGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
+            new BreedingGameTests.Case("unfamiliar_animal_runs_from_players", 20, CareGameTests::unfamiliarAnimalRunsFromPlayers),
+            new BreedingGameTests.Case("familiar_animal_stays_near_players", 20, CareGameTests::familiarAnimalStaysNearPlayers),
+            new BreedingGameTests.Case("sneaking_with_food_calms_an_unfamiliar_animal", 20, CareGameTests::sneakingWithFoodCalmsAnUnfamiliarAnimal),
+            new BreedingGameTests.Case("animal_still_runs_from_another_player", 20, CareGameTests::animalStillRunsFromAnotherPlayer),
+            new BreedingGameTests.Case("excluded_animal_keeps_running", 20, CareGameTests::excludedAnimalKeepsRunning),
             new BreedingGameTests.Case("fed_cow_keeps_familiarity_over_days", 20, CareGameTests::fedCowKeepsFamiliarityOverDays),
             new BreedingGameTests.Case("hungry_cow_loses_five_percent_a_day", 20, CareGameTests::hungryCowLosesFivePercentADay),
             new BreedingGameTests.Case("feeding_marks_the_day_eaten", 20, CareGameTests::feedingMarksTheDayEaten),
@@ -772,5 +782,97 @@ public final class CareGameTests {
         // Farm-raised, so feeding it on isn't held at the wild-caught cap.
         Services.DATA.set(animal, traits.fed(familiarity, traits.lastFedTick()).withOrigin(Origin.FARM));
         return animal;
+    }
+
+    // A real avoid goal, read for who it would run from. Whether it finds a way out depends on the ground, so this
+    // doesn't look at what canUse answers.
+    private static final class Wary extends AvoidEntityGoal<Player> {
+        Wary(PathfinderMob mob) {
+            super(mob, Player.class, 8.0F, 1.0, 1.0);
+        }
+
+        LivingEntity runsFrom() {
+            canUse();
+            return this.toAvoid;
+        }
+    }
+
+    static LivingEntity runsFrom(GameTestHelper helper, PathfinderMob mob, Player player) {
+        return runsFrom(helper, mob, List.of(player));
+    }
+
+    // The players are only in the world during the check, so tests running side by side never see them.
+    private static LivingEntity runsFrom(GameTestHelper helper, PathfinderMob mob, List<Player> players) {
+        double distance = 2.0;
+        for (Player player : players) {
+            player.setPos(mob.getX() + distance, mob.getY(), mob.getZ());
+            helper.getLevel().addFreshEntity(player);
+            distance += 1.0;
+        }
+        try {
+            return new Wary(mob).runsFrom();
+        } finally {
+            players.forEach(Entity::discard);
+        }
+    }
+
+    private static Player sneaking(GameTestHelper helper, Item item) {
+        Player player = holding(helper, item);
+        player.setShiftKeyDown(true);
+        return player;
+    }
+
+    private static Animal cow(GameTestHelper helper, double familiarity) {
+        return withFamiliarity(helper, GameTestCompat.spawn(helper, EntityTypes.COW, 3, 1, 4), familiarity);
+    }
+
+    public static void unfamiliarAnimalRunsFromPlayers(GameTestHelper helper) {
+        Animal cow = cow(helper, 0.25);
+        Player walkingWithFood = holding(helper, Items.WHEAT);
+        Player sneakingWithoutFood = sneaking(helper, Items.STICK);
+
+        helper.assertTrue(runsFrom(helper, cow, walkingWithFood) == walkingWithFood, "it stayed for a player walking up with food");
+        helper.assertTrue(runsFrom(helper, cow, sneakingWithoutFood) == sneakingWithoutFood, "it stayed for a player sneaking up empty-handed");
+        helper.succeed();
+    }
+
+    public static void familiarAnimalStaysNearPlayers(GameTestHelper helper) {
+        Animal cow = cow(helper, 0.3);
+
+        helper.assertTrue(runsFrom(helper, cow, holding(helper, Items.STICK)) == null, "a familiar cow ran from a player");
+        helper.succeed();
+    }
+
+    public static void sneakingWithFoodCalmsAnUnfamiliarAnimal(GameTestHelper helper) {
+        Animal cow = cow(helper, 0.0);
+        Player offhand = sneaking(helper, Items.STICK);
+        offhand.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.WHEAT));
+
+        helper.assertTrue(runsFrom(helper, cow, sneaking(helper, Items.WHEAT)) == null, "it ran from food in the main hand");
+        helper.assertTrue(runsFrom(helper, cow, offhand) == null, "it ran from food in the off hand");
+        helper.succeed();
+    }
+
+    // The player with the food is nearer, but the one walking behind them still counts.
+    public static void animalStillRunsFromAnotherPlayer(GameTestHelper helper) {
+        Animal cow = cow(helper, 0.0);
+        Player other = holding(helper, Items.STICK);
+
+        helper.assertTrue(runsFrom(helper, cow, List.of(sneaking(helper, Items.WHEAT), other)) == other, "it didn't run from the other player");
+        helper.succeed();
+    }
+
+    public static void excludedAnimalKeepsRunning(GameTestHelper helper) {
+        Animal cow = cow(helper, 1.0);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:cow\"]}"));
+            Player player = holding(helper, Items.STICK);
+
+            helper.assertTrue(runsFrom(helper, cow, player) == player, "an excluded cow followed the mod's rules");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
     }
 }

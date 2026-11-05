@@ -9,6 +9,7 @@
     "AnimalBreedingMixin",
     "AnimalLoveMixin",
     "AnimalNestGoalMixin",
+    "AvoidPlayerMixin",
     "ChickenEggTimerMixin",
     "GrumpyAttackMixin",
     "GrumpyCatSitMixin",
