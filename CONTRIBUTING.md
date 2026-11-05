@@ -25,6 +25,17 @@ One codebase builds three jars: Fabric and NeoForge for 26.3, and NeoForge for 1
 
 A new shared game test also needs a `@GameTest` wrapper in `fabric/src/.../fabric/gametest/`. Without one, it's silently skipped on Fabric.
 
+### With Naturalist
+
+These runs test compatibility with [Naturalist](https://modrinth.com/mod/naturalist). Each has its own game folder under `runs/naturalist-*`, and Gradle copies the jar into that folder's `mods`, so the mod doesn't compile against Naturalist or ship it. Start them from Gradle, because an IDE run config doesn't copy the jar.
+
+| Command | What it runs |
+| --- | --- |
+| `gradlew :neoforge:1.21.1:runClientNaturalist`, `gradlew :fabric:26.3:runClientNaturalist` | The game with Naturalist |
+| `gradlew :neoforge:1.21.1:runGameTestServerNaturalist`, `gradlew :fabric:26.3:runGametestNaturalist` | Game tests with Naturalist loaded |
+
+Naturalist needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.101` to the `:neoforge:26.3` versions of these commands.
+
 ## Pull requests
 
 - CI runs all of the above on every pull request. The `all-versions` check must pass before a change can merge.
