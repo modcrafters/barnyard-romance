@@ -33,6 +33,11 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void otherLayersWalkToABox(GameTestHelper helper) {
+        EggGameTests.otherLayersWalkToABox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void seedsNeverBreedChickens(GameTestHelper helper) {
         EggGameTests.seedsNeverBreedChickens(helper);
     }

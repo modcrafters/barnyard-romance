@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.entity.animal.chicken.Chicken;
 import org.jspecify.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -41,9 +40,10 @@ public class LayInNestGoal extends Goal {
         this.setFlags(EnumSet.of(Flag.MOVE));
     }
 
-    // Only chickens have this goal, and a hen that's leashed, ridden or riding stays where she is.
+    // Only species that lay by the mod's rules walk to a box, and a hen that's leashed, ridden or riding stays where
+    // she is.
     public static boolean walks(Animal hen) {
-        return hen instanceof Chicken && !hen.isPassenger() && !hen.isVehicle() && !hen.isLeashed();
+        return EggLaying.laysEggs(hen) && !hen.isPassenger() && !hen.isVehicle() && !hen.isLeashed();
     }
 
     // Starts her off towards the box if she can get there. A hen flapping in the air can't plan a path yet, so she
