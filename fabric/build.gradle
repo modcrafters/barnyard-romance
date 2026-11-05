@@ -2,6 +2,9 @@ plugins {
     id 'multiloader-loader'
     id 'net.fabricmc.fabric-loom'
 }
+
+apply from: rootProject.file('gradle/naturalist-runs.gradle')
+
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     implementation("net.fabricmc:fabric-loader:${fabric_loader_version}")
@@ -41,8 +44,24 @@ loom {
             vmArg('-Dfabric.client.gametest')
             runDir('runs/clientGametest')
         }
+        // Compatibility testing with Naturalist, see gradle/naturalist-runs.gradle.
+        clientNaturalist {
+            client()
+            setConfigName('Fabric Client (Naturalist)')
+            runDir('runs/naturalist-client')
+        }
+        gametestNaturalist {
+            server()
+            setConfigName('Fabric Game Test (Naturalist)')
+            vmArg('-Dfabric-api.gametest')
+            vmArg("-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get().asFile}/gametest-naturalist/junit.xml")
+            runDir('runs/naturalist-gametest')
+        }
     }
 }
+
+naturalistInRun('clientNaturalist', 'runs/naturalist-client')
+naturalistInRun('gametestNaturalist', 'runs/naturalist-gametest')
 
 // Implement mcgradleconventions loader attribute
 def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)

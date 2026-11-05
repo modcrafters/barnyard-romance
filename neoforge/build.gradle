@@ -3,6 +3,8 @@ plugins {
     id 'net.neoforged.moddev'
 }
 
+apply from: rootProject.file('gradle/naturalist-runs.gradle')
+
 neoForge {
     version = neoforge_version
     // Automatically enable neoforge AccessTransformers if the file exists
@@ -36,6 +38,15 @@ neoForge {
             type = 'gameTestServer'
             gameDirectory = this.mkdir(this.file('runs/gametest'))
         }
+        // Compatibility testing with Naturalist, see gradle/naturalist-runs.gradle.
+        clientNaturalist {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/naturalist-client'))
+        }
+        gameTestServerNaturalist {
+            type = 'gameTestServer'
+            gameDirectory = this.mkdir(this.file('runs/naturalist-gametest'))
+        }
     }
     mods {
         "${mod_id}" {
@@ -43,6 +54,10 @@ neoForge {
         }
     }
 }
+
+// taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
+neoForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
+neoForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 

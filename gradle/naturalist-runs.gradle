@@ -1,0 +1,45 @@
+// Naturalist, for compatibility testing only. The mod never compiles or ships against it: Gradle
+// resolves the jar when one of these runs starts and copies it to that run's own mods folder, so
+// the normal runs, the tests and the published jars don't see it.
+def naturalistVersion = '2.0.7'
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
+}
+
+configurations {
+    naturalistMod {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+dependencies {
+    naturalistMod "maven.modrinth:naturalist:${naturalistVersion}+${minecraft_version}-${project.parent.name}"
+}
+
+// Call for each Naturalist run. The mods folder is synced, so it holds exactly this jar.
+ext.naturalistInRun = { String runName, String gameDirectory ->
+    def sync = tasks.register("sync${runName.capitalize()}Mods", Sync) {
+        group = 'naturalist'
+        description = "Copies the Naturalist jar to ${gameDirectory}/mods."
+        from configurations.naturalistMod
+        into file("${gameDirectory}/mods")
+    }
+    tasks.matching { it.name == "run${runName.capitalize()}" }.configureEach {
+        group = 'naturalist'
+        dependsOn sync
+    }
+    return sync
+}
