@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.nest.NestOccupant;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,10 +17,6 @@ import java.util.WeakHashMap;
 public final class NestingBoxHen {
     // The top of the hay inside the box.
     static final double HAY_TOP = 5.0 / 16.0;
-    // The hollow above the hay is ten pixels tall; a hen taller than most of it is drawn smaller.
-    private static final double ROOM = 9.0 / 16.0;
-    // A chicken's legs are this share of its height; they go in the hay.
-    private static final double LEGS = 0.4;
     private static final Map<NestingBoxBlockEntity, Copy> COPIES = new WeakHashMap<>();
 
     private record Copy(CompoundTag from, Entity hen) {
@@ -60,11 +57,15 @@ public final class NestingBoxHen {
     }
 
     static float fit(Entity hen) {
-        double above = hen.getBbHeight() * (1.0 - LEGS);
-        return above > ROOM ? (float) (ROOM / above) : 1.0F;
+        return sittingFit(hen).scale();
     }
 
     static double legs(Entity hen) {
-        return hen.getBbHeight() * LEGS;
+        return sittingFit(hen).sinkBy();
+    }
+
+    private static SittingFit sittingFit(Entity hen) {
+        double scale = hen instanceof LivingEntity living ? living.getScale() : 1.0;
+        return SittingFit.of(BuiltInRegistries.ENTITY_TYPE.getKey(hen.getType()).toString(), hen.getBbHeight(), scale);
     }
 }
