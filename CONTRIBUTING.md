@@ -27,7 +27,7 @@ A new shared game test also needs a `@GameTest` wrapper in `fabric/src/.../fabri
 
 ### With Naturalist
 
-These runs test compatibility with [Naturalist](https://modrinth.com/mod/naturalist). Each has its own game folder under `runs/naturalist-*`, and Gradle copies the jar into that folder's `mods`, so the mod doesn't compile against Naturalist or ship it. Start them from Gradle, because an IDE run config doesn't copy the jar.
+These runs test compatibility with [Naturalist](https://modrinth.com/mod/naturalist). Each has its own game folder under `runs/naturalist-*`, and Gradle copies the jar into that folder's `mods`, so the mod doesn't compile against Naturalist or ship it. On NeoForge the IntelliJ run configs copy it too, after a Gradle sync. Fabric's runs start from Gradle only.
 
 | Command | What it runs |
 | --- | --- |

@@ -55,8 +55,9 @@ neoForge {
     }
 }
 
-naturalistInRun('clientNaturalist', 'runs/naturalist-client')
-naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest')
+// taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
+neoForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
+neoForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
