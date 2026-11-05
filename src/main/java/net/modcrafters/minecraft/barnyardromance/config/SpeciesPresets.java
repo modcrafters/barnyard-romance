@@ -2,7 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.config;
 
 import java.util.Map;
 
-// Built-in pregnancy and litter ranges for vanilla mammals. A user's species entry beats these.
+// Built-in pregnancy and litter ranges for vanilla mammals and Naturalist's livestock. A user's species entry beats
+// these.
 final class SpeciesPresets {
     record Preset(Range pregnancyTicks, Range litter) {
     }
@@ -32,7 +33,9 @@ final class SpeciesPresets {
             Map.entry("minecraft:ocelot", PREDATOR),
             Map.entry("minecraft:panda", BEAR),
             Map.entry("minecraft:polar_bear", BEAR),
-            Map.entry("minecraft:hoglin", preset(30_000, 36_000, 2, 3))
+            Map.entry("minecraft:hoglin", preset(30_000, 36_000, 2, 3)),
+            Map.entry("naturalist:deer", SMALL_HERD),
+            Map.entry("naturalist:boar", HOG)
     );
 
     private SpeciesPresets() {
@@ -42,9 +45,13 @@ final class SpeciesPresets {
         return PRESETS.get(speciesId);
     }
 
-    // Birds that lay eggs instead of giving birth.
+    // Birds that lay eggs instead of giving birth. A Naturalist turkey has no egg of its own, so it lays vanilla's.
     static EggSettings eggs(String speciesId) {
-        return "minecraft:chicken".equals(speciesId) ? EggSettings.CHICKEN : EggSettings.NONE;
+        return switch (speciesId) {
+            case "minecraft:chicken", "naturalist:turkey" -> EggSettings.CHICKEN;
+            case "naturalist:duck" -> EggSettings.CHICKEN.withPlainEgg("naturalist:duck_egg");
+            default -> EggSettings.NONE;
+        };
     }
 
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {
