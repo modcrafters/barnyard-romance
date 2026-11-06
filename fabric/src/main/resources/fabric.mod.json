@@ -34,6 +34,9 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.LooksClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.HerdBookClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.NestingBoxClientGameTest"
+        ],
+        "jade": [
+            "net.modcrafters.minecraft.barnyardromance.compat.jade.BarnyardJadePlugin"
         ]
     },
     "mixins": [

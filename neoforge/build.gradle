@@ -4,6 +4,12 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/naturalist-runs.gradle')
+apply from: rootProject.file('gradle/jade-runs.gradle')
+
+dependencies {
+    // The common sources are compiled again here, compat/jade with them. Optional: nothing ships with Jade or needs it.
+    compileOnly "maven.modrinth:jade:${jade_loader_version}"
+}
 
 neoForge {
     version = neoforge_version
@@ -50,6 +56,12 @@ neoForge {
             gameDirectory = this.mkdir(this.file('runs/naturalist-gametest'))
             systemProperty('barnyard_romance.expect_naturalist', 'true')
         }
+        // Our stats in Jade's tooltip, see gradle/jade-runs.gradle.
+        clientJade {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/jade-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+        }
     }
     mods {
         "${mod_id}" {
@@ -61,6 +73,7 @@ neoForge {
 // taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
 neoForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
 neoForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
+neoForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 

@@ -1,0 +1,32 @@
+// Jade, for the clientJade run. The mod compiles against Jade's API (compileOnly, in each loader's build.gradle) but
+// never ships with it or needs it: Gradle resolves the jar when the run starts and copies it to that run's own mods
+// folder, so the normal runs, the tests and the published jars don't see it.
+
+apply from: rootProject.file('gradle/modrinth-maven.gradle')
+
+configurations {
+    jadeMod {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+dependencies {
+    jadeMod "maven.modrinth:jade:${jade_loader_version}"
+}
+
+// Call for each Jade run. The mods folder is synced, so it holds exactly this jar.
+ext.jadeInRun = { String runName, String gameDirectory ->
+    def sync = tasks.register("sync${runName.capitalize()}Mods", Sync) {
+        group = 'jade'
+        description = "Copies the Jade jar to ${gameDirectory}/mods."
+        from configurations.jadeMod
+        into file("${gameDirectory}/mods")
+    }
+    tasks.matching { it.name == "run${runName.capitalize()}" }.configureEach {
+        group = 'jade'
+        dependsOn sync
+    }
+    return sync
+}
