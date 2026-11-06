@@ -15,11 +15,19 @@ public final class HerdBookClient {
         //?} else
         //HerdBookScreen open = minecraft.screen instanceof HerdBookScreen screen ? screen : null;
         switch (BookArrival.of(open != null, book.open())) {
-            case REFRESH -> open.update(book);
-            //? if >=26.1 {
-            case OPEN -> minecraft.setScreenAndShow(new HerdBookScreen(book));
-            //?} else
-            //case OPEN -> minecraft.setScreen(new HerdBookScreen(book));
+            case REFRESH -> {
+                open.update(book);
+                book.focus().ifPresent(open::showAnimal);
+            }
+            case OPEN -> {
+                HerdBookScreen opened = new HerdBookScreen(book);
+                //? if >=26.1 {
+                minecraft.setScreenAndShow(opened);
+                //?} else
+                //minecraft.setScreen(opened);
+                // After the screen is set up, so its buttons exist when it turns to the page.
+                book.focus().ifPresent(opened::showAnimal);
+            }
             case DROP -> {
             }
         }

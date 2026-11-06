@@ -86,7 +86,12 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("the_book_and_the_animal_agree", 20, HerdBookGameTests::theBookAndTheAnimalAgree),
             new BreedingGameTests.Case("a_book_page_shows_health_and_vigour", 20, HerdBookGameTests::aBookPageShowsHealthAndVigour),
             new BreedingGameTests.Case("an_old_record_without_a_sheet_loads", 20, HerdBookGameTests::anOldRecordWithoutASheetLoads),
-            new BreedingGameTests.Case("the_egg_tip_says_what_she_laid_today", 20, HerdBookGameTests::theEggTipSaysWhatSheLaidToday)
+            new BreedingGameTests.Case("the_egg_tip_says_what_she_laid_today", 20, HerdBookGameTests::theEggTipSaysWhatSheLaidToday),
+            new BreedingGameTests.Case("using_the_book_on_a_member_focuses_it", 20, HerdBookGameTests::usingTheBookOnAMemberFocusesIt),
+            new BreedingGameTests.Case("a_member_no_longer_familiar_still_opens", 20, HerdBookGameTests::aMemberNoLongerFamiliarStillOpens),
+            new BreedingGameTests.Case("adding_an_animal_focuses_it", 20, HerdBookGameTests::addingAnAnimalFocusesIt),
+            new BreedingGameTests.Case("an_unfamiliar_stranger_gets_no_focus", 20, HerdBookGameTests::anUnfamiliarStrangerGetsNoFocus),
+            new BreedingGameTests.Case("an_animal_in_another_book_is_added_to_this_one", 20, HerdBookGameTests::anAnimalInAnotherBookIsAddedToThisOne)
     );
 
     private HerdBookGameTests() {
@@ -325,7 +330,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()), false);
+        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()), false, Optional.of(cow.getUUID()));
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
         HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, sent);
@@ -357,7 +362,7 @@ public final class HerdBookGameTests {
         }
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
-        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true));
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true, Optional.empty()));
 
         helper.assertTrue(buffer.readableBytes() > 1_048_576, "1,500 animals took only " + buffer.readableBytes() + " bytes");
         helper.assertTrue(buffer.readableBytes() < HerdBookPayloads.ShowBook.MAX_BYTES, "1,500 animals took " + buffer.readableBytes() + " bytes");
@@ -549,6 +554,66 @@ public final class HerdBookGameTests {
         helper.assertTrue(entry.eggTip().getString().endsWith("Eggs: 1/2 today"), "the egg tip reads " + entry.eggTip().getString());
         helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == StatKind.NOTE && line.text().getString().equals("Eggs: 1/2 today")),
                 "the page has no egg note: " + entry.lines().stream().map(line -> line.text().getString()).toList());
+        helper.succeed();
+    }
+
+    public static void usingTheBookOnAMemberFocusesIt(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, cow);
+
+        HerdBooks.Use use = HerdBooks.use(book, cow);
+
+        helper.assertTrue(use.result() == HerdBooks.RegisterResult.ALREADY, "a member was " + use.result());
+        helper.assertTrue(use.focus().equals(Optional.of(cow.getUUID())), "the focus was " + use.focus());
+        helper.succeed();
+    }
+
+    public static void aMemberNoLongerFamiliarStillOpens(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, cow);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.1, -1L));
+
+        HerdBooks.Use use = HerdBooks.use(book, cow);
+
+        helper.assertTrue(use.result() == HerdBooks.RegisterResult.ALREADY, "a decayed member was " + use.result());
+        helper.assertTrue(use.focus().equals(Optional.of(cow.getUUID())), "the focus was " + use.focus());
+        helper.succeed();
+    }
+
+    public static void addingAnAnimalFocusesIt(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+
+        HerdBooks.Use use = HerdBooks.use(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+
+        helper.assertTrue(use.result() == HerdBooks.RegisterResult.ADDED, "a familiar cow was " + use.result());
+        helper.assertTrue(use.focus().equals(Optional.of(cow.getUUID())), "the focus was " + use.focus());
+        helper.succeed();
+    }
+
+    public static void anUnfamiliarStrangerGetsNoFocus(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Services.DATA.set(cow, traits(helper, cow).fed(0.1, -1L));
+
+        HerdBooks.Use use = HerdBooks.use(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+
+        helper.assertTrue(use.result() == HerdBooks.RegisterResult.NOT_FAMILIAR, "a stranger was " + use.result());
+        helper.assertTrue(use.focus().isEmpty(), "the focus was " + use.focus());
+        helper.succeed();
+    }
+
+    // Membership is per book: a cow in book A is new to book B.
+    public static void anAnimalInAnotherBookIsAddedToThisOne(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        ItemStack bookA = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack bookB = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(bookA, cow);
+
+        HerdBooks.Use use = HerdBooks.use(bookB, cow);
+
+        helper.assertTrue(use.result() == HerdBooks.RegisterResult.ADDED, "a cow from another book was " + use.result());
+        helper.assertTrue(data(helper).ledger().members(bookId(helper, bookB)).contains(cow.getUUID()), "the second book does not hold her");
         helper.succeed();
     }
 

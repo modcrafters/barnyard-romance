@@ -46,6 +46,11 @@ public final class HerdBooks {
         if (!(animal.level() instanceof ServerLevel level)) {
             return RegisterResult.NOT_TRACKED;
         }
+        // Membership comes first, so a member gone grumpy or decayed still opens its page.
+        UUID existing = book.get(BarnyardComponents.HERD_BOOK);
+        if (existing != null && HerdBookData.get(level.getServer()).ledger().isMember(existing, animal.getUUID())) {
+            return RegisterResult.ALREADY;
+        }
         Optional<AnimalTraits> traits = Services.DATA.get(animal);
         if (traits.isEmpty() || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
             return RegisterResult.NOT_TRACKED;
@@ -65,6 +70,16 @@ public final class HerdBooks {
         HerdRecords.capture(animal, level.getGameTime()).ifPresent(record -> data.put(animal.getUUID(), record));
         data.setDirty();
         return RegisterResult.ADDED;
+    }
+
+    // focus is the animal whose page the book should open at: the one just added, or a member used again.
+    public record Use(RegisterResult result, Optional<UUID> focus) {
+    }
+
+    public static Use use(ItemStack book, Animal animal) {
+        RegisterResult result = register(book, animal);
+        boolean focused = result == RegisterResult.ADDED || result == RegisterResult.ALREADY;
+        return new Use(result, focused ? Optional.of(animal.getUUID()) : Optional.empty());
     }
 
     public static void born(Animal mother, List<Animal> young) {
@@ -153,10 +168,15 @@ public final class HerdBooks {
 
     // open is false for a reply, which only refreshes a book the player still has open.
     public static void show(ServerPlayer player, ItemStack book, boolean open) {
+        show(player, book, open, Optional.empty());
+    }
+
+    // focus, when present, turns the open book to that animal's page.
+    public static void show(ServerPlayer player, ItemStack book, boolean open, Optional<UUID> focus) {
         UUID id = book.get(BarnyardComponents.HERD_BOOK);
         MinecraftServer server = player.level().getServer();
         List<HerdEntry> entries = id == null ? List.of() : entries(server, id, player.level().getGameTime());
-        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries, open));
+        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries, open, focus));
     }
 
     public static List<HerdEntry> entries(MinecraftServer server, UUID book, long now) {

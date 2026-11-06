@@ -143,4 +143,29 @@ public class FabricHerdBookGameTests {
     public void theEggTipSaysWhatSheLaidToday(GameTestHelper helper) {
         HerdBookGameTests.theEggTipSaysWhatSheLaidToday(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void usingTheBookOnAMemberFocusesIt(GameTestHelper helper) {
+        HerdBookGameTests.usingTheBookOnAMemberFocusesIt(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMemberNoLongerFamiliarStillOpens(GameTestHelper helper) {
+        HerdBookGameTests.aMemberNoLongerFamiliarStillOpens(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void addingAnAnimalFocusesIt(GameTestHelper helper) {
+        HerdBookGameTests.addingAnAnimalFocusesIt(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anUnfamiliarStrangerGetsNoFocus(GameTestHelper helper) {
+        HerdBookGameTests.anUnfamiliarStrangerGetsNoFocus(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anAnimalInAnotherBookIsAddedToThisOne(GameTestHelper helper) {
+        HerdBookGameTests.anAnimalInAnotherBookIsAddedToThisOne(helper);
+    }
 }
