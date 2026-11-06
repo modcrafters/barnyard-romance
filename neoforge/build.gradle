@@ -20,6 +20,7 @@ neoForge {
         client {
             client()
             gameDirectory = this.mkdir(this.file('runs/client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
         }
         data {
             // clientData() since 1.21.4, data() before (neoforge_data_run in each version's gradle.properties).
@@ -42,6 +43,7 @@ neoForge {
         clientNaturalist {
             client()
             gameDirectory = this.mkdir(this.file('runs/naturalist-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
         }
         gameTestServerNaturalist {
             type = 'gameTestServer'
