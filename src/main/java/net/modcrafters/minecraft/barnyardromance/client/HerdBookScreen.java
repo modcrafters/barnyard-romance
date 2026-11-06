@@ -99,6 +99,9 @@ public class HerdBookScreen extends Screen {
     // An animal's page starts higher than a contents page, which has a title there.
     private static final int ANIMAL_TOP = 14;
     private static final int PORTRAIT = 24;
+    // The gap between the card and the rule under it, and between the rule and the first status line.
+    private static final int CARD_GAP = 1;
+    private static final int RULE_GAP = 2;
     private static final int STATUS_LINE = 10;
     private static final int YOUNG_GAP = 2;
     private static final int BAR_HEIGHT = 5;
@@ -598,12 +601,12 @@ public class HerdBookScreen extends Screen {
                     }
                 }
             }
-            y = Math.max(y + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), subtitleY - 1) + 2;
+            y = Math.max(y + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), subtitleY - 1) + CARD_GAP;
         } else {
-            y = subtitleY - 1 + 2;
+            y = subtitleY - 1 + CARD_GAP;
         }
         graphics.fill(x, y, right, y + 1, RULE);
-        y += 4;
+        y += RULE_GAP;
         for (HerdEntry.Line line : status.subList(from, from + leaves.get(this.leaf))) {
             y += drawPageLine(graphics, entry, line, x, y);
         }
@@ -626,9 +629,9 @@ public class HerdBookScreen extends Screen {
             }
         }
         // The first leaf's card runs down to its rule and the gap under it; later leaves have a name line there.
-        int cardBottom = Math.max(ANIMAL_TOP + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), ANIMAL_TOP + 12 + subtitle - 1) + 2 + 4;
+        int cardBottom = Math.max(ANIMAL_TOP + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), ANIMAL_TOP + 12 + subtitle - 1) + CARD_GAP + RULE_GAP;
         int firstSpace = BUTTONS_Y - cardBottom;
-        int space = BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + 4);
+        int space = BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + RULE_GAP);
         // The family: its header, the mother and father, and a row of young when there are any.
         int familyHeight = HerdBookLayout.familyHeight(!youngOf(entry).isEmpty(), HerdBookHeads.AVAILABLE, STATUS_LINE, ICON, LINK_LINE);
         List<Integer> heights = statusLines(entry).stream().map(this::lineHeight).toList();

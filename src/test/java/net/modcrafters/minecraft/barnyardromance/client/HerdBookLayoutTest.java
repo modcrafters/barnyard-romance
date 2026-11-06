@@ -216,6 +216,13 @@ class HerdBookLayoutTest {
     }
 
     @Test
+    void aFatherWithYoungFitsOneLeafUnderATwoLineSubtitle() {
+        // The card's two-line subtitle leaves 111 px: 7 status lines (70 px) and the family with young heads (41 px).
+        assertEquals(List.of(7), HerdBookLayout.leaves(lines(7), 111, 126, HerdBookLayout.familyHeight(true, true, 10, 9, 10)));
+        assertEquals(List.of(7, 0), HerdBookLayout.leaves(lines(7), 110, 126, HerdBookLayout.familyHeight(true, true, 10, 9, 10)));
+    }
+
+    @Test
     void aWrappedNoteTakesItsFullHeight() {
         // The second line of a wrapped note counts: 7 plain lines and a 19 px note need 121 px with the family.
         java.util.List<Integer> heights = new java.util.ArrayList<>(lines(7));
