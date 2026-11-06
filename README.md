@@ -81,7 +81,7 @@ Only females fall in love. Feed a familiar female and she goes into love as befo
 - **Stopping a fight:** walk up within 8 blocks with food either of them eats, in either hand, or take it out once you're close, and two familiar males stop and leave each other alone for an in-game hour, time to move one. Food you were already holding when the fight started doesn't count, so feeding a cow and standing by doesn't call off the fight over her; put it away and take it out again. A fight with a wild male can't be stopped.
 - Nobody else is hurt, and the fighters ignore you unless you hit one. An animal killed in a fight is noted in the herd book as "Killed by a rival".
 
-**Stud Mash** (two grains, a root and a berry) gives a grown, familiar male back half his Vigour, up to 100%. Like the other superfoods it skips the once-a-day rule. It isn't a meal: it doesn't count as feeding him and doesn't heal him. A pack can give any food file `"vigour": 0.5` in its effects to do the same.
+**Stud Mash** (two grains, a root, a berry and a gunpowder) gives a grown, familiar male back half his Vigour, up to 100%. Like the other superfoods it skips the once-a-day rule. It isn't a meal: it doesn't count as feeding him and doesn't heal him. A pack can give any food file `"vigour": 0.5` in its effects to do the same.
 
 | Key (`tuning`) | Default | Meaning |
 |---|---|---|
