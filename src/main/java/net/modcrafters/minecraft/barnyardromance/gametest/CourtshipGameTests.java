@@ -45,7 +45,8 @@ public final class CourtshipGameTests {
             new BreedingGameTests.Case("goats_breed_by_courtship", 400, CourtshipGameTests::goatsBreedByCourtship),
             new BreedingGameTests.Case("horses_breed_by_courtship", 400, CourtshipGameTests::horsesBreedByCourtship),
             new BreedingGameTests.Case("pets_take_the_closest_male", 400, CourtshipGameTests::petsTakeTheClosestMale),
-            new BreedingGameTests.Case("reach_ignores_where_the_male_is_walking", 100, CourtshipGameTests::reachIgnoresWhereTheMaleIsWalking)
+            new BreedingGameTests.Case("reach_ignores_where_the_male_is_walking", 100, CourtshipGameTests::reachIgnoresWhereTheMaleIsWalking),
+            new BreedingGameTests.Case("a_chosen_male_walks_to_a_far_female", 400, CourtshipGameTests::aChosenMaleWalksToAFarFemale)
     );
 
     private CourtshipGameTests() {
@@ -190,6 +191,24 @@ public final class CourtshipGameTests {
             helper.assertTrue(first && second, "the bull can walk to the cow: " + first + ", then " + second);
             helper.succeed();
         });
+    }
+
+    // Vanilla's breed goal only looks 8 blocks for a partner, but a male up to rivalRange (16) away can be chosen, so he
+    // has to come to her. She stands still here, and he starts across the pen, more than 8 blocks off.
+    public static void aChosenMaleWalksToAFarFemale(GameTestHelper helper) {
+        Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 1, 1, 1);
+        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+        Animal bull = GameTestCompat.spawn(helper, EntityTypes.COW, 7, 1, 7);
+        Services.DATA.set(bull, new AnimalTraits(Sex.MALE, 1.0, 1.0, -1L));
+        fed(bull);
+        // Frozen once she's down: a mob without AI never lands.
+        EggGameTests.once(helper, () -> bull.onGround() && cow.onGround(), () -> {
+            cow.setNoAi(true);
+            helper.assertTrue(bull.distanceTo(cow) > 8.0, "the bull starts only " + bull.distanceTo(cow) + " blocks off");
+            cow.setInLove(null);
+        });
+
+        helper.succeedWhen(() -> assertFather(helper, cow, bull));
     }
 
     private static void breedsByCourtship(GameTestHelper helper, EntityType<? extends Animal> type) {

@@ -56,4 +56,9 @@ public class FabricCourtshipGameTests {
     public void reachIgnoresWhereTheMaleIsWalking(GameTestHelper helper) {
         CourtshipGameTests.reachIgnoresWhereTheMaleIsWalking(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aChosenMaleWalksToAFarFemale(GameTestHelper helper) {
+        CourtshipGameTests.aChosenMaleWalksToAFarFemale(helper);
+    }
 }

@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class Courtship {
     private static final int CHECK_TICKS = 20;
     private static final long FORGET_TICKS = 6_000L;
+    private static final double WALK_OVER_DISTANCE = 6.0;
 
     private static final class State {
         final long startedAt;
@@ -102,6 +103,7 @@ public final class Courtship {
         }
         if (state.chosen != null) {
             if (level.getEntity(state.chosen) instanceof Animal male && male.isAlive() && male.isInLove()) {
+                walkOver(male, animal);
                 return;
             }
             CHOSEN_FOR.remove(state.chosen);
@@ -195,6 +197,15 @@ public final class Courtship {
         state.chosen = male.getUUID();
         CHOSEN_FOR.put(male.getUUID(), female.getUUID());
         male.setInLoveTime(Math.max(1, female.getInLoveTime()));
+        walkOver(male, female);
+    }
+
+    // Vanilla's breed goals only look about 8 blocks for a partner, and a chosen male can be farther off, so he walks
+    // over until they're close enough for the goal to take it from there.
+    private static void walkOver(Animal male, Animal female) {
+        if (male.distanceToSqr(female) > WALK_OVER_DISTANCE * WALK_OVER_DISTANCE) {
+            male.getNavigation().moveTo(female, 1.0);
+        }
     }
 
     private static void end(UUID female) {
