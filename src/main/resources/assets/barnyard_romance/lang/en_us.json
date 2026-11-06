@@ -57,6 +57,9 @@
   "item.barnyard_romance.dairy_mash.use": "Feed to a dry female",
   "item.barnyard_romance.dairy_mash.effect": "She gives milk for %s days",
   "item.barnyard_romance.dairy_mash.effect_one": "She gives milk for 1 day",
+  "item.barnyard_romance.stud_mash": "Stud Mash",
+  "item.barnyard_romance.stud_mash.use": "Feed to a grown male",
+  "item.barnyard_romance.stud_mash.effect": "Restores half his Vigour",
   "item.barnyard_romance.golden_bran": "Golden Bran",
   "item.minecraft.milk_bucket": "Bucket of Cow Milk",
   "item.barnyard_romance.sheep_milk_bucket": "Bucket of Sheep Milk",
@@ -184,6 +187,7 @@
   "message.barnyard_romance.refused.shear": "It won't let you shear it today.",
   "message.barnyard_romance.refused.today": "Not today. Try again tomorrow.",
   "message.barnyard_romance.superfood.needs_mother": "Only a pregnant mother needs this.",
+  "message.barnyard_romance.superfood.needs_male": "Feed this to a grown male you know well.",
   "message.barnyard_romance.superfood.already_on_mash": "She's already on a mash.",
   "message.barnyard_romance.superfood.cant_eat_more": "She can't eat any more of this.",
   "message.barnyard_romance.herd_book.added": "%s was added to the herd book.",
@@ -211,5 +215,6 @@
   "tag.item.barnyard_romance.sized_drops": "Drops Scaled by Animal Size",
   "tag.item.barnyard_romance.superfood.golden": "Superfood Golden Treats",
   "tag.item.barnyard_romance.superfood.grains": "Superfood Grains",
-  "tag.item.barnyard_romance.superfood.roots": "Superfood Roots"
+  "tag.item.barnyard_romance.superfood.roots": "Superfood Roots",
+  "tag.item.barnyard_romance.superfood.vigour": "Superfood Berries"
 }

@@ -8,10 +8,47 @@ import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.food.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+
 // A male's Vigour in the world: read it settled, check what he can afford, and take the payment. clock is an
 // overworld clock time; the overloads without one use the animal's level.
 public final class VigourActions {
+    public static final Text NEEDS_MALE = Text.of("message.barnyard_romance.superfood.needs_male");
+    private static final double EPSILON = 1.0e-9;
+
     private VigourActions() {
+    }
+
+    // Stud Mash: a grown, familiar male gets Vigour back. It skips the once-a-day rule like the other superfoods and is
+    // no meal: his feeding day, hunger, health and familiarity are left alone.
+    public static InteractionResult feedMash(Animal animal, Player player, ItemStack stack, Feed.Eaten eaten) {
+        if (animal.level().isClientSide()) {
+            return InteractionResult.SUCCESS;
+        }
+        Optional<AnimalTraits> traits = current(animal);
+        if (traits.isEmpty() || traits.get().sex() != Sex.MALE || !FamiliarityCare.grown(animal) || !Familiarity.ready(traits.get().familiarity())) {
+            player.sendSystemMessage(TextComponents.of(NEEDS_MALE));
+            return InteractionResult.CONSUME;
+        }
+        if (traits.get().vigour().value() >= 1.0 - EPSILON) {
+            player.sendSystemMessage(TextComponents.of(PregnancyCareActions.CANT_EAT_MORE));
+            return InteractionResult.CONSUME;
+        }
+        if (!player.hasInfiniteMaterials()) {
+            stack.consume(1, player);
+        }
+        Services.DATA.set(animal, traits.get().withVigour(VigourRules.add(traits.get().vigour(), eaten.effects().vigour() * eaten.factor())));
+        VersionCompat.playEatingSound(animal, stack);
+        return VersionCompat.SUCCESS_SERVER;
     }
 
     public static Optional<AnimalTraits> current(Animal male) {

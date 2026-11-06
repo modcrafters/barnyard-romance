@@ -85,6 +85,7 @@ public class BarnyardRomanceNeoForge {
         event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);
         event.register(Registries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), () -> BarnyardItems.GOLDEN_BRAN);
         event.register(Registries.ITEM, BarnyardItems.DAIRY_MASH_ID.identifier(), () -> BarnyardItems.DAIRY_MASH);
+        event.register(Registries.ITEM, BarnyardItems.STUD_MASH_ID.identifier(), () -> BarnyardItems.STUD_MASH);
         event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
         event.register(Registries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.GOAT_MILK_BUCKET);
         event.register(Registries.ITEM, BarnyardItems.FERTILIZED_EGG_ID.identifier(), () -> BarnyardItems.FERTILIZED_EGG);
@@ -123,6 +124,7 @@ public class BarnyardRomanceNeoForge {
             event.accept(BarnyardItems.BREEDERS_MASH);
             event.accept(BarnyardItems.GOLDEN_BRAN);
             event.accept(BarnyardItems.DAIRY_MASH);
+            event.accept(BarnyardItems.STUD_MASH);
         }
     }
 

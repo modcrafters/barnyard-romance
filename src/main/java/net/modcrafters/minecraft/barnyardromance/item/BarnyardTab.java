@@ -42,6 +42,7 @@ public final class BarnyardTab {
                 new ItemStack(BarnyardItems.BREEDERS_MASH),
                 new ItemStack(BarnyardItems.GOLDEN_BRAN),
                 new ItemStack(BarnyardItems.DAIRY_MASH),
+                new ItemStack(BarnyardItems.STUD_MASH),
                 new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET),
                 new ItemStack(BarnyardItems.GOAT_MILK_BUCKET)
         );

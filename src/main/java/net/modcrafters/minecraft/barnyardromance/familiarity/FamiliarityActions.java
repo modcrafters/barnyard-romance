@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
 import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
@@ -83,8 +84,11 @@ public final class FamiliarityActions {
             return null;
         }
         if (eaten.superfood()) {
-            return eaten.effects().startsMilk()
-                    ? MilkActions.startMilk(animal, player, hand, eaten)
+            if (eaten.effects().startsMilk()) {
+                return MilkActions.startMilk(animal, player, hand, eaten);
+            }
+            return eaten.effects().vigour() > 0.0
+                    ? VigourActions.feedMash(animal, player, stack, eaten)
                     : PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.

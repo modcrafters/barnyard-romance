@@ -21,6 +21,9 @@ public class FightGoal extends Goal {
     private static final int FIRST_CLASH_TICKS = 20;
     private static final double SPEED = 1.2;
     private static final double PUSH = 0.4;
+    // How far past touching a clash reaches, and how close the rival is when the walk is steered by hand.
+    private static final double REACH = 1.0;
+    private static final double STEER_DISTANCE = 3.0;
 
     private final Animal mob;
     private int cooldown;
@@ -64,10 +67,14 @@ public class FightGoal extends Goal {
         Animal rival = found.get();
         quietBrain();
         this.mob.getLookControl().setLookAt(rival, 30.0F, 30.0F);
-        double reach = this.mob.getBbWidth() / 2.0 + rival.getBbWidth() / 2.0 + 0.8;
+        double reach = this.mob.getBbWidth() / 2.0 + rival.getBbWidth() / 2.0 + REACH;
         double distance = this.mob.distanceTo(rival);
-        if (distance > reach) {
+        if (distance > STEER_DISTANCE) {
             this.mob.getNavigation().moveTo(rival, SPEED);
+        } else if (distance > reach) {
+            // Navigation counts the block next to him as arrived and stops, so the last steps are steered by hand.
+            this.mob.getNavigation().stop();
+            this.mob.getMoveControl().setWantedPosition(rival.getX(), rival.getY(), rival.getZ(), SPEED);
         } else {
             this.mob.getNavigation().stop();
         }
