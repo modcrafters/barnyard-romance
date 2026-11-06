@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class VigourRulesTest {
@@ -86,6 +87,21 @@ class VigourRulesTest {
     @Test
     void canPay_refusesWhenHealthWouldReachZero() {
         assertFalse(VigourRules.canPay(1.0, 0.3, true, 2.0, 2.0));
+    }
+
+    // Nobody kills himself for love: a hungry male with under 1 health left after mating doesn't mate.
+    @Test
+    void canPay_refusesWhenHealthWouldDropBelowOne() {
+        assertFalse(VigourRules.canPay(1.0, 0.3, true, 2.5, 2.0));
+        assertTrue(VigourRules.canPay(1.0, 0.3, true, 3.0, 2.0));
+    }
+
+    // Settling runs every tick; once a day is settled nothing changes until midnight, so nothing new is made.
+    @Test
+    void settle_keepsTheSameVigourOnceTheDayIsSettled() {
+        Vigour vigour = new Vigour(0.4, 10L, 3L);
+        assertSame(vigour, VigourRules.settle(vigour, 9L, 10L));
+        assertSame(vigour, VigourRules.settle(vigour, 10L, 10L));
     }
 
     @Test

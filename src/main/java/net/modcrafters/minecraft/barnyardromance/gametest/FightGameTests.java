@@ -42,6 +42,7 @@ public final class FightGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("two_bulls_fight_over_a_cow_until_one_dies", 1200, FightGameTests::twoBullsFightOverACowUntilOneDies),
             new BreedingGameTests.Case("a_third_bull_mates_while_two_fight", 400, FightGameTests::aThirdBullMatesWhileTwoFight),
+            new BreedingGameTests.Case("four_bulls_fight_in_two_pairs", 100, FightGameTests::fourBullsFightInTwoPairs),
             new BreedingGameTests.Case("the_bigger_bull_wins", 1200, FightGameTests::theBiggerBullWins),
             new BreedingGameTests.Case("food_in_hand_stops_a_fight_between_familiar_bulls", 100, FightGameTests::foodInHandStopsAFightBetweenFamiliarBulls),
             new BreedingGameTests.Case("food_does_not_stop_a_wild_fight", 1200, FightGameTests::foodDoesNotStopAWildFight),
@@ -84,6 +85,22 @@ public final class FightGameTests {
         helper.succeedWhen(() -> {
             assertFather(helper, cow, third);
             helper.assertTrue(Fights.fighting(first) || !first.isAlive() || !second.isAlive(), "the two closer bulls aren't fighting");
+        });
+    }
+
+    // Walked closest first, two at a time: both pairs fight, and nobody is left over to mate with her yet.
+    public static void fourBullsFightInTwoPairs(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        List<Animal> bulls = List.of(bull(helper, 4, 4, 1.0), bull(helper, 5, 4, 1.0), bull(helper, 6, 6, 1.0), bull(helper, 7, 7, 1.0));
+        cow.setInLoveTime(600);
+
+        helper.runAfterDelay(SETTLE_TICKS, () -> {
+            Courtship.court(cow, 0.0);
+            for (Animal bull : bulls) {
+                helper.assertTrue(Fights.fighting(bull), "a bull isn't fighting");
+                helper.assertTrue(!Courtship.chosen(cow, bull), "a bull was chosen while all four fight");
+            }
+            helper.succeed();
         });
     }
 

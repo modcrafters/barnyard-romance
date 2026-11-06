@@ -84,7 +84,8 @@ public final class VigourActions {
         pay(male, cost, healthCost, male.level().getOverworldClockTime());
     }
 
-    // A hungry male pays with health as well; it's set directly, so nothing hurts him and nothing panics.
+    // A hungry male pays with health as well; it's set directly, so nothing hurts him and nothing panics. canPay keeps
+    // him from mating if it would leave him under 1; the floor here only covers a male hurt since he was checked.
     public static void pay(Animal male, double cost, double healthCost, long clock) {
         current(male, clock).ifPresent(traits -> {
             Services.DATA.set(male, traits.withVigour(VigourRules.pay(traits.vigour(), cost)));

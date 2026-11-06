@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.DoubleSupplier;
 
 // Only females fall in love. When one does, the males who could have her are looked over and one is chosen; only he
 // is put in love (quietly, through setInLoveTime, so he shows no hearts), so vanilla's breed goals, goat brains and
@@ -54,12 +55,18 @@ public final class Courtship {
     // A tracked female has just fallen in love.
     public static void start(Animal female) {
         if (female.level() instanceof ServerLevel level && isTracked(female, Sex.FEMALE)) {
-            court(female, level.getRandom().nextDouble());
+            court(female, level.getRandom()::nextDouble);
         }
     }
 
-    // roll decides a fight between rivals (below rivalFightChance means a fight); it's only used once per love.
+    // Every pair of rivals rolls the same; for tests.
     public static void court(Animal female, double roll) {
+        court(female, () -> roll);
+    }
+
+    // Each roll decides a fight between a pair of rivals (below rivalFightChance means a fight); pairs only roll once
+    // per love, so a female who is looked at again later gets the closest male left.
+    public static void court(Animal female, DoubleSupplier rolls) {
         try {
             long now = female.level().getGameTime();
             forgetOld(now);
@@ -67,18 +74,17 @@ public final class Courtship {
             if (state.chosen != null) {
                 return;
             }
-            List<Animal> eligible = eligible(female);
             Tuning tuning = BarnyardConfig.current().tuning();
+            int range = tuning.rivalRange();
             boolean fights = !state.rolled && BarnyardConfig.current().fightsFor(AnimalSex.speciesId(female));
-            CourtshipRules.Outcome outcome = CourtshipRules.decide(eligible.size(), fights, roll, tuning.rivalFightChance());
-            if (eligible.size() >= 2) {
-                state.rolled = true;
+            CourtshipRules.Outcome<Animal> outcome = CourtshipRules.decide(candidates(female, tuning),
+                    male -> Reach.canWalk(male, female, range), fights, rolls, tuning.rivalFightChance());
+            state.rolled |= outcome.rolled();
+            for (CourtshipRules.Pair<Animal> pair : outcome.fights()) {
+                fightStarted(female, pair.a(), pair.b());
             }
-            if (outcome.fight()) {
-                fightStarted(female, eligible.get(outcome.fighterA()), eligible.get(outcome.fighterB()));
-            }
-            if (outcome.mate() >= 0) {
-                choose(female, state, eligible.get(outcome.mate()));
+            if (outcome.mate() != null) {
+                choose(female, state, outcome.mate());
             }
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to find a mate for a {}", AnimalSex.speciesId(female), exception);
@@ -109,7 +115,7 @@ public final class Courtship {
             CHOSEN_FOR.remove(state.chosen);
             state.chosen = null;
         }
-        court(animal, level.getRandom().nextDouble());
+        court(animal, level.getRandom()::nextDouble);
     }
 
     public static boolean chosen(Animal female, Animal male) {
@@ -138,16 +144,13 @@ public final class Courtship {
         return isTracked(animal, Sex.MALE) ? 0 : rest;
     }
 
-    // The males who could mate with her now, closest first.
-    public static List<Animal> eligible(Animal female) {
-        Tuning tuning = BarnyardConfig.current().tuning();
-        int range = tuning.rivalRange();
-        return female.level().getEntitiesOfClass(Animal.class, female.getBoundingBox().inflate(range),
+    // The males who could mate with her now, closest first, before anyone checks they can walk to her.
+    private static List<Animal> candidates(Animal female, Tuning tuning) {
+        return female.level().getEntitiesOfClass(Animal.class, female.getBoundingBox().inflate(tuning.rivalRange()),
                         male -> male != female && male.isAlive() && !male.isBaby() && sameKind(female, male))
                 .stream()
                 .filter(male -> available(female, male, tuning))
                 .sorted(Comparator.comparingDouble(male -> male.distanceToSqr(female)))
-                .filter(male -> Reach.canWalk(male, female, range))
                 .toList();
     }
 

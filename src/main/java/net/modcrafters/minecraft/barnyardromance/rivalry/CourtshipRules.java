@@ -1,27 +1,45 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
-// Who gets a female in love, from the eligible males sorted closest first. With two or more, a species that fights
-// rolls once: on a fight the two closest fight, and a third, if there is one, mates with her while they do.
+import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.DoubleSupplier;
+import java.util.function.Predicate;
+
+// Who gets a female in love. The males who could have her are walked closest first, two at a time: in a species that
+// fights, each pair rolls, and a pair that fights is out of it while the walk goes on to the next two. The first male
+// left alone, or the closer of a pair that doesn't fight, mates with her. So with three, two fight and the third gets
+// her; with four, two pairs may fight and nobody does, for now.
 public final class CourtshipRules {
     private CourtshipRules() {
     }
 
-    // Indices into the eligible list; -1 means none.
-    public record Outcome(int mate, int fighterA, int fighterB) {
-        public static final Outcome NONE = new Outcome(-1, -1, -1);
-
-        public boolean fight() {
-            return fighterA >= 0;
-        }
+    public record Pair<T>(T a, T b) {
     }
 
-    public static Outcome decide(int eligible, boolean speciesFights, double roll, double fightChance) {
-        if (eligible <= 0) {
-            return Outcome.NONE;
+    // rolled is true when a pair rolled for a fight, which happens once per love.
+    public record Outcome<T>(@Nullable T mate, List<Pair<T>> fights, boolean rolled) {
+    }
+
+    // reachable is a path search, so it's only asked about each male as the walk gets to him, and never past the mate.
+    public static <T> Outcome<T> decide(List<T> closestFirst, Predicate<T> reachable, boolean speciesFights, DoubleSupplier roll, double fightChance) {
+        Iterator<T> males = closestFirst.stream().filter(reachable).iterator();
+        List<Pair<T>> fights = new ArrayList<>();
+        boolean rolled = false;
+        while (males.hasNext()) {
+            T first = males.next();
+            if (!speciesFights || !males.hasNext()) {
+                return new Outcome<>(first, fights, rolled);
+            }
+            T second = males.next();
+            rolled = true;
+            if (roll.getAsDouble() >= fightChance) {
+                return new Outcome<>(first, fights, true);
+            }
+            fights.add(new Pair<>(first, second));
         }
-        if (eligible == 1 || !speciesFights || roll >= fightChance) {
-            return new Outcome(0, -1, -1);
-        }
-        return new Outcome(eligible >= 3 ? 2 : -1, 0, 1);
+        return new Outcome<>(null, fights, rolled);
     }
 }

@@ -52,6 +52,10 @@ public final class FamiliarityCare {
         }
         AnimalTraits traits = tracked.get();
         long today = GameDay.of(clock);
+        // This runs every tick for every tracked animal; on a day already settled there's nothing to do or make.
+        if (traits.hunger().settledDay() >= today && traits.vigour().day() >= today) {
+            return tracked;
+        }
         Hunger.Settled settled = Hunger.settle(traits.hunger(), today, animal.isBaby());
         // Hunger settling never moves the last meal, so Vigour is settled against the same one.
         Vigour vigour = VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), today);
