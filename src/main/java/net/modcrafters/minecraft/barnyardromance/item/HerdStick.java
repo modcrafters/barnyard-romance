@@ -58,6 +58,15 @@ public class HerdStick extends Item {
         if (player.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
+        if (!BarnyardConfig.current().herdSticks()) {
+            player.sendSystemMessage(Component.translatable("message.barnyard_romance.herd_stick.switched_off"));
+            return InteractionResult.CONSUME;
+        }
+        return use(stack, tool, player, animal);
+    }
+
+    // The stick's work, below the config gate. Game tests call this so they never depend on the config.
+    public static InteractionResult use(ItemStack stack, HerdTool tool, Player player, Animal animal) {
         if (!HerdToolRules.allowed(tool, player.isCreative())) {
             player.sendSystemMessage(TextComponents.of(HerdToolRules.CREATIVE_ONLY));
             return InteractionResult.CONSUME;

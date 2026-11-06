@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -462,9 +463,22 @@ public final class FoodGameTests {
         //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
-        for (Item item : List.of(BarnyardItems.HERD_BOOK, BarnyardItems.HERD_STICK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
+        for (Item item : List.of(BarnyardItems.HERD_BOOK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
             helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
+        // The sticks follow the herdSticks option. Both settings are given here, so the global config stays alone.
+        helper.assertTrue(BarnyardTab.contents(true).stream().anyMatch(stack -> stack.is(BarnyardItems.HERD_STICK)), "the tab has no sticks with herdSticks on");
+        helper.assertTrue(BarnyardTab.contents(false).stream().noneMatch(stack -> stack.is(BarnyardItems.HERD_STICK)), "the tab has sticks with herdSticks off");
+        helper.assertTrue(BarnyardTab.contents(false).stream().anyMatch(stack -> stack.is(BarnyardItems.HERD_BOOK)), "the tab lost the herd book with herdSticks off");
+        com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> on = new com.mojang.brigadier.CommandDispatcher<>();
+        com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> off = new com.mojang.brigadier.CommandDispatcher<>();
+        BarnyardCommands.register(on, true);
+        BarnyardCommands.register(off, false);
+        for (String literal : List.of("familiarity", "pregnancy")) {
+            helper.assertTrue(on.getRoot().getChild("barnyard").getChild(literal) != null, "/barnyard " + literal + " is missing with herdSticks on");
+            helper.assertTrue(off.getRoot().getChild("barnyard").getChild(literal) == null, "/barnyard " + literal + " exists with herdSticks off");
+        }
+        helper.assertTrue(off.getRoot().getChild("barnyard").getChild("foods") != null, "/barnyard foods went with the sticks");
         helper.succeed();
     }
 

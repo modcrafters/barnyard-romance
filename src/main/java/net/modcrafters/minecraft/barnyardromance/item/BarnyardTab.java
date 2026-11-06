@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.item;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // The mod's own creative tab. Each loader brings its builder and fills it from contents(),
@@ -29,21 +31,29 @@ public final class BarnyardTab {
                 .icon(() -> new ItemStack(BarnyardItems.HERD_BOOK));
     }
 
+    // The Herd Sticks are there only while the config's herdSticks is on. The loaders call this each time the tab is
+    // built, so it reads the loaded config, never a default.
     public static List<ItemStack> contents() {
-        return List.of(
-                new ItemStack(BarnyardItems.HERD_BOOK),
-                new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM),
-                HerdStick.create(HerdTool.info()),
-                HerdStick.create(HerdTool.familiarity(1)),
-                HerdStick.create(HerdTool.familiarity(-1)),
-                HerdStick.create(HerdTool.pregnancy(1)),
-                HerdStick.create(HerdTool.pregnancy(-1)),
-                new ItemStack(BarnyardItems.BREEDERS_MASH),
-                new ItemStack(BarnyardItems.GOLDEN_BRAN),
-                new ItemStack(BarnyardItems.DAIRY_MASH),
-                new ItemStack(BarnyardItems.STUD_MASH),
-                new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET),
-                new ItemStack(BarnyardItems.GOAT_MILK_BUCKET)
-        );
+        return contents(BarnyardConfig.current().herdSticks());
+    }
+
+    public static List<ItemStack> contents(boolean herdSticks) {
+        List<ItemStack> contents = new ArrayList<>();
+        contents.add(new ItemStack(BarnyardItems.HERD_BOOK));
+        contents.add(new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM));
+        if (herdSticks) {
+            contents.add(HerdStick.create(HerdTool.info()));
+            contents.add(HerdStick.create(HerdTool.familiarity(1)));
+            contents.add(HerdStick.create(HerdTool.familiarity(-1)));
+            contents.add(HerdStick.create(HerdTool.pregnancy(1)));
+            contents.add(HerdStick.create(HerdTool.pregnancy(-1)));
+        }
+        contents.add(new ItemStack(BarnyardItems.BREEDERS_MASH));
+        contents.add(new ItemStack(BarnyardItems.GOLDEN_BRAN));
+        contents.add(new ItemStack(BarnyardItems.DAIRY_MASH));
+        contents.add(new ItemStack(BarnyardItems.STUD_MASH));
+        contents.add(new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET));
+        contents.add(new ItemStack(BarnyardItems.GOAT_MILK_BUCKET));
+        return contents;
     }
 }

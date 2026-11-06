@@ -186,6 +186,7 @@
   "message.barnyard_romance.herd_book.added": "%s was added to the herd book.",
   "message.barnyard_romance.herd_book.not_familiar": "%s isn't familiar enough to add to the herd book.",
   "message.barnyard_romance.herd_book.not_tracked": "%s can't be kept in a herd book.",
+  "message.barnyard_romance.herd_stick.switched_off": "Herd sticks are switched off in the config.",
   "message.barnyard_romance.herd_stick.creative_only": "Set is only available in creative mode.",
   "message.barnyard_romance.herd_stick.no_familiarity": "This animal has no familiarity yet.",
   "message.barnyard_romance.herd_stick.not_pregnant": "This animal is not pregnant.",

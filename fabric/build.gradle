@@ -26,6 +26,7 @@ loom {
             ideConfigGenerated(true)
             runDir('runs/client')
             programArgs('--width', '2560', '--height', '1440')
+            vmArg('-Dbarnyard_romance.herd_sticks=true')
         }
         server {
             server()
@@ -54,6 +55,7 @@ loom {
             setConfigName('Fabric Client (Naturalist)')
             runDir('runs/naturalist-client')
             programArgs('--width', '2560', '--height', '1440')
+            vmArg('-Dbarnyard_romance.herd_sticks=true')
         }
         gametestNaturalist {
             server()
@@ -69,6 +71,7 @@ loom {
             setConfigName('Fabric Client (Jade)')
             runDir('runs/jade-client')
             programArgs('--width', '2560', '--height', '1440')
+            vmArg('-Dbarnyard_romance.herd_sticks=true')
         }
     }
 }

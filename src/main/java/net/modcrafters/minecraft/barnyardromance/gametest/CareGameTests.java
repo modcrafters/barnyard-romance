@@ -647,7 +647,9 @@ public final class CareGameTests {
         Services.DATA.set(cow, traits(helper, cow).fed(0.4, -1L).withOrigin(Origin.WILD));
         Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
 
-        HerdStick.create(HerdTool.familiarity(1)).interactLivingEntity(player, cow, InteractionHand.MAIN_HAND);
+        // Below the config gate, so this never depends on the herdSticks option.
+        HerdTool tool = HerdTool.familiarity(1);
+        HerdStick.use(HerdStick.create(tool), tool, player, cow);
 
         assertFamiliarity(helper, cow, 0.4);
         helper.succeed();

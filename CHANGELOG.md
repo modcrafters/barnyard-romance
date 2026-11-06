@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Herd Sticks and their commands are off unless `herdSticks` is turned on in the config.
 - The Barnyard Inspector is gone. Sneak while looking at an animal to see all its stats on the card above it, or read them in the herd book, which now opens at an animal's page when you use it on one in the book. With Jade installed, the stats show in Jade's tooltip instead.
 - Only females fall in love now. Feed a familiar female and she's matched with a grown, familiar male nearby who can walk to her, so a fence keeps the next pen's bull out. Males get no breeding rest.
 - Males have **Vigour**, shown on the card and in the herd book: full after a day they were fed, 30% for each mating and 15% for each egg a rooster fertilizes. A male who hasn't eaten since yesterday pays with health too, and won't mate if it would leave him under half a heart.

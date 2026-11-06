@@ -27,6 +27,7 @@ neoForge {
             client()
             gameDirectory = this.mkdir(this.file('runs/client'))
             programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
         }
         data {
             // clientData() since 1.21.4, data() before (neoforge_data_run in each version's gradle.properties).
@@ -50,6 +51,7 @@ neoForge {
             client()
             gameDirectory = this.mkdir(this.file('runs/naturalist-client'))
             programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
         }
         gameTestServerNaturalist {
             type = 'gameTestServer'
@@ -61,6 +63,7 @@ neoForge {
             client()
             gameDirectory = this.mkdir(this.file('runs/jade-client'))
             programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
         }
     }
     mods {
