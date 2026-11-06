@@ -63,6 +63,16 @@ class VigourRulesTest {
     }
 
     @Test
+    void hungry_neverFedIsHungryOnTheFirstDay() {
+        assertTrue(VigourRules.hungry(-1L, 0L));
+    }
+
+    @Test
+    void onMeal_neverFedMaleFillsOnTheFirstDay() {
+        assertEquals(1.0, VigourRules.onMeal(new Vigour(0.2, 0L, -1L), -1L, 0L).value(), EPSILON);
+    }
+
+    @Test
     void canPay_needsVigour() {
         assertTrue(VigourRules.canPay(0.3, 0.3, false, 10.0, 2.0));
         assertFalse(VigourRules.canPay(0.1, 0.3, false, 10.0, 2.0));

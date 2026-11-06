@@ -43,13 +43,17 @@ public record InspectorSheet(
         Text breedingText,
         Text lastBirthText,
         // The highest familiarity a wild-caught animal can reach (see WildCaught); 1 for everything else.
-        double cap
+        double cap,
+        // A male's Vigour, or -1 when there is none to show, and whether he's hungry (so mating costs him health).
+        double vigour,
+        boolean vigourHungry
 ) {
     public static final Text READY = Text.of("gui.barnyard_romance.inspector.ready");
     public static final Text NOT_TAMED = Text.of("gui.barnyard_romance.inspector.not_tamed");
     public static final Text IN_LOVE = Text.of("gui.barnyard_romance.inspector.in_love");
     public static final Text WORN_OUT = Text.of("gui.barnyard_romance.inspector.worn_out");
     public static final Text TOO_YOUNG = Text.of("gui.barnyard_romance.inspector.too_young");
+    public static final Text VIGOUR_HUNGRY_TEXT = Text.of("gui.barnyard_romance.inspector.vigour_hungry");
 
     public InspectorSheet(String title, String subtitle, boolean known, boolean female, String sizeLetter, AgeStage stage, Text scaleText,
                           double familiarity, Text familiarityText, double feed, Text feedText, double growth, Text growthText, double weight,
@@ -58,13 +62,27 @@ public record InspectorSheet(
                           Text lastBirthText) {
         this(title, subtitle, known, female, sizeLetter, stage, scaleText, familiarity, familiarityText, feed, feedText, growth, growthText, weight,
                 weightText, health, maxHealth, fertility, fertilityText, milkText, eggsText, pregnant, pregnancy, pregnancyText, fatherText,
-                breedingReady, breedingText, lastBirthText, 1.0);
+                breedingReady, breedingText, lastBirthText, 1.0, -1.0, false);
     }
 
     public InspectorSheet withCap(double cap) {
         return new InspectorSheet(title, subtitle, known, female, sizeLetter, stage, scaleText, familiarity, familiarityText, feed, feedText, growth,
                 growthText, weight, weightText, health, maxHealth, fertility, fertilityText, milkText, eggsText, pregnant, pregnancy, pregnancyText,
-                fatherText, breedingReady, breedingText, lastBirthText, cap);
+                fatherText, breedingReady, breedingText, lastBirthText, cap, vigour, vigourHungry);
+    }
+
+    public InspectorSheet withVigour(double vigour, boolean hungry) {
+        return new InspectorSheet(title, subtitle, known, female, sizeLetter, stage, scaleText, familiarity, familiarityText, feed, feedText, growth,
+                growthText, weight, weightText, health, maxHealth, fertility, fertilityText, milkText, eggsText, pregnant, pregnancy, pregnancyText,
+                fatherText, breedingReady, breedingText, lastBirthText, cap, vigour, hungry);
+    }
+
+    public Text vigourText() {
+        return Familiarity.percent(vigour);
+    }
+
+    public boolean showVigour() {
+        return known && !female && vigour >= 0.0 && (stage == AgeStage.ADULT || stage == AgeStage.OLD);
     }
 
     // Empty unless the animal is wild-caught, so a familiarity stuck at its cap reads as a rule, not a bug.
@@ -279,6 +297,12 @@ public record InspectorSheet(
         ));
         if (showFertility()) {
             rows.add(InspectorRow.FERTILITY);
+        }
+        if (showVigour()) {
+            rows.add(InspectorRow.VIGOUR);
+            if (vigourHungry) {
+                rows.add(InspectorRow.VIGOUR_HUNGRY);
+            }
         }
         if (!milkText.isEmpty()) {
             rows.add(InspectorRow.MILK);

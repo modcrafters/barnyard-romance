@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourRules;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
@@ -125,6 +126,8 @@ public class InspectorScreen extends Screen {
             case WEIGHT -> meter(graphics, x, rowY, "weight", Text.of("gui.barnyard_romance.inspector.weight"), sheet.weight(), "fill_feed", sheet.weightText());
             case HEALTH -> health(graphics, x, rowY, sheet);
             case FERTILITY -> meter(graphics, x, rowY, "fertility", Text.of("gui.barnyard_romance.inspector.fertility"), sheet.fertility(), "fill_pregnant", sheet.fertilityText());
+            case VIGOUR -> meter(graphics, x, rowY, "vigour", Text.of("gui.barnyard_romance.inspector.vigour"), sheet.vigour(), "fill_feed", sheet.vigourText());
+            case VIGOUR_HUNGRY -> text(graphics, InspectorSheet.VIGOUR_HUNGRY_TEXT, x + InspectorLayout.barX(), rowY + 3, MUTED);
             case MILK -> milk(graphics, x, rowY, sheet);
             case EGGS -> eggs(graphics, x, rowY, sheet);
             case BREEDING -> breeding(graphics, x, rowY, sheet);
@@ -359,8 +362,18 @@ public class InspectorScreen extends Screen {
                 InspectorSheet.readyToBreed(breeding),
                 breeding,
                 InspectorSheet.lastBirth(offspring, value.lastBirthTick(), now)
-        ).withCap(FamiliarityCare.cap(this.animal, value));
+        ).withCap(FamiliarityCare.cap(this.animal, value)).withVigour(vigour(value, clock),
+                value.sex() == Sex.MALE && VigourRules.hungry(value.hunger().lastAteDay(), GameDay.of(clock)));
     }
+
+    // The client sees the traits as last synced, so Vigour is settled here the same way the server would.
+    private static double vigour(AnimalTraits traits, long clock) {
+        if (traits.sex() != Sex.MALE) {
+            return -1.0;
+        }
+        return VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), GameDay.of(clock)).value();
+    }
+
 
     private void text(GuiGraphicsExtractor graphics, Text value, int x, int y, int color) {
         text(graphics, TextComponents.of(value), x, y, color);

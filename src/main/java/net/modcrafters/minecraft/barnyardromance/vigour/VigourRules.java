@@ -20,14 +20,12 @@ public final class VigourRules {
 
     // lastAteDayBefore is his last meal day before this one.
     public static Vigour onMeal(Vigour settled, long lastAteDayBefore, long today) {
-        if (lastAteDayBefore != today && lastAteDayBefore != today - 1L) {
-            return settled.withValue(1.0);
-        }
-        return settled;
+        return hungry(lastAteDayBefore, today) ? settled.withValue(1.0) : settled;
     }
 
+    // Never fed (-1) is hungry, even on day 0, where -1 would otherwise pass for yesterday.
     public static boolean hungry(long lastAteDay, long today) {
-        return lastAteDay != today && lastAteDay != today - 1L;
+        return lastAteDay < 0L || (lastAteDay != today && lastAteDay != today - 1L);
     }
 
     public static boolean canPay(double vigour, double cost, boolean hungry, double health, double healthCost) {

@@ -68,6 +68,27 @@ class InspectorSheetTest {
     }
 
     @Test
+    void aHungryMaleGetsANoteUnderVigour() {
+        InspectorSheet hungry = sheet(false, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).withVigour(0.6, true);
+
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, VIGOUR, VIGOUR_HUNGRY, BREEDING), hungry.rows());
+        assertEquals("60%", English.of(hungry.vigourText()));
+        assertEquals("Hungry: mating costs health", English.of(InspectorSheet.VIGOUR_HUNGRY_TEXT));
+    }
+
+    @Test
+    void grownMalesGetAVigourRow() {
+        InspectorSheet male = sheet(false, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).withVigour(0.6, false);
+
+        assertEquals(List.of(FAMILIAR, FEED, GROWTH, WEIGHT, HEALTH, VIGOUR, BREEDING), male.rows());
+        assertTrue(sheet(false, AgeStage.OLD, false, Text.EMPTY, Text.EMPTY).withVigour(0.6, false).rows().contains(VIGOUR));
+        assertFalse(sheet(false, AgeStage.YOUNG, false, Text.EMPTY, Text.EMPTY).withVigour(0.6, true).rows().contains(VIGOUR));
+        assertFalse(sheet(false, AgeStage.YOUNG, false, Text.EMPTY, Text.EMPTY).withVigour(0.6, true).rows().contains(VIGOUR_HUNGRY));
+        assertFalse(sheet(true, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).withVigour(0.6, false).rows().contains(VIGOUR));
+        assertFalse(sheet(false, AgeStage.ADULT, false, Text.EMPTY, Text.EMPTY).rows().contains(VIGOUR));
+    }
+
+    @Test
     void eggsTextCountsTodaysEggs() {
         assertEquals("1/3 today", English.of(InspectorSheet.eggsText(1, 3, false)));
         assertEquals("None today (hungry yesterday)", English.of(InspectorSheet.eggsText(0, 0, true)));

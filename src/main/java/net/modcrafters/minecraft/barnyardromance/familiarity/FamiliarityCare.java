@@ -9,6 +9,8 @@ import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourRules;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -49,13 +51,21 @@ public final class FamiliarityCare {
             return tracked;
         }
         AnimalTraits traits = tracked.get();
-        Hunger.Settled settled = Hunger.settle(traits.hunger(), GameDay.of(clock), animal.isBaby());
+        long today = GameDay.of(clock);
+        Hunger.Settled settled = Hunger.settle(traits.hunger(), today, animal.isBaby());
+        // Hunger settling never moves the last meal, so Vigour is settled against the same one.
+        Vigour vigour = VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), today);
         if (settled.hunger().equals(traits.hunger())) {
-            return tracked;
+            if (vigour.equals(traits.vigour())) {
+                return tracked;
+            }
+            AnimalTraits refilled = traits.withVigour(vigour);
+            Services.DATA.set(animal, refilled);
+            return Optional.of(refilled);
         }
         Tuning tuning = BarnyardConfig.current().tuning();
         double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), tuning.familiarityHungerLoss());
-        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
+        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger()).withVigour(vigour);
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && tamed(animal)) {
             updated = toTamingGrace(animal, updated);
@@ -77,7 +87,10 @@ public final class FamiliarityCare {
     public static void markEaten(Animal animal, long clock) {
         settle(animal, clock).ifPresent(traits -> {
             if (!animal.level().isClientSide()) {
-                Services.DATA.set(animal, traits.withHunger(traits.hunger().ate(GameDay.of(clock))));
+                long today = GameDay.of(clock);
+                // A male who missed yesterday is filled by his first meal today.
+                Vigour vigour = VigourRules.onMeal(traits.vigour(), traits.hunger().lastAteDay(), today);
+                Services.DATA.set(animal, traits.withHunger(traits.hunger().ate(today)).withVigour(vigour));
             }
         });
     }
