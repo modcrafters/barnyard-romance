@@ -11,7 +11,6 @@ These change only how animals are drawn, on the client. Nothing new is saved or 
 - **Pregnant belly:** a pregnant female gets wider as her pregnancy goes on. Her height, length and hitbox stay the same. She starts to widen at `bellyStart` (default 0.4, so 40% of the way through) and ends `bellyMaxWiden` wider (default 0.15). Both keys go in `config/barnyard_romance.json`, either at the top level or in a species entry.
 - **Horns:** rams, bulls and billy goats have horns. Ewes, cows and nanny goats sometimes have small ones. Babies have none. Horns appear when an animal turns young and grow until it is an adult. Vanilla's own cow and goat horns are hidden on animals the mod draws horns for.
 - **Switches:** `config/barnyard_romance-client.json` has `belly` and `horns`, both `true` by default. Turning `horns` off brings back exactly what vanilla draws. Changes need a restart.
-- **Herd Sticks:** `herdSticks` in `config/barnyard_romance.json` is `false` by default. Turned on, it shows the Herd Sticks in the creative tab and the `/barnyard familiarity` and `/barnyard pregnancy` commands that hand them out. Needs a restart.
 
 ### Horn files
 
@@ -141,6 +140,8 @@ Set `"enabled": false` in a species entry to leave one species vanilla. To leave
 Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
 
 Sneak while looking at an animal to see all its stats on the card above it. Using the book on an animal that's already in it opens the book at that animal's page, which runs over several leaves for a long entry. With [Jade](https://modrinth.com/mod/jade) installed, the stats show in Jade's tooltip instead of the card.
+
+**Herd Sticks:** `herdSticks` in `config/barnyard_romance.json` is `false` by default. Turned on, it shows the Herd Sticks in the creative tab and the `/barnyard familiarity` and `/barnyard pregnancy` commands that hand them out. Needs a restart.
 
 ## Translations
 

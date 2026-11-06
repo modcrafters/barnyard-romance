@@ -74,9 +74,9 @@ public final class StatCard {
         int right = x + cardWidth - StatCardLayout.PAD;
         int rowY = y + StatCardLayout.PAD;
         graphics.text(font, sign, left, rowY, traits.sex() == Sex.FEMALE ? HerdCard.FEMALE : HerdCard.MALE);
-        int letterX = left + font.width(sign) + 3;
+        int letterX = left + font.width(sign) + StatCardLayout.GAP;
         graphics.text(font, letter, letterX, rowY, HerdCard.NAME);
-        graphics.text(font, name, letterX + font.width(letter) + 4, rowY, HerdCard.WHITE);
+        graphics.text(font, name, letterX + font.width(letter) + StatCardLayout.TITLE_GAP, rowY, HerdCard.WHITE);
         rowY += StatCardLayout.TITLE;
         if (subtitle != null) {
             graphics.text(font, subtitle, left, rowY, HerdCard.NAME);
