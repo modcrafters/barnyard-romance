@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.rivalry;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,12 +18,27 @@ class FightRulesTest {
         assertEquals(2.0F, FightRules.clashDamage(1.0), 1.0e-4F);
     }
 
+    private static final UUID ALEX = new UUID(0L, 1L);
+    private static final UUID SAM = new UUID(0L, 2L);
+
     @Test
     void foodStopsOnlyAFightBetweenTwoFamiliarMales() {
-        assertTrue(FightRules.stops(true, true, true));
-        assertFalse(FightRules.stops(true, false, true));
-        assertFalse(FightRules.stops(false, true, true));
-        assertFalse(FightRules.stops(true, true, false));
+        assertTrue(FightRules.stops(true, true, Set.of(), Set.of(ALEX)));
+        assertFalse(FightRules.stops(true, false, Set.of(), Set.of(ALEX)));
+        assertFalse(FightRules.stops(false, true, Set.of(), Set.of(ALEX)));
+        assertFalse(FightRules.stops(true, true, Set.of(), Set.of()));
+    }
+
+    // You just fed her, so you're standing there with food: that doesn't stop the fight her love started.
+    @Test
+    void foodAlreadyNearDoesNotStopIt() {
+        assertFalse(FightRules.stops(true, true, Set.of(ALEX), Set.of(ALEX)));
+    }
+
+    @Test
+    void arrivingWithFoodStopsIt() {
+        assertTrue(FightRules.stops(true, true, Set.of(ALEX), Set.of(ALEX, SAM)));
+        assertTrue(FightRules.stops(true, true, Set.of(), Set.of(ALEX)));
     }
 
     @Test

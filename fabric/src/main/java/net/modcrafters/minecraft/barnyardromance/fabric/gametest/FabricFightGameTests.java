@@ -22,6 +22,11 @@ public class FabricFightGameTests {
         FightGameTests.fourBullsFightInTwoPairs(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 200)
+    public void foodAlreadyInHandDoesNotStopAFight(GameTestHelper helper) {
+        FightGameTests.foodAlreadyInHandDoesNotStopAFight(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 1200)
     public void theBiggerBullWins(GameTestHelper helper) {
         FightGameTests.theBiggerBullWins(helper);

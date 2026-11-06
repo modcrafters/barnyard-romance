@@ -45,6 +45,7 @@ public final class FightGameTests {
             new BreedingGameTests.Case("four_bulls_fight_in_two_pairs", 100, FightGameTests::fourBullsFightInTwoPairs),
             new BreedingGameTests.Case("the_bigger_bull_wins", 1200, FightGameTests::theBiggerBullWins),
             new BreedingGameTests.Case("food_in_hand_stops_a_fight_between_familiar_bulls", 100, FightGameTests::foodInHandStopsAFightBetweenFamiliarBulls),
+            new BreedingGameTests.Case("food_already_in_hand_does_not_stop_a_fight", 200, FightGameTests::foodAlreadyInHandDoesNotStopAFight),
             new BreedingGameTests.Case("food_does_not_stop_a_wild_fight", 1200, FightGameTests::foodDoesNotStopAWildFight),
             new BreedingGameTests.Case("goats_fight_to_the_end", 1200, FightGameTests::goatsFightToTheEnd),
             new BreedingGameTests.Case("a_fight_ends_when_a_rival_is_removed", 200, FightGameTests::aFightEndsWhenARivalIsRemoved),
@@ -122,6 +123,30 @@ public final class FightGameTests {
             helper.assertTrue(!Fights.fighting(first) && !Fights.fighting(second), "the bulls are still fighting");
             helper.assertTrue(first.isAlive() && second.isAlive(), "a bull died");
             helper.assertTrue(Fights.inTruce(first, second, helper.getLevel().getGameTime()), "the bulls have no truce");
+        });
+    }
+
+    // You've just fed her, so you're standing by with wheat in hand: it only stops them once you put it away and take it
+    // out again, or walk off and come back.
+    public static void foodAlreadyInHandDoesNotStopAFight(GameTestHelper helper) {
+        Animal first = bull(helper, 3, 4, 1.0);
+        Animal second = bull(helper, 5, 4, 1.0);
+        Player player = playerWith(helper, Items.WHEAT);
+        Fights.start(first, second, null);
+        boolean[] takenOutAgain = {false};
+
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(Fights.fighting(first) && Fights.fighting(second), "food already in hand stopped the fight");
+            player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            helper.runAfterDelay(20, () -> {
+                player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WHEAT));
+                takenOutAgain[0] = true;
+            });
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(takenOutAgain[0], "the wheat hasn't been taken out again yet");
+            helper.assertTrue(!Fights.fighting(first) && !Fights.fighting(second), "taking the wheat out again didn't stop them");
+            helper.assertTrue(first.isAlive() && second.isAlive(), "a bull died");
         });
     }
 

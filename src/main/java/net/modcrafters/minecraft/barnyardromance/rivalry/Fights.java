@@ -18,13 +18,15 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.Animal;
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 // Males fighting each other, by UUID. A fight lasts until one of them is dead, gone or far away, or until a player
-// comes near with food while both know people; FightGoal does the fighting. Fights and truces live only while their
+// arrives with food while both know people; FightGoal does the fighting. Fights and truces live only while their
 // animals are loaded, so nothing is saved. A fight over a female holds her love until it's over (see Courtship).
 public final class Fights {
     public static final ResourceKey<DamageType> RIVAL = ResourceKey.create(
@@ -33,7 +35,20 @@ public final class Fights {
     );
     private static final int STOP_CHECK_TICKS = 10;
 
-    private record Fight(UUID a, UUID b, @Nullable UUID female) {
+    private static final class Fight {
+        final UUID a;
+        final UUID b;
+        final @Nullable UUID female;
+        // The players near with food at the last stop check; someone new among them stops the fight.
+        Set<UUID> foodNear;
+
+        Fight(UUID a, UUID b, @Nullable UUID female, Set<UUID> foodNear) {
+            this.a = a;
+            this.b = b;
+            this.female = female;
+            this.foodNear = foodNear;
+        }
+
         UUID other(UUID self) {
             return self.equals(a) ? b : a;
         }
@@ -47,7 +62,8 @@ public final class Fights {
     }
 
     public static void start(Animal a, Animal b, @Nullable UUID female) {
-        Fight fight = new Fight(a.getUUID(), b.getUUID(), female);
+        Set<UUID> foodNear = a.level() instanceof ServerLevel level ? foodNear(level, a, b) : Set.of();
+        Fight fight = new Fight(a.getUUID(), b.getUUID(), female, foodNear);
         FIGHTS.put(a.getUUID(), fight);
         FIGHTS.put(b.getUUID(), fight);
     }
@@ -97,23 +113,27 @@ public final class Fights {
                 end(fight, level, other != null && other.isDeadOrDying() ? animal : null);
                 return;
             }
-            if (animal.getUUID().compareTo(other.getUUID()) < 0 && (animal.tickCount + animal.getId()) % STOP_CHECK_TICKS == 0
-                    && FightRules.stops(familiar(animal), familiar(other), foodNear(level, animal, other))) {
-                end(fight, level, null);
-                TRUCES.put(pair(animal.getUUID(), other.getUUID()), level.getGameTime() + BarnyardConfig.current().tuning().fightTruceTicks());
+            if (animal.getUUID().compareTo(other.getUUID()) < 0 && (animal.tickCount + animal.getId()) % STOP_CHECK_TICKS == 0) {
+                Set<UUID> foodNear = foodNear(level, animal, other);
+                boolean stops = FightRules.stops(familiar(animal), familiar(other), fight.foodNear, foodNear);
+                fight.foodNear = foodNear;
+                if (stops) {
+                    end(fight, level, null);
+                    TRUCES.put(pair(animal.getUUID(), other.getUUID()), level.getGameTime() + BarnyardConfig.current().tuning().fightTruceTicks());
+                }
             }
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to run a fight between two {}", AnimalSex.speciesId(animal), exception);
-            FIGHTS.remove(fight.a(), fight);
-            FIGHTS.remove(fight.b(), fight);
+            FIGHTS.remove(fight.a, fight);
+            FIGHTS.remove(fight.b, fight);
         }
     }
 
     // winner is the male who killed the other, or null when the fight ended any other way.
     private static void end(Fight fight, ServerLevel level, @Nullable Animal winner) {
-        boolean removed = FIGHTS.remove(fight.a(), fight);
-        removed |= FIGHTS.remove(fight.b(), fight);
-        if (!removed || fight.female() == null || !(level.getEntity(fight.female()) instanceof Animal female)) {
+        boolean removed = FIGHTS.remove(fight.a, fight);
+        removed |= FIGHTS.remove(fight.b, fight);
+        if (!removed || fight.female == null || !(level.getEntity(fight.female) instanceof Animal female)) {
             return;
         }
         Courtship.holdLove(female, false);
@@ -126,18 +146,20 @@ public final class Fights {
         return Services.DATA.get(animal).map(AnimalTraits::familiarity).map(Familiarity::ready).orElse(false);
     }
 
-    private static boolean foodNear(ServerLevel level, Animal a, Animal b) {
+    // The players close to either fighter holding food one of them eats.
+    private static Set<UUID> foodNear(ServerLevel level, Animal a, Animal b) {
         double range = BarnyardConfig.current().tuning().fightStopRange();
+        Set<UUID> near = new HashSet<>();
         for (ServerPlayer player : level.players()) {
             if (player.isSpectator() || (player.distanceToSqr(a) > range * range && player.distanceToSqr(b) > range * range)) {
                 continue;
             }
             if (FoodData.eats(a, player.getMainHandItem()) || FoodData.eats(a, player.getOffhandItem())
                     || FoodData.eats(b, player.getMainHandItem()) || FoodData.eats(b, player.getOffhandItem())) {
-                return true;
+                near.add(player.getUUID());
             }
         }
-        return false;
+        return near;
     }
 
     private static String pair(UUID a, UUID b) {

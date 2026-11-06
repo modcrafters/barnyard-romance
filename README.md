@@ -78,7 +78,7 @@ Only females fall in love. Feed a familiar female and she goes into love as befo
 **Fights.** When two or more such males are around a female in love, the males are taken closest first, two at a time, and each pair has an even chance to fight. A pair that fights is out of it, and the next two get their turn. The first male left on his own, or the closer of a pair that doesn't fight, mates with her. So with three, two may fight while the third mates with her; with four, both pairs may fight and the winner who's first done gets her. Rivals butt heads until one of them dies, the bigger one hitting harder, and her love waits for the winner. Livestock fight: cows, mooshrooms, sheep, goats, pigs, rabbits and chickens, and Naturalist's deer, boar, ducks, turkeys and ostriches. Pets (wolves, cats, the horse family, llamas and camels) and everything else never do, unless a species entry says `"fights": true`.
 
 - **Roosters** that can reach each other fight now and then without a hen, one day in four per pair, wild or yours. Other wild males fight too, one day in twenty per pair, but only when both are wild. Your own familiar males only fight over a female. Fights only happen near players, while the animals are loaded.
-- **Stopping a fight:** come within 8 blocks with food either of them eats, in either hand, and two familiar males stop and leave each other alone for an in-game hour, time to move one. A fight with a wild male can't be stopped.
+- **Stopping a fight:** walk up within 8 blocks with food either of them eats, in either hand, or take it out once you're close, and two familiar males stop and leave each other alone for an in-game hour, time to move one. Food you were already holding when the fight started doesn't count, so feeding a cow and standing by doesn't call off the fight over her; put it away and take it out again. A fight with a wild male can't be stopped.
 - Nobody else is hurt, and the fighters ignore you unless you hit one. An animal killed in a fight is noted in the herd book as "Killed by a rival".
 
 **Stud Mash** (two grains, a root and a berry) gives a grown, familiar male back half his Vigour, up to 100%. Like the other superfoods it skips the once-a-day rule. It isn't a meal: it doesn't count as feeding him and doesn't heal him. A pack can give any food file `"vigour": 0.5` in its effects to do the same.
@@ -93,7 +93,7 @@ Only females fall in love. Feed a familiar female and she goes into love as befo
 | `rivalFightChance` | 0.5 | Chance two males fight over a female (0 turns it off) |
 | `roosterFightChance` | 0.25 | Chance a day that a pair of roosters fight |
 | `wildFightChance` | 0.05 | Chance a day that a pair of wild males fight |
-| `fightStopRange` | 8 | Blocks within which food in hand stops a fight between familiar males |
+| `fightStopRange` | 8 | Blocks within which arriving with food in hand stops a fight between familiar males |
 | `fightTruceTicks` | 1000 | Ticks two stopped fighters leave each other alone |
 
 A species entry's `fights` (true or false) says whether its males fight at all.

@@ -10,7 +10,7 @@ After publishing, the action prepares the next development version and archives 
 
 - Only females fall in love now. Feed a familiar female and she's matched with a grown, familiar male nearby who can walk to her, so a fence keeps the next pen's bull out. Males get no breeding rest.
 - Males have **Vigour**, shown in the inspector: full after a day they were fed, 30% for each mating and 15% for each egg a rooster fertilizes. A male who hasn't eaten since yesterday pays with health too, and won't mate if it would leave him under half a heart.
-- Rival livestock males may fight over a female in love, butting heads until one dies, two at a time from the closest, while the first one left over quietly mates with her. Roosters fight now and then on their own, and wild males do too, rarely. Food in your hand stops a fight between two familiar males.
+- Rival livestock males may fight over a female in love, butting heads until one dies, two at a time from the closest, while the first one left over quietly mates with her. Roosters fight now and then on their own, and wild males do too, rarely. Walking up with food in your hand stops a fight between two familiar males.
 - **Stud Mash** (two grains, a root and a berry) gives a male back half his Vigour.
 - The herd book notes an animal killed in a fight.
 
