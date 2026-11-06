@@ -178,6 +178,11 @@ public class HerdBookScreen extends Screen {
         return this.animal;
     }
 
+    // Which leaf of the shown animal's entry is open, counting from 0.
+    public int shownLeaf() {
+        return this.leaf;
+    }
+
     public void showAnimal(UUID id) {
         HerdEntry entry = this.entries.get(id);
         if (entry == null) {
@@ -600,8 +605,7 @@ public class HerdBookScreen extends Screen {
         graphics.fill(x, y, right, y + 1, RULE);
         y += 4;
         for (HerdEntry.Line line : status.subList(from, from + leaves.get(this.leaf))) {
-            drawPageLine(graphics, entry, line, x, y);
-            y += STATUS_LINE;
+            y += drawPageLine(graphics, entry, line, x, y);
         }
         if (this.leaf == leaves.size() - 1) {
             drawFamily(graphics, entry, x, y + 2);
@@ -623,11 +627,12 @@ public class HerdBookScreen extends Screen {
         }
         // The first leaf's card runs down to its rule and the gap under it; later leaves have a name line there.
         int cardBottom = Math.max(ANIMAL_TOP + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), ANIMAL_TOP + 12 + subtitle - 1) + 2 + 4;
-        int firstRoom = (BUTTONS_Y - cardBottom) / STATUS_LINE;
-        int room = (BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + 4)) / STATUS_LINE;
+        int firstSpace = BUTTONS_Y - cardBottom;
+        int space = BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + 4);
         // The family: its header, the mother and father, and a row of young when there are any.
-        int familyRows = HerdBookLayout.familyRows(!youngOf(entry).isEmpty(), HerdBookHeads.AVAILABLE, STATUS_LINE, ICON, LINK_LINE);
-        return HerdBookLayout.leaves(statusLines(entry).size(), firstRoom, room, familyRows);
+        int familyHeight = HerdBookLayout.familyHeight(!youngOf(entry).isEmpty(), HerdBookHeads.AVAILABLE, STATUS_LINE, ICON, LINK_LINE);
+        List<Integer> heights = statusLines(entry).stream().map(this::lineHeight).toList();
+        return HerdBookLayout.leaves(heights, firstSpace, space, familyHeight);
     }
 
     private List<HerdEntry> youngOf(HerdEntry entry) {
@@ -664,7 +669,24 @@ public class HerdBookScreen extends Screen {
     }
 
     // A status line: its icon, then its words, or a label and a bar for pregnancy, familiarity and fertility.
-    private void drawPageLine(GuiGraphicsExtractor graphics, HerdEntry entry, HerdEntry.Line line, int x, int y) {
+    // Bar lines are one line tall; a note or any other words wrap to the room they have.
+    private int lineHeight(HerdEntry.Line line) {
+        if (isBarLine(line.kind())) {
+            return STATUS_LINE;
+        }
+        int parts = this.font.split(line.text(), TEXT_WIDTH - ICON - 3).size();
+        return (Math.max(1, parts) - 1) * LINE + STATUS_LINE;
+    }
+
+    private static boolean isBarLine(StatKind kind) {
+        return switch (kind) {
+            case PREGNANT, FAMILIARITY, FERTILITY, GROWTH, WEIGHT, HEALTH, VIGOUR -> true;
+            default -> false;
+        };
+    }
+
+    // Draws one status line and returns the height it took.
+    private int drawPageLine(GuiGraphicsExtractor graphics, HerdEntry entry, HerdEntry.Line line, int x, int y) {
         int iconY = y - 1;
         switch (line.kind()) {
             case FED -> {
@@ -702,14 +724,14 @@ public class HerdBookScreen extends Screen {
             bar(graphics, textX + barLabelWidth() + 4, y + 1, right, line.fill(), StatIcons.barColor(line.kind()));
             // The bar's words, such as how long until the birth, are in its tooltip.
             this.hits.add(new Hit(x, iconY, right, iconY + ICON, null, line.text()));
-            return;
+            return STATUS_LINE;
         }
-        String words = line.text().getString();
-        String shown = fit(words, right - textX);
-        graphics.text(this.font, shown, textX, y, line.kind() == StatKind.NOTE ? MUTED : INK, false);
-        if (!shown.equals(words)) {
-            this.hits.add(new Hit(textX, iconY, right, iconY + ICON, null, line.text()));
+        int lineY = y;
+        for (FormattedCharSequence part : this.font.split(line.text(), right - textX)) {
+            graphics.text(this.font, part, textX, lineY, line.kind() == StatKind.NOTE ? MUTED : INK, false);
+            lineY += LINE;
         }
+        return lineHeight(line);
     }
 
     // Every bar starts at the same place, past the longest label.

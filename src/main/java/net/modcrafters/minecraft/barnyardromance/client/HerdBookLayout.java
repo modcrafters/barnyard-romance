@@ -91,30 +91,39 @@ public final class HerdBookLayout {
         return Math.max(0, linesLeft - 1);
     }
 
-    // How many status lines go on each leaf of one animal's entry. The first leaf has `firstRoom` lines of room (it
-    // carries the portrait), later ones `room`. The family block, `familyRows` lines tall, goes on the last leaf; when
-    // it doesn't fit there it gets a leaf of its own, shown as a 0.
-    public static List<Integer> leaves(int lines, int firstRoom, int room, int familyRows) {
+    // How many status lines go on each leaf of one animal's entry. `heights` are the lines' heights in pixels (a wrapped
+    // note is taller). The first leaf has `firstSpace` pixels from under its card down to the page arrows, later leaves
+    // `space`. The family block, `familyHeight` pixels tall with the gap above it, goes under the last leaf's lines;
+    // when it doesn't fit there it gets a leaf of its own, shown as a 0.
+    public static List<Integer> leaves(List<Integer> heights, int firstSpace, int space, int familyHeight) {
         List<Integer> leaves = new ArrayList<>();
-        int left = lines;
-        int capacity = firstRoom;
+        int index = 0;
+        int capacity = firstSpace;
+        int used;
         do {
-            int taken = Math.min(left, Math.max(1, capacity));
-            leaves.add(taken);
-            left -= taken;
-            capacity = room;
-        } while (left > 0);
-        int last = leaves.size() == 1 ? firstRoom : room;
-        if (leaves.getLast() + familyRows > last) {
+            int count = 0;
+            used = 0;
+            while (index < heights.size() && (count == 0 || used + heights.get(index) <= capacity)) {
+                used += heights.get(index);
+                count++;
+                index++;
+            }
+            leaves.add(count);
+            if (index < heights.size()) {
+                capacity = space;
+            }
+        } while (index < heights.size());
+        int lastCapacity = leaves.size() == 1 ? firstSpace : space;
+        if (used + familyHeight > lastCapacity) {
             leaves.add(0);
         }
         return leaves;
     }
 
-    // How many status lines the family block takes at the foot of an entry, counting the gap above it: its header,
-    // the mother and father, and the young (a row of heads, or names without heads, or nothing). Worked out from the
-    // same offsets the screen draws at, then rounded up to whole lines.
-    public static int familyRows(boolean hasYoung, boolean hasHeads, int statusLine, int icon, int linkLine) {
+    // How tall the family block is at the foot of an entry, counting the gap above it: its header, the mother and
+    // father, and the young (a row of heads, or names without heads, or nothing). Worked out from the same offsets the
+    // screen draws at.
+    public static int familyHeight(boolean hasYoung, boolean hasHeads, int statusLine, int icon, int linkLine) {
         int gap = 2;
         int fatherY = statusLine + 1 + statusLine;
         int bottom = fatherY + icon;
@@ -122,7 +131,7 @@ public final class HerdBookLayout {
             int youngY = fatherY + statusLine;
             bottom = hasHeads ? youngY - 1 + icon : youngY + linkLine + icon;
         }
-        return (gap + bottom + statusLine - 1) / statusLine;
+        return gap + bottom;
     }
 
     // The leaf after this one, or -1 past the end.

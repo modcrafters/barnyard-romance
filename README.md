@@ -56,7 +56,7 @@ The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarit
 
 ### Wild-caught animals
 
-An animal first won over as an adult stays a little wild. Livestock top out at 40% familiarity, and wolves, cats and the horse family, who live closer to you, at 80%. Animals first fed while they're young, including every one born to your own animals, can reach 100%. Which kind an animal is gets settled the first time it gains any familiarity, and never changes after. The card above it shows "Wild-caught, max 40%" under the familiarity bar, and the herd book notes it on the animal's page.
+An animal first won over as an adult stays a little wild. Livestock top out at 40% familiarity, and wolves, cats and the horse family, who live closer to you, at 80%. Animals first fed while they're young, including every one born to your own animals, can reach 100%. Which kind an animal is gets settled the first time it gains any familiarity, and never changes after. The card above it shows "Wild: max 40%" under the familiarity bar, and the herd book notes it on the animal's page.
 
 Below 50% familiarity an animal sometimes won't be milked or sheared: one try in five, it refuses. That try is spent until midnight, and it costs no familiarity. Shears from a dispenser get the same answer. Wild-caught livestock never get past 40%, so they always carry that risk.
 
