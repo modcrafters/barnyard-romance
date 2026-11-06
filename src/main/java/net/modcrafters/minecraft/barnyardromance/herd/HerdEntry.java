@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -33,11 +34,11 @@ public record HerdEntry(
         Optional<UUID> father,
         List<Line> lines
 ) {
-    // A line of the animal's page; see HerdPageText.Line.
-    public record Line(HerdPageText.Kind kind, Component text, float fill) {
-        private static final HerdPageText.Kind[] KINDS = HerdPageText.Kind.values();
+    // A line of the animal's page; see StatLine.
+    public record Line(StatKind kind, Component text, float fill) {
+        private static final StatKind[] KINDS = StatKind.values();
         public static final StreamCodec<RegistryFriendlyByteBuf, Line> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT.map(i -> KINDS[Math.clamp(i, 0, KINDS.length - 1)], HerdPageText.Kind::ordinal), Line::kind,
+                ByteBufCodecs.VAR_INT.map(i -> KINDS[Math.clamp(i, 0, KINDS.length - 1)], StatKind::ordinal), Line::kind,
                 ComponentSerialization.STREAM_CODEC, Line::text,
                 ByteBufCodecs.FLOAT, Line::fill,
                 Line::new);

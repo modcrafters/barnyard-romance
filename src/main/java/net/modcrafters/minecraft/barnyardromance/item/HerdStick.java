@@ -12,7 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
+import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -88,7 +88,7 @@ public class HerdStick extends Item {
                     animal.level().getGameTime(),
                     Services.DATA.get(animal)
                             .flatMap(traits -> MilkActions.status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
-                            .map(InspectorSheet::milkText)
+                            .map(StatText::milkText)
                             .orElse(Text.EMPTY)
             );
             return new Outcome(true, text);

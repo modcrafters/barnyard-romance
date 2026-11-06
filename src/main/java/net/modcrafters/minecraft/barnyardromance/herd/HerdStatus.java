@@ -10,7 +10,6 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.WildCaught;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
-import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
@@ -21,6 +20,9 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearRule;
+import net.modcrafters.minecraft.barnyardromance.stats.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
+import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.minecraft.network.chat.Component;
@@ -55,26 +57,25 @@ public final class HerdStatus {
                 ? ShearRule.state(record.shearable(), record.woolly(), record.baby(), traits, clock)
                 : ShearState.NONE;
         EggOutlook eggs = eggs(record, traits, stage, clock, config);
-        HerdPageText.PageFacts facts = new HerdPageText.PageFacts(
-                SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())).name(),
-                stage,
-                traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()),
-                fedToday,
-                traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()),
-                pregnancy != null,
-                progress,
-                pregnancy == null ? 0L : PregnancyClock.remainingTicks(now, pregnancy),
-                milk.map(InspectorSheet::milkText).orElse(Text.EMPTY),
-                traits.familiarity(),
-                female ? Fertility.current(traits, age, at) : -1.0,
-                loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()),
-                familiar,
-                record.alive() ? -1L : diedDay(record),
-                shear,
-                record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()),
-                eggs
-        ).withCap(WildCaught.cap(traits.origin(), record.tamed(), config.tuning()))
-                .withKilledByRival(!record.alive() && record.cause() == DeathCause.RIVAL);
+        AnimalFacts facts = AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())).name(), stage)
+                .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
+                .fedToday(fedToday)
+                .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
+                .pregnant(pregnancy != null)
+                .pregnancy(progress)
+                .dueTicks(pregnancy == null ? 0L : PregnancyClock.remainingTicks(now, pregnancy))
+                .milk(milk.map(StatText::milkText).orElse(Text.EMPTY))
+                .familiarity(traits.familiarity())
+                .fertility(female ? Fertility.current(traits, age, at) : -1.0)
+                .seenTicksAgo(loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()))
+                .familiar(familiar)
+                .diedDay(record.alive() ? -1L : diedDay(record))
+                .shear(shear)
+                .grumpy(record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()))
+                .eggs(eggs)
+                .cap(WildCaught.cap(traits.origin(), record.tamed(), config.tuning()))
+                .killedByRival(!record.alive() && record.cause() == DeathCause.RIVAL)
+                .build();
         return new HerdEntry(
                 node.id(),
                 record.species(),
@@ -91,7 +92,7 @@ public final class HerdStatus {
                 eggs == null ? Component.empty() : TextComponents.of(eggs.tooltip()),
                 Optional.ofNullable(node.mother()),
                 Optional.ofNullable(node.father()),
-                HerdPageText.lines(facts).stream()
+                StatSheet.lines(facts).stream()
                         .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
                         .toList()
         );

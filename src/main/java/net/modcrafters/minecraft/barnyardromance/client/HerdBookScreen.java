@@ -5,7 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
+import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -548,7 +548,7 @@ public class HerdBookScreen extends Screen {
         graphics.text(this.font, fit(this.names.get(entry.id()), right - textX - 8), textX + 8, y + 2, entry.alive() ? INK : MUTED, false);
         int subtitleY = y + 12;
         for (HerdEntry.Line line : entry.lines()) {
-            if (line.kind() == HerdPageText.Kind.SIZE) {
+            if (line.kind() == StatKind.SIZE) {
                 for (FormattedCharSequence part : this.font.split(line.text(), right - textX)) {
                     graphics.text(this.font, part, textX, subtitleY, MUTED, false);
                     subtitleY += LINE;
@@ -559,7 +559,7 @@ public class HerdBookScreen extends Screen {
         graphics.fill(x, y, right, y + 1, RULE);
         y += 4;
         for (HerdEntry.Line line : entry.lines()) {
-            if (line.kind() != HerdPageText.Kind.SIZE) {
+            if (line.kind() != StatKind.SIZE) {
                 drawPageLine(graphics, entry, line, x, y);
                 y += STATUS_LINE;
             }
@@ -611,7 +611,7 @@ public class HerdBookScreen extends Screen {
             case FERTILITY -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FERTILE_ICON, x, iconY, ICON, ICON);
             case SHEAR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, iconY, ICON, ICON);
             case EGGS -> entry.eggs().ifPresent(eggs -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, eggIcon(eggs), x, iconY, ICON, ICON));
-            case SIZE, NOTE -> {
+            case SIZE, NOTE, GROWTH, WEIGHT, HEALTH, VIGOUR, BREEDING -> {
             }
         }
         int textX = x + ICON + 3;
@@ -635,7 +635,7 @@ public class HerdBookScreen extends Screen {
         }
         String words = line.text().getString();
         String shown = fit(words, right - textX);
-        graphics.text(this.font, shown, textX, y, line.kind() == HerdPageText.Kind.NOTE ? MUTED : INK, false);
+        graphics.text(this.font, shown, textX, y, line.kind() == StatKind.NOTE ? MUTED : INK, false);
         if (!shown.equals(words)) {
             this.hits.add(new Hit(textX, iconY, right, iconY + ICON, null, line.text()));
         }

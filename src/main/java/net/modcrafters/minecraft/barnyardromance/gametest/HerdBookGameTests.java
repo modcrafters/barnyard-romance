@@ -7,7 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
+import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -324,16 +324,16 @@ public final class HerdBookGameTests {
     // Books grow by themselves as calves are born, so a big farm's book is past vanilla's 1 MiB packet limit.
     public static void aBigBookFitsThePayloadLimit(GameTestHelper helper) {
         List<HerdEntry.Line> lines = List.of(
-                new HerdEntry.Line(HerdPageText.Kind.SIZE, Component.translatable("gui.barnyard_romance.herd_book.size_age", "XL",
+                new HerdEntry.Line(StatKind.SIZE, Component.translatable("gui.barnyard_romance.herd_book.size_age", "XL",
                         Component.translatable("gui.barnyard_romance.age.adult"), "17d"), 0.0F),
-                new HerdEntry.Line(HerdPageText.Kind.FED, Component.translatable("gui.barnyard_romance.herd_book.fed_today"), 0.0F),
-                new HerdEntry.Line(HerdPageText.Kind.PREGNANT, Component.translatable("gui.barnyard_romance.pregnancy.line", 61,
+                new HerdEntry.Line(StatKind.FED, Component.translatable("gui.barnyard_romance.herd_book.fed_today"), 0.0F),
+                new HerdEntry.Line(StatKind.PREGNANT, Component.translatable("gui.barnyard_romance.pregnancy.line", 61,
                         Component.translatable("gui.barnyard_romance.time.minutes_seconds", 21, 40)), 0.61F),
-                new HerdEntry.Line(HerdPageText.Kind.FAMILIARITY, Component.translatable("gui.barnyard_romance.herd_book.familiarity",
+                new HerdEntry.Line(StatKind.FAMILIARITY, Component.translatable("gui.barnyard_romance.herd_book.familiarity",
                         Component.translatable("gui.barnyard_romance.percent", 80)), 0.8F),
-                new HerdEntry.Line(HerdPageText.Kind.FERTILITY, Component.translatable("gui.barnyard_romance.herd_book.fertility",
+                new HerdEntry.Line(StatKind.FERTILITY, Component.translatable("gui.barnyard_romance.herd_book.fertility",
                         Component.translatable("gui.barnyard_romance.percent", 90)), 0.9F),
-                new HerdEntry.Line(HerdPageText.Kind.NOTE, Component.translatable("gui.barnyard_romance.herd_book.seen",
+                new HerdEntry.Line(StatKind.NOTE, Component.translatable("gui.barnyard_romance.herd_book.seen",
                         Component.translatable("gui.barnyard_romance.time.days", 12)), 0.0F));
         List<HerdEntry> entries = new java.util.ArrayList<>();
         for (int i = 0; i < 1_500; i++) {
@@ -384,7 +384,7 @@ public final class HerdBookGameTests {
         long clock = 5L * GameDay.TICKS + 1_000L;
         HerdRecord ahead = record.died(100L, clock);
         HerdEntry entry = HerdStatus.entry(ahead, data(helper).ledger().node(cow.getUUID()), 200L, clock, false);
-        String died = entry.lines().stream().filter(line -> line.kind() == HerdPageText.Kind.NOTE).findFirst().orElseThrow().text().getString();
+        String died = entry.lines().stream().filter(line -> line.kind() == StatKind.NOTE).findFirst().orElseThrow().text().getString();
         helper.assertTrue(died.contains(Long.toString(GameDay.of(clock))), "the died line is " + died);
         helper.succeed();
     }
