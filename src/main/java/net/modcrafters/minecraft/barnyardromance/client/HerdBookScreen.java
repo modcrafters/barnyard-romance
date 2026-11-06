@@ -176,6 +176,10 @@ public class HerdBookScreen extends Screen {
             this.page = 0;
         }
         this.page = Math.min(this.page, Math.max(0, contents().size() - 1));
+        HerdEntry shown = this.animal == null ? null : this.entries.get(this.animal);
+        if (shown != null && this.font != null) {
+            this.leaf = Math.min(this.leaf, leaves(shown).size() - 1);
+        }
         updateButtons();
     }
 
@@ -632,9 +636,15 @@ public class HerdBookScreen extends Screen {
         int firstRoom = (BUTTONS_Y - cardBottom) / STATUS_LINE;
         int room = (BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + 4)) / STATUS_LINE;
         // The family: its header, the mother and father, and a row of young when there are any.
-        boolean young = this.entries.values().stream()
-                .anyMatch(other -> other.mother().equals(Optional.of(entry.id())) || other.father().equals(Optional.of(entry.id())));
-        return HerdBookLayout.leaves(statusLines(entry).size(), firstRoom, room, 3 + (young ? 1 : 0));
+        int familyRows = HerdBookLayout.familyRows(!youngOf(entry).isEmpty(), HerdBookHeads.AVAILABLE, STATUS_LINE, ICON, LINK_LINE);
+        return HerdBookLayout.leaves(statusLines(entry).size(), firstRoom, room, familyRows);
+    }
+
+    private List<HerdEntry> youngOf(HerdEntry entry) {
+        return this.entries.values().stream()
+                .filter(other -> other.mother().equals(Optional.of(entry.id())) || other.father().equals(Optional.of(entry.id())))
+                .sorted(Comparator.comparing((HerdEntry child) -> this.names.get(child.id())).thenComparing(HerdEntry::id))
+                .toList();
     }
 
     private void drawFamily(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int y) {
@@ -652,10 +662,7 @@ public class HerdBookScreen extends Screen {
         y += STATUS_LINE;
         drawParent(graphics, father, entry.father(), x, valueX, y);
         y += STATUS_LINE;
-        List<HerdEntry> young = this.entries.values().stream()
-                .filter(other -> other.mother().equals(Optional.of(entry.id())) || other.father().equals(Optional.of(entry.id())))
-                .sorted(Comparator.comparing((HerdEntry child) -> this.names.get(child.id())).thenComparing(HerdEntry::id))
-                .toList();
+        List<HerdEntry> young = youngOf(entry);
         if (!young.isEmpty()) {
             graphics.text(this.font, youngLabel, x, y, MUTED, false);
             if (HerdBookHeads.AVAILABLE) {

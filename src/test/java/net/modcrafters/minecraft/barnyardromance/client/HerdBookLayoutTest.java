@@ -210,4 +210,13 @@ class HerdBookLayoutTest {
         assertEquals(-1, HerdBookLayout.previousLeaf(0));
         assertEquals(0, HerdBookLayout.previousLeaf(1));
     }
+
+    @Test
+    void theFamilyBlockReservesItsRealHeight() {
+        // Header, mother, father: 2 + 30 px. Young heads reach 39 px, young names 50 px.
+        assertEquals(4, HerdBookLayout.familyRows(false, true, 10, 9, 10));
+        assertEquals(4, HerdBookLayout.familyRows(false, false, 10, 9, 10));
+        assertEquals(5, HerdBookLayout.familyRows(true, true, 10, 9, 10));
+        assertEquals(6, HerdBookLayout.familyRows(true, false, 10, 9, 10));
+    }
 }

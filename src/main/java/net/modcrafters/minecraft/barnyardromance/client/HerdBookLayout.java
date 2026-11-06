@@ -111,6 +111,20 @@ public final class HerdBookLayout {
         return leaves;
     }
 
+    // How many status lines the family block takes at the foot of an entry, counting the gap above it: its header,
+    // the mother and father, and the young (a row of heads, or names without heads, or nothing). Worked out from the
+    // same offsets the screen draws at, then rounded up to whole lines.
+    public static int familyRows(boolean hasYoung, boolean hasHeads, int statusLine, int icon, int linkLine) {
+        int gap = 2;
+        int fatherY = statusLine + 1 + statusLine;
+        int bottom = fatherY + icon;
+        if (hasYoung) {
+            int youngY = fatherY + statusLine;
+            bottom = hasHeads ? youngY - 1 + icon : youngY + linkLine + icon;
+        }
+        return (gap + bottom + statusLine - 1) / statusLine;
+    }
+
     // The leaf after this one, or -1 past the end.
     public static int nextLeaf(int leaf, int leafCount) {
         return leaf + 1 < leafCount ? leaf + 1 : -1;
