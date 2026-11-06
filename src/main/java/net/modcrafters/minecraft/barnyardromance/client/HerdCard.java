@@ -20,12 +20,12 @@ public final class HerdCard {
     private static final int GOLD_DARK = 0xFF8A5A22;
     private static final int WOOD = 0xFF3C2415;
     private static final int GRAIN = 0xFF2A180E;
-    private static final int TRACK = 0xFF140E09;
-    private static final int NAME = 0xFFFFE08A;
-    private static final int WHITE = 0xFFFFFFFF;
-    private static final int FEMALE = 0xFFF27BB0;
-    private static final int MALE = 0xFF7EB6F2;
-    private static final int FAMILIAR = 0xFFE07A6A;
+    static final int TRACK = 0xFF140E09;
+    static final int NAME = 0xFFFFE08A;
+    static final int WHITE = 0xFFFFFFFF;
+    static final int FEMALE = 0xFFF27BB0;
+    static final int MALE = 0xFF7EB6F2;
+    static final int FAMILIAR = 0xFFE07A6A;
     private static final int FEED = 0xFF8FCB6B;
     private static final Identifier HEART_CONTAINER = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
@@ -125,7 +125,7 @@ public final class HerdCard {
         }
     }
 
-    private static void frame(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
+    static void frame(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         graphics.fill(x, y, x + width, y + height, GOLD_DARK);
         graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, GOLD);
         graphics.fill(x + 2, y + 2, x + width - 2, y + 3, GOLD_LIGHT);
@@ -167,7 +167,7 @@ public final class HerdCard {
         graphics.disableScissor();
     }
 
-    private static void bar(GuiGraphicsExtractor graphics, int x, int y, int width, int height, double fill, int color) {
+    static void bar(GuiGraphicsExtractor graphics, int x, int y, int width, int height, double fill, int color) {
         graphics.fill(x, y, x + width, y + height, TRACK);
         int filled = (int) Math.round(Math.clamp(fill, 0.0, 1.0) * (width - 2));
         if (filled > 0) {

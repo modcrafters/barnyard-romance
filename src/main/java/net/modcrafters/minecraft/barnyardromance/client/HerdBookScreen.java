@@ -106,16 +106,6 @@ public class HerdBookScreen extends Screen {
     private static final int RULE = 0xFFD9C7A0;
     private static final int BAR_EDGE = 0xFF8A6A48;
     private static final int BAR_EMPTY = 0xFFEFE3C6;
-    private static final int FAMILIAR_BAR = 0xFFD6523A;
-    private static final int PREGNANT_BAR = 0xFFE07096;
-    private static final int FERTILE_BAR = 0xFF78A840;
-    private static final int GROWTH_BAR = 0xFF5B8FC4;
-    private static final int WEIGHT_BAR = 0xFFB08A4A;
-    private static final int VIGOUR_BAR = 0xFFE0A030;
-    private static final Identifier HOURGLASS_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/hourglass");
-    private static final Identifier WEIGHT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/weight");
-    private static final Identifier GOLD_HEART_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/gold_heart");
-    private static final Identifier VIGOUR_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/vigour");
     // The bottom bar: page arrows on either side of the return arrow, the cross on the right.
     private static final int NEXT_X = 46;
     private static final int RETURN_X = 25;
@@ -691,10 +681,7 @@ public class HerdBookScreen extends Screen {
             case FERTILITY -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FERTILE_ICON, x, iconY, ICON, ICON);
             case SHEAR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, iconY, ICON, ICON);
             case EGGS -> entry.eggs().ifPresent(eggs -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, eggIcon(eggs), x, iconY, ICON, ICON));
-            case GROWTH -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOURGLASS_ICON, x, iconY, ICON, ICON);
-            case WEIGHT -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, WEIGHT_ICON, x, iconY, ICON, ICON);
-            case HEALTH, BREEDING -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GOLD_HEART_ICON, x, iconY, ICON, ICON);
-            case VIGOUR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, VIGOUR_ICON, x, iconY, ICON, ICON);
+            case GROWTH, WEIGHT, HEALTH, BREEDING, VIGOUR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, StatIcons.of(line.kind()), x, iconY, ICON, ICON);
             case SIZE, NOTE -> {
             }
         }
@@ -712,14 +699,7 @@ public class HerdBookScreen extends Screen {
         };
         if (label != null) {
             graphics.text(this.font, label, textX, y, INK, false);
-            bar(graphics, textX + barLabelWidth() + 4, y + 1, right, line.fill(), switch (line.kind()) {
-                case PREGNANT -> PREGNANT_BAR;
-                case FAMILIARITY, HEALTH -> FAMILIAR_BAR;
-                case GROWTH -> GROWTH_BAR;
-                case WEIGHT -> WEIGHT_BAR;
-                case VIGOUR -> VIGOUR_BAR;
-                default -> FERTILE_BAR;
-            });
+            bar(graphics, textX + barLabelWidth() + 4, y + 1, right, line.fill(), StatIcons.barColor(line.kind()));
             // The bar's words, such as how long until the birth, are in its tooltip.
             this.hits.add(new Hit(x, iconY, right, iconY + ICON, null, line.text()));
             return;
