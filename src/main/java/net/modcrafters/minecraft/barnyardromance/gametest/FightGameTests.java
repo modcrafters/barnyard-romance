@@ -170,9 +170,10 @@ public final class FightGameTests {
         female.setInLoveTime(600);
 
         helper.runAfterDelay(SETTLE_TICKS, () -> {
+            Animal closer = near.distanceToSqr(female) <= far.distanceToSqr(female) ? near : far;
             Courtship.court(female, 0.0);
             helper.assertTrue(!Fights.fighting(near) && !Fights.fighting(far), "wolves fought over a female");
-            helper.assertTrue(Courtship.chosen(female, near), "the closer wolf wasn't chosen");
+            helper.assertTrue(Courtship.chosen(female, closer), "the closer wolf wasn't chosen");
             helper.succeed();
         });
     }
@@ -204,7 +205,10 @@ public final class FightGameTests {
         Services.DATA.set(second, traits(helper, second).fed(0.0, -1L));
         rollAfterSettling(helper, first, second, 0.0, true);
 
-        helper.succeedWhen(() -> helper.assertTrue(first.isAlive() != second.isAlive(), "both roosters are " + first.isAlive()));
+        helper.succeedWhen(() -> helper.assertTrue(first.isAlive() != second.isAlive(), "both roosters are " + first.isAlive()
+                + ": fighting " + Fights.fighting(first) + "/" + Fights.fighting(second) + " dist=" + first.distanceTo(second)
+                + " health=" + first.getHealth() + "/" + second.getHealth() + " ground=" + first.onGround() + "/" + second.onGround()
+                + " pos=" + helper.relativePos(first.blockPosition()) + "/" + helper.relativePos(second.blockPosition())));
     }
 
     public static void familiarBullsNeverFightAtRandom(GameTestHelper helper) {
@@ -231,11 +235,10 @@ public final class FightGameTests {
     }
 
     // A roll that comes up "no fight" still uses the day: the male isn't due again until tomorrow.
+    // Familiar bulls never fight at random, so no roll of their own can get in the way.
     public static void aMaleRollsOnceADay(GameTestHelper helper) {
         Animal first = bull(helper, 3, 4, 1.0);
         Animal second = bull(helper, 5, 4, 1.0);
-        Services.DATA.set(first, traits(helper, first).fed(0.1, -1L));
-        Services.DATA.set(second, traits(helper, second).fed(0.1, -1L));
         helper.runAfterDelay(SETTLE_TICKS, () -> {
             Animal roller = first.getUUID().compareTo(second.getUUID()) < 0 ? first : second;
             long clock = helper.getLevel().getOverworldClockTime();

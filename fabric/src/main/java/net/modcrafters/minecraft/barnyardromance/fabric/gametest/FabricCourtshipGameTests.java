@@ -51,4 +51,9 @@ public class FabricCourtshipGameTests {
     public void petsTakeTheClosestMale(GameTestHelper helper) {
         CourtshipGameTests.petsTakeTheClosestMale(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void reachIgnoresWhereTheMaleIsWalking(GameTestHelper helper) {
+        CourtshipGameTests.reachIgnoresWhereTheMaleIsWalking(helper);
+    }
 }

@@ -1,5 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
+import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
@@ -108,12 +114,21 @@ public final class EggLaying {
     // The eggs are fertilized if a fed rooster is near. A hen that can walk to a box with room goes and lays them all
     // there in one sitting; otherwise they're laid on the ground, where they're always plain: they've been out in the
     // weather.
+    // Each rooster pays for the eggs he fathers only once she's on her way to a box; eggs left on the ground are plain
+    // and cost him nothing.
     public static void layDue(Animal hen, ServerLevel level, int count) {
         List<ItemStack> eggs = new ArrayList<>(count);
+        Map<UUID, Integer> fathered = new HashMap<>();
         for (int i = 0; i < count; i++) {
-            eggs.add(fertilizedEgg(hen, level).orElseGet(() -> plainEgg(hen, level)));
+            eggs.add(fertilizedEgg(hen, level, fathered).orElseGet(() -> plainEgg(hen, level)));
         }
         if (LayInNestGoal.walks(hen) && headForBox(hen, level, eggs, Set.of(), false)) {
+            Tuning tuning = BarnyardConfig.current().tuning();
+            fathered.forEach((father, eggCount) -> {
+                if (level.getEntity(father) instanceof Animal rooster) {
+                    VigourActions.pay(rooster, tuning.vigourPerEgg() * eggCount, tuning.hungryEggHealth() * eggCount);
+                }
+            });
             return;
         }
         layOnGround(hen, level, count);
@@ -163,6 +178,12 @@ public final class EggLaying {
         return best;
     }
 
+    private static boolean canFather(Animal rooster, Animal hen, int eggs, EggSettings settings) {
+        Tuning tuning = BarnyardConfig.current().tuning();
+        return VigourActions.canPay(rooster, tuning.vigourPerEgg() * eggs, tuning.hungryEggHealth() * eggs)
+                && !Reach.blocked(rooster, hen, settings.roosterRange());
+    }
+
     public static boolean boxWithRoomNear(Animal hen, ServerLevel level) {
         ItemStack egg = new ItemStack(BarnyardItems.FERTILIZED_EGG);
         return NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange()).stream()
@@ -173,8 +194,14 @@ public final class EggLaying {
         drop(hen, level, plainEgg(hen, level).copyWithCount(count));
     }
 
-    // An egg fathered by the closest adult rooster in range that wasn't hungry yesterday, or nothing.
+    // An egg fathered by the closest adult rooster in range who can walk to her and still has the Vigour for it (and,
+    // if he's hungry, the health), or nothing. Nobody pays here; see layDue.
     public static Optional<ItemStack> fertilizedEgg(Animal hen, ServerLevel level) {
+        return fertilizedEgg(hen, level, new HashMap<>());
+    }
+
+    // fathered counts the eggs each rooster is already down for in this sitting, and gains this one.
+    public static Optional<ItemStack> fertilizedEgg(Animal hen, ServerLevel level, Map<UUID, Integer> fathered) {
         Optional<AnimalTraits> mother = Services.DATA.get(hen);
         EggSettings settings = settings(hen);
         if (mother.isEmpty() || !settings.enabled()) {
@@ -191,11 +218,11 @@ public final class EggLaying {
                 continue;
             }
             Optional<AnimalTraits> traits = FamiliarityCare.settle(other);
-            if (traits.isEmpty() || traits.get().sex() != Sex.MALE || traits.get().hunger().hungryYesterday(today)) {
+            if (traits.isEmpty() || traits.get().sex() != Sex.MALE) {
                 continue;
             }
             AgeStage stage = AgeController.stage(other, traits.get());
-            if (stage == AgeStage.ADULT || stage == AgeStage.OLD) {
+            if ((stage == AgeStage.ADULT || stage == AgeStage.OLD) && canFather(other, hen, fathered.getOrDefault(other.getUUID(), 0) + 1, settings)) {
                 father = other;
                 fatherTraits = traits.get();
             }
@@ -203,6 +230,7 @@ public final class EggLaying {
         if (father == null) {
             return Optional.empty();
         }
+        fathered.merge(father.getUUID(), 1, Integer::sum);
         AnimalTraits motherTraits = mother.get();
         long hatchTicks = LitterRoll.pickTicks(settings.hatchTicks(), motherTraits.weight(), hen.getRandom().nextDouble());
         return Optional.of(FertilizedEggItem.create(new EggData(

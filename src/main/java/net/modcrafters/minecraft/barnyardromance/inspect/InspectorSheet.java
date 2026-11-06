@@ -228,12 +228,19 @@ public record InspectorSheet(
         return planned <= 0 ? Text.EMPTY : Text.of("gui.barnyard_romance.inspector.eggs_today", laid, planned);
     }
 
-    // A young rooster isn't fertile until he's grown, hungry or not.
-    public static Text roosterText(boolean young, boolean hungryYesterday) {
+    // A young rooster isn't fertile until he's grown; a grown one has as many eggs left as his Vigour pays for.
+    public static Text roosterText(boolean young, double vigour, boolean hungry, double perEgg) {
         if (young) {
             return Text.of("gui.barnyard_romance.inspector.rooster_young");
         }
-        return Text.of(hungryYesterday ? "gui.barnyard_romance.inspector.rooster_hungry" : "gui.barnyard_romance.inspector.rooster_fertile");
+        long eggs = perEgg <= 0.0 ? 0L : (long) Math.floor((vigour + 1.0e-9) / perEgg);
+        if (eggs <= 0L) {
+            return Text.of("gui.barnyard_romance.inspector.rooster_spent");
+        }
+        if (eggs == 1L) {
+            return Text.of(hungry ? "gui.barnyard_romance.inspector.rooster_one_egg_hungry" : "gui.barnyard_romance.inspector.rooster_one_egg");
+        }
+        return Text.of(hungry ? "gui.barnyard_romance.inspector.rooster_eggs_hungry" : "gui.barnyard_romance.inspector.rooster_eggs", eggs);
     }
 
     // Minecraft hours and days: under an hour, then hours, then whole days.

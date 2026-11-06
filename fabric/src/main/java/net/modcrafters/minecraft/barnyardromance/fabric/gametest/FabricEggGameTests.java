@@ -147,6 +147,26 @@ public class FabricEggGameTests {
         EggGameTests.timeSkipCountsEggsDown(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void lateHatchIsBornWhenDue(GameTestHelper helper) {
+        EggGameTests.lateHatchIsBornWhenDue(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void failedHatchKeepsTheEgg(GameTestHelper helper) {
+        EggGameTests.failedHatchKeepsTheEgg(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void skippedEggsAreNotLaid(GameTestHelper helper) {
+        EggGameTests.skippedEggsAreNotLaid(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void oldLayingCountsEveryEggAsLaid(GameTestHelper helper) {
+        EggGameTests.oldLayingCountsEveryEggAsLaid(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 400)
     public void henLaysIntoANearbyBox(GameTestHelper helper) {
         EggGameTests.henLaysIntoANearbyBox(helper);
@@ -172,9 +192,34 @@ public class FabricEggGameTests {
         EggGameTests.closestRoosterIsTheFather(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 20)
-    public void hungryRoosterFertilizesNothing(GameTestHelper helper) {
-        EggGameTests.hungryRoosterFertilizesNothing(helper);
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void eachFertilizedEggCostsTheRooster15(GameTestHelper helper) {
+        EggGameTests.eachFertilizedEggCostsTheRooster15(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void aSpentRoosterLaysPlain(GameTestHelper helper) {
+        EggGameTests.aSpentRoosterLaysPlain(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aRoosterRunsOutMidSitting(GameTestHelper helper) {
+        EggGameTests.aRoosterRunsOutMidSitting(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aRoosterInAnotherPenDoesNotFertilize(GameTestHelper helper) {
+        EggGameTests.aRoosterInAnotherPenDoesNotFertilize(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void groundEggsCostTheRoosterNothing(GameTestHelper helper) {
+        EggGameTests.groundEggsCostTheRoosterNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aHungryRoosterPaysHealthPerEgg(GameTestHelper helper) {
+        EggGameTests.aHungryRoosterPaysHealthPerEgg(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
@@ -280,25 +325,5 @@ public class FabricEggGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
-    }
-
-    @GameTest(structure = PEN, maxTicks = 20)
-    public void lateHatchIsBornWhenDue(GameTestHelper helper) {
-        EggGameTests.lateHatchIsBornWhenDue(helper);
-    }
-
-    @GameTest(structure = PEN, maxTicks = 20)
-    public void failedHatchKeepsTheEgg(GameTestHelper helper) {
-        EggGameTests.failedHatchKeepsTheEgg(helper);
-    }
-
-    @GameTest(structure = PEN, maxTicks = 20)
-    public void skippedEggsAreNotLaid(GameTestHelper helper) {
-        EggGameTests.skippedEggsAreNotLaid(helper);
-    }
-
-    @GameTest(structure = PEN, maxTicks = 20)
-    public void oldLayingCountsEveryEggAsLaid(GameTestHelper helper) {
-        EggGameTests.oldLayingCountsEveryEggAsLaid(helper);
     }
 }

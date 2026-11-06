@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
+import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
@@ -43,7 +44,8 @@ public final class CourtshipGameTests {
             new BreedingGameTests.Case("a_hungry_male_pays_health_to_mate", 400, CourtshipGameTests::aHungryMalePaysHealthToMate),
             new BreedingGameTests.Case("goats_breed_by_courtship", 400, CourtshipGameTests::goatsBreedByCourtship),
             new BreedingGameTests.Case("horses_breed_by_courtship", 400, CourtshipGameTests::horsesBreedByCourtship),
-            new BreedingGameTests.Case("pets_take_the_closest_male", 400, CourtshipGameTests::petsTakeTheClosestMale)
+            new BreedingGameTests.Case("pets_take_the_closest_male", 400, CourtshipGameTests::petsTakeTheClosestMale),
+            new BreedingGameTests.Case("reach_ignores_where_the_male_is_walking", 100, CourtshipGameTests::reachIgnoresWhereTheMaleIsWalking)
     );
 
     private CourtshipGameTests() {
@@ -71,15 +73,16 @@ public final class CourtshipGameTests {
     }
 
     public static void aFenceKeepsAMaleOut(GameTestHelper helper) {
-        fenceAcrossThePen(helper);
         Animal cow = female(helper, EntityTypes.COW);
         Animal bull = fed(male(helper, EntityTypes.COW));
-        cow.setInLove(null);
+        EggGameTests.once(helper, bull::onGround, () -> {
+            fenceAround(helper, bull);
+            cow.setInLove(null);
+        });
 
         helper.runAfterDelay(BREED_TICKS - 20, () -> {
-            helper.assertTrue(Services.DATA.getPregnancy(cow).isEmpty(), "a bull behind a fence made the cow pregnant: father "
-                    + Services.DATA.getPregnancy(cow).map(Pregnancy::fatherId).orElse(null) + ", the bull " + bull.getUUID()
-                    + " at " + helper.relativePos(bull.blockPosition()) + ", the cow at " + helper.relativePos(cow.blockPosition()));
+            helper.assertTrue(Services.DATA.getPregnancy(cow).isEmpty(), "a bull behind a fence made the cow pregnant: the bull at "
+                    + helper.relativePos(bull.blockPosition()) + ", the cow at " + helper.relativePos(cow.blockPosition()));
             assertVigour(helper, bull, 1.0);
             helper.succeed();
         });
@@ -173,6 +176,22 @@ public final class CourtshipGameTests {
         });
     }
 
+    // Vanilla's path search hands back the path a mob is already walking when asked about the same target again, so a
+    // second look must not mistake his own walk for the way to her.
+    public static void reachIgnoresWhereTheMaleIsWalking(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Animal bull = male(helper, EntityTypes.COW);
+        EggGameTests.once(helper, () -> bull.onGround() && cow.onGround(), () -> {
+            cow.setNoAi(true);
+            Vec3 corner = helper.absoluteVec(new Vec3(7.5, 1.0, 7.5));
+            bull.getNavigation().moveTo(corner.x, bull.getY(), corner.z, 1.0);
+            boolean first = Reach.canWalk(bull, cow, 16);
+            boolean second = Reach.canWalk(bull, cow, 16);
+            helper.assertTrue(first && second, "the bull can walk to the cow: " + first + ", then " + second);
+            helper.succeed();
+        });
+    }
+
     private static void breedsByCourtship(GameTestHelper helper, EntityType<? extends Animal> type) {
         Animal mother = female(helper, type);
         Animal father = fed(male(helper, type));
@@ -198,11 +217,16 @@ public final class CourtshipGameTests {
         return wolf;
     }
 
-    // A fence line from wall to wall between the females (x 3) and the males (x 5).
-    public static void fenceAcrossThePen(GameTestHelper helper) {
-        for (int z = 0; z <= 8; z++) {
-            for (int y = 1; y <= 2; y++) {
-                helper.setBlock(new BlockPos(4, y, z), Blocks.OAK_FENCE.defaultBlockState());
+    // A fence cell two high around the block the animal stands in, so it can't walk out. Call it once the animal has
+    // landed: where a test pen's floor is differs between versions, so the animal is the only sure guide.
+    public static void fenceAround(GameTestHelper helper, Animal animal) {
+        BlockPos at = animal.blockPosition();
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx != 0 || dz != 0) {
+                    helper.getLevel().setBlockAndUpdate(at.offset(dx, 0, dz), Blocks.OAK_FENCE.defaultBlockState());
+                    helper.getLevel().setBlockAndUpdate(at.offset(dx, 1, dz), Blocks.OAK_FENCE.defaultBlockState());
+                }
             }
         }
     }

@@ -284,7 +284,8 @@ public class InspectorScreen extends Screen {
         long today = GameDay.of(clock);
         boolean hungry = traits.hunger().hungryYesterday(today);
         if (traits.sex() == Sex.MALE) {
-            return InspectorSheet.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, hungry);
+            return InspectorSheet.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, vigour(traits, clock),
+                    VigourRules.hungry(traits.hunger().lastAteDay(), today), BarnyardConfig.current().tuning().vigourPerEgg());
         }
         if (!EggLaying.isLayingHen(animal)) {
             return Text.EMPTY;

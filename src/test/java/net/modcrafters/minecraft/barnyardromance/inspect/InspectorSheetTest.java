@@ -96,11 +96,13 @@ class InspectorSheetTest {
     }
 
     @Test
-    void roosterTextSaysWhetherHeIsFertile() {
-        assertEquals("Fertile today", English.of(InspectorSheet.roosterText(false, false)));
-        assertEquals("Not today (hungry yesterday)", English.of(InspectorSheet.roosterText(false, true)));
-        assertEquals("Not fertile yet", English.of(InspectorSheet.roosterText(true, false)));
-        assertEquals("Not fertile yet", English.of(InspectorSheet.roosterText(true, true)));
+    void roosterTextCountsTheEggsHisVigourCovers() {
+        assertEquals("Fertile, 6 eggs left", English.of(InspectorSheet.roosterText(false, 1.0, false, 0.15)));
+        assertEquals("Fertile, 1 egg left", English.of(InspectorSheet.roosterText(false, 0.15, false, 0.15)));
+        assertEquals("Out of Vigour", English.of(InspectorSheet.roosterText(false, 0.1, false, 0.15)));
+        assertEquals("Fertile, 2 eggs left, each costs health", English.of(InspectorSheet.roosterText(false, 0.3, true, 0.15)));
+        assertEquals("Not fertile yet", English.of(InspectorSheet.roosterText(true, 1.0, false, 0.15)));
+        assertEquals("Not fertile yet", English.of(InspectorSheet.roosterText(true, 0.0, true, 0.15)));
     }
 
     @Test
