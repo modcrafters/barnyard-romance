@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-// The numbers behind familiarity, growth, inheritance, fertility, old age, food healing, milk and yield.
+// The numbers behind familiarity, growth, inheritance, fertility, old age, food healing, milk, yield, Vigour and fights.
 // The familiarity losses are per hungry day, per milking and per shearing.
 public record Tuning(
         double familiarityGain,
@@ -36,15 +36,28 @@ public record Tuning(
         double wildFamiliarityCap,
         double wildPetFamiliarityCap,
         double refusalBelow,
-        double refusalChance
+        double refusalChance,
+        double vigourPerMating,
+        double vigourPerEgg,
+        double hungryMatingHealth,
+        double hungryEggHealth,
+        int rivalRange,
+        double rivalFightChance,
+        double roosterFightChance,
+        double wildFightChance,
+        int fightStopRange,
+        int fightTruceTicks
 ) {
     private static final double MAX_FOOD_HEAL = 20.0;
     private static final long MAX_MILK_TICKS = 2_400_000L;
     private static final int MAX_MILKINGS = 16;
     private static final double MAX_YIELD = 4.0;
+    private static final double MAX_HEALTH_COST = 20.0;
+    private static final long MAX_RANGE = 64L;
 
     public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
-            72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2);
+            72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
+            0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -87,7 +100,17 @@ public record Tuning(
                 unit(object, "wildFamiliarityCap", DEFAULTS.wildFamiliarityCap),
                 unit(object, "wildPetFamiliarityCap", DEFAULTS.wildPetFamiliarityCap),
                 unit(object, "refusalBelow", DEFAULTS.refusalBelow),
-                unit(object, "refusalChance", DEFAULTS.refusalChance)
+                unit(object, "refusalChance", DEFAULTS.refusalChance),
+                unit(object, "vigourPerMating", DEFAULTS.vigourPerMating),
+                unit(object, "vigourPerEgg", DEFAULTS.vigourPerEgg),
+                Math.clamp(number(object, "hungryMatingHealth", DEFAULTS.hungryMatingHealth), 0.0, MAX_HEALTH_COST),
+                Math.clamp(number(object, "hungryEggHealth", DEFAULTS.hungryEggHealth), 0.0, MAX_HEALTH_COST),
+                range(object, "rivalRange", DEFAULTS.rivalRange),
+                unit(object, "rivalFightChance", DEFAULTS.rivalFightChance),
+                unit(object, "roosterFightChance", DEFAULTS.roosterFightChance),
+                unit(object, "wildFightChance", DEFAULTS.wildFightChance),
+                range(object, "fightStopRange", DEFAULTS.fightStopRange),
+                (int) Math.clamp(Math.round(number(object, "fightTruceTicks", DEFAULTS.fightTruceTicks)), 0L, Integer.MAX_VALUE)
         );
     }
 
@@ -124,6 +147,16 @@ public record Tuning(
         object.addProperty("wildPetFamiliarityCap", wildPetFamiliarityCap);
         object.addProperty("refusalBelow", refusalBelow);
         object.addProperty("refusalChance", refusalChance);
+        object.addProperty("vigourPerMating", vigourPerMating);
+        object.addProperty("vigourPerEgg", vigourPerEgg);
+        object.addProperty("hungryMatingHealth", hungryMatingHealth);
+        object.addProperty("hungryEggHealth", hungryEggHealth);
+        object.addProperty("rivalRange", rivalRange);
+        object.addProperty("rivalFightChance", rivalFightChance);
+        object.addProperty("roosterFightChance", roosterFightChance);
+        object.addProperty("wildFightChance", wildFightChance);
+        object.addProperty("fightStopRange", fightStopRange);
+        object.addProperty("fightTruceTicks", fightTruceTicks);
         return object;
     }
 
@@ -141,6 +174,10 @@ public record Tuning(
 
     private static double yieldFactor(JsonObject object, String name, double fallback) {
         return Math.clamp(number(object, name, fallback), 0.0, MAX_YIELD);
+    }
+
+    private static int range(JsonObject object, String name, int fallback) {
+        return (int) Math.clamp(Math.round(number(object, name, fallback)), 1L, MAX_RANGE);
     }
 
     private static int ticks(JsonObject object, String name, int fallback) {

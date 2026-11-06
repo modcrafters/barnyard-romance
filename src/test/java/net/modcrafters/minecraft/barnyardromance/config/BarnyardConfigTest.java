@@ -326,6 +326,32 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void livestockFightByDefault() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.fightsFor("minecraft:cow"));
+        assertTrue(config.fightsFor("minecraft:chicken"));
+        assertTrue(config.fightsFor("naturalist:turkey"));
+        assertFalse(config.fightsFor("minecraft:wolf"));
+        assertFalse(config.fightsFor("minecraft:horse"));
+        assertFalse(config.fightsFor("minecraft:fox"));
+        assertFalse(config.fightsFor("modded:yak"));
+    }
+
+    @Test
+    void speciesEntriesSwitchFightingOnAndOff() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "species": { "minecraft:cow": { "fights": false }, "modded:yak": { "fights": true } } }
+                """);
+
+        assertFalse(config.fightsFor("minecraft:cow"));
+        assertTrue(config.fightsFor("modded:yak"));
+        BarnyardConfig reread = BarnyardConfig.parse(config.toJson());
+        assertFalse(reread.fightsFor("minecraft:cow"));
+        assertTrue(reread.fightsFor("modded:yak"));
+    }
+
+    @Test
     void chickenLaysByDefault() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

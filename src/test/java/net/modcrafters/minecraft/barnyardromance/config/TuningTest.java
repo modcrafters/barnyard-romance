@@ -9,7 +9,8 @@ class TuningTest {
     void defaultsMatchTodaysBehaviour() {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
         assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
-                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2), Tuning.DEFAULTS);
+                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
+                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000), Tuning.DEFAULTS);
     }
 
     @Test
@@ -71,6 +72,41 @@ class TuningTest {
         assertEquals(0.0, tuning.femaleYield(), 1.0e-9);
         assertEquals(4.0, tuning.oldYieldFactor(), 1.0e-9);
         assertEquals(0.0, tuning.yieldScaleExponent(), 1.0e-9);
+    }
+
+    @Test
+    void territorialDefaults() {
+        Tuning tuning = Tuning.DEFAULTS;
+        assertEquals(0.3, tuning.vigourPerMating(), 1.0e-9);
+        assertEquals(0.15, tuning.vigourPerEgg(), 1.0e-9);
+        assertEquals(2.0, tuning.hungryMatingHealth(), 1.0e-9);
+        assertEquals(1.0, tuning.hungryEggHealth(), 1.0e-9);
+        assertEquals(16, tuning.rivalRange());
+        assertEquals(0.5, tuning.rivalFightChance(), 1.0e-9);
+        assertEquals(0.25, tuning.roosterFightChance(), 1.0e-9);
+        assertEquals(0.05, tuning.wildFightChance(), 1.0e-9);
+        assertEquals(8, tuning.fightStopRange());
+        assertEquals(1000, tuning.fightTruceTicks());
+    }
+
+    @Test
+    void territorialTuningIsReadAndClamped() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "vigourPerMating": 2, "vigourPerEgg": 0.2, "hungryMatingHealth": 50, "hungryEggHealth": -3,
+                  "rivalRange": 500, "rivalFightChance": -1, "roosterFightChance": 0.75, "wildFightChance": 3,
+                  "fightStopRange": 0, "fightTruceTicks": -20 } }
+                """).tuning();
+
+        assertEquals(1.0, tuning.vigourPerMating(), 1.0e-9);
+        assertEquals(0.2, tuning.vigourPerEgg(), 1.0e-9);
+        assertEquals(20.0, tuning.hungryMatingHealth(), 1.0e-9);
+        assertEquals(0.0, tuning.hungryEggHealth(), 1.0e-9);
+        assertEquals(64, tuning.rivalRange());
+        assertEquals(0.0, tuning.rivalFightChance(), 1.0e-9);
+        assertEquals(0.75, tuning.roosterFightChance(), 1.0e-9);
+        assertEquals(1.0, tuning.wildFightChance(), 1.0e-9);
+        assertEquals(1, tuning.fightStopRange());
+        assertEquals(0, tuning.fightTruceTicks());
     }
 
     @Test
