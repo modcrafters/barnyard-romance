@@ -73,7 +73,8 @@ public final class HerdStatus {
                 shear,
                 record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()),
                 eggs
-        ).withCap(WildCaught.cap(traits.origin(), record.tamed(), config.tuning()));
+        ).withCap(WildCaught.cap(traits.origin(), record.tamed(), config.tuning()))
+                .withKilledByRival(!record.alive() && record.cause() == DeathCause.RIVAL);
         return new HerdEntry(
                 node.id(),
                 record.species(),

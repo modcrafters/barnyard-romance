@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
@@ -116,7 +117,8 @@ public final class HerdBooks {
         if (reason != null && reason.shouldDestroy() && !NestingBoxes.inNest(animal.getUUID())) {
             HerdRecord record = data.record(animal.getUUID());
             if (record != null) {
-                data.put(animal.getUUID(), record.died(now, level.getOverworldClockTime()));
+                DeathCause cause = Fights.killedByRival(animal) ? DeathCause.RIVAL : DeathCause.NONE;
+                data.put(animal.getUUID(), record.died(now, level.getOverworldClockTime(), cause));
             }
             data.ledger().died(animal.getUUID());
             data.forgetOrphans();

@@ -100,6 +100,12 @@ class HerdPageTextTest {
     }
 
     @Test
+    void aMaleKilledByARivalSaysSo() {
+        assertEquals(List.of("Size L · Adult · 18d old", "Died on day 42", "Killed by a rival", "Familiar 80%", "Fertile 90%"),
+                english(cow().died(42L).withKilledByRival(true)));
+    }
+
+    @Test
     void aMaleHasNoPregnancyMilkOrFertility() {
         HerdPageText.PageFacts bull = new HerdPageText.PageFacts("XL", AgeStage.OLD, -1L, false, 3 * DAY, false, 0.0, 0L, Text.EMPTY,
                 0.5, -1.0, -1L, Familiar.FAMILIAR, -1L);

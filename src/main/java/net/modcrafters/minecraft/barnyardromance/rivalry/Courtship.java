@@ -35,6 +35,8 @@ public final class Courtship {
         final long startedAt;
         UUID chosen;
         boolean rolled;
+        // Her love time while males fight over her, or -1 when it's counting down as usual.
+        int held = -1;
 
         State(long startedAt) {
             this.startedAt = startedAt;
@@ -84,11 +86,14 @@ public final class Courtship {
 
     // Looks again now and then for a female still waiting, and lets go of one whose love has ended.
     public static void tick(Animal animal, ServerLevel level) {
-        if ((animal.tickCount + animal.getId()) % CHECK_TICKS != 0) {
-            return;
-        }
         State state = STATES.get(animal.getUUID());
         if (state == null) {
+            return;
+        }
+        if (state.held > 0 && animal.isInLove()) {
+            animal.setInLoveTime(state.held);
+        }
+        if ((animal.tickCount + animal.getId()) % CHECK_TICKS != 0) {
             return;
         }
         if (!animal.isInLove() || !animal.isAlive()) {
@@ -144,8 +149,34 @@ public final class Courtship {
                 .toList();
     }
 
-    // Filled in with fights over a female.
+    // Two rivals fight over her; her love waits for them.
     static void fightStarted(Animal female, Animal a, Animal b) {
+        Fights.start(a, b, female.getUUID());
+        holdLove(female, true);
+    }
+
+    // While held, her love doesn't run out; once let go it counts down from where it stood.
+    public static void holdLove(Animal female, boolean held) {
+        State state = STATES.get(female.getUUID());
+        if (state != null) {
+            state.held = held ? Math.max(1, female.getInLoveTime()) : -1;
+        }
+    }
+
+    // The male who won a fight over her gets her, if she's still waiting and he can still have her.
+    public static void offerWinner(Animal female, Animal winner) {
+        try {
+            State state = STATES.get(female.getUUID());
+            if (state == null || state.chosen != null || !female.isInLove()) {
+                return;
+            }
+            Tuning tuning = BarnyardConfig.current().tuning();
+            if (sameKind(female, winner) && available(female, winner, tuning) && Reach.canWalk(winner, female, tuning.rivalRange())) {
+                choose(female, state, winner);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.error("Failed to give a {} the winner of a fight", AnimalSex.speciesId(female), exception);
+        }
     }
 
     private static boolean available(Animal female, Animal male, Tuning tuning) {

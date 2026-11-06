@@ -45,7 +45,7 @@ public final class HerdRecords {
         AnimalTraits kept = old.traits().fed(fresh.traits().familiarity(), old.traits().lastFedTick()).withHunger(fresh.traits().hunger())
                 .withOrigin(fresh.traits().origin());
         return new HerdRecord(old.species(), old.name(), kept, old.pregnancy(), old.baby(), old.milkable(), old.shearable(), old.woolly(), old.refreshedAt(),
-                old.diedAt(), old.diedClock(), fresh.tamed(), old.nest());
+                old.diedAt(), old.diedClock(), fresh.tamed(), old.nest(), old.cause());
     }
 
     private static Pregnancy withoutLitter(Pregnancy pregnancy) {
