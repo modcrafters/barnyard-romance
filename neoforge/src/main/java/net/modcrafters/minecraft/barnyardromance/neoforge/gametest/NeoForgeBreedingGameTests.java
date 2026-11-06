@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.NaturalistGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
@@ -89,6 +90,7 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(EggGameTests.CASES);
         cases.addAll(NaturalistGameTests.CASES);
         cases.addAll(VigourGameTests.CASES);
+        cases.addAll(CourtshipGameTests.CASES);
         cases.add(new BreedingGameTests.Case("unload_event_refreshes_the_record", 20,
                 helper -> HerdBookGameTests.unloadEventRefreshesTheRecord(helper,
                         cow -> NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(cow, helper.getLevel())))));

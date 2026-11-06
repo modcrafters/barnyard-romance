@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -129,8 +130,8 @@ public final class PregnancyController {
 
     // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
     private static void restWithoutPregnancy(Animal self, Animal partner) {
-        self.setAge(6000);
-        partner.setAge(6000);
+        self.setAge(Courtship.restAfterMating(self, 6000));
+        partner.setAge(Courtship.restAfterMating(partner, 6000));
         self.resetLove();
         partner.resetLove();
         BreedingStatus.resting(self);

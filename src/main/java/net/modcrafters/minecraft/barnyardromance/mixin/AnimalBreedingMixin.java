@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.VanillaBirth;
+import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import org.jspecify.annotations.Nullable;
@@ -37,6 +38,7 @@ public class AnimalBreedingMixin {
 
     @Inject(method = "spawnChildFromBreeding", at = @At("HEAD"), cancellable = true)
     private void barnyardromance$pregnancy(ServerLevel level, Animal partner, CallbackInfo callback) {
+        Courtship.mated((Animal) (Object) this, partner);
         if (PregnancyController.replaceBirth((Animal) (Object) this, partner, level)) {
             callback.cancel();
         }
@@ -63,8 +65,14 @@ public class AnimalBreedingMixin {
         EggLaying.serverTick(self, level);
     }
 
+    // Some mods' animals (Naturalist's ostrich) override customServerAiStep without calling it, but every animal runs
+    // aiStep, so what must reach them all ticks from here.
     @Inject(method = "aiStep", at = @At("TAIL"))
     private void barnyardromance$pregnancyHearts(CallbackInfo callback) {
-        AnimalHearts.clientTick((Animal) (Object) this);
+        Animal self = (Animal) (Object) this;
+        AnimalHearts.clientTick(self);
+        if (self.level() instanceof ServerLevel level) {
+            Courtship.tick(self, level);
+        }
     }
 }

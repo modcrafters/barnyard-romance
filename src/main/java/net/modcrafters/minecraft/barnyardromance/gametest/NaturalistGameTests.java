@@ -54,6 +54,7 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_others_are_ignored", 20, NaturalistGameTests::othersAreIgnored),
             new BreedingGameTests.Case("naturalist_deer_and_boar_get_pregnant", 20, NaturalistGameTests::deerAndBoarGetPregnant),
             new BreedingGameTests.Case("naturalist_ostriches_need_a_male_and_a_female", 20, NaturalistGameTests::ostrichesNeedAMaleAndAFemale),
+            new BreedingGameTests.Case("naturalist_ostriches_breed_by_courtship", 400, NaturalistGameTests::ostrichesBreedByCourtship),
             new BreedingGameTests.Case("naturalist_food_does_not_breed_ducks_or_turkeys", 20, NaturalistGameTests::foodDoesNotBreedDucksOrTurkeys),
             new BreedingGameTests.Case("naturalist_duck_timer_is_held_off", 20, NaturalistGameTests::duckTimerIsHeldOff),
             new BreedingGameTests.Case("naturalist_excluded_duck_keeps_naturalists_timer", 20, NaturalistGameTests::excludedDuckKeepsNaturalistsTimer),
@@ -120,8 +121,8 @@ public final class NaturalistGameTests {
             mother.setInLove(null);
             father.setInLove(null);
             otherMale.setInLove(null);
+            helper.assertTrue(!father.isInLove(), "feeding put a male " + id + " in love");
             helper.assertTrue(!father.canMate(otherMale), "two male " + id + " can mate");
-            helper.assertTrue(mother.canMate(father), "a " + id + " couple can't mate");
 
             mother.spawnChildFromBreeding(helper.getLevel(), father);
 
@@ -141,9 +142,21 @@ public final class NaturalistGameTests {
         male.setInLove(null);
         otherMale.setInLove(null);
 
+        helper.assertTrue(!male.isInLove(), "feeding put a male ostrich in love");
         helper.assertTrue(!male.canMate(otherMale), "two male ostriches can mate");
-        helper.assertTrue(female.canMate(male), "an ostrich couple can't mate");
         helper.succeed();
+    }
+
+    // Naturalist's own goal lays an egg block instead of a baby, so this checks the male paid for the mating.
+    public static void ostrichesBreedByCourtship(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        Animal female = BreedingGameTests.female(helper, type(helper, OSTRICH));
+        Animal male = CourtshipGameTests.fed(BreedingGameTests.male(helper, type(helper, OSTRICH)));
+        female.setInLove(null);
+
+        helper.succeedWhen(() -> CourtshipGameTests.assertVigour(helper, male, 0.7));
     }
 
     public static void foodDoesNotBreedDucksOrTurkeys(GameTestHelper helper) {

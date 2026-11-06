@@ -22,6 +22,7 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricProductGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricHerdBookGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricCareGameTests",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricCourtshipGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricVigourGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricEggGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricNaturalistGameTests"
