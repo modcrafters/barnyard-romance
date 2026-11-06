@@ -187,4 +187,27 @@ class HerdBookLayoutTest {
         assertEquals("Cow", English.of(HerdBookLayout.displayName("", "Cow", "")));
         assertEquals("Bluebell", English.of(HerdBookLayout.displayName("Bluebell", "Cow", "Daisy")));
     }
+
+    @Test
+    void aShortEntryIsOneLeaf() {
+        assertEquals(List.of(5), HerdBookLayout.leaves(5, 8, 12, 3));
+    }
+
+    @Test
+    void aLongEntryFlowsOn() {
+        assertEquals(List.of(8, 6), HerdBookLayout.leaves(14, 8, 12, 3));
+    }
+
+    @Test
+    void theFamilyGetsItsOwnLeafWhenFull() {
+        assertEquals(List.of(8, 0), HerdBookLayout.leaves(8, 8, 12, 3));
+    }
+
+    @Test
+    void leavesStepThenStop() {
+        assertEquals(1, HerdBookLayout.nextLeaf(0, 2));
+        assertEquals(-1, HerdBookLayout.nextLeaf(1, 2));
+        assertEquals(-1, HerdBookLayout.previousLeaf(0));
+        assertEquals(0, HerdBookLayout.previousLeaf(1));
+    }
 }

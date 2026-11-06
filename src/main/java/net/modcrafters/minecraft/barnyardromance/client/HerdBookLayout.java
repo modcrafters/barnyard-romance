@@ -91,6 +91,36 @@ public final class HerdBookLayout {
         return Math.max(0, linesLeft - 1);
     }
 
+    // How many status lines go on each leaf of one animal's entry. The first leaf has `firstRoom` lines of room (it
+    // carries the portrait), later ones `room`. The family block, `familyRows` lines tall, goes on the last leaf; when
+    // it doesn't fit there it gets a leaf of its own, shown as a 0.
+    public static List<Integer> leaves(int lines, int firstRoom, int room, int familyRows) {
+        List<Integer> leaves = new ArrayList<>();
+        int left = lines;
+        int capacity = firstRoom;
+        do {
+            int taken = Math.min(left, Math.max(1, capacity));
+            leaves.add(taken);
+            left -= taken;
+            capacity = room;
+        } while (left > 0);
+        int last = leaves.size() == 1 ? firstRoom : room;
+        if (leaves.getLast() + familyRows > last) {
+            leaves.add(0);
+        }
+        return leaves;
+    }
+
+    // The leaf after this one, or -1 past the end.
+    public static int nextLeaf(int leaf, int leafCount) {
+        return leaf + 1 < leafCount ? leaf + 1 : -1;
+    }
+
+    // The leaf before this one, or -1 before the start.
+    public static int previousLeaf(int leaf) {
+        return leaf > 0 ? leaf - 1 : -1;
+    }
+
     public static List<List<Line>> contents(List<Row> rows, String species) {
         List<Line> lines = new ArrayList<>();
         for (Group group : Group.values()) {

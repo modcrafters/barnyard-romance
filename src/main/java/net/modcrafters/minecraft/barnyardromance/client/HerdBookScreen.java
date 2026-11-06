@@ -109,6 +109,13 @@ public class HerdBookScreen extends Screen {
     private static final int FAMILIAR_BAR = 0xFFD6523A;
     private static final int PREGNANT_BAR = 0xFFE07096;
     private static final int FERTILE_BAR = 0xFF78A840;
+    private static final int GROWTH_BAR = 0xFF5B8FC4;
+    private static final int WEIGHT_BAR = 0xFFB08A4A;
+    private static final int VIGOUR_BAR = 0xFFE0A030;
+    private static final Identifier HOURGLASS_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/hourglass");
+    private static final Identifier WEIGHT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/weight");
+    private static final Identifier GOLD_HEART_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/gold_heart");
+    private static final Identifier VIGOUR_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector/vigour");
     // The bottom bar: page arrows on either side of the return arrow, the cross on the right.
     private static final int NEXT_X = 46;
     private static final int RETURN_X = 25;
@@ -130,6 +137,8 @@ public class HerdBookScreen extends Screen {
     private String species = "";
     private int page;
     private @Nullable UUID animal;
+    // Which leaf of the shown animal's entry is open; a long entry runs over more than one.
+    private int leaf;
     private boolean removeArmed;
     private final List<Hit> hits = new ArrayList<>();
     private final PageWheel wheel = new PageWheel();
@@ -181,6 +190,7 @@ public class HerdBookScreen extends Screen {
             return;
         }
         this.animal = id;
+        this.leaf = 0;
         this.species = entry.species();
         this.removeArmed = false;
         updateButtons();
@@ -217,6 +227,12 @@ public class HerdBookScreen extends Screen {
 
     private void back() {
         if (this.animal != null) {
+            int before = HerdBookLayout.previousLeaf(this.leaf);
+            if (before >= 0) {
+                this.leaf = before;
+                updateButtons();
+                return;
+            }
             UUID previous = HerdBookLayout.previous(HerdBookLayout.order(contents()), this.animal);
             if (previous != null) {
                 showAnimal(previous);
@@ -228,6 +244,15 @@ public class HerdBookScreen extends Screen {
     }
 
     private void forward() {
+        HerdEntry shown = this.animal == null ? null : this.entries.get(this.animal);
+        if (shown != null) {
+            int after = HerdBookLayout.nextLeaf(this.leaf, leaves(shown).size());
+            if (after >= 0) {
+                this.leaf = after;
+                updateButtons();
+                return;
+            }
+        }
         if (this.animal != null) {
             UUID next = HerdBookLayout.next(HerdBookLayout.order(contents()), this.animal);
             if (next != null) {
@@ -246,8 +271,10 @@ public class HerdBookScreen extends Screen {
         if (this.animal != null) {
             List<UUID> order = HerdBookLayout.order(contents());
             boolean listed = order.contains(this.animal);
-            this.backButton.visible = listed && HerdBookLayout.previous(order, this.animal) != null;
-            this.forwardButton.visible = listed && HerdBookLayout.next(order, this.animal) != null;
+            HerdEntry shown = this.entries.get(this.animal);
+            boolean moreLeaves = shown != null && HerdBookLayout.nextLeaf(this.leaf, leaves(shown).size()) >= 0;
+            this.backButton.visible = this.leaf > 0 || listed && HerdBookLayout.previous(order, this.animal) != null;
+            this.forwardButton.visible = moreLeaves || listed && HerdBookLayout.next(order, this.animal) != null;
         } else {
             this.backButton.visible = this.page > 0;
             this.forwardButton.visible = this.page < contents().size() - 1;
@@ -539,32 +566,79 @@ public class HerdBookScreen extends Screen {
     }
 
     // An animal's page: a card with its head, name and size, its status lines, then its family.
+    // A long entry runs over several leaves: the first has the card, the rest a name line, and the family is on the last.
     private void drawAnimal(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int mouseX, int mouseY) {
+        List<Integer> leaves = leaves(entry);
+        this.leaf = Math.min(this.leaf, leaves.size() - 1);
         int y = top() + ANIMAL_TOP;
-        HerdBookHeads.draw(graphics, entry.id(), entry.species(), entry.kid(), x, y, PORTRAIT);
-        int textX = HerdBookHeads.AVAILABLE ? x + PORTRAIT + 4 : x;
         int right = x + TEXT_WIDTH;
+        int counterWidth = 0;
+        if (leaves.size() > 1) {
+            Component counter = Component.translatable("gui.barnyard_romance.herd_book.page", this.leaf + 1, leaves.size());
+            counterWidth = this.font.width(counter) + 4;
+            graphics.text(this.font, counter, right - counterWidth + 4, y + 2, MUTED, false);
+        }
+        int from = 0;
+        for (int i = 0; i < this.leaf; i++) {
+            from += leaves.get(i);
+        }
+        List<HerdEntry.Line> status = statusLines(entry);
+        int textX = HerdBookHeads.AVAILABLE && this.leaf == 0 ? x + PORTRAIT + 4 : x;
+        if (this.leaf == 0) {
+            HerdBookHeads.draw(graphics, entry.id(), entry.species(), entry.kid(), x, y, PORTRAIT);
+        }
         graphics.text(this.font, entry.female() ? FEMALE_MARK : MALE_MARK, textX, y + 2, entry.female() ? FEMALE : MALE, false);
-        graphics.text(this.font, fit(this.names.get(entry.id()), right - textX - 8), textX + 8, y + 2, entry.alive() ? INK : MUTED, false);
+        graphics.text(this.font, fit(this.names.get(entry.id()), right - counterWidth - textX - 8), textX + 8, y + 2, entry.alive() ? INK : MUTED, false);
         int subtitleY = y + 12;
-        for (HerdEntry.Line line : entry.lines()) {
-            if (line.kind() == StatKind.SIZE) {
-                for (FormattedCharSequence part : this.font.split(line.text(), right - textX)) {
-                    graphics.text(this.font, part, textX, subtitleY, MUTED, false);
-                    subtitleY += LINE;
+        if (this.leaf == 0) {
+            for (HerdEntry.Line line : entry.lines()) {
+                if (line.kind() == StatKind.SIZE) {
+                    for (FormattedCharSequence part : this.font.split(line.text(), right - textX)) {
+                        graphics.text(this.font, part, textX, subtitleY, MUTED, false);
+                        subtitleY += LINE;
+                    }
                 }
             }
+            y = Math.max(y + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), subtitleY - 1) + 2;
+        } else {
+            y = subtitleY - 1 + 2;
         }
-        y = Math.max(y + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), subtitleY - 1) + 2;
         graphics.fill(x, y, right, y + 1, RULE);
         y += 4;
+        for (HerdEntry.Line line : status.subList(from, from + leaves.get(this.leaf))) {
+            drawPageLine(graphics, entry, line, x, y);
+            y += STATUS_LINE;
+        }
+        if (this.leaf == leaves.size() - 1) {
+            drawFamily(graphics, entry, x, y + 2);
+        }
+        drawAnimalButtons(graphics, entry, mouseX, mouseY);
+    }
+
+    // The lines under the card's rule: everything but the size, which is its subtitle.
+    private static List<HerdEntry.Line> statusLines(HerdEntry entry) {
+        return entry.lines().stream().filter(line -> line.kind() != StatKind.SIZE).toList();
+    }
+
+    private List<Integer> leaves(HerdEntry entry) {
+        int subtitle = 0;
         for (HerdEntry.Line line : entry.lines()) {
-            if (line.kind() != StatKind.SIZE) {
-                drawPageLine(graphics, entry, line, x, y);
-                y += STATUS_LINE;
+            if (line.kind() == StatKind.SIZE) {
+                subtitle += this.font.split(line.text(), HerdBookHeads.AVAILABLE ? TEXT_WIDTH - PORTRAIT - 4 : TEXT_WIDTH).size() * LINE;
             }
         }
-        y += 2;
+        // The first leaf's card runs down to its rule and the gap under it; later leaves have a name line there.
+        int cardBottom = Math.max(ANIMAL_TOP + (HerdBookHeads.AVAILABLE ? PORTRAIT : 0), ANIMAL_TOP + 12 + subtitle - 1) + 2 + 4;
+        int firstRoom = (BUTTONS_Y - cardBottom) / STATUS_LINE;
+        int room = (BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + 4)) / STATUS_LINE;
+        // The family: its header, the mother and father, and a row of young when there are any.
+        boolean young = this.entries.values().stream()
+                .anyMatch(other -> other.mother().equals(Optional.of(entry.id())) || other.father().equals(Optional.of(entry.id())));
+        return HerdBookLayout.leaves(statusLines(entry).size(), firstRoom, room, 3 + (young ? 1 : 0));
+    }
+
+    private void drawFamily(GuiGraphicsExtractor graphics, HerdEntry entry, int x, int y) {
+        int right = x + TEXT_WIDTH;
         Component family = Component.translatable("gui.barnyard_romance.herd_book.family");
         graphics.text(this.font, family, x, y, HEADER, false);
         graphics.fill(x + this.font.width(family) + 3, y + 4, right, y + 5, RULE);
@@ -590,7 +664,6 @@ public class HerdBookScreen extends Screen {
                 drawYoungNames(graphics, young, x, y + LINK_LINE);
             }
         }
-        drawAnimalButtons(graphics, entry, mouseX, mouseY);
     }
 
     // A status line: its icon, then its words, or a label and a bar for pregnancy, familiarity and fertility.
@@ -611,7 +684,11 @@ public class HerdBookScreen extends Screen {
             case FERTILITY -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FERTILE_ICON, x, iconY, ICON, ICON);
             case SHEAR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, iconY, ICON, ICON);
             case EGGS -> entry.eggs().ifPresent(eggs -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, eggIcon(eggs), x, iconY, ICON, ICON));
-            case SIZE, NOTE, GROWTH, WEIGHT, HEALTH, VIGOUR, BREEDING -> {
+            case GROWTH -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOURGLASS_ICON, x, iconY, ICON, ICON);
+            case WEIGHT -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, WEIGHT_ICON, x, iconY, ICON, ICON);
+            case HEALTH, BREEDING -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GOLD_HEART_ICON, x, iconY, ICON, ICON);
+            case VIGOUR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, VIGOUR_ICON, x, iconY, ICON, ICON);
+            case SIZE, NOTE -> {
             }
         }
         int textX = x + ICON + 3;
@@ -620,13 +697,20 @@ public class HerdBookScreen extends Screen {
             case PREGNANT -> Component.translatable("gui.barnyard_romance.herd_book.pregnant_label");
             case FAMILIARITY -> Component.translatable("gui.barnyard_romance.herd_book.familiar_label");
             case FERTILITY -> Component.translatable("gui.barnyard_romance.herd_book.fertile_label");
+            case GROWTH -> Component.translatable("gui.barnyard_romance.inspector.growth");
+            case WEIGHT -> Component.translatable("gui.barnyard_romance.inspector.weight");
+            case HEALTH -> Component.translatable("gui.barnyard_romance.inspector.health");
+            case VIGOUR -> Component.translatable("gui.barnyard_romance.inspector.vigour");
             default -> null;
         };
         if (label != null) {
             graphics.text(this.font, label, textX, y, INK, false);
             bar(graphics, textX + barLabelWidth() + 4, y + 1, right, line.fill(), switch (line.kind()) {
                 case PREGNANT -> PREGNANT_BAR;
-                case FAMILIARITY -> FAMILIAR_BAR;
+                case FAMILIARITY, HEALTH -> FAMILIAR_BAR;
+                case GROWTH -> GROWTH_BAR;
+                case WEIGHT -> WEIGHT_BAR;
+                case VIGOUR -> VIGOUR_BAR;
                 default -> FERTILE_BAR;
             });
             // The bar's words, such as how long until the birth, are in its tooltip.
@@ -645,7 +729,8 @@ public class HerdBookScreen extends Screen {
     private int barLabelWidth() {
         int width = 0;
         for (String key : List.of("gui.barnyard_romance.herd_book.pregnant_label", "gui.barnyard_romance.herd_book.familiar_label",
-                "gui.barnyard_romance.herd_book.fertile_label")) {
+                "gui.barnyard_romance.herd_book.fertile_label", "gui.barnyard_romance.inspector.growth", "gui.barnyard_romance.inspector.weight",
+                "gui.barnyard_romance.inspector.health", "gui.barnyard_romance.inspector.vigour")) {
             width = Math.max(width, this.font.width(Component.translatable(key)));
         }
         return width;
