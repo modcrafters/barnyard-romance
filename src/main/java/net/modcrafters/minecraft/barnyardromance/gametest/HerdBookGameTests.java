@@ -7,7 +7,16 @@ import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
+import com.mojang.serialization.Dynamic;
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.herd.RecordSheet;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -43,6 +52,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.forceBirth;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.male;
@@ -72,7 +82,11 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("vanilla_birth_records_parents", 20, HerdBookGameTests::vanillaBirthRecordsParents),
             new BreedingGameTests.Case("save_refreshes_loaded_members", 20, HerdBookGameTests::saveRefreshesLoadedMembers),
             new BreedingGameTests.Case("member_order_survives_save", 20, HerdBookGameTests::memberOrderSurvivesSave),
-            new BreedingGameTests.Case("herd_book_record_keeps_the_fresh_origin", 20, HerdBookGameTests::herdBookRecordKeepsTheFreshOrigin)
+            new BreedingGameTests.Case("herd_book_record_keeps_the_fresh_origin", 20, HerdBookGameTests::herdBookRecordKeepsTheFreshOrigin),
+            new BreedingGameTests.Case("the_book_and_the_animal_agree", 20, HerdBookGameTests::theBookAndTheAnimalAgree),
+            new BreedingGameTests.Case("a_book_page_shows_health_and_vigour", 20, HerdBookGameTests::aBookPageShowsHealthAndVigour),
+            new BreedingGameTests.Case("an_old_record_without_a_sheet_loads", 20, HerdBookGameTests::anOldRecordWithoutASheetLoads),
+            new BreedingGameTests.Case("the_egg_tip_says_what_she_laid_today", 20, HerdBookGameTests::theEggTipSaysWhatSheLaidToday)
     );
 
     private HerdBookGameTests() {
@@ -467,6 +481,79 @@ public final class HerdBookGameTests {
         helper.assertTrue(kept.traits().lastFedTick() == 100L, "the frozen record took the fresh feeding time");
         helper.assertTrue(kept.traits().origin() == Origin.WILD, "the frozen record kept origin " + kept.traits().origin());
         helper.succeed();
+    }
+
+    // The book works a record out the way the animal works itself out, so a page reads the same either way.
+    public static void theBookAndTheAnimalAgree(GameTestHelper helper) {
+        Animal bull = male(helper, EntityTypes.COW);
+        Animal cow = female(helper, EntityTypes.COW);
+        long clock = clock(10L) + 2_000L;
+        FamiliarityCare.markEaten(bull, clock - 1_000L);
+        cow.setInLove(null);
+        bull.setInLove(null);
+        cow.spawnChildFromBreeding(helper.getLevel(), bull);
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, bull);
+        HerdBooks.register(book, cow);
+        long now = helper.getLevel().getGameTime();
+
+        for (Animal animal : List.of(bull, cow)) {
+            List<String> live = describe(StatSheet.lines(LiveFacts.of(animal, now, clock).orElseThrow()));
+            HerdRecord record = data(helper).record(animal.getUUID());
+            List<String> recorded = describe(StatSheet.lines(HerdStatus.facts(record, data(helper).ledger().node(animal.getUUID()), now, clock, true)));
+            helper.assertTrue(live.equals(recorded), "the animal reads " + live + " but the book reads " + recorded);
+        }
+        helper.assertTrue(describe(StatSheet.lines(LiveFacts.of(cow, now, clock).orElseThrow())).stream().anyMatch(line -> line.startsWith("PREGNANT")),
+                "the cow is not pregnant");
+        helper.succeed();
+    }
+
+    public static void aBookPageShowsHealthAndVigour(GameTestHelper helper) {
+        Animal bull = male(helper, EntityTypes.COW);
+        long now = helper.getLevel().getGameTime();
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), bull);
+
+        HerdEntry entry = HerdStatus.entry(data(helper).record(bull.getUUID()), data(helper).ledger().node(bull.getUUID()), now, clock(10L), true);
+
+        List<String> lines = entry.lines().stream().map(line -> line.kind() + ":" + line.text().getString()).toList();
+        helper.assertTrue(lines.contains("HEALTH:Health 10/10"), "the page reads " + lines);
+        helper.assertTrue(lines.stream().anyMatch(line -> line.startsWith("VIGOUR:")), "the page has no Vigour: " + lines);
+        helper.succeed();
+    }
+
+    // A record saved before the sheet was kept has no sheet field; it loads and shows no Health row.
+    public static void anOldRecordWithoutASheetLoads(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        Tag saved = HerdBookData.CODEC.encodeStart(NbtOps.INSTANCE, data(helper)).getOrThrow();
+        Dynamic<Tag> old = new Dynamic<>(NbtOps.INSTANCE, saved).update("animals", animals ->
+                animals.createList(animals.asStream().map(entry -> entry.update("record", record -> record.remove("sheet")))));
+
+        HerdBookData loaded = HerdBookData.CODEC.parse(NbtOps.INSTANCE, old.getValue()).getOrThrow();
+
+        HerdRecord record = loaded.record(cow.getUUID());
+        helper.assertTrue(record != null && record.sheet().equals(RecordSheet.NONE), "the old record has sheet " + (record == null ? null : record.sheet()));
+        List<StatKind> kinds = StatSheet.lines(HerdStatus.facts(record, loaded.ledger().node(cow.getUUID()), helper.getLevel().getGameTime(), clock(10L), false))
+                .stream().map(StatLine::kind).toList();
+        helper.assertTrue(!kinds.contains(StatKind.HEALTH), "an old record shows health: " + kinds);
+        helper.succeed();
+    }
+
+    public static void theEggTipSaysWhatSheLaidToday(GameTestHelper helper) {
+        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.MEDIUM_HEN, 0.5, 3);
+        FamiliarityCare.markEaten(hen);
+        Services.DATA.setLaying(hen, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(5_000, 9_000), 1, 1));
+
+        HerdEntry entry = EggGameTests.bookEntry(helper, hen);
+
+        helper.assertTrue(entry.eggTip().getString().endsWith("Eggs: 1/2 today"), "the egg tip reads " + entry.eggTip().getString());
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == StatKind.NOTE && line.text().getString().equals("Eggs: 1/2 today")),
+                "the page has no egg note: " + entry.lines().stream().map(line -> line.text().getString()).toList());
+        helper.succeed();
+    }
+
+    private static List<String> describe(List<StatLine> lines) {
+        return lines.stream().map(line -> line.kind() + ":" + TextComponents.of(line.text()).getString() + ":" + line.fill()).toList();
     }
 
     private static HerdRecord withTraits(HerdRecord record, AnimalTraits traits) {

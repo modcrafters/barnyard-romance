@@ -123,4 +123,24 @@ public class FabricHerdBookGameTests {
     public void herdBookRecordKeepsTheFreshOrigin(GameTestHelper helper) {
         HerdBookGameTests.herdBookRecordKeepsTheFreshOrigin(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theBookAndTheAnimalAgree(GameTestHelper helper) {
+        HerdBookGameTests.theBookAndTheAnimalAgree(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aBookPageShowsHealthAndVigour(GameTestHelper helper) {
+        HerdBookGameTests.aBookPageShowsHealthAndVigour(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anOldRecordWithoutASheetLoads(GameTestHelper helper) {
+        HerdBookGameTests.anOldRecordWithoutASheetLoads(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theEggTipSaysWhatSheLaidToday(GameTestHelper helper) {
+        HerdBookGameTests.theEggTipSaysWhatSheLaidToday(helper);
+    }
 }

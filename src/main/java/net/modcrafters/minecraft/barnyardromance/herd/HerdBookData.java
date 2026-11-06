@@ -57,9 +57,10 @@ public final class HerdBookData extends SavedData {
             Codec.LONG.optionalFieldOf("diedClock", -1L).forGetter(HerdRecord::diedClock),
             Codec.BOOL.optionalFieldOf("tamed", false).forGetter(HerdRecord::tamed),
             NestCheck.CODEC.optionalFieldOf("nest", NestCheck.NONE).forGetter(HerdRecord::nest),
-            DEATH_CAUSE_CODEC.optionalFieldOf("cause", DeathCause.NONE).forGetter(HerdRecord::cause)
-    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, cause) ->
-            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, cause)));
+            DEATH_CAUSE_CODEC.optionalFieldOf("cause", DeathCause.NONE).forGetter(HerdRecord::cause),
+            RecordSheet.CODEC.optionalFieldOf("sheet", RecordSheet.NONE).forGetter(HerdRecord::sheet)
+    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, cause, sheet) ->
+            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, cause, sheet)));
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(entry -> entry.node().id()),
             UUIDUtil.CODEC.optionalFieldOf("motherId").forGetter(entry -> Optional.ofNullable(entry.node().mother())),

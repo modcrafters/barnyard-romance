@@ -98,7 +98,8 @@ public final class LiveFacts {
         return animal instanceof AbstractHorse || animal instanceof Wolf || animal instanceof Cat;
     }
 
-    private static String offspring(AnimalTraits traits) {
+    // The name of what the animal last bore, or empty.
+    public static String offspring(AnimalTraits traits) {
         Identifier id = Identifier.tryParse(traits.lastBirthSpecies());
         if (id == null || traits.lastBirthSpecies().isBlank()) {
             return "";
