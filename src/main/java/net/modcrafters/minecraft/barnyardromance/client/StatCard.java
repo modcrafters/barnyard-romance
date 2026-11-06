@@ -41,8 +41,8 @@ public final class StatCard {
     ) {
         String sign = traits.sex() == Sex.FEMALE ? "\u2640" : "\u2642";
         String letter = SizeClass.of(traits.sex(), traits.scale(), size).name();
-        String name = animal.getName().getString();
-        int titleWidth = font.width(sign) + 3 + font.width(letter) + 4 + font.width(name);
+        String name = fit(font, animal.getName().getString(), StatCardLayout.nameBudget(font.width(sign), font.width(letter)));
+        int titleWidth = font.width(sign) + StatCardLayout.GAP + font.width(letter) + StatCardLayout.TITLE_GAP + font.width(name);
         String subtitle = null;
         List<Row> rows = new ArrayList<>();
         for (StatLine line : lines) {

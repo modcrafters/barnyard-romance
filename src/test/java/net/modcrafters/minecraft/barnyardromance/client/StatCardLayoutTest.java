@@ -26,4 +26,13 @@ class StatCardLayoutTest {
         assertTrue(origin.x() >= 0 && origin.x() + width <= 320, "x " + origin.x());
         assertTrue(origin.y() >= 0 && origin.y() + height <= 240, "y " + origin.y());
     }
+
+    @Test
+    void aTitleFittedToItsBudgetNeverPassesTheCap() {
+        int sign = 6;
+        int letter = 6;
+        int title = sign + StatCardLayout.GAP + letter + StatCardLayout.TITLE_GAP + StatCardLayout.nameBudget(sign, letter);
+        assertEquals(StatCardLayout.MAX_WIDTH, StatCardLayout.width(title, List.of()));
+        assertTrue(StatCardLayout.nameBudget(500, 500) >= 0);
+    }
 }
