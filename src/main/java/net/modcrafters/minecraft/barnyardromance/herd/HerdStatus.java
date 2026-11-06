@@ -130,7 +130,7 @@ public final class HerdStatus {
                 .shear(shear)
                 .grumpy(record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()))
                 .eggs(eggs)
-                .cap(WildCaught.cap(traits.origin(), record.tamed(), config.tuning()))
+                .cap(WildCaught.cap(traits.origin(), sheet.needsTaming() || record.tamed(), config.tuning()))
                 .killedByRival(!record.alive() && record.cause() == DeathCause.RIVAL)
                 .growthTicks(traits.growthTicks())
                 .weight(traits.weight())

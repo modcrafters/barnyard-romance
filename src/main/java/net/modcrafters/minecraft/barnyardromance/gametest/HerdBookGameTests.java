@@ -500,9 +500,13 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
         HerdBooks.register(book, bull);
         HerdBooks.register(book, cow);
+        // A wild-caught horse that was never tamed: its cap is the pet one, on the card and in the book alike.
+        Animal horse = female(helper, EntityTypes.HORSE);
+        Services.DATA.set(horse, traits(helper, horse).fed(0.5, -1L).withOrigin(Origin.WILD));
+        HerdBooks.register(book, horse);
         long now = helper.getLevel().getGameTime();
 
-        for (Animal animal : List.of(bull, cow)) {
+        for (Animal animal : List.of(bull, cow, horse)) {
             List<String> live = describe(StatSheet.lines(LiveFacts.of(animal, now, clock).orElseThrow()));
             HerdRecord record = data(helper).record(animal.getUUID());
             List<String> recorded = describe(StatSheet.lines(HerdStatus.facts(record, data(helper).ledger().node(animal.getUUID()), now, clock, true)));
@@ -510,6 +514,8 @@ public final class HerdBookGameTests {
         }
         helper.assertTrue(describe(StatSheet.lines(LiveFacts.of(cow, now, clock).orElseThrow())).stream().anyMatch(line -> line.startsWith("PREGNANT")),
                 "the cow is not pregnant");
+        helper.assertTrue(describe(StatSheet.lines(LiveFacts.of(horse, now, clock).orElseThrow())).stream().anyMatch(line -> line.contains("80%")),
+                "the wild horse's cap is not 80%");
         helper.succeed();
     }
 
