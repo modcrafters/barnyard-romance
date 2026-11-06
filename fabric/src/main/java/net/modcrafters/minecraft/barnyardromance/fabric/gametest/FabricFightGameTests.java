@@ -37,7 +37,7 @@ public class FabricFightGameTests {
         FightGameTests.goatsFightToTheEnd(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = 200)
     public void aFightEndsWhenARivalIsRemoved(GameTestHelper helper) {
         FightGameTests.aFightEndsWhenARivalIsRemoved(helper);
     }
@@ -55,5 +55,30 @@ public class FabricFightGameTests {
     @GameTest(structure = PEN, maxTicks = 1200)
     public void aRivalDeathIsNotedInTheHerdBook(GameTestHelper helper) {
         FightGameTests.aRivalDeathIsNotedInTheHerdBook(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 1200)
+    public void roostersFightWithoutAHen(GameTestHelper helper) {
+        FightGameTests.roostersFightWithoutAHen(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void familiarBullsNeverFightAtRandom(GameTestHelper helper) {
+        FightGameTests.familiarBullsNeverFightAtRandom(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aWildAndAFamiliarBullNeverFightAtRandom(GameTestHelper helper) {
+        FightGameTests.aWildAndAFamiliarBullNeverFightAtRandom(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void twoWildBullsFightAtRandom(GameTestHelper helper) {
+        FightGameTests.twoWildBullsFightAtRandom(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aMaleRollsOnceADay(GameTestHelper helper) {
+        FightGameTests.aMaleRollsOnceADay(helper);
     }
 }

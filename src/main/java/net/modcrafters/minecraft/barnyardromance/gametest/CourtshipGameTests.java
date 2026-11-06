@@ -77,7 +77,9 @@ public final class CourtshipGameTests {
         cow.setInLove(null);
 
         helper.runAfterDelay(BREED_TICKS - 20, () -> {
-            helper.assertTrue(Services.DATA.getPregnancy(cow).isEmpty(), "a bull behind a fence made the cow pregnant");
+            helper.assertTrue(Services.DATA.getPregnancy(cow).isEmpty(), "a bull behind a fence made the cow pregnant: father "
+                    + Services.DATA.getPregnancy(cow).map(Pregnancy::fatherId).orElse(null) + ", the bull " + bull.getUUID()
+                    + " at " + helper.relativePos(bull.blockPosition()) + ", the cow at " + helper.relativePos(cow.blockPosition()));
             assertVigour(helper, bull, 1.0);
             helper.succeed();
         });

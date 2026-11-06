@@ -10,6 +10,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.VanillaBirth;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
+import net.modcrafters.minecraft.barnyardromance.rivalry.RivalRolls;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import org.jspecify.annotations.Nullable;
@@ -75,6 +76,7 @@ public class AnimalBreedingMixin {
         if (self.level() instanceof ServerLevel level) {
             Courtship.tick(self, level);
             Fights.tick(self, level);
+            RivalRolls.tick(self, level);
         }
     }
 }

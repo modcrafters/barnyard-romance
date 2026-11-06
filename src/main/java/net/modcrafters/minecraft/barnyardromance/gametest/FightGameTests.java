@@ -8,6 +8,9 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
+import net.modcrafters.minecraft.barnyardromance.rivalry.RivalRolls;
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggSchedule;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
@@ -33,7 +36,8 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTe
 // fight by hand, since whether rivals fight over her is a roll; those that need the roll call Courtship.court with
 // one. Paths can't be found on the tick animals appear, so courting waits a few ticks.
 public final class FightGameTests {
-    private static final int SETTLE_TICKS = 10;
+    // Paths can't be found on the tick animals appear, nor while a new chicken is still fluttering down.
+    private static final int SETTLE_TICKS = 40;
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("two_bulls_fight_over_a_cow_until_one_dies", 1200, FightGameTests::twoBullsFightOverACowUntilOneDies),
@@ -42,10 +46,15 @@ public final class FightGameTests {
             new BreedingGameTests.Case("food_in_hand_stops_a_fight_between_familiar_bulls", 100, FightGameTests::foodInHandStopsAFightBetweenFamiliarBulls),
             new BreedingGameTests.Case("food_does_not_stop_a_wild_fight", 1200, FightGameTests::foodDoesNotStopAWildFight),
             new BreedingGameTests.Case("goats_fight_to_the_end", 1200, FightGameTests::goatsFightToTheEnd),
-            new BreedingGameTests.Case("a_fight_ends_when_a_rival_is_removed", 100, FightGameTests::aFightEndsWhenARivalIsRemoved),
+            new BreedingGameTests.Case("a_fight_ends_when_a_rival_is_removed", 200, FightGameTests::aFightEndsWhenARivalIsRemoved),
             new BreedingGameTests.Case("bystanders_are_not_hurt", 1200, FightGameTests::bystandersAreNotHurt),
             new BreedingGameTests.Case("pets_never_fight", 100, FightGameTests::petsNeverFight),
-            new BreedingGameTests.Case("a_rival_death_is_noted_in_the_herd_book", 1200, FightGameTests::aRivalDeathIsNotedInTheHerdBook)
+            new BreedingGameTests.Case("a_rival_death_is_noted_in_the_herd_book", 1200, FightGameTests::aRivalDeathIsNotedInTheHerdBook),
+            new BreedingGameTests.Case("roosters_fight_without_a_hen", 1200, FightGameTests::roostersFightWithoutAHen),
+            new BreedingGameTests.Case("familiar_bulls_never_fight_at_random", 100, FightGameTests::familiarBullsNeverFightAtRandom),
+            new BreedingGameTests.Case("a_wild_and_a_familiar_bull_never_fight_at_random", 100, FightGameTests::aWildAndAFamiliarBullNeverFightAtRandom),
+            new BreedingGameTests.Case("two_wild_bulls_fight_at_random", 100, FightGameTests::twoWildBullsFightAtRandom),
+            new BreedingGameTests.Case("a_male_rolls_once_a_day", 100, FightGameTests::aMaleRollsOnceADay)
     );
 
     private FightGameTests() {
@@ -184,6 +193,73 @@ public final class FightGameTests {
             HerdRecord record = HerdBookData.get(helper.getLevel().getServer()).record(small.getUUID());
             helper.assertTrue(record != null && !record.alive(), "the small bull's record is " + record);
             helper.assertTrue(record.cause() == DeathCause.RIVAL, "the small bull died of " + record.cause());
+        });
+    }
+
+    // Unfed and wild, with no hen in sight: roosters fight anyway.
+    public static void roostersFightWithoutAHen(GameTestHelper helper) {
+        Animal first = male(helper, EntityTypes.CHICKEN, 3, 4, 1.0);
+        Animal second = male(helper, EntityTypes.CHICKEN, 5, 4, 1.0);
+        Services.DATA.set(first, traits(helper, first).fed(0.0, -1L));
+        Services.DATA.set(second, traits(helper, second).fed(0.0, -1L));
+        rollAfterSettling(helper, first, second, 0.0, true);
+
+        helper.succeedWhen(() -> helper.assertTrue(first.isAlive() != second.isAlive(), "both roosters are " + first.isAlive()));
+    }
+
+    public static void familiarBullsNeverFightAtRandom(GameTestHelper helper) {
+        Animal first = bull(helper, 3, 4, 1.0);
+        Animal second = bull(helper, 5, 4, 1.0);
+        rollAfterSettling(helper, first, second, 0.0, false);
+    }
+
+    public static void aWildAndAFamiliarBullNeverFightAtRandom(GameTestHelper helper) {
+        Animal first = bull(helper, 3, 4, 1.0);
+        Animal wild = bull(helper, 5, 4, 1.0);
+        Services.DATA.set(wild, traits(helper, wild).fed(0.1, -1L));
+        rollAfterSettling(helper, first, wild, 0.0, false);
+    }
+
+    public static void twoWildBullsFightAtRandom(GameTestHelper helper) {
+        Animal first = bull(helper, 3, 4, 1.0);
+        Animal second = bull(helper, 5, 4, 1.0);
+        Services.DATA.set(first, traits(helper, first).fed(0.1, -1L));
+        Services.DATA.set(second, traits(helper, second).fed(0.1, -1L));
+        rollAfterSettling(helper, first, second, 0.0, true);
+
+        helper.succeedWhen(() -> helper.assertTrue(Fights.fighting(first) || !first.isAlive() || !second.isAlive(), "the wild bulls never fought"));
+    }
+
+    // A roll that comes up "no fight" still uses the day: the male isn't due again until tomorrow.
+    public static void aMaleRollsOnceADay(GameTestHelper helper) {
+        Animal first = bull(helper, 3, 4, 1.0);
+        Animal second = bull(helper, 5, 4, 1.0);
+        Services.DATA.set(first, traits(helper, first).fed(0.1, -1L));
+        Services.DATA.set(second, traits(helper, second).fed(0.1, -1L));
+        helper.runAfterDelay(SETTLE_TICKS, () -> {
+            Animal roller = first.getUUID().compareTo(second.getUUID()) < 0 ? first : second;
+            long clock = helper.getLevel().getOverworldClockTime();
+            RivalRolls.roll(roller, helper.getLevel(), 1.0);
+            helper.assertTrue(!Fights.fighting(roller), "a roll of 1.0 started a fight");
+            helper.assertTrue(traits(helper, roller).vigour().rollDay() == GameDay.of(clock), "the roll wasn't recorded for today");
+            helper.assertTrue(!RivalRolls.due(roller, clock + 23_000L - EggSchedule.sinceMidnight(clock)), "the bull is due again the same day");
+            helper.succeed();
+        });
+    }
+
+    // The male with the smaller UUID rolls for the pair, so a pair rolls once. The roll is passed in so the outcome is
+    // certain; a pair that may fight does at 0.0.
+    private static void rollAfterSettling(GameTestHelper helper, Animal first, Animal second, double roll, boolean fight) {
+        helper.runAfterDelay(SETTLE_TICKS, () -> {
+            Animal roller = first.getUUID().compareTo(second.getUUID()) < 0 ? first : second;
+            RivalRolls.roll(roller, helper.getLevel(), roll);
+            helper.assertTrue(Fights.fighting(first) == fight && Fights.fighting(second) == fight,
+                    (fight ? "the males didn't start fighting" : "the males started fighting"));
+            helper.assertTrue(traits(helper, roller).vigour().rollDay() == GameDay.of(helper.getLevel().getOverworldClockTime()),
+                    "the roll wasn't recorded for today");
+            if (!fight) {
+                helper.succeed();
+            }
         });
     }
 
