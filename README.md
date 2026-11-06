@@ -2,7 +2,7 @@
 
 A Minecraft Java mod for Fabric and NeoForge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla and (most) modded animals.
 
-Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. `/barnyard info`, while you look at an animal, still includes the exact scale. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby. The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
+Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. `/barnyard info`, while you look at an animal, still includes the exact scale. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby; only the female falls in love, and the mod finds her a male (see [Rival males](#rival-males)). The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
 
 ## Bellies and horns
 
@@ -69,13 +69,42 @@ Below 50% familiarity an animal sometimes won't be milked or sheared: one try in
 
 A cap below `familiarityThreshold` (0.3) means wild-caught animals can never breed or give milk or wool.
 
+## Rival males
+
+Only females fall in love. Feed a familiar female and she goes into love as before; feeding a male never does. She is then matched with a grown, familiar male of her kind within 16 blocks who can walk to her (a fence or a wall keeps him out), and only he is put in love, quietly, with no hearts. Horses still pair with donkeys for mules.
+
+**Vigour** is a male's mating energy, shown in the inspector. A male fed yesterday starts the day at 100%, and one who missed yesterday is filled by his first meal today. Otherwise what he has left carries over. Each mating costs 30%, so a fed male can mate three times a day, and each fertilized egg costs a rooster 15%, about six eggs a day. A male who has eaten neither yesterday nor today can still mate on what he has left, but each mating also costs him a heart (half a heart per egg), and he never mates if it would kill him. Males get no breeding rest: Vigour is their only limit.
+
+**Fights.** When two or more such males are around a female in love, there's an even chance the two closest fight. While they do, a third, if there is one, mates with her. Rivals butt heads until one of them dies, the bigger one hitting harder, and her love waits for the winner. Livestock fight: cows, mooshrooms, sheep, goats, pigs, rabbits and chickens, and Naturalist's deer, boar, ducks, turkeys and ostriches. Pets (wolves, cats, the horse family, llamas and camels) and everything else never do, unless a species entry says `"fights": true`.
+
+- **Roosters** that can reach each other fight now and then without a hen, one day in four per pair, wild or yours. Other wild males fight too, one day in twenty per pair, but only when both are wild. Your own familiar males only fight over a female. Fights only happen near players, while the animals are loaded.
+- **Stopping a fight:** come within 8 blocks with food either of them eats, in either hand, and two familiar males stop and leave each other alone for an in-game hour, time to move one. A fight with a wild male can't be stopped.
+- Nobody else is hurt, and the fighters ignore you unless you hit one. An animal killed in a fight is noted in the herd book as "Killed by a rival".
+
+**Stud Mash** (two grains, a root and a berry) gives a grown, familiar male back half his Vigour, up to 100%. Like the other superfoods it skips the once-a-day rule. It isn't a meal: it doesn't count as feeding him and doesn't heal him. A pack can give any food file `"vigour": 0.5` in its effects to do the same.
+
+| Key (`tuning`) | Default | Meaning |
+|---|---|---|
+| `vigourPerMating` | 0.3 | Vigour one mating costs a male |
+| `vigourPerEgg` | 0.15 | Vigour one fertilized egg costs a rooster |
+| `hungryMatingHealth` | 2.0 | Health a mating costs a hungry male |
+| `hungryEggHealth` | 1.0 | Health a fertilized egg costs a hungry rooster |
+| `rivalRange` | 16 | Blocks around a female in love where males count |
+| `rivalFightChance` | 0.5 | Chance two males fight over a female (0 turns it off) |
+| `roosterFightChance` | 0.25 | Chance a day that a pair of roosters fight |
+| `wildFightChance` | 0.05 | Chance a day that a pair of wild males fight |
+| `fightStopRange` | 8 | Blocks within which food in hand stops a fight between familiar males |
+| `fightTruceTicks` | 1000 | Ticks two stopped fighters leave each other alone |
+
+A species entry's `fights` (true or false) says whether its males fight at all.
+
 ## Egg layers
 
 Chickens lay eggs instead of breeding. Seeds feed them and win familiarity like any other food, but never put them in love.
 
 - **How many:** each day an adult hen lays 1 egg if she's S or M and 2 if she's L or XL, one more if she's familiar, and none on a day after she went hungry. She lays them all together at a random time between sunrise and sunset, and the count starts again at midnight.
 - **Where:** when her eggs are due, a hen looks for a **Nesting Box** within 16 blocks that she can walk to, that no other hen is sitting in and that has room. She walks over and goes in for a quarter of an in-game hour, plus five minutes for each egg after the first, and leaves them all in the nests. Any that don't fit are left in front of the box. With no box, or while she's on a lead, she lays on the ground, like vanilla.
-- **Fertilized eggs:** an egg laid in a box is a **Fertilized Egg** if an adult rooster within 16 blocks wasn't hungry yesterday; the closest one is the father. Eggs laid on the ground are always plain.
+- **Fertilized eggs:** an egg laid in a box is a **Fertilized Egg** if an adult rooster within 16 blocks can walk to her and has the Vigour for it (15% an egg; see [Rival males](#rival-males)). The closest one is the father, and pays when she goes to the box. A spent rooster leaves the rest of her eggs plain. Eggs laid on the ground are always plain and cost him nothing.
 - **Hatching:** a fertilized egg left in a box hatches after about a day (sooner from a heavier hen). The chick inherits from both parents like a calf and joins its mother's herd books. Taking the egg out pauses its countdown; putting it back in any box carries on. Time skipped by sleeping or with `/time add` counts too.
 - **Throwing:** plain eggs never hatch. A fertilized egg hatches one time in eight, into a small, light chick with no known parents.
 - **Roosters** are bigger than hens and wear a red comb and big wattles. Hens have no comb.
