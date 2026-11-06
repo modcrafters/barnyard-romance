@@ -8,7 +8,7 @@ import net.minecraft.world.entity.animal.Animal;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
-// Mirrors love mode and the breeding rest into the synced traits so the inspector can show them.
+// Mirrors love mode and the breeding rest into the synced traits so the stat sheet can show them.
 public final class BreedingStatus {
     private static boolean warned;
 
@@ -47,7 +47,7 @@ public final class BreedingStatus {
         } catch (RuntimeException exception) {
             if (!warned) {
                 warned = true;
-                Constants.LOG.error("Failed to record love or rest, the inspector may be out of date", exception);
+                Constants.LOG.error("Failed to record love or rest, the stat sheet may be out of date", exception);
             }
         }
     }

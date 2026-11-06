@@ -26,12 +26,11 @@ public final class BarnyardTab {
     public static CreativeModeTab.Builder titled(CreativeModeTab.Builder builder) {
         return builder
                 .title(Component.translatable("itemGroup." + Constants.MOD_ID))
-                .icon(BarnyardInspector::create);
+                .icon(() -> new ItemStack(BarnyardItems.HERD_BOOK));
     }
 
     public static List<ItemStack> contents() {
         return List.of(
-                BarnyardInspector.create(),
                 new ItemStack(BarnyardItems.HERD_BOOK),
                 new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM),
                 HerdStick.create(HerdTool.info()),

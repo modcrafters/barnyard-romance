@@ -462,7 +462,7 @@ public final class FoodGameTests {
         //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
-        for (Item item : List.of(BarnyardItems.INSPECTOR, BarnyardItems.HERD_STICK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
+        for (Item item : List.of(BarnyardItems.HERD_BOOK, BarnyardItems.HERD_STICK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
             helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
         helper.succeed();

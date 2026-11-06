@@ -30,7 +30,7 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricNaturalistGameTests"
         ],
         "fabric-client-gametest": [
-            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.InspectorClientGameTest",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.BarnyardClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.LooksClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.HerdBookClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.NestingBoxClientGameTest"

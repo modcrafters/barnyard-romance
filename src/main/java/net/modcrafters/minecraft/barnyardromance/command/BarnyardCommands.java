@@ -3,7 +3,6 @@ package net.modcrafters.minecraft.barnyardromance.command;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardInspector;
 import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -27,7 +26,6 @@ public final class BarnyardCommands {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 //?} else
                 //.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                .then(Commands.literal("info").executes(context -> inspector(context.getSource())))
                 .then(Commands.literal("foods").then(Commands.literal("scan").executes(context -> scan(context.getSource()))))
                 .then(Commands.literal("familiarity")
                         .then(Commands.literal("up").executes(context -> give(context.getSource(), HerdTool.familiarity(1))))
@@ -51,13 +49,6 @@ public final class BarnyardCommands {
             source.sendFailure(Component.translatable("commands.barnyard_romance.foods.scan.failed", String.valueOf(exception.getMessage())));
             return 0;
         }
-    }
-
-    private static int inspector(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ServerPlayer player = source.getPlayerOrException();
-        give(player, BarnyardInspector.create());
-        source.sendSuccess(() -> Component.translatable("commands.barnyard_romance.inspector.given"), false);
-        return 1;
     }
 
     private static int give(CommandSourceStack source, HerdTool tool) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

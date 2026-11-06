@@ -25,10 +25,6 @@ public final class BarnyardItems {
             Registries.ITEM,
             Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_stick")
     );
-    public static final ResourceKey<Item> INSPECTOR_ID = ResourceKey.create(
-            Registries.ITEM,
-            Identifier.fromNamespaceAndPath(Constants.MOD_ID, "inspector")
-    );
     public static final ResourceKey<Item> BREEDERS_MASH_ID = ResourceKey.create(
             Registries.ITEM,
             Identifier.fromNamespaceAndPath(Constants.MOD_ID, "breeders_mash")
@@ -67,7 +63,6 @@ public final class BarnyardItems {
             Identifier.withDefaultNamespace("food_and_drinks")
     );
     public static final Item HERD_STICK = new HerdStick(properties(HERD_STICK_ID).stacksTo(1).rarity(Rarity.EPIC));
-    public static final Item INSPECTOR = new BarnyardInspector(properties(INSPECTOR_ID).stacksTo(1).rarity(Rarity.UNCOMMON));
     public static final Item HERD_BOOK = new HerdBookItem(properties(HERD_BOOK_ID).stacksTo(1));
     public static final Item FERTILIZED_EGG = new FertilizedEggItem(properties(FERTILIZED_EGG_ID).stacksTo(1));
     // Plain items: what they do to an animal comes from their food files. The tooltip is the default lore,
@@ -123,6 +118,6 @@ public final class BarnyardItems {
 
     // Our items that act on an animal before it does, so a horse doesn't rear and a tamed cat doesn't sit instead.
     public static boolean isTool(ItemStack stack) {
-        return stack.is(HERD_STICK) || stack.is(INSPECTOR) || stack.is(HERD_BOOK);
+        return stack.is(HERD_STICK) || stack.is(HERD_BOOK);
     }
 }

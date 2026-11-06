@@ -5,7 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
 
-// The words the stat sheet is built from, shared by the herd book, the sneak card and the Inspector.
+// The words the stat sheet is built from, shared by the herd book, the sneak card and Jade.
 public final class StatText {
     public static final Text READY = Text.of("gui.barnyard_romance.inspector.ready");
     public static final Text NOT_TAMED = Text.of("gui.barnyard_romance.inspector.not_tamed");

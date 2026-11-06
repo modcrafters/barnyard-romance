@@ -109,16 +109,17 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             // The wheel turns pages, and a touchpad's small scrolls add up to one turn.
             scroll(context, -0.5);
             expectShown(context, daisy, "Half a scroll should not turn the page yet");
+            // Daisy's page runs over more than one leaf, so forward walks her leaves before the next animal.
             scroll(context, -0.5);
-            UUID next = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
-            if (next == null || next.equals(daisy)) {
-                throw new AssertionError("Scrolling down on Daisy's page should open the next animal, but the book shows " + next);
-            }
-            // Page Up and Page Down turn pages like a vanilla book.
+            expectShown(context, daisy, "Scrolling down on Daisy's first leaf should open her second leaf");
+            UUID next = turnForwardPastLeaves(context, daisy, false);
+            // Back from the next animal's first leaf lands on the previous animal's first leaf.
             context.getInput().pressKey(InputConstants.KEY_PAGEUP);
             expectShown(context, daisy, "Page Up should go back to Daisy's page");
-            context.getInput().pressKey(InputConstants.KEY_PAGEDOWN);
-            expectShown(context, next, "Page Down should open the animal after Daisy");
+            // Page Down turns pages like a vanilla book.
+            if (!next.equals(turnForwardPastLeaves(context, daisy, true))) {
+                throw new AssertionError("Page Down past Daisy's leaves should open the animal after her");
+            }
             scroll(context, 1.0);
             expectShown(context, daisy, "Scrolling up should go back to Daisy's page");
 
@@ -148,6 +149,23 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
         context.waitTicks(1);
         context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTicks(2);
+    }
+
+    // Turns forward until the book leaves the given animal; returns the animal it lands on.
+    private static UUID turnForwardPastLeaves(ClientGameTestContext context, UUID from, boolean keys) {
+        for (int i = 0; i < 8; i++) {
+            if (keys) {
+                context.getInput().pressKey(InputConstants.KEY_PAGEDOWN);
+                context.waitTicks(2);
+            } else {
+                scroll(context, -1.0);
+            }
+            UUID shown = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
+            if (shown != null && !shown.equals(from)) {
+                return shown;
+            }
+        }
+        throw new AssertionError("Turning forward from " + from + " never reached another animal");
     }
 
     private static void scroll(ClientGameTestContext context, double amount) {

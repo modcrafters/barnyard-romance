@@ -178,7 +178,7 @@ public final class EggGameTests {
         helper.succeed();
     }
 
-    // An egg due while she wasn't loaded is skipped: behind her, but not laid, so the inspector doesn't count it.
+    // An egg due while she wasn't loaded is skipped: behind her, but not laid, so the stat sheet doesn't count it.
     public static void skippedEggsAreNotLaid(GameTestHelper helper) {
         Animal hen = hen(helper, MEDIUM_HEN, 0.0);
         long day = 10L;
