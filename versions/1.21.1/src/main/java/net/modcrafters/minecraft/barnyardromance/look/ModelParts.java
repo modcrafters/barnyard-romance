@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.modcrafters.minecraft.barnyardromance.mixin.client.ChickenModelAccessor;
 import net.modcrafters.minecraft.barnyardromance.mixin.client.QuadrupedModelAccessor;
+import net.minecraft.client.model.ChickenModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.QuadrupedModel;
@@ -9,8 +11,9 @@ import net.minecraft.client.model.geom.ModelPart;
 
 import java.util.List;
 
-// 1.21.1's copy: a path starts at the root of a hierarchical model, or at the head or body of a quadruped model,
-// whose parts are drawn straight in model space.
+// 1.21.1's copy: a path starts at the root of a hierarchical model, at the head or body of a quadruped model, or at
+// the head, beak or red_thing (wattle) of the chicken model; those last two kinds draw their parts straight in model
+// space.
 public final class ModelParts {
     private ModelParts() {
     }
@@ -20,7 +23,7 @@ public final class ModelParts {
         if (model instanceof HierarchicalModel<?> hierarchical) {
             return walk(hierarchical.root(), path, 0, null);
         }
-        ModelPart top = quadrupedPart(model, path.getFirst());
+        ModelPart top = topPart(model, path.getFirst());
         return top == null ? null : walk(top, path, 1, null);
     }
 
@@ -31,7 +34,7 @@ public final class ModelParts {
             root.translateAndRotate(poseStack);
             return walk(root, path, 0, poseStack) != null;
         }
-        ModelPart top = quadrupedPart(model, path.getFirst());
+        ModelPart top = topPart(model, path.getFirst());
         if (top == null) {
             return false;
         }
@@ -39,7 +42,16 @@ public final class ModelParts {
         return walk(top, path, 1, poseStack) != null;
     }
 
-    private static ModelPart quadrupedPart(EntityModel<?> model, String name) {
+    private static ModelPart topPart(EntityModel<?> model, String name) {
+        if (model instanceof ChickenModel<?> chicken) {
+            ChickenModelAccessor parts = (ChickenModelAccessor) chicken;
+            return switch (name) {
+                case "head" -> parts.barnyardromance$head();
+                case "beak" -> parts.barnyardromance$beak();
+                case "red_thing" -> parts.barnyardromance$redThing();
+                default -> null;
+            };
+        }
         if (!(model instanceof QuadrupedModel<?> quadruped)) {
             return null;
         }
