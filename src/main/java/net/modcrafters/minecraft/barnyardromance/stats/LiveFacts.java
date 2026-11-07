@@ -78,6 +78,7 @@ public final class LiveFacts {
                 .shear(ShearRule.state(animal instanceof Sheep, !(animal instanceof Sheep sheep && sheep.isSheared()), animal.isBaby(), traits, clock))
                 .grumpy(FamiliarityCare.tamed(animal) && !ready)
                 .cap(FamiliarityCare.cap(animal, traits))
+                .ranAway(traits.upkeep().ranAway())
                 .growthTicks(traits.growthTicks())
                 .weight(traits.weight())
                 .health(animal.getHealth())

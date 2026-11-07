@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- An animal you've neglected down to under 10% familiarity may jump the fence one day and run off. Its herd book page says it ran away, and you can win it back with food.
 - Animals you've won over get hurt when they go a day without food: half a heart a day, though never below half a heart unless the config's `hunger` block says otherwise. The same block decides what days spent away from a pen do: all of them count (the default), only one, or none.
 
 - The Nesting Box has a new, more detailed model: a framed wooden crate with straw inside, metal fittings and a hen painted on its sides.

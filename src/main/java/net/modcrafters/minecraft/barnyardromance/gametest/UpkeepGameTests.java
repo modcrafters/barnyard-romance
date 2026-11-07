@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Escapes;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.HungerDamage;
@@ -10,12 +11,16 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -42,7 +47,10 @@ public final class UpkeepGameTests {
             new BreedingGameTests.Case("hunger_keeps_a_sitting_wolf_sitting", 20, UpkeepGameTests::hungerKeepsASittingWolfSitting),
             new BreedingGameTests.Case("none_mode_still_counts_last_night", 20, UpkeepGameTests::noneModeStillCountsLastNight),
             new BreedingGameTests.Case("hungry_days_stop_hurting_below_familiar", 20, UpkeepGameTests::hungryDaysStopHurtingBelowFamiliar),
-            new BreedingGameTests.Case("min_health_clamps_partway", 20, UpkeepGameTests::minHealthClampsPartway)
+            new BreedingGameTests.Case("min_health_clamps_partway", 20, UpkeepGameTests::minHealthClampsPartway),
+            new BreedingGameTests.Case("a_penned_runaway_ends_up_outside", 100, UpkeepGameTests::aPennedRunawayEndsUpOutside),
+            new BreedingGameTests.Case("a_leaping_runaway_clears_the_fence", 100, UpkeepGameTests::aLeapingRunawayClearsTheFence),
+            new BreedingGameTests.Case("a_runaway_never_rolls_again", 20, UpkeepGameTests::aRunawayNeverRollsAgain)
     );
 
     private UpkeepGameTests() {
@@ -119,11 +127,12 @@ public final class UpkeepGameTests {
         helper.succeed();
     }
 
-    // A herd book animal from before upkeep was kept is cared for, however far it has fallen since.
+    // A herd book animal from before upkeep was kept is cared for, however far it has fallen since. At 20% her hungry
+    // day leaves her above the escape line, so she can't run off and lose it again.
     public static void anOldSaveHerdBookCowCountsAsCaredFor(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
-        settledOn(cow, traits(helper, cow), 0.1, 10.0F, DAY - 1L, Upkeep.UNKNOWN);
+        settledOn(cow, traits(helper, cow), 0.2, 10.0F, DAY - 1L, Upkeep.UNKNOWN);
 
         FamiliarityCare.settle(cow, clock(DAY));
 
@@ -186,6 +195,92 @@ public final class UpkeepGameTests {
 
         assertHealth(helper, cow, 1.0F);
         helper.succeed();
+    }
+
+    // Settling days spent away puts her straight outside, with no one there to see her go.
+    public static void aPennedRunawayEndsUpOutside(GameTestHelper helper) {
+        runsAway(helper, true, 100L);
+    }
+
+    public static void aLeapingRunawayClearsTheFence(GameTestHelper helper) {
+        runsAway(helper, false, 60L);
+    }
+
+    // Running away clears cared, so a month of hunger at 0% neither hurts her nor sends her off again.
+    public static void aRunawayNeverRollsAgain(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        EggGameTests.once(helper, cow::onGround, () -> {
+            settledOn(cow, traits(helper, cow), 0.0, 10.0F, DAY, Upkeep.NONE.caredFor().runAway());
+            Vec3 at = cow.position();
+            Vec3 moving = cow.getDeltaMovement();
+            Path path = cow.getNavigation().getPath();
+
+            FamiliarityCare.settle(cow, clock(DAY + 30L));
+
+            assertHealth(helper, cow, 10.0F);
+            helper.assertTrue(cow.position().equals(at) && cow.getDeltaMovement().equals(moving) && cow.getNavigation().getPath() == path,
+                    "a runaway at 0% set off again");
+            Upkeep upkeep = traits(helper, cow).upkeep();
+            helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a runaway's upkeep is " + upkeep);
+            helper.succeed();
+        });
+    }
+
+    // Once she has landed, fences a neglected cow in and sends her off, then waits for her to stand outside the ring.
+    // It's all one tick action: on 1.21.1, adding one from inside another breaks the test runner's loop.
+    private static void runsAway(GameTestHelper helper, boolean catchingUp, long within) {
+        Animal cow = female(helper, EntityTypes.COW);
+        BlockPos[] middle = {null};
+        long[] ran = {0L};
+        helper.onEachTick(() -> {
+            if (middle[0] == null) {
+                if (cow.onGround()) {
+                    middle[0] = fenceRing(helper, cow);
+                    neglected(helper, cow);
+                    ran[0] = helper.getTick();
+
+                    Escapes.runAway(cow, helper.getLevel(), catchingUp);
+
+                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a runaway's upkeep is " + upkeep);
+                }
+            } else if (cow.onGround() && outside(cow, middle[0])) {
+                helper.succeed();
+            } else if (helper.getTick() > ran[0] + within) {
+                throw GameTestCompat.failure(helper, "the cow is still in the pen at " + helper.relativePos(cow.blockPosition())
+                        + ", the pen's middle at " + helper.relativePos(middle[0]));
+            }
+        });
+    }
+
+    // A one-high ring of fence two blocks out from the animal's block, so it stands in the middle of a 3x3 pen. On
+    // 1.21.1 the test is boxed in with a barrier lid three blocks up, too low to leap under, so it's lifted off.
+    private static BlockPos fenceRing(GameTestHelper helper, Animal animal) {
+        BlockPos middle = animal.blockPosition();
+        for (int dx = -4; dx <= 4; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                if (Math.max(Math.abs(dx), Math.abs(dz)) == 2) {
+                    helper.getLevel().setBlockAndUpdate(middle.offset(dx, 0, dz), Blocks.OAK_FENCE.defaultBlockState());
+                }
+                for (int dy = 2; dy <= 4; dy++) {
+                    BlockPos above = middle.offset(dx, dy, dz);
+                    if (helper.getLevel().getBlockState(above).is(Blocks.BARRIER)) {
+                        helper.getLevel().setBlockAndUpdate(above, Blocks.AIR.defaultBlockState());
+                    }
+                }
+            }
+        }
+        return middle;
+    }
+
+    // Cared for once, now down to 8%.
+    private static void neglected(GameTestHelper helper, Animal animal) {
+        Services.DATA.set(animal, traits(helper, animal).fed(0.08, -1L).withOrigin(Origin.FARM).withUpkeep(Upkeep.NONE.caredFor()));
+    }
+
+    private static boolean outside(Animal animal, BlockPos middle) {
+        BlockPos at = animal.blockPosition();
+        return Math.max(Math.abs(at.getX() - middle.getX()), Math.abs(at.getZ() - middle.getZ())) > 2;
     }
 
     private static Animal cow(GameTestHelper helper, double familiarity, float health, long settledDay) {

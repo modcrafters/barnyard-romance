@@ -71,4 +71,19 @@ public class FabricUpkeepGameTests {
     public void minHealthClampsPartway(GameTestHelper helper) {
         UpkeepGameTests.minHealthClampsPartway(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aPennedRunawayEndsUpOutside(GameTestHelper helper) {
+        UpkeepGameTests.aPennedRunawayEndsUpOutside(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aLeapingRunawayClearsTheFence(GameTestHelper helper) {
+        UpkeepGameTests.aLeapingRunawayClearsTheFence(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aRunawayNeverRollsAgain(GameTestHelper helper) {
+        UpkeepGameTests.aRunawayNeverRollsAgain(helper);
+    }
 }

@@ -12,7 +12,8 @@ import java.util.Locale;
 
 // The status lines of one animal, in the order the spec gives. Lines that don't apply are left out, so the rest close up.
 // The words that explain a line (why familiarity is low, a hungry male's health cost, a hen's reasons, the father,
-// the last birth) are DETAIL lines under it; deaths and when the animal was last seen stay NOTE lines.
+// the last birth) are DETAIL lines under it; deaths, running away and when the animal was last seen
+// stay NOTE lines.
 public final class StatSheet {
     private StatSheet() {
     }
@@ -27,11 +28,13 @@ public final class StatSheet {
             if (facts.killedByRival()) {
                 lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.killed_by_rival")));
             }
+            ranAway(lines, facts);
             familiarity(lines, facts, false);
             fertility(lines, facts);
             return lines;
         }
         familiarity(lines, facts, true);
+        ranAway(lines, facts);
         if (facts.fedToday()) {
             lines.add(StatLine.of(StatKind.FED, Text.of("gui.barnyard_romance.herd_book.fed_today")));
         } else if (facts.ticksSinceFed() < 0L) {
@@ -107,6 +110,13 @@ public final class StatSheet {
         }
         if (facts.cap() < 1.0) {
             lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.wild_caught", Familiarity.percent(facts.cap()))));
+        }
+    }
+
+    // Kept until it's familiar again: under the familiarity lines that explain it, or with the death notes.
+    private static void ranAway(List<StatLine> lines, AnimalFacts facts) {
+        if (facts.ranAway()) {
+            lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.ran_away")));
         }
     }
 

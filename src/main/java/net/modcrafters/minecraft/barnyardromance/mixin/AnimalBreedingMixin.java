@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Escapes;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
@@ -77,6 +78,7 @@ public class AnimalBreedingMixin {
             Courtship.tick(self, level);
             Fights.tick(self, level);
             RivalRolls.tick(self, level);
+            Escapes.tick(self, level);
         }
     }
 }

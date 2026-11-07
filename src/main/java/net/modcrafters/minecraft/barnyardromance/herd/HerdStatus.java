@@ -132,6 +132,7 @@ public final class HerdStatus {
                 .eggs(eggs)
                 .cap(WildCaught.cap(traits.origin(), sheet.needsTaming() || record.tamed(), config.tuning()))
                 .killedByRival(!record.alive() && record.cause() == DeathCause.RIVAL)
+                .ranAway(traits.upkeep().ranAway())
                 .growthTicks(traits.growthTicks())
                 .weight(traits.weight())
                 .health(sheet.health())

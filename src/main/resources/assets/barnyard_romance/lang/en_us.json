@@ -5,6 +5,7 @@
   "gui.barnyard_romance.herd_book.size_age": "Size %s · %s · %s old",
   "gui.barnyard_romance.herd_book.died": "Died on day %s",
   "gui.barnyard_romance.herd_book.killed_by_rival": "Killed by a rival",
+  "gui.barnyard_romance.herd_book.ran_away": "Ran away",
   "gui.barnyard_romance.herd_book.not_familiar": "Not familiar",
   "gui.barnyard_romance.herd_book.no_longer_familiar": "No longer familiar",
   "gui.barnyard_romance.herd_book.grumpy": "Grumpy: won't take orders",

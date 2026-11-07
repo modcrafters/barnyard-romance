@@ -39,6 +39,8 @@ public record AnimalFacts(
         double cap,
         // Killed by another male in a fight.
         boolean killedByRival,
+        // Ran off for want of care; the note stays until it is familiar again.
+        boolean ranAway,
         // -1 hides the row.
         long growthTicks,
         // -1 hides the row.
@@ -80,6 +82,7 @@ public record AnimalFacts(
         private @Nullable EggOutlook eggs = null;
         private double cap = 1.0;
         private boolean killedByRival = false;
+        private boolean ranAway = false;
         private long growthTicks = -1L;
         private double weight = -1.0;
         private float health = -1.0F;
@@ -181,6 +184,11 @@ public record AnimalFacts(
             return this;
         }
 
+        public Builder ranAway(boolean ranAway) {
+            this.ranAway = ranAway;
+            return this;
+        }
+
         public Builder growthTicks(long growthTicks) {
             this.growthTicks = growthTicks;
             return this;
@@ -250,6 +258,7 @@ public record AnimalFacts(
                     eggs,
                     cap,
                     killedByRival,
+                    ranAway,
                     growthTicks,
                     weight,
                     health,

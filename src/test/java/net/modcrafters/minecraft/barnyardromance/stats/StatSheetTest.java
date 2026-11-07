@@ -109,6 +109,17 @@ class StatSheetTest {
     }
 
     @Test
+    void aRunawayIsNoted() {
+        AnimalFacts.Builder cow = AnimalFacts.builder("L", AgeStage.ADULT).ticksSinceFed(3 * DAY).familiarity(0.05).familiar(Familiar.NO_LONGER)
+                .ranAway(true);
+
+        assertEquals(List.of("Size L · Adult", "Familiar 5%", "No longer familiar", "Ran away", "Last fed 3d ago"), english(cow));
+        assertEquals(List.of(SIZE, FAMILIARITY, DETAIL, NOTE, NOT_FED), kinds(cow));
+        assertEquals(List.of("Size L · Adult · 18d old", "Died on day 42", "Ran away", "Familiar 80%", "Fertile 90%"),
+                english(cow().diedDay(42L).ranAway(true)));
+    }
+
+    @Test
     void aMaleHasNoPregnancyMilkOrFertility() {
         AnimalFacts.Builder old = AnimalFacts.builder("XL", AgeStage.OLD).ticksSinceFed(3 * DAY).familiarity(0.5);
 
