@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBuf;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.minecraft.core.UUIDUtil;
@@ -81,8 +82,15 @@ public final class AnimalTraitCodecs {
             Codec.LONG.optionalFieldOf("day", -1L).forGetter(Vigour::day),
             Codec.LONG.optionalFieldOf("rollDay", -1L).forGetter(Vigour::rollDay)
     ).apply(instance, Vigour::new));
+    public static final Codec<Upkeep> UPKEEP_CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Codec.BOOL.optionalFieldOf("cared", false).forGetter(Upkeep::cared),
+            Codec.BOOL.optionalFieldOf("ranAway", false).forGetter(Upkeep::ranAway),
+            Codec.LONG.optionalFieldOf("feederDay", -1L).forGetter(Upkeep::feederDay),
+            Codec.STRING.optionalFieldOf("feeder", "").forGetter(Upkeep::feeder),
+            Codec.BOOL.optionalFieldOf("inHerd", false).forGetter(Upkeep::inHerd)
+    ).apply(instance, Upkeep::new));
     // A codec group takes at most 16 fields, so the newest ones are saved inline as a group of their own.
-    private record Care(long lastShearedClock, Hunger hunger, Origin origin, long milkRefusedDay, long shearRefusedDay, Vigour vigour) {
+    private record Care(long lastShearedClock, Hunger hunger, Origin origin, long milkRefusedDay, long shearRefusedDay, Vigour vigour, Upkeep upkeep) {
     }
     private static final MapCodec<Care> CARE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.LONG.optionalFieldOf("lastShearedClock", -1L).forGetter(Care::lastShearedClock),
@@ -90,7 +98,8 @@ public final class AnimalTraitCodecs {
             ORIGIN_CODEC.optionalFieldOf("origin", Origin.UNKNOWN).forGetter(Care::origin),
             Codec.LONG.optionalFieldOf("milkRefusedDay", -1L).forGetter(Care::milkRefusedDay),
             Codec.LONG.optionalFieldOf("shearRefusedDay", -1L).forGetter(Care::shearRefusedDay),
-            VIGOUR_CODEC.optionalFieldOf("vigour", Vigour.NONE).forGetter(Care::vigour)
+            VIGOUR_CODEC.optionalFieldOf("vigour", Vigour.NONE).forGetter(Care::vigour),
+            UPKEEP_CODEC.optionalFieldOf("upkeep", Upkeep.NONE).forGetter(Care::upkeep)
     ).apply(instance, Care::new));
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
@@ -109,11 +118,11 @@ public final class AnimalTraitCodecs {
             LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation),
             LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage),
             CARE_MAP_CODEC.forGetter(traits -> new Care(traits.lastShearedClock(), traits.hunger(), traits.origin(), traits.refusals().milkDay(),
-                    traits.refusals().shearDay(), traits.vigour()))
+                    traits.refusals().shearDay(), traits.vigour(), traits.upkeep()))
     ).apply(instance, (sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight,
                        fertility, fertilityTick, bornTick, lactation, lineage, care) -> new AnimalTraits(sex, scale, familiarity, lastFedTick,
             growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage,
-            care.lastShearedClock(), care.hunger(), care.origin(), new Refusals(care.milkRefusedDay(), care.shearRefusedDay()), care.vigour())));
+            care.lastShearedClock(), care.hunger(), care.origin(), new Refusals(care.milkRefusedDay(), care.shearRefusedDay()), care.vigour(), care.upkeep())));
     public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
@@ -142,6 +151,11 @@ public final class AnimalTraitCodecs {
                 ByteBufCodecs.DOUBLE.encode(buf, traits.vigour().value());
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.vigour().day());
                 ByteBufCodecs.VAR_LONG.encode(buf, traits.vigour().rollDay());
+                ByteBufCodecs.BOOL.encode(buf, traits.upkeep().cared());
+                ByteBufCodecs.BOOL.encode(buf, traits.upkeep().ranAway());
+                ByteBufCodecs.VAR_LONG.encode(buf, traits.upkeep().feederDay());
+                ByteBufCodecs.STRING_UTF8.encode(buf, traits.upkeep().feeder());
+                ByteBufCodecs.BOOL.encode(buf, traits.upkeep().inHerd());
             },
             // Arguments are evaluated left to right, so this reads the fields in the order they were written.
             buf -> new AnimalTraits(
@@ -164,7 +178,8 @@ public final class AnimalTraitCodecs {
                     HUNGER_STREAM_CODEC.decode(buf),
                     Origin.values()[ByteBufCodecs.VAR_INT.decode(buf)],
                     new Refusals(ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf)),
-                    new Vigour(ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf))
+                    new Vigour(ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf)),
+                    new Upkeep(ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.STRING_UTF8.decode(buf), ByteBufCodecs.BOOL.decode(buf))
             )
     );
 

@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.sex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 
@@ -29,8 +30,35 @@ public record AnimalTraits(
         Origin origin,
         Refusals refusals,
         // A male's mating energy; see VigourRules.
-        Vigour vigour
+        Vigour vigour,
+        // What the herd's upkeep has done to the animal; see Upkeep.
+        Upkeep upkeep
 ) {
+    public AnimalTraits(
+            Sex sex,
+            double scale,
+            double familiarity,
+            long lastFedTick,
+            int growthTicks,
+            long lastBirthTick,
+            String lastBirthSpecies,
+            long loveUntil,
+            long cooldownUntil,
+            double weight,
+            double fertility,
+            long fertilityTick,
+            long bornTick,
+            Lactation lactation,
+            Lineage lineage,
+            long lastShearedClock,
+            Hunger hunger,
+            Origin origin,
+            Refusals refusals,
+            Vigour vigour
+    ) {
+        this(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, Upkeep.NONE);
+    }
+
     public AnimalTraits(
             Sex sex,
             double scale,
@@ -180,62 +208,66 @@ public record AnimalTraits(
     }
 
     public AnimalTraits fed(double familiarity, long lastFedTick) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits gaveBirth(long tick, String species) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, tick, species, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, tick, species, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     // The game tick love mode ends, or -1 when the animal is not in love.
     public AnimalTraits withLove(long until) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, until, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, until, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     // The game tick the breeding rest ends, or -1 when there is none.
     public AnimalTraits withCooldown(long until) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, until, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, until, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withWeight(double weight) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     // Fertility as of the given tick; it recovers from there with the clock (see Fertility).
     public AnimalTraits withFertility(double fertility, long tick) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, tick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, tick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     // The game tick the animal was born, or -1 when unknown; an unknown birth never ages (see Aging).
     public AnimalTraits withBornTick(long tick) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, tick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, tick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withLactation(Lactation lactation) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits sheared(long clock) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, clock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, clock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withLineage(Lineage lineage) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withHunger(Hunger hunger) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withOrigin(Origin origin) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withVigour(Vigour vigour) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 
     public AnimalTraits withRefusals(Refusals refusals) {
-        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour);
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
+    }
+
+    public AnimalTraits withUpkeep(Upkeep upkeep) {
+        return new AnimalTraits(sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage, lastShearedClock, hunger, origin, refusals, vigour, upkeep);
     }
 }

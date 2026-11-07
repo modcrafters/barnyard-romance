@@ -1,6 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
+import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -67,5 +72,17 @@ class AnimalTraitsTest {
                 .withFertility(0.5, 100L).withBornTick(30L).withLactation(traits.lactation()).sheared(5L).withLineage(Lineage.UNKNOWN);
 
         assertEquals(hunger, copied.hunger());
+    }
+
+    // The codec round trip needs the game's serialization classes, so it is the old_traits_load_without_upkeep game test.
+    @Test
+    void upkeepIsKeptByEveryWither() {
+        Upkeep upkeep = new Upkeep(true, false, 12L, "manger", true);
+        AnimalTraits traits = new AnimalTraits(Sex.FEMALE, 0.9).withUpkeep(upkeep).withWeight(0.8).fed(0.4, 7L).withLove(50L).withCooldown(60L)
+                .gaveBirth(70L, "minecraft:cow").withFertility(0.5, 9L).withBornTick(3L).withLactation(Lactation.NONE).sheared(5L).withLineage(Lineage.UNKNOWN)
+                .withHunger(Hunger.NONE).withOrigin(Origin.WILD).withVigour(Vigour.NONE).withRefusals(Refusals.NONE);
+
+        assertEquals(upkeep, traits.upkeep());
+        assertEquals(Upkeep.NONE, new AnimalTraits(Sex.FEMALE, 0.9).upkeep());
     }
 }
