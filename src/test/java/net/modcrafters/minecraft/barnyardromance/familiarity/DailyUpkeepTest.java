@@ -83,6 +83,8 @@ class DailyUpkeepTest {
         assertEquals(0, DailyUpkeep.daysToSettle(10, CatchUp.NONE));
         for (CatchUp mode : CatchUp.values()) {
             assertEquals(0, DailyUpkeep.daysToSettle(0, mode));
+            // Last night always counts: the modes are only for longer gaps.
+            assertEquals(1, DailyUpkeep.daysToSettle(1, mode));
         }
     }
 }

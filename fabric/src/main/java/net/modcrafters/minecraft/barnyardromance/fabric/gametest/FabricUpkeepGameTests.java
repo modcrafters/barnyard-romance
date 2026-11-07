@@ -46,4 +46,29 @@ public class FabricUpkeepGameTests {
     public void anOldSaveHerdBookCowCountsAsCaredFor(GameTestHelper helper) {
         UpkeepGameTests.anOldSaveHerdBookCowCountsAsCaredFor(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aFarmBornCalfInABookIsNotCaredFor(GameTestHelper helper) {
+        UpkeepGameTests.aFarmBornCalfInABookIsNotCaredFor(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hungerKeepsASittingWolfSitting(GameTestHelper helper) {
+        UpkeepGameTests.hungerKeepsASittingWolfSitting(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void noneModeStillCountsLastNight(GameTestHelper helper) {
+        UpkeepGameTests.noneModeStillCountsLastNight(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hungryDaysStopHurtingBelowFamiliar(GameTestHelper helper) {
+        UpkeepGameTests.hungryDaysStopHurtingBelowFamiliar(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void minHealthClampsPartway(GameTestHelper helper) {
+        UpkeepGameTests.minHealthClampsPartway(helper);
+    }
 }

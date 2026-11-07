@@ -33,8 +33,12 @@ public final class DailyUpkeep {
         return new Outcome(after, damage, escapes, cared);
     }
 
+    // The catch-up modes are for days spent away from a pen: a single day (last night) always counts.
     public static long daysToSettle(long missedDays, HungerSettings.CatchUp mode) {
         long days = Math.max(0L, missedDays);
+        if (days <= 1L) {
+            return days;
+        }
         return switch (mode) {
             case EVERY_DAY -> days;
             case ONE_DAY -> Math.min(1L, days);

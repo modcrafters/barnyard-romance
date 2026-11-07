@@ -6,6 +6,8 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 // time it was checked.
 public record Upkeep(boolean cared, boolean ranAway, long feederDay, String feeder, boolean inHerd) {
     public static final Upkeep NONE = new Upkeep(false, false, -1L, "", false);
+    // From a save before upkeep was kept. The first settle turns it into NONE or cared for (see FamiliarityCare).
+    public static final Upkeep UNKNOWN = new Upkeep(false, false, -2L, "", false);
 
     public Upkeep caredFor() {
         return new Upkeep(true, false, feederDay, feeder, inHerd);

@@ -82,10 +82,11 @@ public final class FamiliarityCare {
         Hunger hungerNow = hungryDays > 0L ? settled.hunger()
                 : new Hunger(today, traits.hunger().lastAteDay(), traits.hunger().lastHungryDay());
 
-        Upkeep upkeep = traits.upkeep();
         // Herd book animals from saves before upkeep was kept have been looked after, however low they are now.
+        boolean oldSave = traits.upkeep().equals(Upkeep.UNKNOWN);
+        Upkeep upkeep = oldSave ? Upkeep.NONE : traits.upkeep();
         boolean cared = upkeep.cared() || Familiarity.ready(traits.familiarity())
-                || upkeep.equals(Upkeep.NONE) && HerdBooks.listed(level.getServer(), animal.getUUID());
+                || oldSave && HerdBooks.listed(level.getServer(), animal.getUUID());
         boolean grown = grown(animal);
         boolean isPet = pet(animal);
         double familiarity = traits.familiarity();
@@ -108,13 +109,12 @@ public final class FamiliarityCare {
         if (settled.first() && tamed(animal)) {
             updated = toTamingGrace(animal, updated);
         }
-        if ((cared || Familiarity.ready(updated.familiarity())) && !upkeep.cared()) {
-            updated = updated.withUpkeep(upkeep.caredFor());
-        }
+        boolean caredNow = cared || Familiarity.ready(updated.familiarity());
+        updated = updated.withUpkeep(caredNow && !upkeep.cared() ? upkeep.caredFor() : upkeep);
         Services.DATA.set(animal, updated);
         HungerDamage.hurt(animal, level, damage);
         if (escaped && animal.isAlive()) {
-            Escapes.runAway(animal, level, false);
+            Escapes.runAway(animal, level, days > 1L);
         }
         // A pet that has just turned grumpy stops obeying, so one left sitting gets up and wanders off.
         if (animal instanceof TamableAnimal pet && pet.isOrderedToSit() && grumpy(animal)) {

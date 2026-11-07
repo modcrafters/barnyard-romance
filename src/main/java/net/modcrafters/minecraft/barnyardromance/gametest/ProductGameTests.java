@@ -141,14 +141,17 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
-    // Traits saved before upkeep load as none, and a saved upkeep survives both the save and the sync.
+    // Traits saved before upkeep load as unknown, a new animal's none stays none, and a saved upkeep survives both the
+    // save and the sync.
     public static void oldTraitsLoadWithoutUpkeep(GameTestHelper helper) {
         AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L).sheared(40L);
         CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
+        AnimalTraits fresh = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag.copy()).getOrThrow();
+        helper.assertTrue(fresh.upkeep().equals(Upkeep.NONE), "a new animal's upkeep came back as " + fresh.upkeep());
         tag.remove("upkeep");
 
         AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-        helper.assertTrue(loaded.upkeep().equals(Upkeep.NONE), "old traits loaded with " + loaded.upkeep());
+        helper.assertTrue(loaded.upkeep().equals(Upkeep.UNKNOWN), "old traits loaded with " + loaded.upkeep());
 
         AnimalTraits kept = saved.withUpkeep(new Upkeep(true, false, 12L, "manger", true));
         CompoundTag keptTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, kept).getOrThrow();

@@ -99,7 +99,8 @@ public final class AnimalTraitCodecs {
             Codec.LONG.optionalFieldOf("milkRefusedDay", -1L).forGetter(Care::milkRefusedDay),
             Codec.LONG.optionalFieldOf("shearRefusedDay", -1L).forGetter(Care::shearRefusedDay),
             VIGOUR_CODEC.optionalFieldOf("vigour", Vigour.NONE).forGetter(Care::vigour),
-            UPKEEP_CODEC.optionalFieldOf("upkeep", Upkeep.NONE).forGetter(Care::upkeep)
+            // Always written, so a missing key means a save from before upkeep was kept.
+            UPKEEP_CODEC.optionalFieldOf("upkeep").xmap(upkeep -> upkeep.orElse(Upkeep.UNKNOWN), Optional::of).forGetter(Care::upkeep)
     ).apply(instance, Care::new));
     public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),

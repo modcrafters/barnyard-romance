@@ -560,7 +560,7 @@ public final class CareGameTests {
         return horse;
     }
 
-    private static TamableAnimal tamedWolf(GameTestHelper helper, Player owner, double familiarity) {
+    static TamableAnimal tamedWolf(GameTestHelper helper, Player owner, double familiarity) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         wolf.tame(owner);
         Services.DATA.set(wolf, traits(helper, wolf).fed(familiarity, -1L));

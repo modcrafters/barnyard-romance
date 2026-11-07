@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
@@ -31,9 +32,16 @@ public final class HungerDamage {
         if (type.isEmpty()) {
             return;
         }
+        // Any damage stands a sitting wolf up; being hungry shouldn't undo an order to stay.
+        boolean sitting = animal instanceof TamableAnimal pet && pet.isOrderedToSit();
         //? if >=1.21.2 {
         animal.hurtServer(level, new DamageSource(type.get()), amount);
         //?} else
         //animal.hurt(new DamageSource(type.get()), amount);
+        if (sitting && animal.isAlive()) {
+            TamableAnimal pet = (TamableAnimal) animal;
+            pet.setOrderedToSit(true);
+            pet.setInSittingPose(true);
+        }
     }
 }
