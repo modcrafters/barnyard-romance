@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge;
 
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
@@ -61,6 +63,7 @@ public class BarnyardRomanceNeoForge {
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
+        NeoForge.EVENT_BUS.addListener((TagsUpdatedEvent event) -> FoodData.tagsReloaded());
     }
 
     private static void registerContent(RegisterEvent event) {

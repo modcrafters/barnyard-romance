@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.fabric;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
+import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
@@ -86,6 +88,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
         ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
         data.registerReloadListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());
         data.registerReloadListener(FoodReloadListeners.FOODS_ID, FoodReloadListeners.foods());
+        CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> FoodData.tagsReloaded());
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (entity instanceof Animal animal) {
                 AnimalSex.onJoin(animal);

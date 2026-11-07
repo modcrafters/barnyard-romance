@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.food.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.FoodFile;
 import net.modcrafters.minecraft.barnyardromance.food.FoodJson;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
@@ -79,6 +80,8 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad),
             new BreedingGameTests.Case("dairy_mash_starts_milk", 20, FoodGameTests::dairyMashStartsMilk),
             new BreedingGameTests.Case("ordinary_food_can_start_milk", 20, FoodGameTests::ordinaryFoodCanStartMilk),
+            new BreedingGameTests.Case("a_known_answer_follows_a_food_file_reload", 20, FoodGameTests::aKnownAnswerFollowsAFoodFileReload),
+            new BreedingGameTests.Case("a_known_answer_follows_a_config_change", 20, FoodGameTests::aKnownAnswerFollowsAConfigChange),
             new BreedingGameTests.Case("dairy_mash_is_refused_by_a_milking_cow", 20, FoodGameTests::dairyMashIsRefusedByAMilkingCow),
             new BreedingGameTests.Case("dairy_mash_is_refused_by_a_bull", 20, FoodGameTests::dairyMashIsRefusedByABull),
             new BreedingGameTests.Case("stud_mash_restores_half_the_vigour", 20, FoodGameTests::studMashRestoresHalfTheVigour),
@@ -293,6 +296,39 @@ public final class FoodGameTests {
         AnimalTraits traits = BreedingGameTests.traits(helper, cow);
         helper.assertTrue(traits.lactation().hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()),
                 "a carrot with startsMilk didn't start the cow's milk");
+        helper.succeed();
+    }
+
+    // What a species makes of an item is remembered (FeedCache), so it must be worked out again once the food files change.
+    public static void aKnownAnswerFollowsAFoodFileReload(GameTestHelper helper) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        ItemStack torch = new ItemStack(Items.TORCH);
+        List<FoodFile> foods = FoodData.foods();
+        helper.assertTrue(FoodData.resolve(cow, torch) == Feed.NOT_FOOD, "a cow eats torches before any pack says so");
+        try {
+            List<FoodFile> withTorch = new ArrayList<>(foods);
+            withTorch.add(FoodJson.foodFile("{ \"species\": [\"minecraft:cow\"], \"items\": \"torch\" }"));
+            FoodData.replaceFoods(withTorch);
+            helper.assertTrue(FoodData.resolve(cow, torch) instanceof Feed.Eaten, "a food file for torches didn't make a cow eat them");
+        } finally {
+            FoodData.replaceFoods(foods);
+        }
+        helper.assertTrue(FoodData.resolve(cow, torch) == Feed.NOT_FOOD, "a cow still eats torches once the food file is gone");
+        helper.succeed();
+    }
+
+    public static void aKnownAnswerFollowsAConfigChange(GameTestHelper helper) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        ItemStack wheat = new ItemStack(Items.WHEAT);
+        BarnyardConfig config = BarnyardConfig.current();
+        helper.assertTrue(FoodData.resolve(cow, wheat) instanceof Feed.Eaten, "a cow doesn't eat wheat");
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:cow\"]}"));
+            helper.assertTrue(FoodData.resolve(cow, wheat) == Feed.NOT_FOOD, "an excluded cow's food is still checked by the mod");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.assertTrue(FoodData.resolve(cow, wheat) instanceof Feed.Eaten, "a cow doesn't eat wheat once the config is back");
         helper.succeed();
     }
 

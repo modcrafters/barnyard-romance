@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Collections;
@@ -19,6 +20,13 @@ public final class FoodData {
     private static volatile Map<String, Diet> diets = Map.of();
     private static volatile List<FoodFile> foods = List.of();
     private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
+    // What each species makes of each item. Vanilla's tempt goal asks for every animal, every player in the dimension
+    // and both hands about every other tick, so the answer is worked out once. It depends on the item, never the stack:
+    // the stack's own food component only matters for healing, which is read from the stack after this.
+    private static final FeedCache<FeedKey> FEEDS = new FeedCache<>();
+
+    private record FeedKey(String species, Item item) {
+    }
 
     private FoodData() {
     }
@@ -27,10 +35,17 @@ public final class FoodData {
         // Sorted by id once here, the order FoodRules.dietFor reads them in.
         diets = Collections.unmodifiableSortedMap(new TreeMap<>(loaded));
         WARNED.clear();
+        FEEDS.clear();
     }
 
     public static void replaceFoods(List<FoodFile> loaded) {
         foods = List.copyOf(loaded);
+        FEEDS.clear();
+    }
+
+    // Tags were loaded or reloaded, which changes which items match a diet or a food file.
+    public static void tagsReloaded() {
+        FEEDS.clear();
     }
 
     public static List<FoodFile> foods() {
@@ -51,6 +66,10 @@ public final class FoodData {
 
     public static Feed resolve(Animal animal, ItemStack stack) {
         String speciesId = AnimalSex.speciesId(animal);
+        return FEEDS.get(new FeedKey(speciesId, stack.getItem()), BarnyardConfig.current(), key -> work(animal, stack, speciesId));
+    }
+
+    private static Feed work(Animal animal, ItemStack stack, String speciesId) {
         if (!BarnyardConfig.current().speciesEnabled(speciesId)) {
             return Feed.NOT_FOOD;
         }
