@@ -86,4 +86,19 @@ public class FabricUpkeepGameTests {
     public void aRunawayNeverRollsAgain(GameTestHelper helper) {
         UpkeepGameTests.aRunawayNeverRollsAgain(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 200)
+    public void runawaysSetOffAFewATick(GameTestHelper helper) {
+        UpkeepGameTests.runawaysSetOffAFewATick(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aLeashedCowDoesNotRunAway(GameTestHelper helper) {
+        UpkeepGameTests.aLeashedCowDoesNotRunAway(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aTamedParrotNeverRunsAway(GameTestHelper helper) {
+        UpkeepGameTests.aTamedParrotNeverRunsAway(helper);
+    }
 }

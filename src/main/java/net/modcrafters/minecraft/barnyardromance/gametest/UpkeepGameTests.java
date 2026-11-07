@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.damagesource.DamageSource;
@@ -18,11 +19,16 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
@@ -50,7 +56,10 @@ public final class UpkeepGameTests {
             new BreedingGameTests.Case("min_health_clamps_partway", 20, UpkeepGameTests::minHealthClampsPartway),
             new BreedingGameTests.Case("a_penned_runaway_ends_up_outside", 100, UpkeepGameTests::aPennedRunawayEndsUpOutside),
             new BreedingGameTests.Case("a_leaping_runaway_clears_the_fence", 100, UpkeepGameTests::aLeapingRunawayClearsTheFence),
-            new BreedingGameTests.Case("a_runaway_never_rolls_again", 20, UpkeepGameTests::aRunawayNeverRollsAgain)
+            new BreedingGameTests.Case("a_runaway_never_rolls_again", 20, UpkeepGameTests::aRunawayNeverRollsAgain),
+            new BreedingGameTests.Case("runaways_set_off_a_few_a_tick", 200, UpkeepGameTests::runawaysSetOffAFewATick),
+            new BreedingGameTests.Case("a_leashed_cow_does_not_run_away", 100, UpkeepGameTests::aLeashedCowDoesNotRunAway),
+            new BreedingGameTests.Case("a_tamed_parrot_never_runs_away", 20, UpkeepGameTests::aTamedParrotNeverRunsAway)
     );
 
     private UpkeepGameTests() {
@@ -224,6 +233,85 @@ public final class UpkeepGameTests {
             helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a runaway's upkeep is " + upkeep);
             helper.succeed();
         });
+    }
+
+    // Ten cows run away in the same tick, as a neglected pen catching up sends them. Each is marked at once, but finding
+    // its way out takes path searches, so they set off no more than STARTS_PER_TICK a tick: over five ticks at least.
+    public static void runawaysSetOffAFewATick(GameTestHelper helper) {
+        List<Animal> cows = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 2 + i % 5, 1, 3 + 2 * (i / 5));
+            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+            cows.add(cow);
+        }
+        int[] queued = {-1};
+        Set<Long> startTicks = new HashSet<>();
+        helper.onEachTick(() -> {
+            if (queued[0] < 0) {
+                if (!cows.stream().allMatch(Animal::onGround)) {
+                    return;
+                }
+                for (Animal cow : cows) {
+                    neglected(helper, cow);
+                    Escapes.runAway(cow, helper.getLevel(), false);
+                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a queued runaway's upkeep is " + upkeep);
+                }
+                queued[0] = cows.size();
+                return;
+            }
+            int now = (int) cows.stream().filter(Escapes::queued).count();
+            int started = queued[0] - now;
+            helper.assertTrue(started <= Escapes.STARTS_PER_TICK, started + " runaways set off in one tick");
+            if (started > 0) {
+                startTicks.add(helper.getTick());
+            }
+            queued[0] = now;
+            if (now == 0) {
+                helper.assertTrue(startTicks.size() >= 5, "ten runaways set off over only " + startTicks.size() + " ticks");
+                helper.succeed();
+            }
+        });
+    }
+
+    // Leashed to a post on the day she'd have run, she stays, still cared for and not marked as run away. Let off the
+    // lead, she runs on the next day she rolls. Every roll succeeds here.
+    public static void aLeashedCowDoesNotRunAway(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        EggGameTests.once(helper, cow::onGround, () -> {
+            settledOn(cow, traits(helper, cow), 0.12, 10.0F, DAY - 1L, Upkeep.NONE.caredFor());
+            BlockPos post = cow.blockPosition().north();
+            helper.getLevel().setBlockAndUpdate(post, Blocks.OAK_FENCE.defaultBlockState());
+            cow.setLeashedTo(LeashFenceKnotEntity.getOrCreateKnot(helper.getLevel(), post), true);
+            Vec3 at = cow.position();
+
+            withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(cow, clock(DAY)));
+
+            Upkeep upkeep = traits(helper, cow).upkeep();
+            helper.assertTrue(upkeep.cared() && !upkeep.ranAway(), "a leashed runaway's upkeep is " + upkeep);
+            helper.assertTrue(!Escapes.queued(cow) && cow.position().equals(at), "a leashed cow set off");
+
+            cow.setLeashData(null);
+            withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(cow, clock(DAY + 1L)));
+
+            upkeep = traits(helper, cow).upkeep();
+            helper.assertTrue(upkeep.ranAway() && !upkeep.cared() && Escapes.queued(cow), "let off the lead, her upkeep is " + upkeep);
+            helper.succeed();
+        });
+    }
+
+    // A parrot isn't one of the pets familiarity tames, but a tamed one is a pet all the same: it never runs off.
+    public static void aTamedParrotNeverRunsAway(GameTestHelper helper) {
+        TamableAnimal parrot = GameTestCompat.spawn(helper, EntityTypes.PARROT, 3, 1, 4);
+        Services.DATA.set(parrot, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+        parrot.tame(helper.makeMockPlayer(GameType.SURVIVAL));
+        settledOn(parrot, traits(helper, parrot), 0.12, 6.0F, DAY - 5L, Upkeep.NONE.caredFor());
+
+        withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(parrot, clock(DAY)));
+
+        Upkeep upkeep = traits(helper, parrot).upkeep();
+        helper.assertTrue(!upkeep.ranAway() && !Escapes.queued(parrot), "a tamed parrot ran away: " + upkeep);
+        helper.succeed();
     }
 
     // Once she has landed, fences a neglected cow in and sends her off, then waits for her to stand outside the ring.

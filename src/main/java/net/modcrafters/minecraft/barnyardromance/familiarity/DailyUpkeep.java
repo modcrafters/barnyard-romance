@@ -11,6 +11,7 @@ public final class DailyUpkeep {
     private DailyUpkeep() {
     }
 
+    // pet: it never runs away (see FamiliarityCare.neverRunsAway).
     public record State(double familiarity, float health, boolean cared, boolean grown, boolean pet) {
     }
 

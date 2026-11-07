@@ -4,10 +4,12 @@ import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -24,12 +26,20 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 // A neglected animal running off. Penned in, it walks up to the fence or wall in the way and leaps it; free, it just
-// wanders away. Where "outside" is takes a few path searches, made once when it runs (at most once a day); after that
-// only the leap is looked after tick by tick. A runaway in progress lives only while the animal is loaded.
+// wanders away. Where "outside" is takes a few dozen path searches, made once when it sets off (at most once a day);
+// after that only the leap is looked after tick by tick. A neglected pen catching up, or midnight on a big one, can
+// send many off at once, so they queue and only STARTS_PER_TICK set off in a level each tick. A runaway in progress
+// lives only while the animal is loaded.
 public final class Escapes {
-    // Spots are sampled on rings this far out, 16 to a ring.
+    // Spots are sampled on rings this far out, 16 to a ring, but only 6 on the farthest: each is a search, and a free
+    // animal reaches most of them.
     private static final int[] RINGS = {4, 8, 12};
     private static final int SAMPLES = 16;
+    private static final int FAR_SAMPLES = 6;
+    // Runaways that work out their way out in one level in one game tick.
+    public static final int STARTS_PER_TICK = 2;
+    // A queued runaway that is never ticked again (unloaded or dead) is forgotten after this long.
+    private static final long QUEUE_TICKS = 1_200L;
     // The farthest ring, with room to climb or drop a little on the way.
     private static final int RANGE = 16;
     private static final double WALK_SPEED = 1.0;
@@ -42,8 +52,8 @@ public final class Escapes {
     private static final long GIVE_UP_TICKS = 200L;
 
     private enum Stage {
-        // Off the ground when it ran, where no path can be found: it waits to land.
-        LANDING,
+        // Waiting for its turn to set off, and, if it's off the ground, where no path can be found, to land.
+        QUEUED,
         APPROACH,
         LEAP
     }
@@ -54,31 +64,40 @@ public final class Escapes {
     private record Way(BlockPos spot, boolean penned) {
     }
 
+    // How many runaways have set off in a level this game tick.
+    private record Starts(long tick, int count) {
+    }
+
     private static final Map<UUID, Escape> RUNNING = new ConcurrentHashMap<>();
+    private static final Map<ResourceKey<Level>, Starts> STARTS = new ConcurrentHashMap<>();
 
     private Escapes() {
     }
 
-    // catchingUp is true when the escape was worked out for days spent away, with no one there to see it go.
+    // catchingUp is true when the escape was worked out for days spent away, with no one there to see it go. It is
+    // marked as run away at once, and sets off when its turn comes (see tick). A lead or a rider holds it where it is,
+    // so it doesn't run away today and is still cared for.
     public static void runAway(Animal animal, ServerLevel level, boolean catchingUp) {
+        if (held(animal)) {
+            return;
+        }
         Services.DATA.get(animal).ifPresent(traits -> Services.DATA.set(animal, traits.withUpkeep(traits.upkeep().runAway())));
         long now = level.getGameTime();
         // Escapes cut short by an unload or a death are never ticked again.
         RUNNING.values().removeIf(escape -> now > escape.until());
-        // A lead or a rider holds it where it is.
-        if (animal.isLeashed() || animal.isPassenger() || animal.isVehicle()) {
-            return;
-        }
-        if (!canSearch(animal)) {
-            RUNNING.put(animal.getUUID(), new Escape(Stage.LANDING, null, null, Vec3.ZERO, catchingUp, now + GIVE_UP_TICKS));
-            return;
-        }
-        setOff(animal, level, catchingUp);
+        RUNNING.put(animal.getUUID(), new Escape(Stage.QUEUED, null, null, Vec3.ZERO, catchingUp, now + QUEUE_TICKS));
+    }
+
+    // Still waiting for its turn to set off.
+    public static boolean queued(Animal animal) {
+        Escape escape = RUNNING.get(animal.getUUID());
+        return escape != null && escape.stage() == Stage.QUEUED;
     }
 
     // When the server stops, so nothing of its world is held on to.
     public static void clear() {
         RUNNING.clear();
+        STARTS.clear();
     }
 
     // Every tick, for every animal; it does nothing unless this one is running away.
@@ -96,10 +115,13 @@ public final class Escapes {
             return;
         }
         switch (escape.stage()) {
-            case LANDING -> {
-                if (canSearch(animal)) {
+            case QUEUED -> {
+                if (canSearch(animal) && takeStart(level)) {
                     RUNNING.remove(animal.getUUID());
-                    setOff(animal, level, escape.catchingUp());
+                    // Leashed or mounted since it ran: it stays where it's held.
+                    if (!held(animal)) {
+                        setOff(animal, level, escape.catchingUp());
+                    }
                 }
             }
             case APPROACH -> approach(animal, level, escape, late);
@@ -107,6 +129,19 @@ public final class Escapes {
         }
     }
 
+    // One of this tick's starts in the level, if any are left.
+    private static boolean takeStart(ServerLevel level) {
+        long now = level.getGameTime();
+        Starts last = STARTS.get(level.dimension());
+        int count = last != null && last.tick() == now ? last.count() : 0;
+        if (count >= STARTS_PER_TICK) {
+            return false;
+        }
+        STARTS.put(level.dimension(), new Starts(now, count + 1));
+        return true;
+    }
+
+    // The give-up timer of the walk to the fence starts here, when it sets off, not when it was queued.
     private static void setOff(Animal animal, ServerLevel level, boolean catchingUp) {
         Way way = way(animal, level);
         if (way == null) {
@@ -185,8 +220,8 @@ public final class Escapes {
     // it wanders to the farthest spot it can reach.
     private static @Nullable Way way(Animal animal, ServerLevel level) {
         List<List<BlockPos>> rings = new ArrayList<>();
-        for (int radius : RINGS) {
-            rings.add(ring(animal, level, radius));
+        for (int i = 0; i < RINGS.length; i++) {
+            rings.add(ring(animal, level, RINGS[i], i == RINGS.length - 1 ? FAR_SAMPLES : SAMPLES));
         }
         List<BlockPos> far = rings.getLast();
         int start = far.isEmpty() ? 0 : animal.getRandom().nextInt(far.size());
@@ -241,11 +276,12 @@ public final class Escapes {
         return true;
     }
 
-    // Up to 16 spots sampled evenly around the ring, each where it could stand in that column, near its own height.
-    private static List<BlockPos> ring(Animal animal, ServerLevel level, int radius) {
+    // Up to this many spots sampled evenly around the ring, each where it could stand in that column, near its own
+    // height.
+    private static List<BlockPos> ring(Animal animal, ServerLevel level, int radius, int samples) {
         Set<BlockPos> spots = new LinkedHashSet<>();
-        for (int i = 0; i < SAMPLES; i++) {
-            double angle = Math.PI * 2.0 * i / SAMPLES;
+        for (int i = 0; i < samples; i++) {
+            double angle = Math.PI * 2.0 * i / samples;
             BlockPos spot = standable(level, Mth.floor(animal.getX() + radius * Math.cos(angle)), animal.getBlockY(),
                     Mth.floor(animal.getZ() + radius * Math.sin(angle)));
             if (spot != null) {
@@ -283,6 +319,10 @@ public final class Escapes {
         double dx = end.x + 0.5 - animal.getX();
         double dz = end.z + 0.5 - animal.getZ();
         return dx * dx + dz * dz <= LEAP_FROM * LEAP_FROM;
+    }
+
+    private static boolean held(Animal animal) {
+        return animal.isLeashed() || animal.isPassenger() || animal.isVehicle();
     }
 
     // A path can only be found from the ground (or swimming).

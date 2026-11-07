@@ -12,7 +12,7 @@ After publishing, the action prepares the next development version and archives 
 - New feeding blocks: the **Bird Feeder** (chickens, ducks, turkeys, parrots), **Trough** (rabbits), **Feeder** (pigs, goats, boar), **Manger** (sheep, cows, the horse family, deer, ostriches) and **Pet Bowl** (wolves, cats). Fill one with food by hand, with a hopper or with pipes. Every morning the familiar animals in the pen walk over and eat.
 - A meal from a feeding block keeps an animal fed, heals it and keeps its milk, eggs and Vigour coming, but only hand-feeding wins an animal over or puts it in love.
 - While you're away, a stocked feeder keeps feeding its animals. When you come back, every animal in the pen has shared the food it held evenly, day by day.
-- An animal you've neglected down to under 10% familiarity may jump the fence one day and run off. Its herd book page says it ran away, and you can win it back with food.
+- An animal you've neglected down to under 10% familiarity may jump the fence one day and run off. Its herd book page says it ran away, and you can win it back with food. A tamed pet never runs off, and nor does an animal on a lead or being ridden.
 - Animals you've won over get hurt when they go a day without food: half a heart a day, though never below half a heart unless the config's `hunger` block says otherwise. The same block decides what days spent away from a pen do: all of them count (the default), only one, or none.
 
 - The Nesting Box has a new, more detailed model: a framed wooden crate with straw inside, metal fittings and a hen painted on its sides.

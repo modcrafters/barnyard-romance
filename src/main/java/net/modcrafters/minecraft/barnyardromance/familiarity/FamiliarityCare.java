@@ -93,7 +93,7 @@ public final class FamiliarityCare {
         Upkeep upkeep = upkeep(traits);
         boolean cared = caredFor(animal, level, traits, upkeep);
         boolean grown = grown(animal);
-        boolean isPet = pet(animal);
+        boolean neverRuns = neverRunsAway(animal);
         double familiarity = traits.familiarity();
         float damage = 0f;
         boolean escaped = false;
@@ -102,7 +102,7 @@ public final class FamiliarityCare {
             boolean ate = day < days - hungryDays;
             double roll = ate ? 1.0 : animal.getRandom().nextDouble();
             DailyUpkeep.Outcome outcome = DailyUpkeep.day(
-                    new DailyUpkeep.State(familiarity, animal.getHealth() - damage, cared, grown, isPet), ate, roll, hunger, tuning);
+                    new DailyUpkeep.State(familiarity, animal.getHealth() - damage, cared, grown, neverRuns), ate, roll, hunger, tuning);
             familiarity = outcome.familiarity();
             damage += outcome.damage();
             escaped |= outcome.escapes();
@@ -130,7 +130,7 @@ public final class FamiliarityCare {
         boolean cared = caredFor(animal, level, traits, upkeep);
         double roll = ate ? 1.0 : animal.getRandom().nextDouble();
         DailyUpkeep.Outcome outcome = DailyUpkeep.day(
-                new DailyUpkeep.State(traits.familiarity(), animal.getHealth() - owed, cared, grown(animal), pet(animal)),
+                new DailyUpkeep.State(traits.familiarity(), animal.getHealth() - owed, cared, grown(animal), neverRunsAway(animal)),
                 ate, roll, config.hunger(), config.tuning());
         Hunger hunger = traits.hunger();
         // A meal or a hungry day marked later, such as a hand meal today while it waited, stays the latest.
@@ -255,6 +255,12 @@ public final class FamiliarityCare {
     // The animals familiarity tames, tamed yet or not: they live close to you, so they get the higher wild cap.
     public static boolean pet(Animal animal) {
         return animal instanceof Wolf || animal instanceof Cat || animal instanceof AbstractHorse;
+    }
+
+    // Pets never run away: wolves, cats and the horse family, which turn grumpy instead, and any other tamed animal,
+    // such as a parrot or another mod's pet.
+    public static boolean neverRunsAway(Animal animal) {
+        return pet(animal) || animal instanceof TamableAnimal tamable && tamable.isTame();
     }
 
     public static boolean grown(Animal animal) {
