@@ -18,6 +18,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardConfigTest {
     @Test
+    void herdSticksAreOffByDefault() {
+        assertFalse(BarnyardConfig.parse("{}").herdSticks());
+    }
+
+    @Test
+    void aConfigCanTurnHerdSticksOn() {
+        assertTrue(BarnyardConfig.parse("{\"herdSticks\": true}").herdSticks());
+    }
+
+    @Test
+    void theFileWinsOverTheDefault() {
+        System.setProperty("barnyard_romance.herd_sticks", "true");
+        try {
+            assertTrue(BarnyardConfig.parse("{}").herdSticks());
+            assertFalse(BarnyardConfig.parse("{\"herdSticks\": false}").herdSticks());
+        } finally {
+            System.clearProperty("barnyard_romance.herd_sticks");
+        }
+    }
+
+    @Test
     void emptyConfigUsesTheDesignDefaults() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

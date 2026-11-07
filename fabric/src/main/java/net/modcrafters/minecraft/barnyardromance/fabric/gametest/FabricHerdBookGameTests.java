@@ -123,4 +123,49 @@ public class FabricHerdBookGameTests {
     public void herdBookRecordKeepsTheFreshOrigin(GameTestHelper helper) {
         HerdBookGameTests.herdBookRecordKeepsTheFreshOrigin(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theBookAndTheAnimalAgree(GameTestHelper helper) {
+        HerdBookGameTests.theBookAndTheAnimalAgree(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aBookPageShowsHealthAndVigour(GameTestHelper helper) {
+        HerdBookGameTests.aBookPageShowsHealthAndVigour(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anOldRecordWithoutASheetLoads(GameTestHelper helper) {
+        HerdBookGameTests.anOldRecordWithoutASheetLoads(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theEggTipSaysWhatSheLaidToday(GameTestHelper helper) {
+        HerdBookGameTests.theEggTipSaysWhatSheLaidToday(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void usingTheBookOnAMemberFocusesIt(GameTestHelper helper) {
+        HerdBookGameTests.usingTheBookOnAMemberFocusesIt(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMemberNoLongerFamiliarStillOpens(GameTestHelper helper) {
+        HerdBookGameTests.aMemberNoLongerFamiliarStillOpens(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void addingAnAnimalFocusesIt(GameTestHelper helper) {
+        HerdBookGameTests.addingAnAnimalFocusesIt(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anUnfamiliarStrangerGetsNoFocus(GameTestHelper helper) {
+        HerdBookGameTests.anUnfamiliarStrangerGetsNoFocus(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anAnimalInAnotherBookIsAddedToThisOne(GameTestHelper helper) {
+        HerdBookGameTests.anAnimalInAnotherBookIsAddedToThisOne(helper);
+    }
 }

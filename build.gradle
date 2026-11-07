@@ -15,8 +15,11 @@ neoForge {
 repositories {
     mavenCentral()
 }
+apply from: rootProject.file('gradle/modrinth-maven.gradle')
 
 dependencies {
+    // Jade's API, for compat/jade only. Optional: nothing ships with Jade or needs it.
+    compileOnly "maven.modrinth:jade:${jade_version}"
     // Fabric and NeoForge both bundle Fabric Mixin, so it is safe to use it in common
     // If you need to update, check what version they are using to see what is compatible
     // https://github.com/neoforged/NeoForge/blob/26.3.x/gradle.properties#L37

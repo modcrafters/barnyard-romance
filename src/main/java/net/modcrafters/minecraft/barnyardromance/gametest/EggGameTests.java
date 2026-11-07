@@ -13,7 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
+import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
@@ -178,7 +178,7 @@ public final class EggGameTests {
         helper.succeed();
     }
 
-    // An egg due while she wasn't loaded is skipped: behind her, but not laid, so the inspector doesn't count it.
+    // An egg due while she wasn't loaded is skipped: behind her, but not laid, so the stat sheet doesn't count it.
     public static void skippedEggsAreNotLaid(GameTestHelper helper) {
         Animal hen = hen(helper, MEDIUM_HEN, 0.0);
         long day = 10L;
@@ -1205,7 +1205,7 @@ public final class EggGameTests {
         HerdEntry entry = bookEntry(helper, hen);
 
         helper.assertTrue(entry.eggs().equals(Optional.of(EggOutlook.Kind.PLAIN)), "the book shows " + entry.eggs());
-        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == HerdPageText.Kind.EGGS), "her page has no eggs line");
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == StatKind.EGGS), "her page has no eggs line");
         helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().equals(TextComponents.of(EggOutlook.Reason.NO_ROOSTER.text()))),
                 "her page doesn't say there's no rooster");
         helper.succeed();

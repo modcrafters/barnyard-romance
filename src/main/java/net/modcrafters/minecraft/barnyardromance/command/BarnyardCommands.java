@@ -3,9 +3,10 @@ package net.modcrafters.minecraft.barnyardromance.command;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardInspector;
 import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -22,14 +23,19 @@ public final class BarnyardCommands {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("barnyard")
+        // The stick commands exist only while herdSticks is on, read when the server starts.
+        register(dispatcher, BarnyardConfig.current().herdSticks());
+    }
+
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, boolean herdSticks) {
+        LiteralArgumentBuilder<CommandSourceStack> barnyard = Commands.literal("barnyard")
                 //? if >=1.21.11 {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 //?} else
                 //.requires(source -> source.hasPermission(Commands.LEVEL_GAMEMASTERS))
-                .then(Commands.literal("info").executes(context -> inspector(context.getSource())))
-                .then(Commands.literal("foods").then(Commands.literal("scan").executes(context -> scan(context.getSource()))))
-                .then(Commands.literal("familiarity")
+                .then(Commands.literal("foods").then(Commands.literal("scan").executes(context -> scan(context.getSource()))));
+        if (herdSticks) {
+            barnyard.then(Commands.literal("familiarity")
                         .then(Commands.literal("up").executes(context -> give(context.getSource(), HerdTool.familiarity(1))))
                         .then(Commands.literal("down").executes(context -> give(context.getSource(), HerdTool.familiarity(-1))))
                         .then(Commands.literal("set").then(Commands.argument("percent", IntegerArgumentType.integer(0, 100))
@@ -38,7 +44,9 @@ public final class BarnyardCommands {
                         .then(Commands.literal("up").executes(context -> give(context.getSource(), HerdTool.pregnancy(1))))
                         .then(Commands.literal("down").executes(context -> give(context.getSource(), HerdTool.pregnancy(-1))))
                         .then(Commands.literal("set").then(Commands.argument("percent", IntegerArgumentType.integer(0, 100))
-                                .executes(context -> give(context.getSource(), HerdTool.pregnancySet(IntegerArgumentType.getInteger(context, "percent"))))))));
+                                .executes(context -> give(context.getSource(), HerdTool.pregnancySet(IntegerArgumentType.getInteger(context, "percent")))))));
+        }
+        dispatcher.register(barnyard);
     }
 
     private static int scan(CommandSourceStack source) {
@@ -51,13 +59,6 @@ public final class BarnyardCommands {
             source.sendFailure(Component.translatable("commands.barnyard_romance.foods.scan.failed", String.valueOf(exception.getMessage())));
             return 0;
         }
-    }
-
-    private static int inspector(CommandSourceStack source) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
-        ServerPlayer player = source.getPlayerOrException();
-        give(player, BarnyardInspector.create());
-        source.sendSuccess(() -> Component.translatable("commands.barnyard_romance.inspector.given"), false);
-        return 1;
     }
 
     private static int give(CommandSourceStack source, HerdTool tool) throws com.mojang.brigadier.exceptions.CommandSyntaxException {

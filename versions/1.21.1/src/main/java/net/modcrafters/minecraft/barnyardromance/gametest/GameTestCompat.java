@@ -56,6 +56,15 @@ public final class GameTestCompat {
         return helper.spawn(type, x, y + 1, z);
     }
 
+    // A new entity that is not in the level, so it never joined and has no traits.
+    public static <T extends Entity> T unspawned(GameTestHelper helper, EntityType<T> type) {
+        T entity = type.create(helper.getLevel());
+        if (entity == null) {
+            throw failure(helper, "could not create a " + type);
+        }
+        return entity;
+    }
+
     @SuppressWarnings("unchecked")
     public static <T extends Entity> T reloaded(GameTestHelper helper, T entity) {
         CompoundTag saved = entity.saveWithoutId(new CompoundTag());

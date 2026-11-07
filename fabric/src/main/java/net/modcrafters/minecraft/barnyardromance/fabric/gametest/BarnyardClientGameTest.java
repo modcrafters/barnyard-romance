@@ -1,11 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.creativetab.v1.FabricCreativeModeInventoryScreen;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
-import net.modcrafters.minecraft.barnyardromance.client.InspectorScreen;
+import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
@@ -18,6 +20,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -28,11 +31,13 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ServerLevelData;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
-// Opens the Barnyard Inspector on a few prepared animals in a real client and screenshots each one.
-public class InspectorClientGameTest implements FabricClientGameTest {
+// Opens the herd book at a few prepared animals in a real client and screenshots each page,
+// then checks the sneak card, the superfoods in the hotbar and the creative tab.
+public class BarnyardClientGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
@@ -47,24 +52,25 @@ public class InspectorClientGameTest implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             long now = world.getServer().computeOnServer(server -> server.overworld().getGameTime());
 
-            inspect(context, world, "inspector_worn_out_heavy_cow", Sex.FEMALE, false,
+            bookPage(context, world, "herd_page_worn_out_heavy_cow", Sex.FEMALE, false,
                     traits -> traits.withWeight(0.8).withFertility(0.1, now), false);
-            inspect(context, world, "inspector_light_bull", Sex.MALE, false,
+            bookPage(context, world, "herd_page_light_bull", Sex.MALE, false,
                     traits -> traits.withWeight(0.3), false);
-            inspect(context, world, "inspector_pregnant_cow", Sex.FEMALE, false,
+            bookPage(context, world, "herd_page_pregnant_cow", Sex.FEMALE, false,
                     traits -> traits.withWeight(0.55).withFertility(0.75, now), true);
-            inspect(context, world, "inspector_calf", Sex.FEMALE, true,
+            bookPage(context, world, "herd_page_calf", Sex.FEMALE, true,
                     traits -> traits.withWeight(0.62), false);
-            inspect(context, world, "inspector_strong_stallion", EntityTypes.HORSE, Sex.MALE, false,
+            bookPage(context, world, "herd_page_strong_stallion", EntityTypes.HORSE, Sex.MALE, false,
                     traits -> traits.withWeight(0.7), false);
-            inspect(context, world, "inspector_young_bull", Sex.MALE, false,
+            bookPage(context, world, "herd_page_young_bull", Sex.MALE, false,
                     traits -> traits.withBornTick(now - 30_000L), false);
-            inspect(context, world, "inspector_old_cow", Sex.FEMALE, false,
+            bookPage(context, world, "herd_page_old_cow", Sex.FEMALE, false,
                     traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
-            inspect(context, world, "inspector_milking_cow", Sex.FEMALE, false,
+            bookPage(context, world, "herd_page_milking_cow", Sex.FEMALE, false,
                     traits -> traits.withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)), false);
-            inspect(context, world, "inspector_wild_caught_cow", Sex.FEMALE, false,
+            bookPage(context, world, "herd_page_wild_caught_cow", Sex.FEMALE, false,
                     traits -> traits.fed(0.4, -1L).withOrigin(Origin.WILD), false);
+            sneakCard(context, world, now);
             oldHearts(context, world, now);
             superfoods(context, world);
             creativeTab(context, world);
@@ -102,6 +108,35 @@ public class InspectorClientGameTest implements FabricClientGameTest {
         world.getServer().runCommand("gamemode survival @a");
     }
 
+    // Looking at a cow while sneaking shows the full stat card above it.
+    private static void sneakCard(ClientGameTestContext context, TestSingleplayerContext world, long now) {
+        world.getServer().runCommand("tp @a ~ ~ ~ -90 8");
+        UUID id = world.getServer().computeOnServer(server -> {
+            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            Animal cow = EntityTypes.COW.create(player.level(), EntitySpawnReason.COMMAND);
+            cow.snapTo(player.getX() + 3.0, player.getY(), player.getZ(), 90.0F, 0.0F);
+            cow.setNoAi(true);
+            player.level().addFreshEntity(cow);
+            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 0.9, 1.0, -1L).withWeight(0.6).withFertility(0.8, now));
+            return cow.getUUID();
+        });
+        world.getConnection().waitForClientboundPackets();
+        context.waitFor(client -> client.level != null && entity(client.level.getEntity(id)) != null);
+        context.waitTicks(10);
+        context.getInput().holdKey(options -> options.keyShift);
+        context.waitTicks(10);
+        context.takeScreenshot("sneak_card_cow");
+        context.getInput().releaseKey(options -> options.keyShift);
+        context.waitTicks(2);
+        world.getServer().runOnServer(server -> {
+            Entity cow = server.overworld().getEntity(id);
+            if (cow != null) {
+                cow.discard();
+            }
+        });
+        world.getConnection().waitForClientboundPackets();
+    }
+
     // Old hearts are random and rare, so a few are spawned by hand to see how they look.
     private static void oldHearts(ClientGameTestContext context, TestSingleplayerContext world, long now) {
         world.getServer().runCommand("tp @a ~ ~ ~ -75 5");
@@ -132,7 +167,7 @@ public class InspectorClientGameTest implements FabricClientGameTest {
         });
     }
 
-    private static void inspect(
+    private static void bookPage(
             ClientGameTestContext context,
             TestSingleplayerContext world,
             String name,
@@ -141,10 +176,10 @@ public class InspectorClientGameTest implements FabricClientGameTest {
             UnaryOperator<AnimalTraits> change,
             boolean pregnant
     ) {
-        inspect(context, world, name, EntityTypes.COW, sex, baby, change, pregnant);
+        bookPage(context, world, name, EntityTypes.COW, sex, baby, change, pregnant);
     }
 
-    private static void inspect(
+    private static void bookPage(
             ClientGameTestContext context,
             TestSingleplayerContext world,
             String name,
@@ -171,14 +206,23 @@ public class InspectorClientGameTest implements FabricClientGameTest {
             if (pregnant) {
                 Services.DATA.setPregnancy(cow, new Pregnancy(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25, 1, 1.0));
             }
+            // A fresh book for each animal, opened at its page the way using the book on it does.
+            ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+            player.setItemInHand(InteractionHand.MAIN_HAND, book);
+            HerdBooks.register(book, cow);
+            HerdBooks.show(player, book, true, Optional.of(cow.getUUID()));
             return cow.getUUID();
         });
         world.getConnection().waitForClientboundPackets();
-        context.waitFor(client -> client.level != null && entity(client.level.getEntity(id)) != null);
-        context.waitTicks(5);
-        context.setScreen(() -> new InspectorScreen((Animal) entity(context.computeOnClient(client -> client.level.getEntity(id)))));
+        context.waitFor(client -> client.gui.screen() instanceof HerdBookScreen screen && id.equals(screen.shownAnimal()));
         context.waitTicks(2);
         context.takeScreenshot(name);
+        if (name.endsWith("pregnant_cow") || name.endsWith("light_bull")) {
+            // A long entry runs over more than one leaf: Page Down turns to the second.
+            context.getInput().pressKey(InputConstants.KEY_PAGEDOWN);
+            context.waitTicks(2);
+            context.takeScreenshot(name + "_leaf_2");
+        }
         context.setScreen(() -> null);
         world.getServer().runOnServer(server -> {
             Entity cow = server.overworld().getEntity(id);

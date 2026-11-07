@@ -1,0 +1,17 @@
+// The Modrinth maven, for group maven.modrinth only. Several scripts need it in one project, and a second exclusive
+// declaration for the same group makes Gradle find the group in neither, so it's added once.
+if (repositories.findByName('Modrinth') == null) {
+    repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = 'Modrinth'
+                    url = 'https://api.modrinth.com/maven'
+                }
+            }
+            filter {
+                includeGroup 'maven.modrinth'
+            }
+        }
+    }
+}

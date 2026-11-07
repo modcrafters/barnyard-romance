@@ -20,7 +20,8 @@ public final class HerdBookPayloads {
 
     // book is empty for a book that has never registered an animal. open is true when the player used the book,
     // and false for a reply, which must not reopen a book the player has closed.
-    public record ShowBook(Optional<UUID> book, List<HerdEntry> entries, boolean open) implements CustomPacketPayload {
+    // focus is the animal whose page to turn to, if any.
+    public record ShowBook(Optional<UUID> book, List<HerdEntry> entries, boolean open, Optional<UUID> focus) implements CustomPacketPayload {
         public static final Type<ShowBook> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "show_herd_book"));
         // Books have no size limit and grow as calves are born, so a big farm's book is past vanilla's 1 MiB
         // packet limit (about 1 KB per animal). NeoForge splits large payloads itself; Fabric registers this.
@@ -32,6 +33,8 @@ public final class HerdBookPayloads {
                 ShowBook::entries,
                 ByteBufCodecs.BOOL,
                 ShowBook::open,
+                ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC).cast(),
+                ShowBook::focus,
                 ShowBook::new
         );
 

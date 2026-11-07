@@ -107,20 +107,36 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             expectShown(context, daisy, "Clicking Daisy's row again should open her page");
 
             // The wheel turns pages, and a touchpad's small scrolls add up to one turn.
+            expectLeaf(context, daisy, 0, "Daisy's page should open at her first leaf");
             scroll(context, -0.5);
-            expectShown(context, daisy, "Half a scroll should not turn the page yet");
+            expectLeaf(context, daisy, 0, "Half a scroll should not turn the page yet");
+            // Daisy's entry runs over more than one leaf, so forward walks her leaves before the next animal.
             scroll(context, -0.5);
-            UUID next = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
-            if (next == null || next.equals(daisy)) {
-                throw new AssertionError("Scrolling down on Daisy's page should open the next animal, but the book shows " + next);
+            expectLeaf(context, daisy, 1, "Scrolling down from Daisy's first leaf should open her second leaf");
+            context.takeScreenshot("herd_page_daisy_leaf_2");
+            // Forward from her last leaf goes to the next animal's first leaf.
+            UUID next = null;
+            for (int leaf = 2; next == null && leaf < 8; leaf++) {
+                context.getInput().pressKey(InputConstants.KEY_PAGEDOWN);
+                context.waitTicks(2);
+                UUID shown = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
+                if (daisy.equals(shown)) {
+                    expectLeaf(context, daisy, leaf, "Page Down should walk Daisy's leaves one at a time");
+                } else {
+                    next = shown;
+                }
             }
-            // Page Up and Page Down turn pages like a vanilla book.
+            if (next == null) {
+                throw new AssertionError("Page Down never left Daisy's entry");
+            }
+            expectLeaf(context, next, 0, "Forward from Daisy's last leaf should open the next animal's first leaf");
+            // Back from the next animal's first leaf lands on the previous animal's first leaf.
             context.getInput().pressKey(InputConstants.KEY_PAGEUP);
-            expectShown(context, daisy, "Page Up should go back to Daisy's page");
-            context.getInput().pressKey(InputConstants.KEY_PAGEDOWN);
-            expectShown(context, next, "Page Down should open the animal after Daisy");
+            expectLeaf(context, daisy, 0, "Page Up from the next animal's first leaf should open Daisy's first leaf");
+            scroll(context, -1.0);
+            expectLeaf(context, daisy, 1, "Scrolling down should open Daisy's second leaf again");
             scroll(context, 1.0);
-            expectShown(context, daisy, "Scrolling up should go back to Daisy's page");
+            expectLeaf(context, daisy, 0, "Scrolling up from her second leaf should go back to her first");
 
             click(context, REMOVE_X, BUTTON_Y);
             context.takeScreenshot("herd_book_remove_sure");
@@ -148,6 +164,14 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
         context.waitTicks(1);
         context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTicks(2);
+    }
+
+    private static void expectLeaf(ClientGameTestContext context, UUID animal, int leaf, String message) {
+        UUID shown = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownAnimal());
+        int shownLeaf = context.computeOnClient(client -> ((HerdBookScreen) client.gui.screen()).shownLeaf());
+        if (!animal.equals(shown) || shownLeaf != leaf) {
+            throw new AssertionError(message + ", but the book shows " + shown + " leaf " + shownLeaf);
+        }
     }
 
     private static void scroll(ClientGameTestContext context, double amount) {

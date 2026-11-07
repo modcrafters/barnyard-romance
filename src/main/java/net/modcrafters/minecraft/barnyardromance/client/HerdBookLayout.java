@@ -91,6 +91,59 @@ public final class HerdBookLayout {
         return Math.max(0, linesLeft - 1);
     }
 
+    // How many status lines go on each leaf of one animal's entry. `heights` are the lines' heights in pixels (a wrapped
+    // note is taller). The first leaf has `firstSpace` pixels from under its card down to the page arrows, later leaves
+    // `space`. The family block, `familyHeight` pixels tall with the gap above it, goes under the last leaf's lines;
+    // when it doesn't fit there it gets a leaf of its own, shown as a 0.
+    public static List<Integer> leaves(List<Integer> heights, int firstSpace, int space, int familyHeight) {
+        List<Integer> leaves = new ArrayList<>();
+        int index = 0;
+        int capacity = firstSpace;
+        int used;
+        do {
+            int count = 0;
+            used = 0;
+            while (index < heights.size() && (count == 0 || used + heights.get(index) <= capacity)) {
+                used += heights.get(index);
+                count++;
+                index++;
+            }
+            leaves.add(count);
+            if (index < heights.size()) {
+                capacity = space;
+            }
+        } while (index < heights.size());
+        int lastCapacity = leaves.size() == 1 ? firstSpace : space;
+        if (used + familyHeight > lastCapacity) {
+            leaves.add(0);
+        }
+        return leaves;
+    }
+
+    // How tall the family block is at the foot of an entry, counting the gap above it: its header, the mother and
+    // father, and the young (a row of heads, or names without heads, or nothing). Worked out from the same offsets the
+    // screen draws at.
+    public static int familyHeight(boolean hasYoung, boolean hasHeads, int statusLine, int icon, int linkLine) {
+        int gap = 2;
+        int fatherY = statusLine + 1 + statusLine;
+        int bottom = fatherY + icon;
+        if (hasYoung) {
+            int youngY = fatherY + statusLine;
+            bottom = hasHeads ? youngY - 1 + icon : youngY + linkLine + icon;
+        }
+        return gap + bottom;
+    }
+
+    // The leaf after this one, or -1 past the end.
+    public static int nextLeaf(int leaf, int leafCount) {
+        return leaf + 1 < leafCount ? leaf + 1 : -1;
+    }
+
+    // The leaf before this one, or -1 before the start.
+    public static int previousLeaf(int leaf) {
+        return leaf > 0 ? leaf - 1 : -1;
+    }
+
     public static List<List<Line>> contents(List<Row> rows, String species) {
         List<Line> lines = new ArrayList<>();
         for (Group group : Group.values()) {

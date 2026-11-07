@@ -12,7 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.inspect.InspectorSheet;
+import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
@@ -58,6 +58,15 @@ public class HerdStick extends Item {
         if (player.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
+        if (!BarnyardConfig.current().herdSticks()) {
+            player.sendSystemMessage(Component.translatable("message.barnyard_romance.herd_stick.switched_off"));
+            return InteractionResult.CONSUME;
+        }
+        return use(stack, tool, player, animal);
+    }
+
+    // The stick's work, below the config gate. Game tests call this so they never depend on the config.
+    public static InteractionResult use(ItemStack stack, HerdTool tool, Player player, Animal animal) {
         if (!HerdToolRules.allowed(tool, player.isCreative())) {
             player.sendSystemMessage(TextComponents.of(HerdToolRules.CREATIVE_ONLY));
             return InteractionResult.CONSUME;
@@ -88,7 +97,7 @@ public class HerdStick extends Item {
                     animal.level().getGameTime(),
                     Services.DATA.get(animal)
                             .flatMap(traits -> MilkActions.status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
-                            .map(InspectorSheet::milkText)
+                            .map(StatText::milkText)
                             .orElse(Text.EMPTY)
             );
             return new Outcome(true, text);

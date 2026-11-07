@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
@@ -32,7 +34,8 @@ public final class HerdRecords {
                 : NestCheck.NONE;
         return Optional.of(new HerdRecord(AnimalSex.speciesId(animal), name, traits.get(), pregnancy, animal.isBaby(),
                 MilkActions.milkFor(animal).isPresent(), animal instanceof Sheep, animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
-                FamiliarityCare.tamed(animal), nest));
+                FamiliarityCare.tamed(animal), nest, DeathCause.NONE,
+                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), LiveFacts.needsTaming(animal), Services.DATA.getLaying(animal).orElse(Laying.NONE))));
     }
 
     // Below the familiarity threshold the book stops updating an animal: it keeps the old values and only
@@ -45,7 +48,7 @@ public final class HerdRecords {
         AnimalTraits kept = old.traits().fed(fresh.traits().familiarity(), old.traits().lastFedTick()).withHunger(fresh.traits().hunger())
                 .withOrigin(fresh.traits().origin());
         return new HerdRecord(old.species(), old.name(), kept, old.pregnancy(), old.baby(), old.milkable(), old.shearable(), old.woolly(), old.refreshedAt(),
-                old.diedAt(), old.diedClock(), fresh.tamed(), old.nest(), old.cause());
+                old.diedAt(), old.diedClock(), fresh.tamed(), old.nest(), old.cause(), old.sheet());
     }
 
     private static Pregnancy withoutLitter(Pregnancy pregnancy) {

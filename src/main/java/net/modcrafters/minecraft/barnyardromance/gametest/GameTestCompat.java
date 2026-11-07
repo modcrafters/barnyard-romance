@@ -59,6 +59,15 @@ public final class GameTestCompat {
         return helper.spawn(type, x, y, z);
     }
 
+    // A new entity that is not in the level, so it never joined and has no traits.
+    public static <T extends Entity> T unspawned(GameTestHelper helper, EntityType<T> type) {
+        T entity = type.create(helper.getLevel(), EntitySpawnReason.LOAD);
+        if (entity == null) {
+            throw failure(helper, "could not create a " + type);
+        }
+        return entity;
+    }
+
     // A fresh copy of the entity made from its save, the way a chunk loads it. The copy is not in the level.
     @SuppressWarnings("unchecked")
     public static <T extends Entity> T reloaded(GameTestHelper helper, T entity) {

@@ -48,13 +48,23 @@ public class HerdBookItem extends Item {
             return InteractionResult.SUCCESS;
         }
         // The stack passed in can be a copy in creative mode, so the ID goes on the one in the hand.
-        HerdBooks.RegisterResult result = HerdBooks.register(player.getItemInHand(hand), animal);
-        VersionCompat.sendOverlay(player, Component.translatable(switch (result) {
-            case ADDED -> "message.barnyard_romance.herd_book.added";
-            case ALREADY -> "message.barnyard_romance.herd_book.already";
-            case NOT_FAMILIAR -> "message.barnyard_romance.herd_book.not_familiar";
-            case NOT_TRACKED -> "message.barnyard_romance.herd_book.not_tracked";
-        }, animal.getName()));
+        ItemStack held = player.getItemInHand(hand);
+        HerdBooks.Use use = HerdBooks.use(held, animal);
+        switch (use.result()) {
+            case ADDED -> {
+                VersionCompat.sendOverlay(player, Component.translatable("message.barnyard_romance.herd_book.added", animal.getName()));
+                if (player instanceof ServerPlayer serverPlayer) {
+                    HerdBooks.show(serverPlayer, held, true, use.focus());
+                }
+            }
+            case ALREADY -> {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    HerdBooks.show(serverPlayer, held, true, use.focus());
+                }
+            }
+            case NOT_FAMILIAR -> VersionCompat.sendOverlay(player, Component.translatable("message.barnyard_romance.herd_book.not_familiar", animal.getName()));
+            case NOT_TRACKED -> VersionCompat.sendOverlay(player, Component.translatable("message.barnyard_romance.herd_book.not_tracked", animal.getName()));
+        }
         return VersionCompat.SUCCESS_SERVER;
     }
 }

@@ -187,4 +187,64 @@ class HerdBookLayoutTest {
         assertEquals("Cow", English.of(HerdBookLayout.displayName("", "Cow", "")));
         assertEquals("Bluebell", English.of(HerdBookLayout.displayName("Bluebell", "Cow", "Daisy")));
     }
+
+    private static List<Integer> lines(int count) {
+        return java.util.Collections.nCopies(count, 10);
+    }
+
+    @Test
+    void aShortEntryIsOneLeaf() {
+        assertEquals(List.of(5), HerdBookLayout.leaves(lines(5), 100, 120, 32));
+    }
+
+    @Test
+    void aLongEntryFlowsOn() {
+        assertEquals(List.of(8, 6), HerdBookLayout.leaves(lines(14), 80, 120, 32));
+    }
+
+    @Test
+    void theFamilyGetsItsOwnLeafWhenFull() {
+        assertEquals(List.of(8, 0), HerdBookLayout.leaves(lines(8), 80, 120, 32));
+    }
+
+    @Test
+    void theFamilyShareTheLeafWhenItsRealHeightFits() {
+        // 8 lines and a 32 px family exactly fill 112 px: no near-empty second leaf.
+        assertEquals(List.of(8), HerdBookLayout.leaves(lines(8), 113, 126, 32));
+        // One pixel less room and it moves to a leaf of its own.
+        assertEquals(List.of(8, 0), HerdBookLayout.leaves(lines(8), 111, 126, 32));
+    }
+
+    @Test
+    void aFatherWithYoungFitsOneLeafUnderATwoLineSubtitle() {
+        // The card's two-line subtitle leaves 111 px: 7 status lines (70 px) and the family with young heads (41 px).
+        assertEquals(List.of(7), HerdBookLayout.leaves(lines(7), 111, 126, HerdBookLayout.familyHeight(true, true, 10, 9, 10)));
+        assertEquals(List.of(7, 0), HerdBookLayout.leaves(lines(7), 110, 126, HerdBookLayout.familyHeight(true, true, 10, 9, 10)));
+    }
+
+    @Test
+    void aWrappedNoteTakesItsFullHeight() {
+        // The second line of a wrapped note counts: 7 plain lines and a 19 px note need 121 px with the family.
+        java.util.List<Integer> heights = new java.util.ArrayList<>(lines(7));
+        heights.add(19);
+        assertEquals(List.of(8), HerdBookLayout.leaves(heights, 121, 126, 32));
+        assertEquals(List.of(8, 0), HerdBookLayout.leaves(heights, 120, 126, 32));
+    }
+
+    @Test
+    void leavesStepThenStop() {
+        assertEquals(1, HerdBookLayout.nextLeaf(0, 2));
+        assertEquals(-1, HerdBookLayout.nextLeaf(1, 2));
+        assertEquals(-1, HerdBookLayout.previousLeaf(0));
+        assertEquals(0, HerdBookLayout.previousLeaf(1));
+    }
+
+    @Test
+    void theFamilyBlockReservesItsRealHeight() {
+        // Gap 2, header, mother, father: 32 px. Young heads reach 41 px, young names 52 px.
+        assertEquals(32, HerdBookLayout.familyHeight(false, true, 10, 9, 10));
+        assertEquals(32, HerdBookLayout.familyHeight(false, false, 10, 9, 10));
+        assertEquals(41, HerdBookLayout.familyHeight(true, true, 10, 9, 10));
+        assertEquals(52, HerdBookLayout.familyHeight(true, false, 10, 9, 10));
+    }
 }

@@ -17,7 +17,7 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdPageText;
+import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
@@ -234,7 +234,7 @@ public final class CareGameTests {
 
         HerdEntry entry = HerdStatus.entry(record, data.ledger().node(cow.getUUID()), helper.getLevel().getGameTime(), clock(14L), false);
 
-        float fill = entry.lines().stream().filter(line -> line.kind() == HerdPageText.Kind.FAMILIARITY).findFirst().orElseThrow().fill();
+        float fill = entry.lines().stream().filter(line -> line.kind() == StatKind.FAMILIARITY).findFirst().orElseThrow().fill();
         helper.assertTrue(Math.abs(fill - 0.35F) < 1.0e-4F, "the book shows familiarity " + fill + ", not 0.35");
         helper.succeed();
     }
@@ -548,7 +548,7 @@ public final class CareGameTests {
 
         HerdEntry entry = HerdStatus.entry(data.record(cow.getUUID()), data.ledger().node(cow.getUUID()), helper.getLevel().getGameTime(), clock(14L), false);
 
-        float fill = entry.lines().stream().filter(line -> line.kind() == HerdPageText.Kind.FAMILIARITY).findFirst().orElseThrow().fill();
+        float fill = entry.lines().stream().filter(line -> line.kind() == StatKind.FAMILIARITY).findFirst().orElseThrow().fill();
         helper.assertTrue(Math.abs(fill - 0.2F) < 1.0e-4F, "the book shows familiarity " + fill + ", not 0.2");
         helper.succeed();
     }
@@ -647,7 +647,9 @@ public final class CareGameTests {
         Services.DATA.set(cow, traits(helper, cow).fed(0.4, -1L).withOrigin(Origin.WILD));
         Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
 
-        HerdStick.create(HerdTool.familiarity(1)).interactLivingEntity(player, cow, InteractionHand.MAIN_HAND);
+        // Below the config gate, so this never depends on the herdSticks option.
+        HerdTool tool = HerdTool.familiarity(1);
+        HerdStick.use(HerdStick.create(tool), tool, player, cow);
 
         assertFamiliarity(helper, cow, 0.4);
         helper.succeed();

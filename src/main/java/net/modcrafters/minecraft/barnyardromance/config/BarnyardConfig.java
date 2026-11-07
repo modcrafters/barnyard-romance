@@ -39,6 +39,7 @@ public final class BarnyardConfig {
     private static Predicate<String> excludedByTag = speciesId -> false;
 
     private final boolean enabled;
+    private final boolean herdSticks;
     private final double femaleRatio;
     private final SizeSettings defaults;
     private final boolean pregnancyEnabled;
@@ -54,6 +55,7 @@ public final class BarnyardConfig {
 
     private BarnyardConfig(
             boolean enabled,
+            boolean herdSticks,
             double femaleRatio,
             SizeSettings defaults,
             boolean pregnancyEnabled,
@@ -66,6 +68,7 @@ public final class BarnyardConfig {
             Tuning tuning
     ) {
         this.enabled = enabled;
+        this.herdSticks = herdSticks;
         this.femaleRatio = femaleRatio;
         this.defaults = defaults;
         this.pregnancyEnabled = pregnancyEnabled;
@@ -79,7 +82,12 @@ public final class BarnyardConfig {
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), Tuning.DEFAULTS);
+        return new BarnyardConfig(true, herdSticksByDefault(), 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), Tuning.DEFAULTS);
+    }
+
+    // The dev client runs set -Dbarnyard_romance.herd_sticks=true; a config file's own herdSticks wins over it.
+    public static boolean herdSticksByDefault() {
+        return Boolean.getBoolean("barnyard_romance.herd_sticks");
     }
 
     public static BarnyardConfig current() {
@@ -122,6 +130,7 @@ public final class BarnyardConfig {
         }
         JsonObject object = element.getAsJsonObject();
         boolean enabled = bool(object, "enabled", true);
+        boolean herdSticks = bool(object, "herdSticks", herdSticksByDefault());
         double femaleRatio = clamp(number(object, "femaleRatio", 0.5), 0.0, 1.0);
         SizeSettings size = new SizeSettings(
                 number(object, "femaleScale", DEFAULT_SIZE.femaleScale()),
@@ -154,6 +163,7 @@ public final class BarnyardConfig {
         }
         return new BarnyardConfig(
                 enabled,
+                herdSticks,
                 femaleRatio,
                 size,
                 pregnancyEnabled,
@@ -178,6 +188,7 @@ public final class BarnyardConfig {
     private String writeJson() throws IOException {
         JsonObject object = new JsonObject();
         object.addProperty("enabled", enabled);
+        object.addProperty("herdSticks", herdSticks);
         object.addProperty("femaleRatio", femaleRatio);
         object.addProperty("femaleScale", defaults.femaleScale());
         object.addProperty("maleScale", defaults.maleScale());
@@ -209,6 +220,12 @@ public final class BarnyardConfig {
         write(jsonWriter, object);
         jsonWriter.close();
         return writer.toString();
+    }
+
+    // Whether the Herd Sticks and the commands that hand them out exist. Commands and the tab read it when the server
+    // starts, so a change needs a restart.
+    public boolean herdSticks() {
+        return herdSticks;
     }
 
     public double femaleRatio() {
