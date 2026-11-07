@@ -158,4 +158,9 @@ public class FabricFeederGameTests {
     public void aMangerMealShowsOnTheFedRow(GameTestHelper helper) {
         FeederGameTests.aMangerMealShowsOnTheFedRow(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp(GameTestHelper helper) {
+        FeederGameTests.aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp(helper);
+    }
 }

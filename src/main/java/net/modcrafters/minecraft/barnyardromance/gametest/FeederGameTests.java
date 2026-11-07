@@ -28,6 +28,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -43,6 +44,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -106,7 +108,9 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_sitting_wolf_is_not_moved", 300, FeederGameTests::aSittingWolfIsNotMoved),
             new BreedingGameTests.Case("a_catch_up_meal_heals", 100, FeederGameTests::aCatchUpMealHeals),
             new BreedingGameTests.Case("a_cow_in_a_corner_walks_out_to_eat", 400, FeederGameTests::aCowInACornerWalksOutToEat),
-            new BreedingGameTests.Case("a_manger_meal_shows_on_the_fed_row", 400, FeederGameTests::aMangerMealShowsOnTheFedRow)
+            new BreedingGameTests.Case("a_manger_meal_shows_on_the_fed_row", 400, FeederGameTests::aMangerMealShowsOnTheFedRow),
+            new BreedingGameTests.Case("a_brief_morning_load_leaves_the_rest_of_the_day_to_catch_up", 400,
+                    FeederGameTests::aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp)
     );
 
     private FeederGameTests() {
@@ -747,6 +751,51 @@ public final class FeederGameTests {
                         String how = loaded ? "" : " while unloaded";
                         helper.assertTrue(page.equals("Fed today (Manger)"), "her page's fed row reads " + page + how);
                         helper.assertTrue(!entry.fedToday(), "the contents page shows her hand-fed today" + how);
+                    }
+                    helper.succeed();
+                });
+    }
+
+    // The pen is loaded just after sunrise, long enough for the nearest cow to walk over and eat, then unloaded for
+    // three days. The other two never had their chance that morning, so the Manger feeds them that day when the pen
+    // loads again, and the food it holds lasts the whole herd the same: all three ate on the first two days and went
+    // hungry on the third.
+    public static void aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp(GameTestHelper helper) {
+        FeederBlockEntity[] reloaded = {null};
+        morning(helper, EntityTypes.COW, new int[][]{{3, 4}, {7, 3}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 6)),
+                m -> {
+                    if (reloaded[0] == null) {
+                        long ate = m.animals.stream().filter(cow -> ateOn(helper, cow, DAY)).count();
+                        if (ate == 0L) {
+                            return;
+                        }
+                        helper.assertTrue(ate < m.animals.size(), "every cow ate before the pen could unload");
+                        m.animals.forEach(FeederGameTests::holdStill);
+                        // Unloaded: saved and taken out of the level, so nothing ticks it. It comes back three days on,
+                        // as from a save, and settles the days it missed.
+                        BlockPos pos = m.at;
+                        CompoundTag saved = m.feeder.saveWithFullMetadata(helper.getLevel().registryAccess());
+                        helper.getLevel().removeBlockEntity(pos);
+                        m.clock += 3L * 24_000L;
+                        reloaded[0] = (FeederBlockEntity) BlockEntity.loadStatic(pos, helper.getLevel().getBlockState(pos), saved,
+                                helper.getLevel().registryAccess());
+                        helper.getLevel().setBlockEntity(reloaded[0]);
+                        reloaded[0].runOnClock(helper.getLevel(), m.clock);
+                        return;
+                    }
+                    if (reloaded[0].settledDay() < DAY + 3L) {
+                        return;
+                    }
+                    helper.assertTrue(reloaded[0].food() == 0, "the Manger holds " + contents(reloaded[0]));
+                    for (Animal cow : m.animals) {
+                        AnimalTraits traits = BreedingGameTests.traits(helper, cow);
+                        helper.assertTrue(traits.hunger().settledDay() == DAY + 3L, "a cow is settled to day " + traits.hunger().settledDay());
+                        helper.assertTrue(traits.hunger().lastAteDay() == DAY + 1L && traits.hunger().lastHungryDay() == DAY + 2L,
+                                "a cow last ate on day " + traits.hunger().lastAteDay() + " and was last hungry on " + traits.hunger().lastHungryDay());
+                        // One hungry day each: one that missed the brief morning would have lost twice this.
+                        helper.assertTrue(Math.abs(traits.familiarity() - 0.75) < 1.0e-6, "a cow's familiarity is " + traits.familiarity());
+                        helper.assertTrue(Math.abs(cow.getHealth() - 9.0F) < 1.0e-4F, "a cow's health is " + cow.getHealth());
                     }
                     helper.succeed();
                 });

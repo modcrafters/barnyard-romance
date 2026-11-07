@@ -9,6 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
@@ -32,8 +33,10 @@ public final class FeederCatchUp {
 
     private final long today;
     // Days up to this one were spent with the block loaded, when the herd could walk over and eat from it, so the
-    // block hands out no food for them now.
+    // block hands out no food for them now. The live day itself only if the block ran on to its end (liveDayFed):
+    // if the pen unloaded partway through it, the members that hadn't walked over yet eat now.
     private final long liveDay;
+    private final boolean liveDayFed;
     private final List<UUID> members;
     // The day each member settles next.
     private final long[] next;
@@ -43,9 +46,10 @@ public final class FeederCatchUp {
     private int at;
     private int left;
 
-    private FeederCatchUp(long today, long liveDay, List<UUID> members, long[] next) {
+    private FeederCatchUp(long today, long liveDay, boolean liveDayFed, List<UUID> members, long[] next) {
         this.today = today;
         this.liveDay = liveDay;
+        this.liveDayFed = liveDayFed;
         this.members = members;
         this.next = next;
         this.left = members.size();
@@ -58,7 +62,7 @@ public final class FeederCatchUp {
 
     // Gathers the members loaded now that have days before today to settle. The config may count fewer days than
     // were missed; those it doesn't are passed over at once, as a lone settle passes them over.
-    static FeederCatchUp start(FeederBlockEntity feeder, ServerLevel level, long today, long liveDay) {
+    static FeederCatchUp start(FeederBlockEntity feeder, ServerLevel level, long today, long liveDay, boolean liveDayFed) {
         HungerSettings.CatchUp mode = BarnyardConfig.current().hunger().catchUp();
         List<UUID> members = new ArrayList<>();
         List<Long> from = new ArrayList<>();
@@ -91,7 +95,7 @@ public final class FeederCatchUp {
         for (int i = 0; i < next.length; i++) {
             next[i] = from.get(i);
         }
-        return new FeederCatchUp(today, liveDay, members, next);
+        return new FeederCatchUp(today, liveDay, liveDayFed, members, next);
     }
 
     long today() {
@@ -130,7 +134,7 @@ public final class FeederCatchUp {
         // A meal it had that day before the pen unloaded counts. Otherwise a member still familiar enough eats from
         // the block, on days the pen wasn't loaded to feed itself.
         boolean ate = traits.hunger().lastAteDay() == day;
-        boolean eats = !ate && day > liveDay && Familiarity.ready(traits.familiarity()) && feeder.food() > 0;
+        boolean eats = !ate && unfedDay(feeder, animal) && Familiarity.ready(traits.familiarity()) && feeder.food() > 0;
         float owing = owed.getOrDefault(id, 0f);
         // The hungry days before a meal (only when food came in partway through) hurt before it heals.
         if (eats && owing > 0f) {
@@ -162,6 +166,19 @@ public final class FeederCatchUp {
         } else if (outcome.damage() > 0f) {
             owed.put(id, owing + outcome.damage());
         }
+    }
+
+    // A day the morning feeding didn't have, for this member. On a live day the pen unloaded partway through, a pet
+    // told to sit out of reach of the block would have stayed hungry, so it still does.
+    private boolean unfedDay(FeederBlockEntity feeder, Animal animal) {
+        if (day > liveDay) {
+            return true;
+        }
+        if (day < liveDay || liveDayFed) {
+            return false;
+        }
+        return !(animal instanceof TamableAnimal pet && pet.isOrderedToSit()
+                && !EatAtFeederGoal.within(animal, feeder.getBlockPos(), MorningFeeding.SITTING_REACH));
     }
 
     private void leave(int member) {

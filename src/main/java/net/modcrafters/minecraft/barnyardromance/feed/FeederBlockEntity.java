@@ -107,13 +107,16 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         if ((refresh || catchUp != null || settledDay < today) && !animalsLoaded(level, getBlockPos())) {
             return;
         }
+        // Ticking a moment ago, it ran on to the end of its last live day, so the morning feeding had all of it.
+        // Loaded again after a break, it may have stopped partway through that day.
+        boolean ranOn = lastTick >= level.getGameTime() - RUNNING_TICKS;
         lastTick = level.getGameTime();
         if (refresh) {
             placed = false;
             refreshHerd(level);
         }
         if (catchUp == null && settledDay < today) {
-            catchUp = FeederCatchUp.start(this, level, today, liveDay);
+            catchUp = FeederCatchUp.start(this, level, today, liveDay, ranOn);
         }
         if (catchUp != null && catchUp.step(this, level, FeederCatchUp.ANIMAL_DAYS_PER_TICK)) {
             settledDay = catchUp.today();
