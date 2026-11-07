@@ -58,6 +58,8 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     private boolean placed = true;
     // The game time it last ticked with the animals around it loaded.
     private long lastTick = Long.MIN_VALUE;
+    // Not saved, and always 0 in a game: a test runs a block on a clock of its own, this far from the overworld's.
+    private long clockShift;
     // For the window: the days of food and the herd's size.
     private final ContainerData windowData = new ContainerData() {
         @Override
@@ -89,12 +91,13 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, FeederBlockEntity feeder) {
         if (level instanceof ServerLevel server) {
-            feeder.tick(server, server.getOverworldClockTime());
+            feeder.tick(server, feeder.clock(server));
         }
     }
 
     // One tick at this overworld clock time (a test passes its own): the herd is found again on the block's own tick
-    // of the minute, and the herd's missed days are settled once a day has turned.
+    // of the minute, the herd's missed days are settled once a day has turned, and from sunrise the herd walks over to
+    // eat (MorningFeeding) on the block's own tick of each second.
     public void tick(ServerLevel level, long clock) {
         long today = GameDay.of(clock);
         boolean refresh = placed || FeederHerd.due(level.getGameTime(), refreshSlot());
@@ -121,6 +124,11 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
             liveDay = today;
             setChanged();
         }
+        // Only once today is settled, and so only on a day that is live: catch-up never hands out food for it again.
+        if (catchUp == null && settledDay >= today && liveDay == today
+                && Math.floorMod(level.getGameTime() - refreshSlot(), MorningFeeding.ROUND_TICKS) == 0L) {
+            MorningFeeding.tick(this, level, clock);
+        }
     }
 
     public void refreshHerd(ServerLevel level) {
@@ -140,6 +148,16 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         herd.set(ids);
         index();
         setChanged();
+    }
+
+    // The overworld clock as this block sees it: the overworld's own in a game.
+    public long clock(ServerLevel level) {
+        return level.getOverworldClockTime() + clockShift;
+    }
+
+    // For tests: the block runs on this clock from now on, moving on with the overworld's.
+    public void runOnClock(ServerLevel level, long clock) {
+        clockShift = clock - level.getOverworldClockTime();
     }
 
     public long settledDay() {

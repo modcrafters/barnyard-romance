@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.ExcludedTag;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Escapes;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederFoods;
+import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederIndex;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -24,6 +25,7 @@ public final class BarnyardRomance {
         FeederIndex.clear();
         FeederFoods.clear();
         Escapes.clear();
+        EatAtFeederGoal.clear();
     }
 
     public static void init() {

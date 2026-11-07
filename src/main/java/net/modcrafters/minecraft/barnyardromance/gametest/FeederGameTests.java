@@ -1,14 +1,18 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederHerd;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederMenu;
+import net.modcrafters.minecraft.barnyardromance.feed.MorningFeeding;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -16,8 +20,10 @@ import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -32,6 +38,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -45,13 +52,15 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.h
 // In-game checks for the feeding blocks: what each takes, by hand and by hopper, and that nothing takes the food
 // back out (the Manger's grazers eat seeds, so beef is the plain food it turns away); then which animals make a
 // block's herd, and how the herd's missed days are settled. Days are passed as overworld clock times, as in
-// UpkeepGameTests, so ten days can be settled in a tick.
+// UpkeepGameTests, so ten days can be settled in a tick. The morning tests, where the herd walks over to eat, run
+// the block on a clock of their own (runOnClock): the overworld's is shared with the tests beside them.
 public final class FeederGameTests {
     public static final BlockPos FEEDER = new BlockPos(2, 2, 2);
     // A hopper moves an item every 8 ticks; this is long enough for eight.
     static final int HOPPER_TICKS = 100;
     // Far past the test world's own clock, so the animals' own ticks never settle these days for them.
     private static final long DAY = 10_000L;
+    private static final long SUNRISE = clock(DAY);
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("feeder_takes_wheat_but_not_beef", 20, FeederGameTests::feederTakesWheatButNotBeef),
@@ -77,7 +86,14 @@ public final class FeederGameTests {
                     FeederGameTests::twoMangersCatchingUpAtOnceSettleEachDayOnce),
             new BreedingGameTests.Case("a_day_the_pen_was_loaded_takes_no_food", 100, FeederGameTests::aDayThePenWasLoadedTakesNoFood),
             new BreedingGameTests.Case("a_cow_below_familiar_gets_no_food", 100, FeederGameTests::aCowBelowFamiliarGetsNoFood),
-            new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", 100, FeederGameTests::aHerdHenHungryYesterdayLaysNothing)
+            new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", 100, FeederGameTests::aHerdHenHungryYesterdayLaysNothing),
+            new BreedingGameTests.Case("cows_walk_to_the_manger_and_eat", 400, FeederGameTests::cowsWalkToTheMangerAndEat),
+            new BreedingGameTests.Case("no_more_than_four_walk_at_once", 800, FeederGameTests::noMoreThanFourWalkAtOnce),
+            new BreedingGameTests.Case("a_hand_fed_cow_stays_put", 400, FeederGameTests::aHandFedCowStaysPut),
+            new BreedingGameTests.Case("a_feeder_meal_is_not_love", 400, FeederGameTests::aFeederMealIsNotLove),
+            new BreedingGameTests.Case("food_added_at_noon_feeds_the_hungry", 400, FeederGameTests::foodAddedAtNoonFeedsTheHungry),
+            new BreedingGameTests.Case("a_sitting_wolf_is_not_moved", 300, FeederGameTests::aSittingWolfIsNotMoved),
+            new BreedingGameTests.Case("a_catch_up_meal_heals", 100, FeederGameTests::aCatchUpMealHeals)
     );
 
     private FeederGameTests() {
@@ -385,6 +401,25 @@ public final class FeederGameTests {
         });
     }
 
+    // Her first missed day she eats the Manger's one wheat, which heals her as it would by hand (1, the default for a
+    // food with no nutrition), and the second she goes hungry (1 damage): back where she started. Unhealed, she'd be at 5.
+    public static void aCatchUpMealHeals(GameTestHelper helper) {
+        onceLanded(helper, new int[][]{{3, 4}}, cows -> {
+            Animal cow = cows.getFirst();
+            FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, cow, 4, 4));
+            manger.setItem(0, new ItemStack(Items.WHEAT, 1));
+            unsettled(cow, 0.8, DAY - 2L, Upkeep.NONE);
+            cow.setHealth(6.0F);
+            manger.refreshHerd(helper.getLevel());
+
+            manger.tick(helper.getLevel(), clock(DAY));
+
+            helper.assertTrue(manger.food() == 0, "the Manger holds " + contents(manger));
+            assertSettled(helper, cow, 6.0F, 0.75);
+            helper.succeed();
+        });
+    }
+
     // The food just leaves the block: nobody is sent anywhere.
     public static void catchUpDoesNotWalk(GameTestHelper helper) {
         threeCowsAndAManger(helper, (cows, manger) -> {
@@ -448,6 +483,246 @@ public final class FeederGameTests {
             }
             helper.succeed();
         });
+    }
+
+    // Three cows six blocks off walk over at sunrise and eat the Manger's three wheat, one each. None sets off before
+    // sunrise.
+    public static void cowsWalkToTheMangerAndEat(GameTestHelper helper) {
+        Set<Animal> near = new HashSet<>();
+        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 4}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 3)),
+                m -> {
+                    for (Animal cow : m.animals) {
+                        helper.assertTrue(m.clock >= SUNRISE || !EatAtFeederGoal.walking(cow), "a cow set off before sunrise");
+                        if (EatAtFeederGoal.within(cow, m.at, 2.0)) {
+                            near.add(cow);
+                        }
+                    }
+                    if (m.animals.stream().allMatch(cow -> ateOn(helper, cow, DAY)) && m.feeder.food() == 0 && near.size() == 3) {
+                        for (Animal cow : m.animals) {
+                            Upkeep upkeep = BreedingGameTests.traits(helper, cow).upkeep();
+                            helper.assertTrue(upkeep.fedByFeederOn(DAY) && upkeep.feeder().equals("manger"), "the cow's upkeep is " + upkeep);
+                        }
+                        helper.succeed();
+                    }
+                });
+    }
+
+    // Ten hungry cows and ten wheat: they go four at a time, and in the end all of them eat.
+    public static void noMoreThanFourWalkAtOnce(GameTestHelper helper) {
+        int[] most = {0};
+        // Away from the pen's corners, where a cow finds no path out and so isn't found for the herd.
+        int[][] columns = {{4, 2}, {4, 6}, {5, 2}, {5, 4}, {5, 6}, {6, 3}, {6, 5}, {7, 2}, {7, 4}, {7, 6}};
+        morning(helper, EntityTypes.COW, columns, BarnyardBlocks.MANGER, new int[]{2, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 10)),
+                m -> {
+                    int walking = (int) m.animals.stream().filter(FeederGameTests::goalRunning).count();
+                    helper.assertTrue(walking <= MorningFeeding.MAX_WALKING, walking + " cows are walking to the Manger at once");
+                    most[0] = Math.max(most[0], walking);
+                    if (m.animals.stream().allMatch(cow -> ateOn(helper, cow, DAY)) && m.feeder.food() == 0) {
+                        helper.assertTrue(most[0] == MorningFeeding.MAX_WALKING, "at most " + most[0] + " cows ever walked at once");
+                        helper.succeed();
+                    }
+                });
+    }
+
+    // Fed by hand before sunrise, she's had today's meal, so she's never sent and the Manger keeps its second wheat.
+    // The other cow eats at the Manger, which leaves her hand-feeding to come: it still wins her over a little.
+    public static void aHandFedCowStaysPut(GameTestHelper helper) {
+        long[] otherAte = {-1L};
+        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> {
+                    m.feeder.setItem(0, new ItemStack(Items.WHEAT, 2));
+                    handFeed(helper, m.animals.get(0), m.clock);
+                    helper.assertTrue(ateOn(helper, m.animals.get(0), DAY), "the hand-fed cow hasn't eaten today");
+                },
+                m -> {
+                    Animal handFed = m.animals.get(0);
+                    Animal other = m.animals.get(1);
+                    helper.assertTrue(!EatAtFeederGoal.walking(handFed) && !goalRunning(handFed), "the hand-fed cow was sent to the Manger");
+                    if (otherAte[0] < 0L) {
+                        if (ateOn(helper, other, DAY)) {
+                            otherAte[0] = helper.getTick();
+                        }
+                        return;
+                    }
+                    // Five more rounds for the hand-fed cow to be sent, if she were going to be.
+                    if (helper.getTick() < otherAte[0] + 5L * MorningFeeding.ROUND_TICKS) {
+                        return;
+                    }
+                    helper.assertTrue(m.feeder.food() == 1, "the Manger holds " + contents(m.feeder));
+                    double before = BreedingGameTests.traits(helper, other).familiarity();
+                    handFeed(helper, other, m.clock);
+                    double after = BreedingGameTests.traits(helper, other).familiarity();
+                    helper.assertTrue(after > before + 1.0e-9, "hand-feeding after her Manger meal left her at " + after);
+                    helper.succeed();
+                });
+    }
+
+    // Her wheat at the Manger heals her, but doesn't win her over or put her in love as the same wheat would by hand.
+    public static void aFeederMealIsNotLove(GameTestHelper helper) {
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> {
+                    m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1));
+                    m.animals.getFirst().setHealth(6.0F);
+                },
+                m -> {
+                    Animal cow = m.animals.getFirst();
+                    if (!ateOn(helper, cow, DAY)) {
+                        return;
+                    }
+                    AnimalTraits traits = BreedingGameTests.traits(helper, cow);
+                    helper.assertTrue(m.feeder.food() == 0, "the Manger holds " + contents(m.feeder));
+                    helper.assertTrue(!cow.isInLove(), "a Manger meal put her in love");
+                    helper.assertTrue(Math.abs(traits.familiarity() - 0.8) < 1.0e-9, "a Manger meal moved her familiarity to " + traits.familiarity());
+                    helper.assertTrue(traits.lastFedTick() == -1L, "a Manger meal counted as hand-feeding at " + traits.lastFedTick());
+                    helper.assertTrue(cow.getHealth() > 6.0F, "a Manger meal left her health at " + cow.getHealth());
+                    helper.succeed();
+                });
+    }
+
+    // The Manger is empty at sunrise, so nobody walks. At noon it gets wheat, and the cows are fed by the next rounds.
+    public static void foodAddedAtNoonFeedsTheHungry(GameTestHelper helper) {
+        long[] stocked = {-1L};
+        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 4}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> {
+                },
+                m -> {
+                    if (stocked[0] < 0L) {
+                        m.animals.forEach(cow -> helper.assertTrue(!EatAtFeederGoal.walking(cow), "a cow walked to the empty Manger"));
+                        if (m.clock >= SUNRISE + 60L) {
+                            m.clock = SUNRISE + 6_000L;
+                            m.feeder.setItem(0, new ItemStack(Items.WHEAT, 3));
+                            stocked[0] = helper.getTick();
+                        }
+                        return;
+                    }
+                    if (m.animals.stream().allMatch(cow -> ateOn(helper, cow, DAY))) {
+                        helper.assertTrue(m.feeder.food() == 0, "the Manger holds " + contents(m.feeder));
+                        helper.succeed();
+                    } else if (helper.getTick() > stocked[0] + 200L) {
+                        throw GameTestCompat.failure(helper, "the cows hadn't all eaten 200 ticks after the Manger was filled");
+                    }
+                });
+    }
+
+    // Told to sit five blocks from her Pet Bowl, she stays sitting there and goes without. Moved to two blocks off,
+    // still sitting, she eats from it where she sits.
+    public static void aSittingWolfIsNotMoved(GameTestHelper helper) {
+        Vec3[] seat = {null};
+        long[] moved = {-1L};
+        morning(helper, EntityTypes.WOLF, new int[][]{{7, 4}}, BarnyardBlocks.PET_BOWL, new int[]{2, 4},
+                m -> {
+                    TamableAnimal wolf = (TamableAnimal) m.animals.getFirst();
+                    wolf.tame(helper.makeMockPlayer(GameType.SURVIVAL));
+                    wolf.setOrderedToSit(true);
+                    wolf.setInSittingPose(true);
+                    m.feeder.setItem(0, new ItemStack(Items.BEEF, 2));
+                    seat[0] = wolf.position();
+                },
+                m -> {
+                    TamableAnimal wolf = (TamableAnimal) m.animals.getFirst();
+                    helper.assertTrue(wolf.isOrderedToSit() && wolf.isInSittingPose(), "the wolf got up");
+                    helper.assertTrue(wolf.position().distanceTo(seat[0]) < 0.1, "the sitting wolf moved from " + seat[0] + " to " + wolf.position());
+                    helper.assertTrue(!EatAtFeederGoal.walking(wolf), "the sitting wolf was sent to the Pet Bowl");
+                    if (moved[0] < 0L) {
+                        helper.assertTrue(!ateOn(helper, wolf, DAY), "the wolf ate from five blocks off");
+                        if (m.clock >= SUNRISE + 5L * MorningFeeding.ROUND_TICKS) {
+                            BlockPos two = m.at.offset(2, 0, 0);
+                            wolf.teleportTo(two.getX() + 0.5, wolf.getY(), two.getZ() + 0.5);
+                            seat[0] = wolf.position();
+                            moved[0] = helper.getTick();
+                        }
+                        return;
+                    }
+                    if (ateOn(helper, wolf, DAY)) {
+                        helper.assertTrue(m.feeder.food() == 1, "the Pet Bowl holds " + contents(m.feeder));
+                        helper.succeed();
+                    } else if (helper.getTick() > moved[0] + 3L * MorningFeeding.ROUND_TICKS) {
+                        throw GameTestCompat.failure(helper, "the wolf two blocks off hadn't eaten");
+                    }
+                });
+    }
+
+    // A morning test: its animals, its feeding block and the clock the block runs on.
+    private static final class Morning {
+        final List<Animal> animals;
+        final FeederBlockEntity feeder;
+        final BlockPos at;
+        long clock = SUNRISE - 20L;
+
+        Morning(List<Animal> animals, FeederBlockEntity feeder, BlockPos at) {
+            this.animals = animals;
+            this.feeder = feeder;
+            this.at = at;
+        }
+    }
+
+    // Landed animals, fenced in round the edge of the floor, farm-raised and familiar (80%) at 10 health and settled
+    // up to today (DAY), around a feeding block at this column. The block runs on the test's own clock, which starts
+    // 20 ticks before sunrise and moves on a tick each tick; a test can move it further.
+    private static void morning(GameTestHelper helper, EntityType<? extends Animal> type, int[][] columns, Block block, int[] at,
+                                Consumer<Morning> setUp, Consumer<Morning> each) {
+        List<Animal> animals = new ArrayList<>();
+        for (int[] column : columns) {
+            animals.add(GameTestCompat.spawn(helper, type, column[0], 1, column[1]));
+        }
+        Morning[] morning = {null};
+        helper.onEachTick(() -> {
+            if (morning[0] == null) {
+                if (!ready(helper, animals)) {
+                    return;
+                }
+                penIn(helper, animals.getFirst());
+                // Back to where they started, in case one wandered to the edge and is now in the fence.
+                for (int i = 0; i < animals.size(); i++) {
+                    BlockPos start = walkingLayer(helper, animals.get(i), columns[i][0], columns[i][1]);
+                    animals.get(i).teleportTo(start.getX() + 0.5, animals.get(i).getY(), start.getZ() + 0.5);
+                }
+                animals.forEach(animal -> unsettled(animal, 0.8, DAY, Upkeep.NONE));
+                BlockPos pos = walkingLayer(helper, animals.getFirst(), at[0], at[1]);
+                morning[0] = new Morning(animals, blockAt(helper, block, pos), pos);
+                morning[0].feeder.runOnClock(helper.getLevel(), morning[0].clock);
+                setUp.accept(morning[0]);
+                return;
+            }
+            Morning m = morning[0];
+            m.clock++;
+            each.accept(m);
+            m.feeder.runOnClock(helper.getLevel(), m.clock);
+        });
+    }
+
+    // A fence round the edge of the floor, on the level a landed animal stands on.
+    private static void penIn(GameTestHelper helper, Animal landed) {
+        for (int x = 0; x <= 8; x++) {
+            for (int z = 0; z <= 8; z++) {
+                if (x == 0 || x == 8 || z == 0 || z == 8) {
+                    helper.getLevel().setBlockAndUpdate(walkingLayer(helper, landed, x, z), Blocks.OAK_FENCE.defaultBlockState());
+                }
+            }
+        }
+    }
+
+    // By hand, on the test's clock: the overworld's is set to it for the feed and put back.
+    private static void handFeed(GameTestHelper helper, Animal animal, long clock) {
+        long before = helper.getLevel().getOverworldClockTime();
+        try {
+            GameTestCompat.setOverworldClock(helper, clock);
+            FamiliarityActions.interact(animal, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
+        } finally {
+            GameTestCompat.setOverworldClock(helper, before);
+        }
+    }
+
+    private static boolean ateOn(GameTestHelper helper, Animal animal, long day) {
+        return BreedingGameTests.traits(helper, animal).hunger().lastAteDay() == day;
+    }
+
+    // The animal's walk to a feeding block is under way: its goal is running.
+    private static boolean goalRunning(Animal animal) {
+        return ((MobGoalsAccessor) animal).barnyardromance$goalSelector().getAvailableGoals().stream()
+                .anyMatch(goal -> goal.isRunning() && goal.getGoal() instanceof EatAtFeederGoal);
     }
 
     // Three familiar cows at 10 health and 80%, ten days unsettled, around a Manger holding 6 wheat.

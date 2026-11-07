@@ -6,8 +6,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 
 import static net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricBreedingGameTests.PEN;
 
-// The hopper tests run real hoppers, so on Fabric they also check the block works with hoppers here. The herd and
-// catch-up tests are the shared ones, wrapped.
+// The hopper tests run real hoppers, so on Fabric they also check the block works with hoppers here. The herd,
+// catch-up and morning feeding tests are the shared ones, wrapped.
 public class FabricFeederGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void feederTakesWheatButNotBeef(GameTestHelper helper) {
@@ -107,5 +107,40 @@ public class FabricFeederGameTests {
     @GameTest(structure = PEN, maxTicks = 100)
     public void aHerdHenHungryYesterdayLaysNothing(GameTestHelper helper) {
         FeederGameTests.aHerdHenHungryYesterdayLaysNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void cowsWalkToTheMangerAndEat(GameTestHelper helper) {
+        FeederGameTests.cowsWalkToTheMangerAndEat(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 800)
+    public void noMoreThanFourWalkAtOnce(GameTestHelper helper) {
+        FeederGameTests.noMoreThanFourWalkAtOnce(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aHandFedCowStaysPut(GameTestHelper helper) {
+        FeederGameTests.aHandFedCowStaysPut(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aFeederMealIsNotLove(GameTestHelper helper) {
+        FeederGameTests.aFeederMealIsNotLove(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void foodAddedAtNoonFeedsTheHungry(GameTestHelper helper) {
+        FeederGameTests.foodAddedAtNoonFeedsTheHungry(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 300)
+    public void aSittingWolfIsNotMoved(GameTestHelper helper) {
+        FeederGameTests.aSittingWolfIsNotMoved(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aCatchUpMealHeals(GameTestHelper helper) {
+        FeederGameTests.aCatchUpMealHeals(helper);
     }
 }

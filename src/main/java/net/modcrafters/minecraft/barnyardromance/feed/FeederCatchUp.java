@@ -10,6 +10,7 @@ import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -129,14 +130,27 @@ public final class FeederCatchUp {
         // A meal it had that day before the pen unloaded counts. Otherwise a member still familiar enough eats from
         // the block, on days the pen wasn't loaded to feed itself.
         boolean ate = traits.hunger().lastAteDay() == day;
-        boolean fromBlock = false;
-        if (!ate && day > liveDay && Familiarity.ready(traits.familiarity())) {
-            fromBlock = !feeder.takeOne(level).isEmpty();
-            ate = fromBlock;
-        }
+        boolean eats = !ate && day > liveDay && Familiarity.ready(traits.familiarity()) && feeder.food() > 0;
         float owing = owed.getOrDefault(id, 0f);
+        // The hungry days before a meal (only when food came in partway through) hurt before it heals.
+        if (eats && owing > 0f) {
+            owed.remove(id);
+            FamiliarityCare.toll(animal, level, owing, false, true);
+            owing = 0f;
+            if (!animal.isAlive()) {
+                leave(member);
+                return;
+            }
+            traits = FamiliarityCare.tracked(animal).orElse(traits);
+        }
+        ItemStack meal = eats ? feeder.takeOne(level) : ItemStack.EMPTY;
+        boolean fromBlock = !meal.isEmpty();
+        ate |= fromBlock;
         DailyUpkeep.Outcome outcome = FamiliarityCare.settleDay(animal, level, traits, day, ate,
                 fromBlock ? feeder.kind().id() : null, owing);
+        if (fromBlock) {
+            FeederMeal.heal(animal, meal);
+        }
         if (day + 1L >= today) {
             leave(member);
         } else {

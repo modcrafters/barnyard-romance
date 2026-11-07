@@ -211,6 +211,17 @@ public final class FamiliarityCare {
         });
     }
 
+    // A meal from a feeding block (feeder is its FeederKind id): the day's meal like any other, noted as the block's.
+    // It never touches the hand-feeding clock (lastFedTick), so a hand meal the same day still builds familiarity.
+    public static void markFedBy(Animal animal, long clock, String feeder) {
+        markEaten(animal, clock);
+        tracked(animal).ifPresent(traits -> {
+            if (!animal.level().isClientSide()) {
+                Services.DATA.set(animal, withCare(traits, upkeep(traits).fedBy(feeder, GameDay.of(clock)), false));
+            }
+        });
+    }
+
     // Milking and shearing cost a little familiarity: animals don't much enjoy them.
     public static void spend(Animal animal, double cost) {
         settle(animal).ifPresent(traits -> {
