@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
@@ -157,7 +158,10 @@ public final class CourtshipGameTests {
         });
     }
 
-    // Wolves don't fight: the closer male gets her and the other is left alone.
+    // Wolves don't fight: the closer male gets her and the other is left alone. She falls in love only once all three
+    // have landed, so the choice is made there and then, with every path open, rather than at a later look whose tick
+    // depends on entity ids while the wolves wander. Every tick after, the far wolf must not be chosen; if he is, the
+    // failure says what the near one was doing at that moment.
     public static void petsTakeTheClosestMale(GameTestHelper helper) {
         // Close by, or the wolves' follow-owner goal keeps them from their breed goal.
         Player owner = helper.makeMockServerPlayerInLevel();
@@ -167,14 +171,27 @@ public final class CourtshipGameTests {
         Animal far = GameTestCompat.spawn(helper, EntityTypes.WOLF, 7, 1, 4);
         Services.DATA.set(far, new AnimalTraits(Sex.MALE, 1.0, 1.0, -1L));
         tame(fed(far), owner);
-        female.setInLove(null);
+        boolean[] inLove = {false};
+
+        EggGameTests.once(helper, () -> female.onGround() && near.onGround() && far.onGround(), () -> {
+            female.setInLove(null);
+            inLove[0] = true;
+            helper.assertTrue(Courtship.chosen(female, near), "the near wolf wasn't chosen the moment she fell in love: near "
+                    + blocks(near, female) + " blocks off, far " + blocks(far, female) + ", far chosen " + Courtship.chosen(female, far));
+        });
+        helper.onEachTick(() -> helper.assertTrue(!(inLove[0] && Courtship.chosen(female, far)), "the far wolf was chosen instead: near "
+                + blocks(near, female) + " blocks off, alive " + near.isAlive() + ", in love " + near.isInLove() + "; far " + blocks(far, female) + " blocks off"));
 
         helper.succeedWhen(() -> {
-            helper.assertTrue(female.isInLove() || Services.DATA.getPregnancy(female).isPresent(), "the female wolf isn't in love");
+            helper.assertTrue(inLove[0], "the wolves haven't landed");
             assertFather(helper, female, near);
             assertVigour(helper, far, 1.0);
             helper.assertTrue(near.getHealth() == near.getMaxHealth() && far.getHealth() == far.getMaxHealth(), "a wolf got hurt");
         });
+    }
+
+    private static String blocks(Animal male, Animal female) {
+        return String.format(Locale.ROOT, "%.1f", male.distanceTo(female));
     }
 
     // Vanilla's path search hands back the path a mob is already walking when asked about the same target again, so a
