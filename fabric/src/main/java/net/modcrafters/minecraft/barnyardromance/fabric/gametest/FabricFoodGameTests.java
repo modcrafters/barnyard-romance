@@ -83,6 +83,16 @@ public class FabricFoodGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aKnownAnswerFollowsAFoodFileReload(GameTestHelper helper) {
+        FoodGameTests.aKnownAnswerFollowsAFoodFileReload(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aKnownAnswerFollowsAConfigChange(GameTestHelper helper) {
+        FoodGameTests.aKnownAnswerFollowsAConfigChange(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void dairyMashIsRefusedByAMilkingCow(GameTestHelper helper) {
         FoodGameTests.dairyMashIsRefusedByAMilkingCow(helper);
     }

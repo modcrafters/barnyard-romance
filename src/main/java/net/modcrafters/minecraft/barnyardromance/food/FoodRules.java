@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.food;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 // The first match wins: refused, a food file, vanilla food, the diet, or not food at all.
@@ -39,7 +40,9 @@ public final class FoodRules {
         if (override != null && diets.containsKey(override)) {
             return Optional.of(Map.entry(override, diets.get(override)));
         }
-        for (Map.Entry<String, Diet> entry : new TreeMap<>(diets).entrySet()) {
+        // Asked whenever an animal looks at what a player holds, so a map already sorted by id isn't copied again.
+        Map<String, Diet> byId = diets instanceof SortedMap<String, Diet> sorted && sorted.comparator() == null ? diets : new TreeMap<>(diets);
+        for (Map.Entry<String, Diet> entry : byId.entrySet()) {
             if (entry.getValue().species().contains(speciesId)) {
                 return Optional.of(entry);
             }

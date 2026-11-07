@@ -141,10 +141,27 @@ public final class HerdBooks {
         data.setDirty();
     }
 
+    // Each loaded member is refreshed once a minute on its own tick, so a big herd's refresh (a laying hen's rooster
+    // and nesting box searches most of all) is spread over the minute instead of landing in one tick.
     public static void tick(MinecraftServer server, int tickCount) {
-        if (tickCount % REFRESH_TICKS == 0) {
-            refreshLoaded(server);
+        int now = Math.floorMod(tickCount, REFRESH_TICKS);
+        HerdBookData data = HerdBookData.get(server);
+        List<UUID> due = new ArrayList<>();
+        for (HerdLedger.Node node : data.ledger().nodes().values()) {
+            if (node.alive() && refreshSlot(node.id()) == now) {
+                due.add(node.id());
+            }
         }
+        for (UUID id : due) {
+            Animal animal = find(server, id);
+            if (animal != null) {
+                refresh(data, animal, animal.level().getGameTime());
+            }
+        }
+    }
+
+    public static int refreshSlot(UUID id) {
+        return Math.floorMod(id.hashCode(), REFRESH_TICKS);
     }
 
     // Also run when the world saves, so a force-loaded animal's record is never a minute behind the save.

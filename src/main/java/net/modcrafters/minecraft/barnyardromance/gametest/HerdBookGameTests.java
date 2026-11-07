@@ -228,8 +228,12 @@ public final class HerdBookGameTests {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
         Services.DATA.set(cow, traits(helper, cow).fed(1.0, 700L));
+        // Each member has its own tick in the minute, so a big herd isn't all refreshed in one tick.
+        int slot = HerdBooks.refreshSlot(cow.getUUID());
 
-        HerdBooks.tick(server(helper), HerdBooks.REFRESH_TICKS);
+        HerdBooks.tick(server(helper), HerdBooks.REFRESH_TICKS + slot + 1);
+        helper.assertTrue(data(helper).record(cow.getUUID()).traits().lastFedTick() != 700L, "the timer refreshed a cow outside her tick");
+        HerdBooks.tick(server(helper), HerdBooks.REFRESH_TICKS + slot);
 
         helper.assertTrue(data(helper).record(cow.getUUID()).traits().lastFedTick() == 700L, "the timer did not refresh a loaded cow");
         helper.succeed();
