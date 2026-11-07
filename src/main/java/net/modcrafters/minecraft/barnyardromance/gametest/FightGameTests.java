@@ -25,7 +25,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
@@ -76,17 +79,32 @@ public final class FightGameTests {
         });
     }
 
+    // The bulls wander while they settle, so which two are closest is read off where they stand when she's courted, not
+    // where they were put.
     public static void aThirdBullMatesWhileTwoFight(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Animal first = bull(helper, 4, 5, 1.0);
-        Animal second = bull(helper, 5, 5, 1.0);
-        Animal third = bull(helper, 7, 7, 1.0);
-        courtWithAFight(helper, cow, first, second);
+        List<Animal> closestFirst = new ArrayList<>(List.of(bull(helper, 4, 5, 1.0), bull(helper, 5, 5, 1.0), bull(helper, 7, 7, 1.0)));
+        cow.setInLoveTime(600);
 
-        helper.succeedWhen(() -> {
-            assertFather(helper, cow, third);
-            helper.assertTrue(Fights.fighting(first) || !first.isAlive() || !second.isAlive(), "the two closer bulls aren't fighting");
+        helper.runAfterDelay(SETTLE_TICKS, () -> {
+            closestFirst.sort(Comparator.comparingDouble(bull -> bull.distanceToSqr(cow)));
+            Courtship.court(cow, 0.0);
+            helper.assertTrue(Fights.fighting(closestFirst.get(0)) && Fights.fighting(closestFirst.get(1)) && !Fights.fighting(closestFirst.get(2)),
+                    "the two closest bulls didn't start fighting, or the third did: " + distances(closestFirst, cow));
         });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(Fights.fighting(closestFirst.get(0)) || !closestFirst.get(0).isAlive() || !closestFirst.get(1).isAlive(),
+                    "the two closer bulls aren't fighting");
+            assertFather(helper, cow, closestFirst.get(2));
+        });
+    }
+
+    private static String distances(List<Animal> bulls, Animal cow) {
+        StringBuilder text = new StringBuilder();
+        for (Animal bull : bulls) {
+            text.append(String.format(Locale.ROOT, "%.1f ", bull.distanceTo(cow)));
+        }
+        return text.toString().trim() + " blocks off";
     }
 
     // Walked closest first, two at a time: both pairs fight, and nobody is left over to mate with her yet.
