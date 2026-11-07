@@ -38,6 +38,17 @@ class HerdLedgerTest {
     }
 
     @Test
+    void listedLooksInEveryBook() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(OTHER_BOOK, node(1));
+
+        assertTrue(ledger.listed(id(1)));
+        assertFalse(ledger.listed(id(2)));
+        ledger.remove(OTHER_BOOK, id(1));
+        assertFalse(ledger.listed(id(1)));
+    }
+
+    @Test
     void bornJoinsEveryBookWithTheMother() {
         HerdLedger ledger = new HerdLedger();
         ledger.register(BOOK, node(1));

@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.NaturalistGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.StatGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.UpkeepGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FightGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
@@ -92,6 +93,7 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(EggGameTests.CASES);
         cases.addAll(NaturalistGameTests.CASES);
         cases.addAll(VigourGameTests.CASES);
+        cases.addAll(UpkeepGameTests.CASES);
         cases.addAll(StatGameTests.CASES);
         cases.addAll(CourtshipGameTests.CASES);
         cases.addAll(FightGameTests.CASES);

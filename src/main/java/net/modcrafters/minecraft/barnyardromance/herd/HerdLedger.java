@@ -117,6 +117,16 @@ public final class HerdLedger {
         return members == null ? Set.of() : Collections.unmodifiableSet(members);
     }
 
+    // Whether any book lists the animal.
+    public boolean listed(UUID animal) {
+        for (Set<UUID> members : books.values()) {
+            if (members.contains(animal)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isMember(UUID book, UUID animal) {
         return members(book).contains(animal);
     }

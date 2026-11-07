@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Animals you've won over get hurt when they go a day without food: half a heart a day, though never below half a heart unless the config's `hunger` block says otherwise. The same block decides what days spent away from a pen do: all of them count (the default), only one, or none.
+
 - The Nesting Box has a new, more detailed model: a framed wooden crate with straw inside, metal fittings and a hen painted on its sides.
 - New icons in the herd book and on the stat card. Growth, weight, health and Vigour are redrawn, fertility is a shaded flower, and breeding has its own pair of hearts. Pregnancy shows a pink heart from the start that brightens as the pregnancy goes on.
 

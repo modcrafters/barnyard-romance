@@ -5,7 +5,9 @@ import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -20,8 +22,9 @@ import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.Optional;
 
-// Looking after an animal day by day: hungry days cost familiarity (see Hunger), and a tamed animal that has lost
-// too much is grumpy rather than wild. Settling runs every server tick but only changes anything after midnight.
+// Looking after an animal day by day: hungry days cost familiarity and health (see DailyUpkeep), and a tamed animal
+// that has lost too much is grumpy rather than wild. Settling runs every server tick but only changes anything after
+// midnight.
 public final class FamiliarityCare {
     // A pet that has just been tamed can miss a week of meals before it turns grumpy.
     public static final int TAMING_GRACE_DAYS = 7;
@@ -44,10 +47,11 @@ public final class FamiliarityCare {
         return settle(animal, animal.level().getOverworldClockTime());
     }
 
-    // Applies the hungry days up to yesterday and returns the traits as they are now. clock is an overworld clock time.
+    // Applies the days up to yesterday and returns the traits as they are now. clock is an overworld clock time. Each
+    // counted day goes through DailyUpkeep: a hungry day costs familiarity, and a familiar animal health as well.
     public static Optional<AnimalTraits> settle(Animal animal, long clock) {
         Optional<AnimalTraits> tracked = tracked(animal);
-        if (tracked.isEmpty() || animal.level().isClientSide()) {
+        if (tracked.isEmpty() || !(animal.level() instanceof ServerLevel level)) {
             return tracked;
         }
         AnimalTraits traits = tracked.get();
@@ -56,6 +60,7 @@ public final class FamiliarityCare {
         if (traits.hunger().settledDay() >= today && traits.vigour().day() >= today) {
             return tracked;
         }
+        // The herd waiting rule goes here: an animal its feeder will settle returns before anything is settled.
         Hunger.Settled settled = Hunger.settle(traits.hunger(), today, animal.isBaby());
         // Hunger settling never moves the last meal, so Vigour is settled against the same one.
         Vigour vigour = VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), today);
@@ -67,20 +72,56 @@ public final class FamiliarityCare {
             Services.DATA.set(animal, refilled);
             return Optional.of(refilled);
         }
-        Tuning tuning = BarnyardConfig.current().tuning();
-        double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), tuning.familiarityHungerLoss());
-        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger()).withVigour(vigour);
+        BarnyardConfig config = BarnyardConfig.current();
+        HungerSettings hunger = config.hunger();
+        Tuning tuning = config.tuning();
+        // Nothing is counted the first time, as in Hunger, and the config may count fewer days than were missed.
+        long days = settled.first() ? 0L : DailyUpkeep.daysToSettle(today - traits.hunger().settledDay(), hunger.catchUp());
+        long hungryDays = Math.min(settled.hungryDays(), days);
+        // Days the config doesn't count leave no hungry day behind for Vigour, eggs or milk to see.
+        Hunger hungerNow = hungryDays > 0L ? settled.hunger()
+                : new Hunger(today, traits.hunger().lastAteDay(), traits.hunger().lastHungryDay());
+
+        Upkeep upkeep = traits.upkeep();
+        // Herd book animals from saves before upkeep was kept have been looked after, however low they are now.
+        boolean cared = upkeep.cared() || Familiarity.ready(traits.familiarity())
+                || upkeep.equals(Upkeep.NONE) && HerdBooks.listed(level.getServer(), animal.getUUID());
+        boolean grown = grown(animal);
+        boolean isPet = pet(animal);
+        double familiarity = traits.familiarity();
+        float damage = 0f;
+        boolean escaped = false;
+        // A meal is always on the first unsettled day (settling runs before every meal), so fed days come first.
+        for (long day = 0L; day < days; day++) {
+            boolean ate = day < days - hungryDays;
+            double roll = ate ? 1.0 : animal.getRandom().nextDouble();
+            DailyUpkeep.Outcome outcome = DailyUpkeep.day(
+                    new DailyUpkeep.State(familiarity, animal.getHealth() - damage, cared, grown, isPet), ate, roll, hunger, tuning);
+            familiarity = outcome.familiarity();
+            damage += outcome.damage();
+            escaped |= outcome.escapes();
+            cared = outcome.cared();
+        }
+
+        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(hungerNow).withVigour(vigour);
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && tamed(animal)) {
             updated = toTamingGrace(animal, updated);
         }
+        if ((cared || Familiarity.ready(updated.familiarity())) && !upkeep.cared()) {
+            updated = updated.withUpkeep(upkeep.caredFor());
+        }
         Services.DATA.set(animal, updated);
+        HungerDamage.hurt(animal, level, damage);
+        if (escaped && animal.isAlive()) {
+            Escapes.runAway(animal, level, false);
+        }
         // A pet that has just turned grumpy stops obeying, so one left sitting gets up and wanders off.
         if (animal instanceof TamableAnimal pet && pet.isOrderedToSit() && grumpy(animal)) {
             pet.setOrderedToSit(false);
             pet.setInSittingPose(false);
         }
-        return Optional.of(updated);
+        return escaped ? Services.DATA.get(animal) : Optional.of(updated);
     }
 
     // Any food counts: a normal feed, a hurt animal's heal-only meal, and a superfood.

@@ -56,6 +56,7 @@
   "gui.barnyard_romance.herd_book.remove": "Remove from the book",
   "gui.barnyard_romance.herd_book.sure": "Sure?",
   "death.attack.barnyard_romance.old_age": "%1$s died of old age",
+  "death.attack.barnyard_romance.hunger": "%1$s starved",
   "death.attack.barnyard_romance.rival": "%1$s was killed by a rival",
   "item.barnyard_romance.breeders_mash": "Breeder's Mash",
   "item.barnyard_romance.dairy_mash": "Dairy Mash",
