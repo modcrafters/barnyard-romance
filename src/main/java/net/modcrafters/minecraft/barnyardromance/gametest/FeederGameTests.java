@@ -24,6 +24,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -72,6 +73,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("breaking_a_manger_drops_its_food", 20, FeederGameTests::breakingAMangerDropsItsFood),
             new BreedingGameTests.Case("a_meal_comes_from_the_first_full_slot", 20, FeederGameTests::aMealComesFromTheFirstFullSlot),
             new BreedingGameTests.Case("a_manger_finds_the_cows_in_its_pen", 100, FeederGameTests::aMangerFindsTheCowsInItsPen),
+            new BreedingGameTests.Case("a_cow_in_a_pen_corner_stays_in_the_herd", 100, FeederGameTests::aCowInAPenCornerStaysInTheHerd),
             new BreedingGameTests.Case("an_unfamiliar_cow_is_not_in_the_herd", 100, FeederGameTests::anUnfamiliarCowIsNotInTheHerd),
             new BreedingGameTests.Case("catch_up_shares_two_days_of_food_over_ten_days", 100,
                     FeederGameTests::catchUpSharesTwoDaysOfFoodOverTenDays),
@@ -93,7 +95,8 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_feeder_meal_is_not_love", 400, FeederGameTests::aFeederMealIsNotLove),
             new BreedingGameTests.Case("food_added_at_noon_feeds_the_hungry", 400, FeederGameTests::foodAddedAtNoonFeedsTheHungry),
             new BreedingGameTests.Case("a_sitting_wolf_is_not_moved", 300, FeederGameTests::aSittingWolfIsNotMoved),
-            new BreedingGameTests.Case("a_catch_up_meal_heals", 100, FeederGameTests::aCatchUpMealHeals)
+            new BreedingGameTests.Case("a_catch_up_meal_heals", 100, FeederGameTests::aCatchUpMealHeals),
+            new BreedingGameTests.Case("a_cow_in_a_corner_walks_out_to_eat", 400, FeederGameTests::aCowInACornerWalksOutToEat)
     );
 
     private FeederGameTests() {
@@ -206,6 +209,53 @@ public final class FeederGameTests {
                 boolean inHerd = BreedingGameTests.traits(helper, cows.get(i)).upkeep().inHerd();
                 helper.assertTrue(inHerd == i < 3, "cow " + i + (inHerd ? " is" : " isn't") + " marked as in a herd");
             }
+            helper.succeed();
+        });
+    }
+
+    // A path search from some spots of a pen's corner, between two fence lines, never leaves its start, which says
+    // nothing about whether the animal can get out. Two cows (one scaled up) and a horse are found for a Manger by the
+    // pen's side, then pressed into three corners and a cow put in the fourth: the Manger keeps them all, though the
+    // far corners are more than 4 blocks off. A new Manger in the middle, within 4 blocks of every corner, takes them all
+    // too.
+    public static void aCowInAPenCornerStaysInTheHerd(GameTestHelper helper) {
+        List<Animal> animals = List.of(GameTestCompat.spawn(helper, EntityTypes.COW, 5, 1, 5), GameTestCompat.spawn(helper, EntityTypes.COW, 3, 1, 5),
+                GameTestCompat.spawn(helper, EntityTypes.COW, 3, 1, 3), GameTestCompat.spawn(helper, EntityTypes.HORSE, 5, 1, 3));
+        // Which way each is pressed into its corner: towards the far fence (1) or the near one (-1).
+        int[][] corners = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+        EggGameTests.once(helper, () -> ready(helper, animals), () -> {
+            animals.forEach(FeederGameTests::holdStill);
+            penIn(helper, animals.getFirst());
+            Services.DATA.set(animals.get(1), new AnimalTraits(Sex.FEMALE, 1.3, 0.8, -1L).withOrigin(Origin.FARM));
+            animals.get(1).getAttribute(Attributes.SCALE).setBaseValue(1.3);
+            animals.get(1).refreshDimensions();
+            familiar(animals.get(0), 0.8);
+            familiar(animals.get(2), 0.8);
+            familiar(animals.get(3), 0.8);
+            FeederBlockEntity side = mangerAt(helper, walkingLayer(helper, animals.getFirst(), 1, 4));
+            side.refreshHerd(helper.getLevel());
+            assertHerd(helper, side, animals);
+
+            for (int i = 0; i < animals.size(); i++) {
+                Animal animal = animals.get(i);
+                // Up against the fence posts on both sides, which stand 0.375 in from the pen's edge.
+                double half = animal.getBbWidth() / 2.0 + 0.05;
+                double x = corners[i][0] > 0 ? 8.375 - half : 0.625 + half;
+                double z = corners[i][1] > 0 ? 8.375 - half : 0.625 + half;
+                // The first stands where a cow wandering in the pen was seen to find no path, on both versions.
+                if (i == 0) {
+                    x = 7.69;
+                    z = 7.70;
+                }
+                Vec3 corner = helper.absoluteVec(new Vec3(x, 0.0, z));
+                animal.teleportTo(corner.x, animal.getY(), corner.z);
+            }
+            side.refreshHerd(helper.getLevel());
+            assertHerd(helper, side, animals);
+
+            FeederBlockEntity middle = mangerAt(helper, walkingLayer(helper, animals.getFirst(), 4, 4));
+            middle.refreshHerd(helper.getLevel());
+            assertHerd(helper, middle, animals);
             helper.succeed();
         });
     }
@@ -511,7 +561,8 @@ public final class FeederGameTests {
     // Ten hungry cows and ten wheat: they go four at a time, and in the end all of them eat.
     public static void noMoreThanFourWalkAtOnce(GameTestHelper helper) {
         int[] most = {0};
-        // Away from the pen's corners, where a cow finds no path out and so isn't found for the herd.
+        // Away from the pen's corners. A search from a corner may never leave it, and a cow there more than 4 blocks
+        // from the Manger only joins its herd at a later refresh (see HerdRefresh.find), after this test is over.
         int[][] columns = {{4, 2}, {4, 6}, {5, 2}, {5, 4}, {5, 6}, {6, 3}, {6, 5}, {7, 2}, {7, 4}, {7, 6}};
         morning(helper, EntityTypes.COW, columns, BarnyardBlocks.MANGER, new int[]{2, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 10)),
@@ -644,6 +695,23 @@ public final class FeederGameTests {
                 });
     }
 
+    // From the corner spot where a path search may never leave its start, she still gets to the Manger and eats.
+    public static void aCowInACornerWalksOutToEat(GameTestHelper helper) {
+        morning(helper, EntityTypes.COW, new int[][]{{7, 7}}, BarnyardBlocks.MANGER, new int[]{3, 4},
+                m -> {
+                    m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1));
+                    Animal cow = m.animals.getFirst();
+                    Vec3 corner = helper.absoluteVec(new Vec3(7.69, 0.0, 7.70));
+                    cow.teleportTo(corner.x, cow.getY(), corner.z);
+                },
+                m -> {
+                    if (ateOn(helper, m.animals.getFirst(), DAY)) {
+                        helper.assertTrue(m.feeder.food() == 0, "the Manger holds " + contents(m.feeder));
+                        helper.succeed();
+                    }
+                });
+    }
+
     // A morning test: its animals, its feeding block and the clock the block runs on.
     private static final class Morning {
         final List<Animal> animals;
@@ -693,12 +761,16 @@ public final class FeederGameTests {
         });
     }
 
-    // A fence round the edge of the floor, on the level a landed animal stands on.
+    // A fence round the edge of the floor, on the level a landed animal stands on, with nothing above it: the 1.21.1
+    // pen's glass walls would otherwise hang over the fence, where an animal pressed into a corner sticks in them.
     private static void penIn(GameTestHelper helper, Animal landed) {
         for (int x = 0; x <= 8; x++) {
             for (int z = 0; z <= 8; z++) {
                 if (x == 0 || x == 8 || z == 0 || z == 8) {
-                    helper.getLevel().setBlockAndUpdate(walkingLayer(helper, landed, x, z), Blocks.OAK_FENCE.defaultBlockState());
+                    BlockPos edge = walkingLayer(helper, landed, x, z);
+                    helper.getLevel().setBlockAndUpdate(edge.above(), Blocks.AIR.defaultBlockState());
+                    helper.getLevel().setBlockAndUpdate(edge.above(2), Blocks.AIR.defaultBlockState());
+                    helper.getLevel().setBlockAndUpdate(edge, Blocks.OAK_FENCE.defaultBlockState());
                 }
             }
         }

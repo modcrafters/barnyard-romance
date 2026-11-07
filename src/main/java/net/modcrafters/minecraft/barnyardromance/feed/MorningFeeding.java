@@ -68,7 +68,6 @@ public final class MorningFeeding {
         hungry.sort(Comparator.comparingDouble(animal -> animal.distanceToSqr(centre)));
         for (int i = 0; i < Math.min(room, hungry.size()); i++) {
             EatAtFeederGoal.send(hungry.get(i), pos, now);
-            net.modcrafters.minecraft.barnyardromance.Constants.LOG.info("DBG send {} to {} at {}", hungry.get(i).getId(), pos, now);
         }
     }
 }

@@ -11,6 +11,15 @@ import org.jspecify.annotations.Nullable;
 // Whether one animal can walk to another: within range, and with a path that really gets there, so a fence or a wall
 // between pens keeps them apart. It's a path search, so it's only asked now and then, never every tick.
 public final class Reach {
+    // What a path search says about walking somewhere: it can, it can't (the path goes some way and stops short), or
+    // nothing, when the search never left the block it started in. That happens to an animal standing in some spots
+    // of a pen's corner, between two fence lines, though it can walk out of it.
+    public enum Walk {
+        YES,
+        NO,
+        UNKNOWN
+    }
+
     private Reach() {
     }
 
@@ -29,6 +38,21 @@ public final class Reach {
         }
         Path path = path(from, to);
         return path != null && (path.canReach() || endsBeside(path.getEndNode(), to));
+    }
+
+    // The same as canWalkTo, but a search that never got anywhere is UNKNOWN rather than NO.
+    public static Walk walkTo(Animal from, BlockPos to, int range) {
+        if (from.distanceToSqr(Vec3.atBottomCenterOf(to)) > (double) range * range) {
+            return Walk.NO;
+        }
+        Path path = path(from, to);
+        if (path == null) {
+            return Walk.UNKNOWN;
+        }
+        if (path.canReach() || endsBeside(path.getEndNode(), to)) {
+            return Walk.YES;
+        }
+        return path.getNodeCount() <= 1 ? Walk.UNKNOWN : Walk.NO;
     }
 
     // For a moment that can't wait for a better one, such as an egg being laid: only a path that is found and falls

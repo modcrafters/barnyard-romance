@@ -50,6 +50,11 @@ public class FabricFeederGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 100)
+    public void aCowInAPenCornerStaysInTheHerd(GameTestHelper helper) {
+        FeederGameTests.aCowInAPenCornerStaysInTheHerd(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
     public void anUnfamiliarCowIsNotInTheHerd(GameTestHelper helper) {
         FeederGameTests.anUnfamiliarCowIsNotInTheHerd(helper);
     }
@@ -142,5 +147,10 @@ public class FabricFeederGameTests {
     @GameTest(structure = PEN, maxTicks = 100)
     public void aCatchUpMealHeals(GameTestHelper helper) {
         FeederGameTests.aCatchUpMealHeals(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aCowInACornerWalksOutToEat(GameTestHelper helper) {
+        FeederGameTests.aCowInACornerWalksOutToEat(helper);
     }
 }

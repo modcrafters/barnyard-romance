@@ -16,6 +16,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 // Finding a feeding block's herd (FeederHerd) again: one path search for each animal in reach, so it's only done now
@@ -26,7 +27,7 @@ final class HerdRefresh {
 
     static void refresh(FeederBlockEntity feeder, ServerLevel level) {
         List<UUID> before = List.copyOf(feeder.herd());
-        feeder.setHerd(find(level, feeder.getBlockPos(), feeder.kind()));
+        feeder.setHerd(find(level, feeder.getBlockPos(), feeder.kind(), Set.copyOf(before)));
         for (UUID id : feeder.herd()) {
             mark(level, id, true);
         }
@@ -38,15 +39,19 @@ final class HerdRefresh {
     }
 
     // The animals that eat here now, nearest first: of this block's kind and an enabled species, past nursing,
-    // familiar, within reach, and able to walk here, so a fence keeps the next pen's animals out.
-    static List<UUID> find(ServerLevel level, BlockPos pos, FeederKind kind) {
+    // familiar, within reach, and able to walk here, so a fence keeps the next pen's animals out. When the search says
+    // nothing (see Reach.Walk), a member stays, and a newcomer joins only if it's close to the block already: a fence
+    // between pens stops a search partway, which says no.
+    static List<UUID> find(ServerLevel level, BlockPos pos, FeederKind kind, Set<UUID> members) {
         int range = BarnyardConfig.current().tuning().feederRange();
         Vec3 middle = Vec3.atCenterOf(pos);
         List<Animal> near = new ArrayList<>(level.getEntitiesOfClass(Animal.class, new AABB(pos).inflate(range), animal -> eats(animal, kind)));
         near.sort(Comparator.comparingDouble(animal -> animal.distanceToSqr(middle)));
         List<UUID> found = new ArrayList<>();
         for (Animal animal : near) {
-            if (Reach.canWalkTo(animal, pos, range)) {
+            Reach.Walk walk = Reach.walkTo(animal, pos, range);
+            if (walk == Reach.Walk.YES || walk == Reach.Walk.UNKNOWN
+                    && (members.contains(animal.getUUID()) || EatAtFeederGoal.within(animal, pos, EatAtFeederGoal.CLOSE_ENOUGH))) {
                 found.add(animal.getUUID());
             }
         }

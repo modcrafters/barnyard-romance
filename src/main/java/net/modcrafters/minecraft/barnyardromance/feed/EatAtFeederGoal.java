@@ -32,6 +32,7 @@ public class EatAtFeederGoal extends Goal {
     private static final int REST_TICKS = 600;
     // Between path searches while it's still on its way and its path has run out.
     private static final int PATH_TICKS = 40;
+    private static final int STEP_TICKS = 20;
     // From the animal's body to the block (see within).
     static final double REACH = 1.5;
     static final double CLOSE_ENOUGH = 4.0;
@@ -45,6 +46,8 @@ public class EatAtFeederGoal extends Goal {
     private long pathed;
     // Fed and on its way off, which the goal stopping leaves be.
     private boolean walkingOff;
+    // Until this game time it steps straight at the block, having found no way on from where it stood.
+    private long stepping;
 
     // over is set once it has eaten or given up. The trip is only forgotten when the goal stops, so the animals still
     // counted as walking (MorningFeeding's limit) are never fewer than those with the goal running.
@@ -133,6 +136,7 @@ public class EatAtFeederGoal extends Goal {
     @Override
     public void start() {
         pathed = animal.level().getGameTime() - PATH_TICKS;
+        stepping = 0L;
     }
 
     @Override
@@ -167,6 +171,12 @@ public class EatAtFeederGoal extends Goal {
             end(trip);
             return;
         }
+        if (now < stepping) {
+            // The move control only takes one tick's step at a time.
+            Vec3 block = Vec3.atBottomCenterOf(trip.feeder());
+            animal.getMoveControl().setWantedPosition(block.x, animal.getY(), block.z, 1.0);
+            return;
+        }
         if (animal.getNavigation().isDone() && now - pathed >= PATH_TICKS && canPlan(animal)) {
             pathed = now;
             Path path = pathTo(animal, trip.feeder());
@@ -175,10 +185,9 @@ public class EatAtFeederGoal extends Goal {
             if (path != null && (path.canReach() || path.getNodeCount() > 1)) {
                 animal.getNavigation().moveTo(path, 1.0);
             } else {
-                // No way on from where it stands, as when it's wedged in a fence corner: a few steps straight at the
-                // block, and a new search from wherever that gets it.
-                Vec3 block = Vec3.atBottomCenterOf(trip.feeder());
-                animal.getMoveControl().setWantedPosition(block.x, animal.getY(), block.z, 1.0);
+                // No way on from where it stands, as when it's wedged in a fence corner: a second's steps straight at
+                // the block, and a new search from wherever that gets it.
+                stepping = now + STEP_TICKS;
             }
         }
     }
