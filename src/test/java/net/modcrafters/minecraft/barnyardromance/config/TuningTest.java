@@ -10,7 +10,20 @@ class TuningTest {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
         assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
                 72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
-                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000), Tuning.DEFAULTS);
+                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 0.10, 0.10), Tuning.DEFAULTS);
+    }
+
+    @Test
+    void feederAndEscapeNumbersRoundTrip() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "feederRange": 24, "escapeBelow": 0.2, "escapeChance": 0.5 } }
+                """).tuning();
+
+        assertEquals(24, tuning.feederRange());
+        assertEquals(0.2, tuning.escapeBelow(), 1.0e-9);
+        assertEquals(0.5, tuning.escapeChance(), 1.0e-9);
+        assertEquals(tuning, BarnyardConfig.parse(BarnyardConfig.parse("{ \"tuning\": { \"feederRange\": 24, \"escapeBelow\": 0.2, \"escapeChance\": 0.5 } }").toJson()).tuning());
+        assertEquals(Tuning.DEFAULTS, BarnyardConfig.parse(BarnyardConfig.defaults().toJson()).tuning());
     }
 
     @Test
