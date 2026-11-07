@@ -36,7 +36,7 @@ public class FeederMenu extends AbstractContainerMenu {
     }
 
     public FeederMenu(int containerId, Inventory inventory, FeederBlockEntity feeder) {
-        this(containerId, inventory, feeder, feeder.herd());
+        this(containerId, inventory, feeder, feeder.windowData());
     }
 
     public FeederMenu(int containerId, Inventory inventory, Container feeder, ContainerData herd) {

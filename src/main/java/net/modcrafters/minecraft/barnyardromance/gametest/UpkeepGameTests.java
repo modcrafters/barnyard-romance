@@ -301,7 +301,7 @@ public final class UpkeepGameTests {
     }
 
     // Swaps the config for the length of one call, so no other test sees it.
-    private static void withConfig(String json, Runnable body) {
+    static void withConfig(String json, Runnable body) {
         BarnyardConfig config = BarnyardConfig.current();
         try {
             BarnyardConfig.set(BarnyardConfig.parse(json));
