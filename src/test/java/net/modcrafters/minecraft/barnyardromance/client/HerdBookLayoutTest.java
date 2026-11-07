@@ -247,4 +247,22 @@ class HerdBookLayoutTest {
         assertEquals(41, HerdBookLayout.familyHeight(true, true, 10, 9, 10));
         assertEquals(52, HerdBookLayout.familyHeight(true, false, 10, 9, 10));
     }
+
+    @Test
+    void detailsFoldIntoTheRowAboveThem() {
+        List<HerdBookLayout.Folded<String>> rows = HerdBookLayout.foldDetails(
+                List.of("familiar", "-grumpy", "-wild", "fed", "vigour", "-hungry", "seen"), line -> line.startsWith("-"));
+
+        assertEquals(List.of("familiar", "fed", "vigour", "seen"), rows.stream().map(HerdBookLayout.Folded::line).toList());
+        assertEquals(List.of("-grumpy", "-wild"), rows.get(0).details());
+        assertEquals(List.of(), rows.get(1).details());
+        assertEquals(List.of("-hungry"), rows.get(2).details());
+    }
+
+    @Test
+    void aDetailWithNothingAboveItKeepsItsOwnRow() {
+        List<HerdBookLayout.Folded<String>> rows = HerdBookLayout.foldDetails(List.of("-alone", "fed"), line -> line.startsWith("-"));
+
+        assertEquals(List.of("-alone", "fed"), rows.stream().map(HerdBookLayout.Folded::line).toList());
+    }
 }

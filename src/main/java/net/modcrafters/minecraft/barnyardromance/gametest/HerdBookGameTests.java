@@ -562,7 +562,7 @@ public final class HerdBookGameTests {
         HerdEntry entry = EggGameTests.bookEntry(helper, hen);
 
         helper.assertTrue(entry.eggTip().getString().endsWith("Eggs: 1/2 today"), "the egg tip reads " + entry.eggTip().getString());
-        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == StatKind.NOTE && line.text().getString().equals("Eggs: 1/2 today")),
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == StatKind.DETAIL && line.text().getString().equals("Eggs: 1/2 today")),
                 "the page has no egg note: " + entry.lines().stream().map(line -> line.text().getString()).toList());
         helper.succeed();
     }

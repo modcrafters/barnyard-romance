@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Animal pages in the herd book are shorter. The notes that explain a row now show when you hover over that row: why an animal isn't familiar, a hungry male's health cost, a hen's reasons for tomorrow's eggs and her count for today, the father of a pregnancy, and the last birth.
+
 - Animals work out much faster whether they want the food in your hand, so big farms with several players lag less.
 - The herd book no longer causes a lag spike once a minute on big farms. It updates its animals one at a time over the minute instead of all at once.
 

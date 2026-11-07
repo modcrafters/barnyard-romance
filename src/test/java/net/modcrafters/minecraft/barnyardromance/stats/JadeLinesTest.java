@@ -27,7 +27,7 @@ class JadeLinesTest {
     void detailsShowsEverythingButHealth() {
         List<StatLine> full = bull();
 
-        assertEquals(List.of(SIZE, FAMILIARITY, NOTE, FED, GROWTH, WEIGHT, HEALTH, VIGOUR, NOTE, BREEDING), kinds(full));
+        assertEquals(List.of(SIZE, FAMILIARITY, DETAIL, FED, GROWTH, WEIGHT, HEALTH, VIGOUR, DETAIL, BREEDING), kinds(full));
         assertEquals(full.stream().filter(line -> line.kind() != HEALTH).toList(), JadeLines.of(full, true));
     }
 

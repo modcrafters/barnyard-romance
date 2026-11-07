@@ -87,7 +87,7 @@ public final class StatCard {
             if (icon != null) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, icon, left, rowY - 1, StatCardLayout.ICON, StatCardLayout.ICON);
             }
-            int color = row.kind() == StatKind.NOTE ? NOTE : HerdCard.WHITE;
+            int color = row.kind() == StatKind.NOTE || row.kind() == StatKind.DETAIL ? NOTE : HerdCard.WHITE;
             graphics.text(font, row.text(), left + StatCardLayout.ICON + StatCardLayout.GAP, rowY, color);
             if (row.bar()) {
                 HerdCard.bar(graphics, right - StatCardLayout.BAR, rowY + 1, StatCardLayout.BAR, 6, row.fill(), StatIcons.barColor(row.kind()));

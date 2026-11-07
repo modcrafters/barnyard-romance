@@ -34,7 +34,7 @@ public final class StatIcons {
 
     public static @Nullable Identifier of(StatKind kind) {
         return switch (kind) {
-            case SIZE, NOTE -> null;
+            case SIZE, NOTE, DETAIL -> null;
             case FAMILIARITY -> HEART;
             case FED, NOT_FED -> WHEAT;
             case GROWTH -> HOURGLASS;
