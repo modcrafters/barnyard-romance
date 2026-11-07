@@ -150,7 +150,8 @@ public final class FamiliarityActions {
     // Any food the animal eats draws it after a player holding it, as its vanilla food does.
     public static boolean tempts(Animal animal, ItemStack stack) {
         try {
-            return !ignoresFood(animal) && FoodData.eats(animal, stack);
+            // The food check is a cached lookup and most held items aren't food, so it goes first.
+            return FoodData.eats(animal, stack) && !ignoresFood(animal);
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
             return false;
