@@ -47,4 +47,13 @@ public final class FeederHerd {
     public static boolean due(long gameTime, int slot) {
         return Math.floorMod(gameTime, (long) REFRESH_TICKS) == slot;
     }
+
+    // The chunks along one axis that a block's reach touches, from block - range to block + range.
+    public static int firstChunk(int block, int range) {
+        return (block - range) >> 4;
+    }
+
+    public static int lastChunk(int block, int range) {
+        return (block + range) >> 4;
+    }
 }

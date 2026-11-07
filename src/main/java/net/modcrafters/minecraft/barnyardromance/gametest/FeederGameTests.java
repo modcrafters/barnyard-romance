@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
@@ -15,6 +16,7 @@ import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -74,7 +76,8 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("two_mangers_catching_up_at_once_settle_each_day_once", 100,
                     FeederGameTests::twoMangersCatchingUpAtOnceSettleEachDayOnce),
             new BreedingGameTests.Case("a_day_the_pen_was_loaded_takes_no_food", 100, FeederGameTests::aDayThePenWasLoadedTakesNoFood),
-            new BreedingGameTests.Case("a_cow_below_familiar_gets_no_food", 100, FeederGameTests::aCowBelowFamiliarGetsNoFood)
+            new BreedingGameTests.Case("a_cow_below_familiar_gets_no_food", 100, FeederGameTests::aCowBelowFamiliarGetsNoFood),
+            new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", 100, FeederGameTests::aHerdHenHungryYesterdayLaysNothing)
     );
 
     private FeederGameTests() {
@@ -251,7 +254,7 @@ public final class FeederGameTests {
         long[] broken = {-1L};
         helper.onEachTick(() -> {
             if (broken[0] < 0L) {
-                if (!cows.stream().allMatch(Animal::onGround)) {
+                if (!ready(helper, cows)) {
                     return;
                 }
                 cows.forEach(FeederGameTests::holdStill);
@@ -284,7 +287,7 @@ public final class FeederGameTests {
         FeederBlockEntity[] first = {null};
         helper.onEachTick(() -> {
             if (first[0] == null) {
-                if (!cows.stream().allMatch(Animal::onGround)) {
+                if (!ready(helper, cows)) {
                     return;
                 }
                 cows.forEach(FeederGameTests::holdStill);
@@ -332,7 +335,7 @@ public final class FeederGameTests {
         FeederBlockEntity[] manger = {null};
         helper.onEachTick(() -> {
             if (manger[0] == null) {
-                if (cows.stream().allMatch(Animal::onGround)) {
+                if (ready(helper, cows)) {
                     cows.forEach(FeederGameTests::holdStill);
                     manger[0] = mangerAt(helper, walkingLayer(helper, cows.getFirst(), 4, 4));
                     manger[0].setItem(0, new ItemStack(Items.WHEAT, 20));
@@ -355,6 +358,29 @@ public final class FeederGameTests {
             helper.assertTrue(manger[0].food() == 10, "the Manger holds " + contents(manger[0]));
             assertSettled(helper, cows.get(0), 10.0F, 0.8);
             assertSettled(helper, cows.get(1), 10.0F, 0.0);
+            helper.succeed();
+        });
+    }
+
+    // Her day is planned from yesterday's hunger, so it waits until her Bird Feeder has settled yesterday for her. It
+    // held no food, so she went hungry and lays nothing today; planned from her unsettled day she'd lay a clutch.
+    public static void aHerdHenHungryYesterdayLaysNothing(GameTestHelper helper) {
+        onceLanded(helper, EntityTypes.CHICKEN, new int[][]{{3, 4}}, hens -> {
+            Animal hen = hens.getFirst();
+            FeederBlockEntity feeder = blockAt(helper, BarnyardBlocks.BIRD_FEEDER, walkingLayer(helper, hen, 4, 4));
+            unsettled(hen, 0.8, DAY - 1L, Upkeep.NONE);
+            // A tick just before her day, as a block placed earlier would have had: it finds its herd and has nothing
+            // to settle yet.
+            feeder.tick(helper.getLevel(), clock(DAY - 1L) - 1L);
+            assertHerd(helper, feeder, hens);
+            long morning = EggGameTests.at(DAY, 7_000);
+
+            Laying waiting = EggGameTests.tickAt(helper, hen, morning);
+            helper.assertTrue(waiting.day() != DAY, "the hen planned her day before it was settled: " + waiting);
+            feeder.tick(helper.getLevel(), morning);
+            Laying planned = EggGameTests.tickAt(helper, hen, morning);
+
+            helper.assertTrue(planned.day() == DAY && planned.planned() == 0, "the hungry hen planned " + planned);
             helper.succeed();
         });
     }
@@ -463,14 +489,26 @@ public final class FeederGameTests {
 
     // Cows spawned on these columns. Once all have landed they're held still, so only the test moves them.
     private static void onceLanded(GameTestHelper helper, int[][] columns, Consumer<List<Animal>> then) {
+        onceLanded(helper, EntityTypes.COW, columns, then);
+    }
+
+    private static void onceLanded(GameTestHelper helper, EntityType<? extends Animal> type, int[][] columns, Consumer<List<Animal>> then) {
         List<Animal> cows = new ArrayList<>();
         for (int[] column : columns) {
-            cows.add(GameTestCompat.spawn(helper, EntityTypes.COW, column[0], 1, column[1]));
+            cows.add(GameTestCompat.spawn(helper, type, column[0], 1, column[1]));
         }
-        EggGameTests.once(helper, () -> cows.stream().allMatch(Animal::onGround), () -> {
+        EggGameTests.once(helper, () -> ready(helper, cows), () -> {
             cows.forEach(FeederGameTests::holdStill);
             then.accept(cows);
         });
+    }
+
+    // The animals have landed, and the animals around the pen are loaded, as a block waits for before it settles
+    // anything: entities load apart from blocks, and a test near the edge of the loaded area may wait a few ticks.
+    private static boolean ready(GameTestHelper helper, List<Animal> animals) {
+        return animals.stream().allMatch(Animal::onGround)
+                && FeederBlockEntity.animalsLoaded(helper.getLevel(), helper.absolutePos(new BlockPos(0, 0, 0)))
+                && FeederBlockEntity.animalsLoaded(helper.getLevel(), helper.absolutePos(new BlockPos(8, 0, 8)));
     }
 
     // A mob with no AI never lands, so this waits until it has.
@@ -485,7 +523,11 @@ public final class FeederGameTests {
     }
 
     private static FeederBlockEntity mangerAt(GameTestHelper helper, BlockPos absolute) {
-        helper.getLevel().setBlockAndUpdate(absolute, BarnyardBlocks.MANGER.defaultBlockState());
+        return blockAt(helper, BarnyardBlocks.MANGER, absolute);
+    }
+
+    private static FeederBlockEntity blockAt(GameTestHelper helper, Block block, BlockPos absolute) {
+        helper.getLevel().setBlockAndUpdate(absolute, block.defaultBlockState());
         return (FeederBlockEntity) helper.getLevel().getBlockEntity(absolute);
     }
 

@@ -45,12 +45,19 @@ public final class FeederIndex {
         }
     }
 
+    // When the server stops: its blocks are never taken out one by one, and would hold on to the whole world.
+    public static synchronized void clear() {
+        LOADED.clear();
+        INDEXED.clear();
+        FEEDERS.clear();
+    }
+
     public static synchronized Set<GlobalPos> feedersOf(UUID id) {
         Set<GlobalPos> feeders = FEEDERS.get(id);
         return feeders == null ? Set.of() : Set.copyOf(feeders);
     }
 
-    // A block that holds this animal, can tick and hasn't settled the days before today yet is about to do it.
+    // A block that holds this animal, is running and hasn't settled the days before today yet is about to do it.
     public static synchronized boolean waiting(Animal animal, long today) {
         Set<GlobalPos> feeders = FEEDERS.get(animal.getUUID());
         if (feeders == null) {
@@ -58,23 +65,24 @@ public final class FeederIndex {
         }
         for (GlobalPos pos : feeders) {
             FeederBlockEntity feeder = LOADED.get(pos);
-            if (feeder != null && feeder.ticking(animal) && feeder.settledDay() < today) {
+            if (feeder != null && feeder.running(animal) && feeder.settledDay() < today) {
                 return true;
             }
         }
         return false;
     }
 
-    // Whether a block that can tick holds this animal. One that is loaded but not ticking, at the edge of the loaded
-    // area, would never settle the animal, so it doesn't count.
-    public static synchronized boolean heldByTicking(Animal animal) {
+    // Whether a running block holds this animal. One that is loaded but not running (at the edge of the loaded area,
+    // outside the world border, or waiting for the animals around it to load) may never get to the animal, so it
+    // doesn't count.
+    public static synchronized boolean heldByRunning(Animal animal) {
         Set<GlobalPos> feeders = FEEDERS.get(animal.getUUID());
         if (feeders == null) {
             return false;
         }
         for (GlobalPos pos : feeders) {
             FeederBlockEntity feeder = LOADED.get(pos);
-            if (feeder != null && feeder.ticking(animal)) {
+            if (feeder != null && feeder.running(animal)) {
                 return true;
             }
         }

@@ -76,6 +76,11 @@ public final class Escapes {
         setOff(animal, level, catchingUp);
     }
 
+    // When the server stops, so nothing of its world is held on to.
+    public static void clear() {
+        RUNNING.clear();
+    }
+
     // Every tick, for every animal; it does nothing unless this one is running away.
     public static void tick(Animal animal, ServerLevel level) {
         if (RUNNING.isEmpty()) {

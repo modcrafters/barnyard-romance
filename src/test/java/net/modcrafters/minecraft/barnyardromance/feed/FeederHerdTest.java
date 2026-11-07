@@ -16,6 +16,24 @@ class FeederHerdTest {
         }
     }
 
+    // At the usual reach of 16 a block touches three chunks along each axis, so nine in all, wherever it stands.
+    @Test
+    void theReachTouchesThreeChunksEachWay() {
+        assertEquals(-1, FeederHerd.firstChunk(0, 16));
+        assertEquals(1, FeederHerd.lastChunk(0, 16));
+        assertEquals(-1, FeederHerd.firstChunk(15, 16));
+        assertEquals(1, FeederHerd.lastChunk(15, 16));
+        assertEquals(0, FeederHerd.firstChunk(16, 16));
+        assertEquals(2, FeederHerd.lastChunk(16, 16));
+        assertEquals(-3, FeederHerd.firstChunk(-17, 16));
+        assertEquals(-1, FeederHerd.lastChunk(-17, 16));
+        for (int block = -40; block <= 40; block++) {
+            assertEquals(3, FeederHerd.lastChunk(block, 16) - FeederHerd.firstChunk(block, 16) + 1, "block " + block);
+        }
+        assertEquals(0, FeederHerd.firstChunk(5, 0));
+        assertEquals(0, FeederHerd.lastChunk(5, 0));
+    }
+
     @Test
     void aRefreshIsDueOnceAMinute() {
         int slot = FeederHerd.refreshSlot(-7);

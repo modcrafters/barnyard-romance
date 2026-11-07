@@ -83,6 +83,11 @@ public final class EggLaying {
             int sinceMidnight = EggSchedule.sinceMidnight(clock);
             Laying laying = Services.DATA.getLaying(animal).orElse(Laying.NONE);
             if (laying.day() != GameDay.of(clock)) {
+                // The day is planned from yesterday's hunger, so it waits until her days are settled. A hen in a
+                // feeding block's herd may wait a few ticks for the block to settle them.
+                if (FamiliarityCare.unsettled(animal, clock)) {
+                    return;
+                }
                 laying = plan(animal, GameDay.of(clock), sinceMidnight);
                 Services.DATA.setLaying(animal, laying);
             }

@@ -103,4 +103,9 @@ public class FabricFeederGameTests {
     public void aCowBelowFamiliarGetsNoFood(GameTestHelper helper) {
         FeederGameTests.aCowBelowFamiliarGetsNoFood(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aHerdHenHungryYesterdayLaysNothing(GameTestHelper helper) {
+        FeederGameTests.aHerdHenHungryYesterdayLaysNothing(helper);
+    }
 }

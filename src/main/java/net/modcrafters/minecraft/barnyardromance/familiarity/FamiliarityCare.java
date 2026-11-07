@@ -167,7 +167,7 @@ public final class FamiliarityCare {
             return true;
         }
         // tickCount isn't saved, so it counts the ticks since this animal loaded.
-        return animal.tickCount < HERD_WAIT_TICKS && !FeederIndex.heldByTicking(animal);
+        return animal.tickCount < HERD_WAIT_TICKS && !FeederIndex.heldByRunning(animal);
     }
 
     // Saves from before upkeep was kept start from none.
@@ -187,6 +187,12 @@ public final class FamiliarityCare {
     private static AnimalTraits withCare(AnimalTraits updated, Upkeep upkeep, boolean cared) {
         boolean caredNow = cared || Familiarity.ready(updated.familiarity());
         return updated.withUpkeep(caredNow && !upkeep.cared() ? upkeep.caredFor() : upkeep);
+    }
+
+    // True while the animal still has days before today to settle, which happens while it waits for its herd's block
+    // (see settle). Whatever is worked out once a day from yesterday's hunger (eggs, milk, Vigour) waits for it.
+    public static boolean unsettled(Animal animal, long clock) {
+        return settle(animal, clock).map(traits -> traits.hunger().settledDay() < GameDay.of(clock)).orElse(false);
     }
 
     // Any food counts: a normal feed, a hurt animal's heal-only meal, and a superfood.

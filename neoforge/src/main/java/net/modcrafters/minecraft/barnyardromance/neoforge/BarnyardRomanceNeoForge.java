@@ -38,6 +38,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -70,6 +71,7 @@ public class BarnyardRomanceNeoForge {
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> BarnyardRomance.serverStopped());
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
         NeoForge.EVENT_BUS.addListener((TagsUpdatedEvent event) -> FoodData.tagsReloaded());

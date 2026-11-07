@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -40,6 +42,9 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     public static final int SLOTS = 9;
     private static final int[] ALL_SLOTS = IntStream.range(0, SLOTS).toArray();
     private static final long NEVER = -1L;
+    // A block that hasn't ticked for longer than this isn't running (unloaded, outside the world border, or waiting
+    // for the animals around it to load), so no animal waits for it.
+    private static final long RUNNING_TICKS = 2L;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private final FeederHerd herd = new FeederHerd();
@@ -51,6 +56,8 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     private @Nullable FeederCatchUp catchUp;
     // A block just placed finds its herd on its first tick; one loaded from a save has its herd already.
     private boolean placed = true;
+    // The game time it last ticked with the animals around it loaded.
+    private long lastTick = Long.MIN_VALUE;
     // For the window: the days of food and the herd's size.
     private final ContainerData windowData = new ContainerData() {
         @Override
@@ -89,11 +96,19 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     // One tick at this overworld clock time (a test passes its own): the herd is found again on the block's own tick
     // of the minute, and the herd's missed days are settled once a day has turned.
     public void tick(ServerLevel level, long clock) {
-        if (placed || FeederHerd.due(level.getGameTime(), refreshSlot())) {
+        long today = GameDay.of(clock);
+        boolean refresh = placed || FeederHerd.due(level.getGameTime(), refreshSlot());
+        // Finding the herd and settling its days both need the animals around the block. Entities load apart from
+        // blocks, and a neighbouring chunk's may come later, so the block waits for them. Its herd doesn't wait for it
+        // meanwhile (see running).
+        if ((refresh || catchUp != null || settledDay < today) && !animalsLoaded(level, getBlockPos())) {
+            return;
+        }
+        lastTick = level.getGameTime();
+        if (refresh) {
             placed = false;
             refreshHerd(level);
         }
-        long today = GameDay.of(clock);
         if (catchUp == null && settledDay < today) {
             catchUp = FeederCatchUp.start(this, level, today, liveDay);
         }
@@ -235,10 +250,28 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         return level == null ? null : GlobalPos.of(level.dimension(), getBlockPos());
     }
 
-    // Loaded on the animal's server and ticking, so it will get to the animal.
-    boolean ticking(Animal animal) {
+    // Running now on the animal's server, so it will get to the animal: it has ticked within the last RUNNING_TICKS
+    // with the animals around it loaded.
+    boolean running(Animal animal) {
         return !isRemoved() && level instanceof ServerLevel server && animal.level() instanceof ServerLevel other
-                && server.getServer() == other.getServer() && server.shouldTickBlocksAt(getBlockPos());
+                && server.getServer() == other.getServer() && lastTick >= server.getGameTime() - RUNNING_TICKS;
+    }
+
+    // Whether the entities are loaded in every chunk the reach of a block here touches: nine at the usual reach.
+    public static boolean animalsLoaded(ServerLevel level, BlockPos pos) {
+        int range = BarnyardConfig.current().tuning().feederRange();
+        for (int x = FeederHerd.firstChunk(pos.getX(), range); x <= FeederHerd.lastChunk(pos.getX(), range); x++) {
+            for (int z = FeederHerd.firstChunk(pos.getZ(), range); z <= FeederHerd.lastChunk(pos.getZ(), range); z++) {
+                //? if >=26.1 {
+                long chunk = ChunkPos.pack(x, z);
+                //?} else
+                //long chunk = ChunkPos.asLong(x, z);
+                if (!level.areEntitiesLoaded(chunk)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     //? if >=1.21.6 {

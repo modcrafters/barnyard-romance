@@ -43,7 +43,10 @@ public final class RivalRolls {
 
     public static boolean due(Animal male, long clock) {
         Optional<AnimalTraits> traits = rolling(male);
-        return traits.isPresent()
+        // The roll reads his familiarity, which a male in a feeding block's herd has yet to settle while he waits
+        // for the block.
+        boolean waiting = traits.isPresent() && traits.get().upkeep().inHerd() && traits.get().hunger().settledDay() < GameDay.of(clock);
+        return traits.isPresent() && !waiting
                 && FightRules.due(traits.get().vigour().rollDay(), GameDay.of(clock), EggSchedule.sinceMidnight(clock), FightRules.rollTime(male.getUUID()));
     }
 
