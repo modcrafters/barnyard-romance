@@ -8,6 +8,9 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Animals work out much faster whether they want the food in your hand, so big farms with several players lag less.
+- The herd book no longer causes a lag spike once a minute on big farms. It updates its animals one at a time over the minute instead of all at once.
+
 - Herd Sticks and their commands are off unless `herdSticks` is turned on in the config.
 - The Barnyard Inspector is gone. Sneak while looking at an animal to see all its stats on the card above it, or read them in the herd book, which now opens at an animal's page when you use it on one in the book. With Jade installed, the stats show in Jade's tooltip instead. `/barnyard info`, which handed the Inspector out, goes with it.
 - Only females fall in love now. Feed a familiar female and she's matched with a grown, familiar male nearby who can walk to her, so a fence keeps the next pen's bull out. Males get no breeding rest.
