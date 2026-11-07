@@ -117,6 +117,7 @@ public final class HerdStatus {
         AnimalFacts facts = AnimalFacts.builder(size.name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
                 .fedToday(fedToday)
+                .fedBy(StatText.feeder(traits.upkeep(), today))
                 .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
                 .pregnant(pregnancy != null)
                 .pregnancy(progress)

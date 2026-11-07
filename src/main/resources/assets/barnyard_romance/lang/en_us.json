@@ -11,6 +11,7 @@
   "gui.barnyard_romance.herd_book.grumpy": "Grumpy: won't take orders",
   "gui.barnyard_romance.herd_book.wild_caught": "Wild: max %s",
   "gui.barnyard_romance.herd_book.fed_today": "Fed today",
+  "gui.barnyard_romance.herd_book.fed_today_by": "Fed today (%s)",
   "gui.barnyard_romance.herd_book.never_fed": "Never fed",
   "gui.barnyard_romance.herd_book.last_fed": "Last fed %s ago",
   "gui.barnyard_romance.herd_book.familiarity": "Familiar %s",

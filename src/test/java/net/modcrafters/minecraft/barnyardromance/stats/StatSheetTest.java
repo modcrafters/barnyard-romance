@@ -42,6 +42,11 @@ class StatSheetTest {
     }
 
     @Test
+    void aFeederMealNamesTheBlock() {
+        assertEquals("Fed today (Manger)", english(cow().fedBy(Text.of("block.barnyard_romance.manger"))).get(2));
+    }
+
+    @Test
     void aPregnantFedLoadedCow() {
         assertEquals(List.of("Size L · Adult · 18d old", "Familiar 80%", "Fed today", "Fertile 90%", "Pregnant 62% · 10m 0s"), english(cow()));
     }

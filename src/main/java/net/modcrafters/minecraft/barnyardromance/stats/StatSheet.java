@@ -36,7 +36,9 @@ public final class StatSheet {
         familiarity(lines, facts, true);
         ranAway(lines, facts);
         if (facts.fedToday()) {
-            lines.add(StatLine.of(StatKind.FED, Text.of("gui.barnyard_romance.herd_book.fed_today")));
+            lines.add(StatLine.of(StatKind.FED, facts.fedBy().isEmpty()
+                    ? Text.of("gui.barnyard_romance.herd_book.fed_today")
+                    : Text.of("gui.barnyard_romance.herd_book.fed_today_by", facts.fedBy())));
         } else if (facts.ticksSinceFed() < 0L) {
             lines.add(StatLine.of(StatKind.NOT_FED, Text.of("gui.barnyard_romance.herd_book.never_fed")));
         } else {

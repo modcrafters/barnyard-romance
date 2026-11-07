@@ -67,6 +67,7 @@ public final class LiveFacts {
         return Optional.of(AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(species)).name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, now - traits.bornTick()))
                 .fedToday(Familiarity.fedToday(traits.lastFedTick(), clock))
+                .fedBy(StatText.feeder(traits.upkeep(), GameDay.of(clock)))
                 .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
                 .pregnant(pregnancy.isPresent())
                 .pregnancy(pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0))

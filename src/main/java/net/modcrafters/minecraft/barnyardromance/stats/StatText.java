@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
 import net.modcrafters.minecraft.barnyardromance.text.Text;
@@ -19,6 +20,13 @@ public final class StatText {
 
     public static Text father(String sizeLetter, String speciesId) {
         return Text.of("gui.barnyard_romance.inspector.father", sizeLetter, mate(speciesId));
+    }
+
+    // The name of the feeding block that fed it on this GameDay, or empty.
+    public static Text feeder(Upkeep upkeep, long today) {
+        return upkeep.fedByFeederOn(today) && !upkeep.feeder().isEmpty()
+                ? Text.of("block.barnyard_romance." + upkeep.feeder())
+                : Text.EMPTY;
     }
 
     // A hen's row counts her eggs; a male's says whether he makes them fertile.
