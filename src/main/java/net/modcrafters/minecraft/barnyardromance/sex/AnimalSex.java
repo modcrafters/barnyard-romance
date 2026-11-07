@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -14,10 +15,13 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class AnimalSex {
     // Fixed IDs, so applying again replaces a wolf's modifiers instead of adding more.
+    private static final Map<EntityType<?>, String> SPECIES_IDS = new ConcurrentHashMap<>();
     private static final Identifier WOLF_ATTACK = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "wolf_size_attack");
     private static final Identifier WOLF_HEALTH = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "wolf_size_health");
 
@@ -88,9 +92,12 @@ public final class AnimalSex {
         return new AnimalTraits(sex, scale).withBornTick(bornTick);
     }
 
+    // Asked several times a tick for every animal, so each type's id is made into a string once.
     public static String speciesId(Animal animal) {
-        Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(animal.getType());
-        return id == null ? "unknown" : id.toString();
+        return SPECIES_IDS.computeIfAbsent(animal.getType(), type -> {
+            Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(type);
+            return id == null ? "unknown" : id.toString();
+        });
     }
 
     public static double currentScale(Animal animal) {

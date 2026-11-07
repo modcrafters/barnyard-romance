@@ -2,11 +2,14 @@ package net.modcrafters.minecraft.barnyardromance.food;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -153,6 +156,19 @@ class FoodRulesTest {
         Map<String, Diet> diets = Map.of(GRAZER_ID, GRAZER, other, second);
 
         assertEquals(other, FoodRules.dietFor(COW, null, diets).orElseThrow().getKey());
+    }
+
+    // A map that's already sorted by id is read as it is; one sorted some other way still goes by id.
+    @Test
+    void aMapSortedAnotherWayIsStillReadById() {
+        String other = "apack:cows";
+        Diet second = new Diet(List.of(COW), List.of(), List.of());
+        TreeMap<String, Diet> reversed = new TreeMap<>(Comparator.reverseOrder());
+        reversed.put(GRAZER_ID, GRAZER);
+        reversed.put(other, second);
+
+        assertEquals(other, FoodRules.dietFor(COW, null, reversed).orElseThrow().getKey());
+        assertEquals(other, FoodRules.dietFor(COW, null, Collections.unmodifiableSortedMap(new TreeMap<>(reversed))).orElseThrow().getKey());
     }
 
     @Test
