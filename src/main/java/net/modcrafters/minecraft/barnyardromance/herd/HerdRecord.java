@@ -22,8 +22,14 @@ public record HerdRecord(
         long diedClock,
         // Tamed animals below the familiarity threshold are grumpy, not wild.
         boolean tamed,
-        NestCheck nest
+        NestCheck nest,
+        DeathCause cause
 ) {
+    public HerdRecord(String species, String name, AnimalTraits traits, @Nullable Pregnancy pregnancy, boolean baby, boolean milkable,
+                      boolean shearable, boolean woolly, long refreshedAt, long diedAt, long diedClock, boolean tamed, NestCheck nest) {
+        this(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, DeathCause.NONE);
+    }
+
     public HerdRecord(String species, String name, AnimalTraits traits, @Nullable Pregnancy pregnancy, boolean baby, boolean milkable,
                       boolean shearable, boolean woolly, long refreshedAt, long diedAt, long diedClock, boolean tamed) {
         this(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, NestCheck.NONE);
@@ -34,6 +40,10 @@ public record HerdRecord(
     }
 
     public HerdRecord died(long tick, long clock) {
-        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick, clock, tamed, nest);
+        return died(tick, clock, cause);
+    }
+
+    public HerdRecord died(long tick, long clock, DeathCause cause) {
+        return new HerdRecord(species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, tick, clock, tamed, nest, cause);
     }
 }

@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
@@ -77,6 +80,11 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("ordinary_food_can_start_milk", 20, FoodGameTests::ordinaryFoodCanStartMilk),
             new BreedingGameTests.Case("dairy_mash_is_refused_by_a_milking_cow", 20, FoodGameTests::dairyMashIsRefusedByAMilkingCow),
             new BreedingGameTests.Case("dairy_mash_is_refused_by_a_bull", 20, FoodGameTests::dairyMashIsRefusedByABull),
+            new BreedingGameTests.Case("stud_mash_restores_half_the_vigour", 20, FoodGameTests::studMashRestoresHalfTheVigour),
+            new BreedingGameTests.Case("stud_mash_does_not_count_as_a_meal", 20, FoodGameTests::studMashDoesNotCountAsAMeal),
+            new BreedingGameTests.Case("stud_mash_skips_the_daily_rule", 20, FoodGameTests::studMashSkipsTheDailyRule),
+            new BreedingGameTests.Case("stud_mash_is_refused_by_females_and_young", 20, FoodGameTests::studMashIsRefusedByFemalesAndYoung),
+            new BreedingGameTests.Case("stud_mash_tops_out_at_full", 20, FoodGameTests::studMashTopsOutAtFull),
             new BreedingGameTests.Case("dairy_mash_needs_familiarity", 20, FoodGameTests::dairyMashNeedsFamiliarity),
             new BreedingGameTests.Case("food_scan_reads_real_recipes", 100, FoodGameTests::foodScanReadsRealRecipes),
             new BreedingGameTests.Case("our_creative_tab_holds_every_item", 20, FoodGameTests::ourCreativeTabHoldsEveryItem)
@@ -295,6 +303,81 @@ public final class FoodGameTests {
 
         helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "a cow that has milk ate the dairy mash");
         helper.succeed();
+    }
+
+    // A familiar bull at 10% gets half his Vigour back. It's no meal: his feeding day and familiarity stay as they were.
+    public static void studMashRestoresHalfTheVigour(GameTestHelper helper) {
+        Animal bull = withVigourToday(helper, BreedingGameTests.male(helper, EntityTypes.COW), 0.1);
+        AnimalTraits before = BreedingGameTests.traits(helper, bull);
+        Player player = holding(helper, BarnyardItems.STUD_MASH);
+
+        FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
+
+        CourtshipGameTests.assertVigour(helper, bull, 0.6);
+        AnimalTraits after = BreedingGameTests.traits(helper, bull);
+        helper.assertTrue(after.hunger().lastAteDay() == before.hunger().lastAteDay(), "the stud mash counted as a meal");
+        helper.assertTrue(after.familiarity() == before.familiarity(), "the stud mash changed his familiarity to " + after.familiarity());
+        helper.assertTrue(player.getMainHandItem().isEmpty(), "the stud mash wasn't eaten");
+        helper.succeed();
+    }
+
+    public static void studMashDoesNotCountAsAMeal(GameTestHelper helper) {
+        Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
+        long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).withHunger(new Hunger(today, today - 2L, today - 1L))
+                .withVigour(new Vigour(0.2, today, -1L)));
+
+        FamiliarityActions.interact(bull, holding(helper, BarnyardItems.STUD_MASH), InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(VigourActions.hungry(bull), "a stud mash saved the bull from a hungry day");
+        CourtshipGameTests.assertVigour(helper, bull, 0.7);
+        helper.succeed();
+    }
+
+    public static void studMashSkipsTheDailyRule(GameTestHelper helper) {
+        Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
+        FamiliarityActions.interact(bull, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
+        long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).withVigour(new Vigour(0.4, today, -1L)));
+        Player player = holding(helper, BarnyardItems.STUD_MASH);
+
+        FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(player.getMainHandItem().isEmpty(), "a bull fed today turned down the stud mash");
+        CourtshipGameTests.assertVigour(helper, bull, 0.9);
+        helper.succeed();
+    }
+
+    public static void studMashIsRefusedByFemalesAndYoung(GameTestHelper helper) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        Player forCow = holding(helper, BarnyardItems.STUD_MASH);
+        FamiliarityActions.interact(cow, forCow, InteractionHand.MAIN_HAND);
+        helper.assertTrue(forCow.getMainHandItem().is(BarnyardItems.STUD_MASH), "a cow ate the stud mash");
+
+        Animal calf = BreedingGameTests.male(helper, EntityTypes.COW);
+        calf.setBaby(true);
+        Player forCalf = holding(helper, BarnyardItems.STUD_MASH);
+        FamiliarityActions.interact(calf, forCalf, InteractionHand.MAIN_HAND);
+        helper.assertTrue(forCalf.getMainHandItem().is(BarnyardItems.STUD_MASH), "a calf ate the stud mash");
+        helper.succeed();
+    }
+
+    public static void studMashTopsOutAtFull(GameTestHelper helper) {
+        Animal bull = withVigourToday(helper, BreedingGameTests.male(helper, EntityTypes.COW), 1.0);
+        Player player = holding(helper, BarnyardItems.STUD_MASH);
+
+        FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.STUD_MASH), "a bull at full Vigour ate the stud mash");
+        CourtshipGameTests.assertVigour(helper, bull, 1.0);
+        helper.succeed();
+    }
+
+    // Fed yesterday and today, so his Vigour stays where it's put.
+    private static Animal withVigourToday(GameTestHelper helper, Animal male, double vigour) {
+        long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+        Services.DATA.set(male, BreedingGameTests.traits(helper, male).withHunger(new Hunger(today, today, -1L)).withVigour(new Vigour(vigour, today, -1L)));
+        return male;
     }
 
     public static void dairyMashIsRefusedByABull(GameTestHelper helper) {

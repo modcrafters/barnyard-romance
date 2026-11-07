@@ -72,19 +72,14 @@ public class FabricFoodGameTests {
         FoodGameTests.superfoodRecipesLoad(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
-    public void foodScanReadsRealRecipes(GameTestHelper helper) {
-        FoodGameTests.foodScanReadsRealRecipes(helper);
-    }
-
-    @GameTest(structure = PEN, maxTicks = 20)
-    public void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
-        FoodGameTests.ourCreativeTabHoldsEveryItem(helper);
-    }
-
     @GameTest(structure = PEN, maxTicks = 20)
     public void dairyMashStartsMilk(GameTestHelper helper) {
         FoodGameTests.dairyMashStartsMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void ordinaryFoodCanStartMilk(GameTestHelper helper) {
+        FoodGameTests.ordinaryFoodCanStartMilk(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
@@ -98,12 +93,42 @@ public class FabricFoodGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void studMashRestoresHalfTheVigour(GameTestHelper helper) {
+        FoodGameTests.studMashRestoresHalfTheVigour(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void studMashDoesNotCountAsAMeal(GameTestHelper helper) {
+        FoodGameTests.studMashDoesNotCountAsAMeal(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void studMashSkipsTheDailyRule(GameTestHelper helper) {
+        FoodGameTests.studMashSkipsTheDailyRule(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void studMashIsRefusedByFemalesAndYoung(GameTestHelper helper) {
+        FoodGameTests.studMashIsRefusedByFemalesAndYoung(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void studMashTopsOutAtFull(GameTestHelper helper) {
+        FoodGameTests.studMashTopsOutAtFull(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void dairyMashNeedsFamiliarity(GameTestHelper helper) {
         FoodGameTests.dairyMashNeedsFamiliarity(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void foodScanReadsRealRecipes(GameTestHelper helper) {
+        FoodGameTests.foodScanReadsRealRecipes(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 20)
-    public void ordinaryFoodCanStartMilk(GameTestHelper helper) {
-        FoodGameTests.ordinaryFoodCanStartMilk(helper);
+    public void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
+        FoodGameTests.ourCreativeTabHoldsEveryItem(helper);
     }
 }

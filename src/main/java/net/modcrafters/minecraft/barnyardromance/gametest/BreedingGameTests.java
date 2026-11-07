@@ -388,11 +388,14 @@ public final class BreedingGameTests {
     }
 
     // Vanilla's rest after breeding: the age cooldown, love cleared, and both mirrored into the synced traits.
+    // Mothers get vanilla's rest; fathers get none, since Vigour is their only limit.
     public static void assertResting(GameTestHelper helper, Animal parent, long now) {
-        helper.assertTrue(parent.getAge() == VANILLA_REST, "a parent's age is " + parent.getAge() + ", not " + VANILLA_REST);
-        helper.assertTrue(!parent.isInLove(), "a parent is still in love");
         AnimalTraits traits = traits(helper, parent);
-        helper.assertTrue(traits.loveUntil() < 0L, "a parent still shows love");
-        helper.assertTrue(traits.cooldownUntil() == now + VANILLA_REST, "a parent rests until " + traits.cooldownUntil() + ", not " + (now + VANILLA_REST));
+        int rest = traits.sex() == Sex.MALE ? 0 : VANILLA_REST;
+        helper.assertTrue(parent.getAge() == rest, "a parent's age is " + parent.getAge() + ", not " + rest);
+        helper.assertTrue(!parent.isInLove(), "a parent is still in love");
+        helper.assertTrue(traits(helper, parent).loveUntil() < 0L, "a parent still shows love");
+        helper.assertTrue(traits(helper, parent).cooldownUntil() == now + rest,
+                "a parent rests until " + traits(helper, parent).cooldownUntil() + ", not " + (now + rest));
     }
 }

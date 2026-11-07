@@ -10,6 +10,10 @@ public enum InspectorRow {
     WEIGHT,
     HEALTH,
     FERTILITY,
+    // A grown male's Vigour; females and the young have none to show.
+    VIGOUR,
+    // Under the Vigour bar: a hungry male pays for mating with health.
+    VIGOUR_HUNGRY,
     MILK,
     EGGS,
     BREEDING,

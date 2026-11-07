@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
+import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
@@ -120,19 +121,21 @@ public final class ProductGameTests {
         tag.remove("origin");
         tag.remove("milkRefusedDay");
         tag.remove("shearRefusedDay");
+        tag.remove("vigour");
 
         AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
         helper.assertTrue(loaded.origin() == Origin.UNKNOWN, "old traits loaded as " + loaded.origin());
         helper.assertTrue(loaded.refusals().equals(Refusals.NONE), "old traits loaded with " + loaded.refusals());
+        helper.assertTrue(loaded.vigour().equals(Vigour.NONE), "old traits loaded with " + loaded.vigour());
 
-        AnimalTraits wild = saved.withOrigin(Origin.WILD).withRefusals(new Refusals(12L, 13L));
+        AnimalTraits wild = saved.withOrigin(Origin.WILD).withRefusals(new Refusals(12L, 13L)).withVigour(new Vigour(0.4, 12L, 11L));
         CompoundTag wildTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, wild).getOrThrow();
         AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, wildTag).getOrThrow();
-        helper.assertTrue(reloaded.equals(wild), "came back as " + reloaded.origin() + " " + reloaded.refusals());
+        helper.assertTrue(reloaded.equals(wild), "came back as " + reloaded.origin() + " " + reloaded.refusals() + " " + reloaded.vigour());
         ByteBuf buffer = Unpooled.buffer();
         AnimalTraitCodecs.STREAM_CODEC.encode(buffer, wild);
         AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
-        helper.assertTrue(synced.equals(wild), "synced as " + synced.origin() + " " + synced.refusals());
+        helper.assertTrue(synced.equals(wild), "synced as " + synced.origin() + " " + synced.refusals() + " " + synced.vigour());
         helper.succeed();
     }
 

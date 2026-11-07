@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.config;
 
 import java.util.Map;
+import java.util.Set;
 
 // Built-in pregnancy and litter ranges for vanilla mammals and Naturalist's livestock. A user's species entry beats
 // these.
@@ -52,6 +53,15 @@ final class SpeciesPresets {
             case "naturalist:duck" -> EggSettings.CHICKEN.withPlainEgg("naturalist:duck_egg");
             default -> EggSettings.NONE;
         };
+    }
+
+    // Livestock males fight their rivals; pets, hunters and everything else are left out unless a species entry says.
+    private static final Set<String> FIGHTERS = Set.of(
+            "minecraft:cow", "minecraft:mooshroom", "minecraft:sheep", "minecraft:goat", "minecraft:pig", "minecraft:rabbit",
+            "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich");
+
+    static boolean fights(String speciesId) {
+        return FIGHTERS.contains(speciesId);
     }
 
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {

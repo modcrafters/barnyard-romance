@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
 import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
@@ -17,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -82,8 +84,11 @@ public final class FamiliarityActions {
             return null;
         }
         if (eaten.superfood()) {
-            return eaten.effects().startsMilk()
-                    ? MilkActions.startMilk(animal, player, hand, eaten)
+            if (eaten.effects().startsMilk()) {
+                return MilkActions.startMilk(animal, player, hand, eaten);
+            }
+            return eaten.effects().vigour() > 0.0
+                    ? VigourActions.feedMash(animal, player, stack, eaten)
                     : PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.
@@ -240,6 +245,10 @@ public final class FamiliarityActions {
         }
         // Egg layers never breed by love: hens lay, and a rooster nearby makes the eggs fertile.
         if (EggLaying.laysEggs(animal)) {
+            return false;
+        }
+        // Only females fall in love; Courtship chooses the male (see Courtship).
+        if (traits.get().sex() == Sex.MALE) {
             return false;
         }
         return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent())

@@ -23,6 +23,7 @@ import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxMenu;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
+import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -131,7 +132,12 @@ public final class EggGameTests {
             new BreedingGameTests.Case("box_egg_is_fertilized_with_a_fed_rooster", 400, EggGameTests::boxEggIsFertilizedWithAFedRooster),
             new BreedingGameTests.Case("heavy_hen_egg_hatches_sooner", 20, EggGameTests::heavyHenEggHatchesSooner),
             new BreedingGameTests.Case("closest_rooster_is_the_father", 20, EggGameTests::closestRoosterIsTheFather),
-            new BreedingGameTests.Case("hungry_rooster_fertilizes_nothing", 20, EggGameTests::hungryRoosterFertilizesNothing),
+            new BreedingGameTests.Case("each_fertilized_egg_costs_the_rooster_15", 400, EggGameTests::eachFertilizedEggCostsTheRooster15),
+            new BreedingGameTests.Case("a_spent_rooster_lays_plain", 40, EggGameTests::aSpentRoosterLaysPlain),
+            new BreedingGameTests.Case("a_rooster_runs_out_mid_sitting", 400, EggGameTests::aRoosterRunsOutMidSitting),
+            new BreedingGameTests.Case("a_rooster_in_another_pen_does_not_fertilize", 100, EggGameTests::aRoosterInAnotherPenDoesNotFertilize),
+            new BreedingGameTests.Case("ground_eggs_cost_the_rooster_nothing", 40, EggGameTests::groundEggsCostTheRoosterNothing),
+            new BreedingGameTests.Case("a_hungry_rooster_pays_health_per_egg", 400, EggGameTests::aHungryRoosterPaysHealthPerEgg),
             new BreedingGameTests.Case("ground_eggs_are_plain_with_a_rooster", 20, EggGameTests::groundEggsArePlainWithARooster),
             new BreedingGameTests.Case("far_box_is_ignored", 20, EggGameTests::farBoxIsIgnored),
             new BreedingGameTests.Case("second_hen_does_not_share_a_box", 40, EggGameTests::secondHenDoesNotShareABox),
@@ -762,25 +768,101 @@ public final class EggGameTests {
         helper.succeed();
     }
 
-    public static void hungryRoosterFertilizesNothing(GameTestHelper helper) {
+    public static void eachFertilizedEggCostsTheRooster15(GameTestHelper helper) {
         Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
-        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 4);
-        long today = 10L;
-        Services.DATA.set(rooster, traits(helper, rooster).withHunger(new Hunger(today, -1L, today - 1L)));
+        Animal rooster = rooster(helper, 1.0, 5);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
 
-        Optional<ItemStack>[] egg = new Optional[1];
-        long before = helper.getLevel().getOverworldClockTime();
-        try {
-            GameTestCompat.setOverworldClock(helper, afterMidnight(today) + 1_000L);
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel(), 2));
+            CourtshipGameTests.assertVigour(helper, rooster, 0.7);
+        });
+
+        once(helper, () -> placed[0] != null && placed[0].occupied(), () -> {
+            placed[0].finishSitting();
+            helper.assertTrue(boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) == 2, "the box holds " + boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) + " fertilized eggs");
+            helper.succeed();
+        });
+    }
+
+    public static void aSpentRoosterLaysPlain(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        rooster(helper, 0.1, 5);
+
+        helper.runAfterDelay(LANDED, () -> {
+            Optional<ItemStack>[] egg = new Optional[1];
             inPen(() -> egg[0] = EggLaying.fertilizedEgg(hen, helper.getLevel()));
-        } finally {
-            GameTestCompat.setOverworldClock(helper, before);
-        }
+            helper.assertTrue(egg[0].isEmpty(), "a rooster with 10% Vigour fertilized an egg");
+            helper.succeed();
+        });
+    }
 
-        helper.assertTrue(egg[0].isEmpty(), "a rooster that went hungry yesterday fertilized an egg: father "
-                + egg[0].flatMap(FertilizedEggItem::data).map(EggData::father).orElse(null) + ", the rooster " + rooster.getUUID()
-                + ", hunger " + traits(helper, rooster).hunger() + ", today " + today);
-        helper.succeed();
+    public static void aRoosterRunsOutMidSitting(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = rooster(helper, 0.15, 5);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel(), 2));
+            CourtshipGameTests.assertVigour(helper, rooster, 0.0);
+        });
+
+        once(helper, () -> placed[0] != null && placed[0].occupied(), () -> {
+            placed[0].finishSitting();
+            helper.assertTrue(boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) == 1 && boxEggs(placed[0], Items.EGG) == 1,
+                    "the box holds " + boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) + " fertilized and " + boxEggs(placed[0], Items.EGG) + " plain eggs");
+            helper.succeed();
+        });
+    }
+
+    // Checked once both birds have landed: a rooster in the air has no path, and that alone doesn't rule him out.
+    public static void aRoosterInAnotherPenDoesNotFertilize(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = rooster(helper, 1.0, 5);
+        boolean[] fenced = {false};
+
+        once(helper, rooster::onGround, () -> {
+            CourtshipGameTests.fenceAround(helper, rooster);
+            fenced[0] = true;
+        });
+        once(helper, () -> fenced[0] && hen.onGround() && rooster.onGround(), () -> {
+            Optional<ItemStack>[] egg = new Optional[1];
+            inPen(() -> egg[0] = EggLaying.fertilizedEgg(hen, helper.getLevel()));
+            helper.assertTrue(egg[0].isEmpty(), "a rooster behind a fence fertilized an egg: the rooster at "
+                    + helper.relativePos(rooster.blockPosition()) + ", the hen at " + helper.relativePos(hen.blockPosition()));
+            helper.succeed();
+        });
+    }
+
+    public static void groundEggsCostTheRoosterNothing(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = rooster(helper, 1.0, 3);
+
+        helper.runAfterDelay(LANDED, () -> {
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel(), 1));
+            helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "no plain egg on the ground");
+            CourtshipGameTests.assertVigour(helper, rooster, 1.0);
+            helper.succeed();
+        });
+    }
+
+    // Never fed, so each egg also costs him half a heart.
+    public static void aHungryRoosterPaysHealthPerEgg(GameTestHelper helper) {
+        Animal hen = chicken(helper, Sex.FEMALE, MEDIUM_HEN, 0.5, 2);
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, 5);
+        rooster.setHealth(4.0F);
+        NestingBoxBlockEntity[] placed = new NestingBoxBlockEntity[1];
+
+        helper.runAfterDelay(LANDED, () -> {
+            placed[0] = boxBeside(helper, hen, 5);
+            inPen(() -> EggLaying.layDue(hen, helper.getLevel(), 2));
+            helper.assertTrue(Math.abs(rooster.getHealth() - 2.0F) < 1.0e-4F, "the rooster's health is " + rooster.getHealth());
+            CourtshipGameTests.assertVigour(helper, rooster, 0.7);
+        });
+
+        once(helper, () -> placed[0] != null && placed[0].occupied(), helper::succeed);
     }
 
     public static void groundEggsArePlainWithARooster(GameTestHelper helper) {
@@ -1161,6 +1243,24 @@ public final class EggGameTests {
         });
         return entries[0].stream().filter(entry -> entry.id().equals(animal.getUUID())).findFirst()
                 .orElseThrow(() -> GameTestCompat.failure(helper, "the animal isn't in the book"));
+    }
+
+    // A grown rooster fed today and yesterday (so not hungry), with the given Vigour today.
+    static Animal rooster(GameTestHelper helper, double vigour, int x) {
+        Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, x);
+        long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+        Services.DATA.set(rooster, traits(helper, rooster).withHunger(new Hunger(today, today, -1L)).withVigour(new Vigour(vigour, today, -1L)));
+        return rooster;
+    }
+
+    static int boxEggs(NestingBoxBlockEntity box, Item egg) {
+        int count = 0;
+        for (int slot = 0; slot < box.getContainerSize(); slot++) {
+            if (box.getItem(slot).is(egg)) {
+                count += box.getItem(slot).getCount();
+            }
+        }
+        return count;
     }
 
     static EggData fertile(GameTestHelper helper, Animal hen) {

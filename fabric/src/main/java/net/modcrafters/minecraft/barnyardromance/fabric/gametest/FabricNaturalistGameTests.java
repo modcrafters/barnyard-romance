@@ -27,6 +27,11 @@ public class FabricNaturalistGameTests {
         NaturalistGameTests.ostrichesNeedAMaleAndAFemale(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void ostrichesBreedByCourtship(GameTestHelper helper) {
+        NaturalistGameTests.ostrichesBreedByCourtship(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 20)
     public void foodDoesNotBreedDucksOrTurkeys(GameTestHelper helper) {
         NaturalistGameTests.foodDoesNotBreedDucksOrTurkeys(helper);

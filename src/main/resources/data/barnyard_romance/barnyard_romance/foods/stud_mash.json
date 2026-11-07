@@ -1,0 +1,15 @@
+{
+  "diets": [
+    "barnyard_romance:grazer",
+    "barnyard_romance:herbivore",
+    "barnyard_romance:omnivore"
+  ],
+  "species": [
+    "minecraft:chicken"
+  ],
+  "items": "barnyard_romance:stud_mash",
+  "superfood": true,
+  "effects": {
+    "vigour": 0.5
+  }
+}

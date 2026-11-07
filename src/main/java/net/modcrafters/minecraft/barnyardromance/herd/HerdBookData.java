@@ -35,6 +35,14 @@ public final class HerdBookData extends SavedData {
     private record Entry(HerdLedger.Node node, HerdRecord record) {
     }
 
+    // A cause saved by a later version, or mistyped, reads as none.
+    private static final Codec<DeathCause> DEATH_CAUSE_CODEC = Codec.STRING.xmap(name -> {
+        try {
+            return DeathCause.valueOf(name);
+        } catch (IllegalArgumentException exception) {
+            return DeathCause.NONE;
+        }
+    }, DeathCause::name);
     private static final Codec<HerdRecord> RECORD_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.fieldOf("species").forGetter(HerdRecord::species),
             Codec.STRING.optionalFieldOf("name", "").forGetter(HerdRecord::name),
@@ -48,9 +56,10 @@ public final class HerdBookData extends SavedData {
             Codec.LONG.optionalFieldOf("diedAt", -1L).forGetter(HerdRecord::diedAt),
             Codec.LONG.optionalFieldOf("diedClock", -1L).forGetter(HerdRecord::diedClock),
             Codec.BOOL.optionalFieldOf("tamed", false).forGetter(HerdRecord::tamed),
-            NestCheck.CODEC.optionalFieldOf("nest", NestCheck.NONE).forGetter(HerdRecord::nest)
-    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest) ->
-            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest)));
+            NestCheck.CODEC.optionalFieldOf("nest", NestCheck.NONE).forGetter(HerdRecord::nest),
+            DEATH_CAUSE_CODEC.optionalFieldOf("cause", DeathCause.NONE).forGetter(HerdRecord::cause)
+    ).apply(instance, (species, name, traits, pregnancy, baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, cause) ->
+            new HerdRecord(species, name, traits, pregnancy.orElse(null), baby, milkable, shearable, woolly, refreshedAt, diedAt, diedClock, tamed, nest, cause)));
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(entry -> entry.node().id()),
             UUIDUtil.CODEC.optionalFieldOf("motherId").forGetter(entry -> Optional.ofNullable(entry.node().mother())),

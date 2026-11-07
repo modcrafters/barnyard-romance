@@ -342,6 +342,18 @@ public final class BarnyardConfig {
         });
     }
 
+    // Whether males of this species fight their rivals: the species entry's "fights", else the built-in livestock list.
+    public boolean fightsFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return false;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings != null && settings.fights() != null) {
+            return settings.fights();
+        }
+        return SpeciesPresets.fights(speciesId);
+    }
+
     public SizeSettings sizeFor(String speciesId) {
         SpeciesSettings settings = species.get(speciesId);
         if (settings == null) {
@@ -476,7 +488,8 @@ public final class BarnyardConfig {
             String diet,
             Double bellyMaxWiden,
             Double bellyStart,
-            JsonObject eggs
+            JsonObject eggs,
+            Boolean fights
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -500,7 +513,8 @@ public final class BarnyardConfig {
                     optionalString(object, "diet"),
                     optionalDouble(object, "bellyMaxWiden"),
                     optionalDouble(object, "bellyStart"),
-                    object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null
+                    object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null,
+                    object.has("fights") ? bool(object, "fights", false) : null
             );
         }
 
@@ -550,6 +564,9 @@ public final class BarnyardConfig {
             }
             if (eggs != null) {
                 object.add("eggs", eggs);
+            }
+            if (fights != null) {
+                object.addProperty("fights", fights);
             }
             return object;
         }
