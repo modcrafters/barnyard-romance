@@ -66,7 +66,7 @@ public final class LiveFacts {
         boolean hungryMale = traits.sex() == Sex.MALE && VigourRules.hungry(traits.hunger().lastAteDay(), GameDay.of(clock));
         return Optional.of(AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(species)).name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, now - traits.bornTick()))
-                .fedToday(Familiarity.fedToday(traits.lastFedTick(), clock))
+                .fedToday(fedToday(traits, clock))
                 .fedBy(StatText.feeder(traits.upkeep(), GameDay.of(clock)))
                 .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
                 .pregnant(pregnancy.isPresent())
@@ -93,6 +93,11 @@ public final class LiveFacts {
                         current.fatherSpecies())).orElse(Text.EMPTY))
                 .lastBirth(StatText.lastBirth(offspring(traits), traits.lastBirthTick(), now))
                 .build());
+    }
+
+    // The FED row's "fed today": by hand, or by a feeding block, which never writes lastFedTick.
+    public static boolean fedToday(AnimalTraits traits, long clock) {
+        return traits.upkeep().fedByFeederOn(GameDay.of(clock)) || Familiarity.fedToday(traits.lastFedTick(), clock);
     }
 
     // These only breed when tamed; ocelots trust instead, which never blocks breeding.

@@ -37,13 +37,21 @@ class StatSheetTest {
         return StatSheet.lines(facts.build()).stream().map(line -> English.of(line.text())).toList();
     }
 
+    private static StatLine line(AnimalFacts.Builder facts, StatKind kind) {
+        return StatSheet.lines(facts.build()).stream().filter(line -> line.kind() == kind).findFirst().orElseThrow();
+    }
+
+    private static String english(StatLine line) {
+        return English.of(line.text());
+    }
+
     private static List<StatKind> kinds(AnimalFacts.Builder facts) {
         return StatSheet.lines(facts.build()).stream().map(StatLine::kind).toList();
     }
 
     @Test
     void aFeederMealNamesTheBlock() {
-        assertEquals("Fed today (Manger)", english(cow().fedBy(Text.of("block.barnyard_romance.manger"))).get(2));
+        assertEquals("Fed today (Manger)", english(line(cow().fedBy(Text.of("block.barnyard_romance.manger")), FED)));
     }
 
     @Test

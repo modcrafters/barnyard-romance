@@ -11,12 +11,21 @@ import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederHerd;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederMenu;
 import net.modcrafters.minecraft.barnyardromance.feed.MorningFeeding;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
+import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.Container;
@@ -96,7 +105,8 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("food_added_at_noon_feeds_the_hungry", 400, FeederGameTests::foodAddedAtNoonFeedsTheHungry),
             new BreedingGameTests.Case("a_sitting_wolf_is_not_moved", 300, FeederGameTests::aSittingWolfIsNotMoved),
             new BreedingGameTests.Case("a_catch_up_meal_heals", 100, FeederGameTests::aCatchUpMealHeals),
-            new BreedingGameTests.Case("a_cow_in_a_corner_walks_out_to_eat", 400, FeederGameTests::aCowInACornerWalksOutToEat)
+            new BreedingGameTests.Case("a_cow_in_a_corner_walks_out_to_eat", 400, FeederGameTests::aCowInACornerWalksOutToEat),
+            new BreedingGameTests.Case("a_manger_meal_shows_on_the_fed_row", 400, FeederGameTests::aMangerMealShowsOnTheFedRow)
     );
 
     private FeederGameTests() {
@@ -709,6 +719,36 @@ public final class FeederGameTests {
                         helper.assertTrue(m.feeder.food() == 0, "the Manger holds " + contents(m.feeder));
                         helper.succeed();
                     }
+                });
+    }
+
+    // Fed at the Manger and not by hand, she is fed today on her stat sheet and her herd book page, which name the
+    // Manger. The book's contents icon is for hand-feeding, so it stays off.
+    public static void aMangerMealShowsOnTheFedRow(GameTestHelper helper) {
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
+                m -> {
+                    Animal cow = m.animals.getFirst();
+                    if (!ateOn(helper, cow, DAY)) {
+                        return;
+                    }
+                    long now = helper.getLevel().getGameTime();
+                    String live = StatSheet.lines(LiveFacts.of(cow, now, m.clock).orElseThrow()).stream()
+                            .filter(line -> line.kind() == StatKind.FED).findFirst()
+                            .map(line -> TextComponents.of(line.text()).getString()).orElse("missing");
+                    helper.assertTrue(live.equals("Fed today (Manger)"), "her fed row reads " + live);
+                    HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+                    HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
+                    HerdRecord record = data.record(cow.getUUID());
+                    for (boolean loaded : new boolean[]{true, false}) {
+                        HerdEntry entry = HerdStatus.entry(record, data.ledger().node(cow.getUUID()), now, m.clock, loaded);
+                        String page = entry.lines().stream().filter(line -> line.kind() == StatKind.FED).findFirst()
+                                .map(line -> line.text().getString()).orElse("missing");
+                        String how = loaded ? "" : " while unloaded";
+                        helper.assertTrue(page.equals("Fed today (Manger)"), "her page's fed row reads " + page + how);
+                        helper.assertTrue(!entry.fedToday(), "the contents page shows her hand-fed today" + how);
+                    }
+                    helper.succeed();
                 });
     }
 

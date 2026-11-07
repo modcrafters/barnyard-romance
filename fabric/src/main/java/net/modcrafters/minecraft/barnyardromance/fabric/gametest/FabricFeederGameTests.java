@@ -153,4 +153,9 @@ public class FabricFeederGameTests {
     public void aCowInACornerWalksOutToEat(GameTestHelper helper) {
         FeederGameTests.aCowInACornerWalksOutToEat(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aMangerMealShowsOnTheFedRow(GameTestHelper helper) {
+        FeederGameTests.aMangerMealShowsOnTheFedRow(helper);
+    }
 }

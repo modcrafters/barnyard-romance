@@ -89,6 +89,7 @@ public final class HerdStatus {
         Familiar familiar = Familiarity.ready(traits.familiarity())
                 ? Familiar.FAMILIAR
                 : node.everFamiliar() ? Familiar.NO_LONGER : Familiar.NOT_YET;
+        // The contents page's icon is for hand-feeding only; the page's FED row counts a feeding block too.
         boolean fedToday = Familiarity.fedToday(traits.lastFedTick(), clock);
         Pregnancy pregnancy = record.alive() ? record.pregnancy() : null;
         double progress = pregnancy == null ? 0.0 : PregnancyClock.progress(now, pregnancy);
@@ -116,7 +117,7 @@ public final class HerdStatus {
         );
         AnimalFacts facts = AnimalFacts.builder(size.name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
-                .fedToday(fedToday)
+                .fedToday(LiveFacts.fedToday(traits, clock))
                 .fedBy(StatText.feeder(traits.upkeep(), today))
                 .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
                 .pregnant(pregnancy != null)
