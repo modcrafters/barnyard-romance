@@ -83,6 +83,7 @@ public class HerdBookScreen extends Screen {
     private static final Identifier MILK_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk");
     private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier PREGNANT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant");
+    private static final Identifier PREGNANT_BASE = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant_base");
     private static final Identifier MILK_EMPTY = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk_empty");
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
     private static final Identifier SHEARS_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/shears");
@@ -786,9 +787,9 @@ public class HerdBookScreen extends Screen {
         }
     }
 
-    // An empty heart that fills with color from the bottom as the pregnancy goes on.
+    // A muted pink heart that brightens from the bottom as pregnancy progresses.
     private static void pregnancyHeart(GuiGraphicsExtractor graphics, int percent, int x, int y) {
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, y, ICON, ICON);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_BASE, x, y, ICON, ICON);
         int filled = HerdBookLayout.filledRows(percent, ICON);
         if (filled > 0) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_ICON, ICON, ICON, 0, ICON - filled, x, y + ICON - filled, ICON, filled);

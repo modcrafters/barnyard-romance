@@ -8,6 +8,9 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- The Nesting Box has a new, more detailed model: a framed wooden crate with straw inside, metal fittings and a hen painted on its sides.
+- New icons in the herd book and on the stat card. Growth, weight, health and Vigour are redrawn, fertility is a shaded flower, and breeding has its own pair of hearts. Pregnancy shows a pink heart from the start that brightens as the pregnancy goes on.
+
 - Animal pages in the herd book are shorter. The notes that explain a row now show when you hover over that row: why an animal isn't familiar, a hungry male's health cost, a hen's reasons for tomorrow's eggs and her count for today, the father of a pregnancy, and the last birth.
 
 - Animals work out much faster whether they want the food in your hand, so big farms with several players lag less.
