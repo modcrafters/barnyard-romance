@@ -6,10 +6,12 @@ import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 // The diets and food files from the loaded datapacks. Server side only; reloads replace them.
@@ -22,7 +24,8 @@ public final class FoodData {
     }
 
     public static void replaceDiets(Map<String, Diet> loaded) {
-        diets = Map.copyOf(loaded);
+        // Sorted by id once here, the order FoodRules.dietFor reads them in.
+        diets = Collections.unmodifiableSortedMap(new TreeMap<>(loaded));
         WARNED.clear();
     }
 
