@@ -26,6 +26,7 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricCourtshipGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricVigourGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricUpkeepGameTests",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricFeederGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricStatGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricEggGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricNaturalistGameTests"
@@ -34,7 +35,8 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.BarnyardClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.LooksClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.HerdBookClientGameTest",
-            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.NestingBoxClientGameTest"
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.NestingBoxClientGameTest",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FeederClientGameTest"
         ],
         "jade": [
             "net.modcrafters.minecraft.barnyardromance.compat.jade.BarnyardJadePlugin"

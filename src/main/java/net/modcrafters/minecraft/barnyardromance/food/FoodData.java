@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.food;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederFoods;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
@@ -36,16 +37,19 @@ public final class FoodData {
         diets = Collections.unmodifiableSortedMap(new TreeMap<>(loaded));
         WARNED.clear();
         FEEDS.clear();
+        FeederFoods.clear();
     }
 
     public static void replaceFoods(List<FoodFile> loaded) {
         foods = List.copyOf(loaded);
         FEEDS.clear();
+        FeederFoods.clear();
     }
 
     // Tags were loaded or reloaded, which changes which items match a diet or a food file.
     public static void tagsReloaded() {
         FEEDS.clear();
+        FeederFoods.clear();
     }
 
     public static List<FoodFile> foods() {

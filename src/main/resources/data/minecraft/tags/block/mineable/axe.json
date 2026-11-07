@@ -1,6 +1,11 @@
 {
   "replace": false,
   "values": [
-    "barnyard_romance:nesting_box"
+    "barnyard_romance:nesting_box",
+    "barnyard_romance:bird_feeder",
+    "barnyard_romance:trough",
+    "barnyard_romance:feeder",
+    "barnyard_romance:manger",
+    "barnyard_romance:pet_bowl"
   ]
 }

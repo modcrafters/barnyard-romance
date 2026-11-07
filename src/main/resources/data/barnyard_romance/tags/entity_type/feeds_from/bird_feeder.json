@@ -1,0 +1,14 @@
+{
+  "values": [
+    "minecraft:chicken",
+    "minecraft:parrot",
+    {
+      "id": "naturalist:duck",
+      "required": false
+    },
+    {
+      "id": "naturalist:turkey",
+      "required": false
+    }
+  ]
+}

@@ -34,8 +34,8 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block block) {
-        return new BlockEntityType<>(factory::create, Set.of(block));
+    public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
+        return new BlockEntityType<>(factory::create, Set.of(blocks));
     }
 
     @Override

@@ -52,11 +52,11 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block block) {
+    public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
         //? if >=1.21.2 {
-        return new BlockEntityType<>(factory::create, block);
+        return new BlockEntityType<>(factory::create, blocks);
         //?} else
-        //return BlockEntityType.Builder.of(factory::create, block).build(null);
+        //return BlockEntityType.Builder.of(factory::create, blocks).build(null);
     }
 
     @Override
