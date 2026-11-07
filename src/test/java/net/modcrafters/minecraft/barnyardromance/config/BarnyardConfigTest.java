@@ -30,6 +30,19 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void catchUpIgnoresCase() {
+        assertEquals(HungerSettings.CatchUp.NONE, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "none" } }
+                """).hunger().catchUp());
+        assertEquals(HungerSettings.CatchUp.ONE_DAY, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "one_day" } }
+                """).hunger().catchUp());
+        assertEquals(HungerSettings.CatchUp.EVERY_DAY, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "Every_Day" } }
+                """).hunger().catchUp());
+    }
+
+    @Test
     void unknownCatchUpFallsBackToEveryDay() {
         assertEquals(HungerSettings.CatchUp.EVERY_DAY, BarnyardConfig.parse("""
                 { "hunger": { "catchUp": "SOMETIMES" } }

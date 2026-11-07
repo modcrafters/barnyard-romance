@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import net.modcrafters.minecraft.barnyardromance.Constants;
 
 // Whether a hungry pet takes damage, how low it can be starved, how much it loses a day, and how many missed days it
 // pays for when the world wakes up after time has passed.
@@ -30,14 +31,19 @@ public record HungerSettings(boolean hurts, double minHealth, double dailyDamage
         return object;
     }
 
+    // Hand-written config says "one_day" as readily as "ONE_DAY"; anything else is warned about, not silently dropped.
     private static CatchUp catchUp(JsonElement element) {
-        if (element != null && element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
+        if (element == null) {
+            return DEFAULTS.catchUp;
+        }
+        if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isString()) {
             for (CatchUp value : CatchUp.values()) {
-                if (value.name().equals(element.getAsString())) {
+                if (value.name().equalsIgnoreCase(element.getAsString().trim())) {
                     return value;
                 }
             }
         }
+        Constants.LOG.warn("Unknown hunger catchUp {}, using {}: it must be EVERY_DAY, ONE_DAY or NONE", element, DEFAULTS.catchUp);
         return DEFAULTS.catchUp;
     }
 
