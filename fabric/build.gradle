@@ -80,6 +80,18 @@ naturalistInRun('clientNaturalist', 'runs/naturalist-client')
 naturalistInRun('gametestNaturalist', 'runs/naturalist-gametest')
 jadeInRun('clientJade', 'runs/jade-client')
 
+// Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
+// midnight partway through and hunger or Vigour refills would hit unrelated tests.
+['gametest': 'runs/gametest', 'gametestNaturalist': 'runs/naturalist-gametest'].each { runName, runDir ->
+    def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
+        description = "Deletes the ${runDir} world so the run starts fresh."
+        delete file("${runDir}/world")
+    }
+    tasks.matching { it.name == "run${runName.capitalize()}" }.configureEach {
+        dependsOn clean
+    }
+}
+
 // Implement mcgradleconventions loader attribute
 def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
 ['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
