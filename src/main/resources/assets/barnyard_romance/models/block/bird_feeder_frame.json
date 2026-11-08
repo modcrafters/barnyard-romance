@@ -1,0 +1,3705 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "barnyard_romance:block/manger_front",
+    "front": "barnyard_romance:block/manger_front",
+    "frame": "barnyard_romance:block/manger_frame",
+    "inside": "barnyard_romance:block/manger_inside",
+    "metal": "barnyard_romance:block/manger_metal",
+    "side": "barnyard_romance:block/bird_feeder_side",
+    "seeds": "barnyard_romance:block/bird_feeder_seeds"
+  },
+  "elements": [
+    {
+      "name": "Chestnut corner leg quarter 0",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        2.25,
+        7.5,
+        2.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.75,
+            2.25,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.25,
+            2.25
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Square post cap quarter 0",
+      "from": [
+        0,
+        7.5,
+        0
+      ],
+      "to": [
+        2.5,
+        8,
+        2.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.5,
+            2.5,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2.5
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Post cap nail quarter 0",
+      "from": [
+        0.8,
+        8,
+        0.8
+      ],
+      "to": [
+        1.6,
+        8.125,
+        1.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Chicken panel quarter 0",
+      "from": [
+        2.25,
+        1.25,
+        0.75
+      ],
+      "to": [
+        13.75,
+        6.75,
+        1.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            14.25,
+            13.75,
+            15.25
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.75,
+            13.75,
+            1.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            0,
+            4.75,
+            16,
+            12
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            0.75,
+            9.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            14.25,
+            9.25,
+            15.25,
+            14.75
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Golden top rim quarter 0",
+      "from": [
+        2.5,
+        6.75,
+        0.25
+      ],
+      "to": [
+        13.5,
+        7.5,
+        1.875
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            14.125,
+            13.5,
+            15.75
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            2.125
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            8.5,
+            13.5,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            0.25,
+            8.5,
+            1.875,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            14.125,
+            8.5,
+            15.75,
+            9.25
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden lower border quarter 0",
+      "from": [
+        2.25,
+        1.25,
+        0.375
+      ],
+      "to": [
+        13.75,
+        2,
+        0.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            13.75,
+            15.625
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.375,
+            13.75,
+            0.75
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            12.5,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            2.25,
+            14,
+            13.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            0.375,
+            14,
+            0.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            15.25,
+            14,
+            15.625,
+            14.75
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 2.25 quarter 0",
+      "from": [
+        2.25,
+        2,
+        0.5
+      ],
+      "to": [
+        3.25,
+        6.75,
+        0.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            3.25,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.5,
+            3.25,
+            0.75
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            2.25,
+            9.25,
+            3.25,
+            14
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,2.375 quarter 0",
+      "from": [
+        2.45,
+        2.375,
+        0.375
+      ],
+      "to": [
+        3.05,
+        2.975,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,5.75 quarter 0",
+      "from": [
+        2.45,
+        5.75,
+        0.375
+      ],
+      "to": [
+        3.05,
+        6.35,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 12.75 quarter 0",
+      "from": [
+        12.75,
+        2,
+        0.5
+      ],
+      "to": [
+        13.75,
+        6.75,
+        0.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            12.75,
+            15.25,
+            13.75,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            12.75,
+            0.5,
+            13.75,
+            0.75
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            12.75,
+            9.25,
+            13.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,2.375 quarter 0",
+      "from": [
+        12.95,
+        2.375,
+        0.375
+      ],
+      "to": [
+        13.55,
+        2.975,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,5.75 quarter 0",
+      "from": [
+        12.95,
+        5.75,
+        0.375
+      ],
+      "to": [
+        13.55,
+        6.35,
+        0.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Quarter tray floor quarter 0",
+      "from": [
+        1.75,
+        1,
+        1.75
+      ],
+      "to": [
+        8,
+        1.5,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Chestnut corner leg quarter 1",
+      "from": [
+        13.75,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        7.5,
+        2.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.75,
+            2.25,
+            16
+          ],
+          "texture": "#frame",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.25,
+            2.25
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Square post cap quarter 1",
+      "from": [
+        13.5,
+        7.5,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        2.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.5,
+            2.5,
+            16
+          ],
+          "texture": "#frame",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Post cap nail quarter 1",
+      "from": [
+        14.4,
+        8,
+        0.8
+      ],
+      "to": [
+        15.2,
+        8.125,
+        1.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Chicken panel quarter 1",
+      "from": [
+        14.25,
+        1.25,
+        2.25
+      ],
+      "to": [
+        15.25,
+        6.75,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            14.25,
+            13.75,
+            15.25
+          ],
+          "texture": "#frame",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.75,
+            13.75,
+            1.75
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            4.75,
+            16,
+            12
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            0.75,
+            9.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            14.25,
+            9.25,
+            15.25,
+            14.75
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Golden top rim quarter 1",
+      "from": [
+        14.125,
+        6.75,
+        2.5
+      ],
+      "to": [
+        15.75,
+        7.5,
+        13.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            14.125,
+            13.5,
+            15.75
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            2.125
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            8.5,
+            13.5,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            0.25,
+            8.5,
+            1.875,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            14.125,
+            8.5,
+            15.75,
+            9.25
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden lower border quarter 1",
+      "from": [
+        15.25,
+        1.25,
+        2.25
+      ],
+      "to": [
+        15.625,
+        2,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            13.75,
+            15.625
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.375,
+            13.75,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            12.5,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            2.25,
+            14,
+            13.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            0.375,
+            14,
+            0.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            15.25,
+            14,
+            15.625,
+            14.75
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 2.25 quarter 1",
+      "from": [
+        15.25,
+        2,
+        2.25
+      ],
+      "to": [
+        15.5,
+        6.75,
+        3.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            3.25,
+            15.5
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.5,
+            3.25,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            2.25,
+            9.25,
+            3.25,
+            14
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,2.375 quarter 1",
+      "from": [
+        15.5,
+        2.375,
+        2.45
+      ],
+      "to": [
+        15.625,
+        2.975,
+        3.05
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,5.75 quarter 1",
+      "from": [
+        15.5,
+        5.75,
+        2.45
+      ],
+      "to": [
+        15.625,
+        6.35,
+        3.05
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 12.75 quarter 1",
+      "from": [
+        15.25,
+        2,
+        12.75
+      ],
+      "to": [
+        15.5,
+        6.75,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            12.75,
+            15.25,
+            13.75,
+            15.5
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            12.75,
+            0.5,
+            13.75,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            12.75,
+            9.25,
+            13.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,2.375 quarter 1",
+      "from": [
+        15.5,
+        2.375,
+        12.95
+      ],
+      "to": [
+        15.625,
+        2.975,
+        13.55
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,5.75 quarter 1",
+      "from": [
+        15.5,
+        5.75,
+        12.95
+      ],
+      "to": [
+        15.625,
+        6.35,
+        13.55
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Quarter tray floor quarter 1",
+      "from": [
+        8,
+        1,
+        1.75
+      ],
+      "to": [
+        14.25,
+        1.5,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Chestnut corner leg quarter 2",
+      "from": [
+        13.75,
+        0,
+        13.75
+      ],
+      "to": [
+        16,
+        7.5,
+        16
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.75,
+            2.25,
+            16
+          ],
+          "texture": "#frame",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.25,
+            2.25
+          ],
+          "texture": "#frame",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Square post cap quarter 2",
+      "from": [
+        13.5,
+        7.5,
+        13.5
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.5,
+            2.5,
+            16
+          ],
+          "texture": "#frame",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Post cap nail quarter 2",
+      "from": [
+        14.4,
+        8,
+        14.4
+      ],
+      "to": [
+        15.2,
+        8.125,
+        15.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Chicken panel quarter 2",
+      "from": [
+        2.25,
+        1.25,
+        14.25
+      ],
+      "to": [
+        13.75,
+        6.75,
+        15.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            14.25,
+            13.75,
+            15.25
+          ],
+          "texture": "#frame",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.75,
+            13.75,
+            1.75
+          ],
+          "texture": "#frame",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            4.75,
+            16,
+            12
+          ],
+          "texture": "#side"
+        },
+        "north": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            0.75,
+            9.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            14.25,
+            9.25,
+            15.25,
+            14.75
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Golden top rim quarter 2",
+      "from": [
+        2.5,
+        6.75,
+        14.125
+      ],
+      "to": [
+        13.5,
+        7.5,
+        15.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            14.125,
+            13.5,
+            15.75
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            2.125
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            8.5,
+            13.5,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            0.25,
+            8.5,
+            1.875,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            14.125,
+            8.5,
+            15.75,
+            9.25
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden lower border quarter 2",
+      "from": [
+        2.25,
+        1.25,
+        15.25
+      ],
+      "to": [
+        13.75,
+        2,
+        15.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            13.75,
+            15.625
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.375,
+            13.75,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            12.5,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            2.25,
+            14,
+            13.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            0.375,
+            14,
+            0.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            15.25,
+            14,
+            15.625,
+            14.75
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 2.25 quarter 2",
+      "from": [
+        12.75,
+        2,
+        15.25
+      ],
+      "to": [
+        13.75,
+        6.75,
+        15.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            3.25,
+            15.5
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.5,
+            3.25,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            2.25,
+            9.25,
+            3.25,
+            14
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,2.375 quarter 2",
+      "from": [
+        12.95,
+        2.375,
+        15.5
+      ],
+      "to": [
+        13.55,
+        2.975,
+        15.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,5.75 quarter 2",
+      "from": [
+        12.95,
+        5.75,
+        15.5
+      ],
+      "to": [
+        13.55,
+        6.35,
+        15.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 12.75 quarter 2",
+      "from": [
+        2.25,
+        2,
+        15.25
+      ],
+      "to": [
+        3.25,
+        6.75,
+        15.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            12.75,
+            15.25,
+            13.75,
+            15.5
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            12.75,
+            0.5,
+            13.75,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            12.75,
+            9.25,
+            13.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,2.375 quarter 2",
+      "from": [
+        2.45,
+        2.375,
+        15.5
+      ],
+      "to": [
+        3.05,
+        2.975,
+        15.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,5.75 quarter 2",
+      "from": [
+        2.45,
+        5.75,
+        15.5
+      ],
+      "to": [
+        3.05,
+        6.35,
+        15.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Quarter tray floor quarter 2",
+      "from": [
+        8,
+        1,
+        8
+      ],
+      "to": [
+        14.25,
+        1.5,
+        14.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Chestnut corner leg quarter 3",
+      "from": [
+        0,
+        0,
+        13.75
+      ],
+      "to": [
+        2.25,
+        7.5,
+        16
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.75,
+            2.25,
+            16
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.25,
+            2.25
+          ],
+          "texture": "#frame",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            8.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Square post cap quarter 3",
+      "from": [
+        0,
+        7.5,
+        13.5
+      ],
+      "to": [
+        2.5,
+        8,
+        16
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            13.5,
+            2.5,
+            16
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            2.5,
+            8.5
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            13.5,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Post cap nail quarter 3",
+      "from": [
+        0.8,
+        8,
+        14.4
+      ],
+      "to": [
+        1.6,
+        8.125,
+        15.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Chicken panel quarter 3",
+      "from": [
+        0.75,
+        1.25,
+        2.25
+      ],
+      "to": [
+        1.75,
+        6.75,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            14.25,
+            13.75,
+            15.25
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.75,
+            13.75,
+            1.75
+          ],
+          "texture": "#frame",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            4.75,
+            16,
+            12
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            0.75,
+            9.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            14.25,
+            9.25,
+            15.25,
+            14.75
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Golden top rim quarter 3",
+      "from": [
+        0.25,
+        6.75,
+        2.5
+      ],
+      "to": [
+        1.875,
+        7.5,
+        13.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            14.125,
+            13.5,
+            15.75
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            2.125
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            12,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            8.5,
+            13.5,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            0.25,
+            8.5,
+            1.875,
+            9.25
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            14.125,
+            8.5,
+            15.75,
+            9.25
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden lower border quarter 3",
+      "from": [
+        0.375,
+        1.25,
+        2.25
+      ],
+      "to": [
+        0.75,
+        2,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            13.75,
+            15.625
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.375,
+            13.75,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            12.5,
+            1.25
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            2.25,
+            14,
+            13.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            0.375,
+            14,
+            0.75,
+            14.75
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            15.25,
+            14,
+            15.625,
+            14.75
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 2.25 quarter 3",
+      "from": [
+        0.5,
+        2,
+        12.75
+      ],
+      "to": [
+        0.75,
+        6.75,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            15.25,
+            3.25,
+            15.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            2.25,
+            0.5,
+            3.25,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            2.25,
+            9.25,
+            3.25,
+            14
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,2.375 quarter 3",
+      "from": [
+        0.375,
+        2.375,
+        12.95
+      ],
+      "to": [
+        0.5,
+        2.975,
+        13.55
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 2.25,5.75 quarter 3",
+      "from": [
+        0.375,
+        5.75,
+        12.95
+      ],
+      "to": [
+        0.5,
+        6.35,
+        13.55
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel strap 12.75 quarter 3",
+      "from": [
+        0.5,
+        2,
+        2.25
+      ],
+      "to": [
+        0.75,
+        6.75,
+        3.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            12.75,
+            15.25,
+            13.75,
+            15.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            12.75,
+            0.5,
+            13.75,
+            0.75
+          ],
+          "texture": "#front",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            5.75,
+            1.5
+          ],
+          "texture": "#front",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12.75,
+            9.25,
+            13.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            9.25,
+            0.75,
+            14
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            15.25,
+            9.25,
+            15.5,
+            14
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,2.375 quarter 3",
+      "from": [
+        0.375,
+        2.375,
+        2.45
+      ],
+      "to": [
+        0.5,
+        2.975,
+        3.05
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Panel rivet 12.75,5.75 quarter 3",
+      "from": [
+        0.375,
+        5.75,
+        2.45
+      ],
+      "to": [
+        0.5,
+        6.35,
+        3.05
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Quarter tray floor quarter 3",
+      "from": [
+        1.75,
+        1,
+        8
+      ],
+      "to": [
+        8,
+        1.5,
+        14.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            14.5,
+            8,
+            15
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            8,
+            14.5,
+            14.25,
+            15
+          ],
+          "texture": "#front"
+        }
+      }
+    }
+  ]
+}

@@ -48,6 +48,11 @@ public record Tuning(
         int fightStopRange,
         int fightTruceTicks,
         int feederRange,
+        int mangerFullDays,
+        int feederFullDays,
+        int troughFullDays,
+        int birdFeederFullDays,
+        int petBowlFullDays,
         double escapeBelow,
         double escapeChance
 ) {
@@ -60,7 +65,7 @@ public record Tuning(
 
     public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
             72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
-            0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 0.10, 0.10);
+            0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -115,6 +120,11 @@ public record Tuning(
                 range(object, "fightStopRange", DEFAULTS.fightStopRange),
                 (int) Math.clamp(Math.round(number(object, "fightTruceTicks", DEFAULTS.fightTruceTicks)), 0L, Integer.MAX_VALUE),
                 range(object, "feederRange", DEFAULTS.feederRange),
+                (int) Math.clamp(Math.round(number(object, "mangerFullDays", DEFAULTS.mangerFullDays)), 1L, 365L),
+                (int) Math.clamp(Math.round(number(object, "feederFullDays", DEFAULTS.feederFullDays)), 1L, 365L),
+                (int) Math.clamp(Math.round(number(object, "troughFullDays", DEFAULTS.troughFullDays)), 1L, 365L),
+                (int) Math.clamp(Math.round(number(object, "birdFeederFullDays", DEFAULTS.birdFeederFullDays)), 1L, 365L),
+                (int) Math.clamp(Math.round(number(object, "petBowlFullDays", DEFAULTS.petBowlFullDays)), 1L, 365L),
                 unit(object, "escapeBelow", DEFAULTS.escapeBelow),
                 unit(object, "escapeChance", DEFAULTS.escapeChance)
         );
@@ -164,6 +174,11 @@ public record Tuning(
         object.addProperty("fightStopRange", fightStopRange);
         object.addProperty("fightTruceTicks", fightTruceTicks);
         object.addProperty("feederRange", feederRange);
+        object.addProperty("mangerFullDays", mangerFullDays);
+        object.addProperty("feederFullDays", feederFullDays);
+        object.addProperty("troughFullDays", troughFullDays);
+        object.addProperty("birdFeederFullDays", birdFeederFullDays);
+        object.addProperty("petBowlFullDays", petBowlFullDays);
         object.addProperty("escapeBelow", escapeBelow);
         object.addProperty("escapeChance", escapeChance);
         return object;

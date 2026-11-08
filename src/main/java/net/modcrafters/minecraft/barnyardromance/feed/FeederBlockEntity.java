@@ -19,8 +19,10 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.jspecify.annotations.Nullable;
 //? if >=1.21.6 {
 import net.minecraft.world.level.storage.ValueInput;
@@ -101,6 +103,10 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     // of the minute, the herd's missed days are settled once a day has turned, and from sunrise the herd walks over to
     // eat (MorningFeeding) on the block's own tick of each second.
     public void tick(ServerLevel level, long clock) {
+        // Inventory edits update immediately; this also picks up config reloads and direct stack edits.
+        if (placed || Math.floorMod(level.getGameTime() - refreshSlot(), 20L) == 0L) {
+            updateFoodLevel();
+        }
         long today = GameDay.of(clock);
         gap.tick(level.getGameTime());
         boolean refresh = placed || FeederHerd.due(level.getGameTime(), refreshSlot());
@@ -194,6 +200,39 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
             food += stack.getCount();
         }
         return food;
+    }
+
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        updateFoodLevel();
+    }
+
+    private void updateFoodLevel() {
+        if (!(level instanceof ServerLevel server)) {
+            return;
+        }
+        BlockState state = server.getBlockState(worldPosition);
+        IntegerProperty property;
+        int fullDays;
+        if (state.hasProperty(MangerBlock.HAY_LEVEL)) {
+            property = MangerBlock.HAY_LEVEL;
+            fullDays = BarnyardConfig.current().tuning().mangerFullDays();
+        } else if (state.hasProperty(GrainFeederBlock.FOOD_LEVEL)) {
+            property = GrainFeederBlock.FOOD_LEVEL;
+            fullDays = switch (kind()) {
+                case BIRD_FEEDER -> BarnyardConfig.current().tuning().birdFeederFullDays();
+                case PET_BOWL -> BarnyardConfig.current().tuning().petBowlFullDays();
+                case TROUGH -> BarnyardConfig.current().tuning().troughFullDays();
+                default -> BarnyardConfig.current().tuning().feederFullDays();
+            };
+        } else {
+            return;
+        }
+        int fill = FeederFill.level(food(), herd.size(), fullDays);
+        if (state.getValue(property) != fill) {
+            server.setBlock(worldPosition, state.setValue(property, fill), Block.UPDATE_CLIENTS);
+        }
     }
 
     // The server decides; the client's copy takes anything and is corrected by it.

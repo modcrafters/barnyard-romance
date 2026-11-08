@@ -6,11 +6,71 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TuningTest {
     @Test
+    void petBowlFullDaysDefaultsClampsAndRoundTrips() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().petBowlFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":4}}");
+        assertEquals(4, config.tuning().petBowlFullDays());
+        assertEquals(2, config.tuning().birdFeederFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().petBowlFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":0}}").tuning().petBowlFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":9999}}").tuning().petBowlFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":\"bad\"}}").tuning().petBowlFullDays());
+    }
+
+    @Test
+    void birdFeederFullDaysDefaultsClampsAndRoundTrips() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().birdFeederFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":4}}");
+        assertEquals(4, config.tuning().birdFeederFullDays());
+        assertEquals(2, config.tuning().troughFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().birdFeederFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":0}}").tuning().birdFeederFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":9999}}").tuning().birdFeederFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":\"bad\"}}").tuning().birdFeederFullDays());
+    }
+
+    @Test
+    void troughFullDaysDefaultsClampsAndRoundTripsIndependently() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().troughFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":5,\"feederFullDays\":4,\"mangerFullDays\":3}}");
+        assertEquals(5, config.tuning().troughFullDays());
+        assertEquals(4, config.tuning().feederFullDays());
+        assertEquals(3, config.tuning().mangerFullDays());
+        assertEquals(5, BarnyardConfig.parse(config.toJson()).tuning().troughFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":0}}").tuning().troughFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":9999}}").tuning().troughFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":\"bad\"}}").tuning().troughFullDays());
+    }
+
+    @Test
+    void feederFullDaysDefaultsClampsAndRoundTripsIndependently() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().feederFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":4,\"mangerFullDays\":3}}");
+        assertEquals(4, config.tuning().feederFullDays());
+        assertEquals(3, config.tuning().mangerFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().feederFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":0}}").tuning().feederFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":9999}}").tuning().feederFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":\"bad\"}}").tuning().feederFullDays());
+    }
+
+    @Test
+    void mangerFullDaysDefaultsClampsAndRoundTrips() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().mangerFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":4}}");
+        assertEquals(4, config.tuning().mangerFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().mangerFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":0}}").tuning().mangerFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":9999}}").tuning().mangerFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":\"bad\"}}").tuning().mangerFullDays());
+    }
+
+    @Test
     void defaultsMatchTodaysBehaviour() {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
         assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
                 72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
-                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 0.10, 0.10), Tuning.DEFAULTS);
+                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10), Tuning.DEFAULTS);
     }
 
     @Test

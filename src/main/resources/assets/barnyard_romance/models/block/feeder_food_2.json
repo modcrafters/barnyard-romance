@@ -1,0 +1,1602 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "barnyard_romance:block/manger_front",
+    "front": "barnyard_romance:block/manger_front",
+    "frame": "barnyard_romance:block/manger_frame",
+    "inside": "barnyard_romance:block/manger_inside",
+    "metal": "barnyard_romance:block/manger_metal",
+    "side": "barnyard_romance:block/feeder_side",
+    "food": "barnyard_romance:block/feeder_food"
+  },
+  "elements": [
+    {
+      "name": "Mixed feed bed",
+      "from": [
+        1.875,
+        2.5,
+        2.125
+      ],
+      "to": [
+        14.125,
+        5.25,
+        13.875
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.875,
+            2.125,
+            14.125,
+            13.875
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.875,
+            10.75,
+            14.125,
+            13.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.875,
+            10.75,
+            14.125,
+            13.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.125,
+            10.75,
+            13.875,
+            13.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.125,
+            10.75,
+            13.875,
+            13.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Gentle feed mound",
+      "from": [
+        3,
+        5.25,
+        3
+      ],
+      "to": [
+        13,
+        5.5,
+        13
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            3,
+            10.5,
+            13,
+            10.75
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            3,
+            10.5,
+            13,
+            10.75
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            3,
+            10.5,
+            13,
+            10.75
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            3,
+            10.5,
+            13,
+            10.75
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 0",
+      "from": [
+        3,
+        5.45,
+        3
+      ],
+      "to": [
+        3.75,
+        5.95,
+        3.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 1",
+      "from": [
+        5.25,
+        5.45,
+        3.5
+      ],
+      "to": [
+        5.9,
+        6.1000000000000005,
+        4.15
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 2",
+      "from": [
+        7.75,
+        5.45,
+        3
+      ],
+      "to": [
+        8.5,
+        5.8500000000000005,
+        3.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 3",
+      "from": [
+        10.25,
+        5.45,
+        3.5
+      ],
+      "to": [
+        11,
+        6,
+        4.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 4",
+      "from": [
+        12,
+        5.45,
+        3.25
+      ],
+      "to": [
+        12.5,
+        5.95,
+        3.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 5",
+      "from": [
+        3.5,
+        5.45,
+        5.5
+      ],
+      "to": [
+        4.1,
+        6.15,
+        6.1
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 6",
+      "from": [
+        6,
+        5.45,
+        5.25
+      ],
+      "to": [
+        6.8,
+        6,
+        6.05
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 7",
+      "from": [
+        8.25,
+        5.45,
+        5.5
+      ],
+      "to": [
+        8.85,
+        6.15,
+        6.1
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 8",
+      "from": [
+        10.5,
+        5.45,
+        5.25
+      ],
+      "to": [
+        11.3,
+        5.9,
+        6.05
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 9",
+      "from": [
+        4.5,
+        5.45,
+        7.5
+      ],
+      "to": [
+        5.3,
+        5.95,
+        8.3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 10",
+      "from": [
+        6.75,
+        5.45,
+        7
+      ],
+      "to": [
+        7.4,
+        5.95,
+        7.65
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 11",
+      "from": [
+        9,
+        5.45,
+        7.5
+      ],
+      "to": [
+        9.7,
+        6,
+        8.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 12",
+      "from": [
+        11.75,
+        5.45,
+        7.5
+      ],
+      "to": [
+        12.35,
+        6.1000000000000005,
+        8.1
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 13",
+      "from": [
+        3.5,
+        5.45,
+        10
+      ],
+      "to": [
+        4.3,
+        6.1000000000000005,
+        10.8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 14",
+      "from": [
+        5.75,
+        5.45,
+        9.75
+      ],
+      "to": [
+        6.45,
+        5.95,
+        10.45
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 15",
+      "from": [
+        8,
+        5.45,
+        10
+      ],
+      "to": [
+        8.7,
+        6.05,
+        10.7
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 16",
+      "from": [
+        10.5,
+        5.45,
+        10
+      ],
+      "to": [
+        11.3,
+        5.95,
+        10.8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 17",
+      "from": [
+        4.25,
+        5.45,
+        12
+      ],
+      "to": [
+        4.95,
+        5.95,
+        12.7
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            2.5,
+            2,
+            3
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 18",
+      "from": [
+        7,
+        5.45,
+        12
+      ],
+      "to": [
+        7.8,
+        5.9,
+        12.8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.5,
+            2.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 19",
+      "from": [
+        9.5,
+        5.45,
+        12
+      ],
+      "to": [
+        10.15,
+        5.95,
+        12.65
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            10.5,
+            8.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Grain and vegetable piece 20",
+      "from": [
+        12,
+        5.45,
+        12
+      ],
+      "to": [
+        12.6,
+        5.95,
+        12.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            0.5,
+            2,
+            1
+          ],
+          "texture": "#food"
+        }
+      }
+    }
+  ]
+}

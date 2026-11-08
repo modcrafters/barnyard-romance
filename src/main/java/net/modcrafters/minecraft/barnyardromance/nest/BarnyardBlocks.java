@@ -5,6 +5,10 @@ import net.modcrafters.minecraft.barnyardromance.feed.FeederBlock;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederMenu;
+import net.modcrafters.minecraft.barnyardromance.feed.MangerBlock;
+import net.modcrafters.minecraft.barnyardromance.feed.GrainFeederBlock;
+import net.modcrafters.minecraft.barnyardromance.feed.BirdFeederBlock;
+import net.modcrafters.minecraft.barnyardromance.feed.PetBowlBlock;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -76,11 +80,26 @@ public final class BarnyardBlocks {
     }
 
     private static Block feeder(FeederKind kind) {
-        return new FeederBlock(kind, blockProperties(id(kind))
+        if (kind == FeederKind.PET_BOWL) {
+            return new PetBowlBlock(blockProperties(id(kind)).mapColor(MapColor.COLOR_RED)
+                    .strength(2.0F).sound(SoundType.STONE).noOcclusion());
+        }
+        BlockBehaviour.Properties properties = blockProperties(id(kind))
                 .mapColor(MapColor.WOOD)
                 .strength(2.0F)
                 .sound(SoundType.WOOD)
-                .ignitedByLava());
+                .ignitedByLava();
+        // The open rack and raised floor must not hide neighboring block faces.
+        if (kind == FeederKind.MANGER) {
+            return new MangerBlock(properties.noOcclusion());
+        }
+        if (kind == FeederKind.BIRD_FEEDER) {
+            return new BirdFeederBlock(properties.noOcclusion());
+        }
+        if (kind == FeederKind.FEEDER || kind == FeederKind.TROUGH) {
+            return new GrainFeederBlock(kind, properties.noOcclusion());
+        }
+        return new FeederBlock(kind, properties);
     }
 
     // Blocks and items know their id from their properties since 1.21.2; before that the registry names them.

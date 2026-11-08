@@ -1,7 +1,41 @@
 {
-  "variants": {
-    "": {
-      "model": "barnyard_romance:block/bird_feeder"
+  "multipart": [
+    {
+      "apply": {
+        "model": "barnyard_romance:block/bird_feeder_frame"
+      }
+    },
+    {
+      "when": {
+        "food_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/bird_feeder_seeds_1"
+      }
+    },
+    {
+      "when": {
+        "food_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/bird_feeder_seeds_2"
+      }
+    },
+    {
+      "when": {
+        "food_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/bird_feeder_seeds_3"
+      }
+    },
+    {
+      "when": {
+        "food_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/bird_feeder_seeds_4"
+      }
     }
-  }
+  ]
 }

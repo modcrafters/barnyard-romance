@@ -1,6 +1,3207 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
   "textures": {
-    "all": "minecraft:block/oak_planks"
-  }
+    "particle": "barnyard_romance:block/manger_front",
+    "front": "barnyard_romance:block/manger_front",
+    "frame": "barnyard_romance:block/manger_frame",
+    "inside": "barnyard_romance:block/manger_inside",
+    "metal": "barnyard_romance:block/manger_metal",
+    "side": "barnyard_romance:block/trough_side",
+    "food": "barnyard_romance:block/trough_food"
+  },
+  "elements": [
+    {
+      "name": "Dark end-panel upright 0.25,2.25",
+      "from": [
+        0.25,
+        0,
+        2.25
+      ],
+      "to": [
+        2.25,
+        10.25,
+        4.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.25,
+            11.75,
+            2.25,
+            13.75
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0.25,
+            2.25,
+            2.25,
+            4.25
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Dark end-panel upright 0.25,11.75",
+      "from": [
+        0.25,
+        0,
+        11.75
+      ],
+      "to": [
+        2.25,
+        10.25,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.25,
+            2.25,
+            2.25,
+            4.25
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0.25,
+            11.75,
+            2.25,
+            13.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Dark end-panel upright 13.75,2.25",
+      "from": [
+        13.75,
+        0,
+        2.25
+      ],
+      "to": [
+        15.75,
+        10.25,
+        4.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            13.75,
+            11.75,
+            15.75,
+            13.75
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            13.75,
+            2.25,
+            15.75,
+            4.25
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Dark end-panel upright 13.75,11.75",
+      "from": [
+        13.75,
+        0,
+        11.75
+      ],
+      "to": [
+        15.75,
+        10.25,
+        13.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            13.75,
+            2.25,
+            15.75,
+            4.25
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            13.75,
+            11.75,
+            15.75,
+            13.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            11.25,
+            2.5
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        }
+      }
+    },
+    {
+      "name": "Left rabbit end panel",
+      "from": [
+        0.75,
+        0.5,
+        4.25
+      ],
+      "to": [
+        1.75,
+        10.25,
+        11.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.75,
+            4.25,
+            1.75,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0.75,
+            4.25,
+            1.75,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            14.25,
+            5.75,
+            15.25,
+            15.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            0.75,
+            5.75,
+            1.75,
+            15.5
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Right rabbit end panel",
+      "from": [
+        14.25,
+        0.5,
+        4.25
+      ],
+      "to": [
+        15.25,
+        10.25,
+        11.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            14.25,
+            4.25,
+            15.25,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            14.25,
+            4.25,
+            15.25,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            0.75,
+            5.75,
+            1.75,
+            15.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            14.25,
+            5.75,
+            15.25,
+            15.5
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side"
+        }
+      }
+    },
+    {
+      "name": "Broad chestnut end cap 0",
+      "from": [
+        0,
+        10.25,
+        2
+      ],
+      "to": [
+        2.5,
+        11.25,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            2,
+            2.5,
+            14
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            3
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            13.5,
+            4.75,
+            16,
+            5.75
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            0,
+            4.75,
+            2.5,
+            5.75
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.5
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.5
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "End cap iron nail 0",
+      "from": [
+        0.8,
+        11.25,
+        7.5
+      ],
+      "to": [
+        1.7,
+        11.375,
+        8.4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "End-panel bottom rail 0",
+      "from": [
+        0,
+        0,
+        4.25
+      ],
+      "to": [
+        2.5,
+        0.75,
+        11.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            4.25,
+            2.5,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            0,
+            4.25,
+            2.5,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            13.5,
+            15.25,
+            16,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            0,
+            15.25,
+            2.5,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            4.25,
+            15.25,
+            11.75,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            4.25,
+            15.25,
+            11.75,
+            16
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Broad chestnut end cap 13.5",
+      "from": [
+        13.5,
+        10.25,
+        2
+      ],
+      "to": [
+        16,
+        11.25,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            13.5,
+            2,
+            16,
+            14
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            3
+          ],
+          "texture": "#frame",
+          "rotation": 90
+        },
+        "north": {
+          "uv": [
+            0,
+            4.75,
+            2.5,
+            5.75
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            13.5,
+            4.75,
+            16,
+            5.75
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.5
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.5
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "End cap iron nail 13.5",
+      "from": [
+        14.3,
+        11.25,
+        7.5
+      ],
+      "to": [
+        15.2,
+        11.375,
+        8.4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "End-panel bottom rail 13.5",
+      "from": [
+        13.5,
+        0,
+        4.25
+      ],
+      "to": [
+        16,
+        0.75,
+        11.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            13.5,
+            4.25,
+            16,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            13.5,
+            4.25,
+            16,
+            11.75
+          ],
+          "texture": "#frame"
+        },
+        "north": {
+          "uv": [
+            0,
+            15.25,
+            2.5,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            13.5,
+            15.25,
+            16,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            4.25,
+            15.25,
+            11.75,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            4.25,
+            15.25,
+            11.75,
+            16
+          ],
+          "texture": "#frame"
+        }
+      }
+    },
+    {
+      "name": "Trough floor",
+      "from": [
+        1.75,
+        0.5,
+        3.5
+      ],
+      "to": [
+        14.25,
+        1.25,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            1.75,
+            14.75,
+            14.25,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            14.75,
+            14.25,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            3.5,
+            14.75,
+            12.5,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            3.5,
+            14.75,
+            12.5,
+            15.5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Low retaining wall (north)",
+      "from": [
+        2.25,
+        0.5,
+        2.75
+      ],
+      "to": [
+        13.75,
+        5.75,
+        3.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            12.5,
+            13.75,
+            13.25
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            2.25,
+            2.75,
+            13.75,
+            3.5
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            2.75,
+            10.25,
+            3.5,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            10.25,
+            13.25,
+            15.5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Low retaining wall (south)",
+      "from": [
+        2.25,
+        0.5,
+        12.5
+      ],
+      "to": [
+        13.75,
+        5.75,
+        13.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.25,
+            2.75,
+            13.75,
+            3.5
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            2.25,
+            12.5,
+            13.75,
+            13.25
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            1,
+            4,
+            15,
+            11
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            10.25,
+            13.25,
+            15.5
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            2.75,
+            10.25,
+            3.5,
+            15.5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden lower rail (north)",
+      "from": [
+        2,
+        1,
+        2.125
+      ],
+      "to": [
+        14,
+        2.25,
+        2.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            13.25,
+            14,
+            13.875
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.125
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.75
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            2,
+            13.75,
+            14,
+            15
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            2.125,
+            13.75,
+            2.75,
+            15
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            13.25,
+            13.75,
+            13.875,
+            15
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden lower rail (south)",
+      "from": [
+        2,
+        1,
+        13.25
+      ],
+      "to": [
+        14,
+        2.25,
+        13.875
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2.125,
+            14,
+            2.75
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.125
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            2,
+            13.75,
+            14,
+            15
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.75
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            13.25,
+            13.75,
+            13.875,
+            15
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            2.125,
+            13.75,
+            2.75,
+            15
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden feeding lip (north)",
+      "from": [
+        2,
+        5.5,
+        2.125
+      ],
+      "to": [
+        14,
+        6.75,
+        3.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            12.25,
+            14,
+            13.875
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            2.125
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.75
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            2,
+            9.25,
+            14,
+            10.5
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            2.125,
+            9.25,
+            3.75,
+            10.5
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            12.25,
+            9.25,
+            13.875,
+            10.5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Golden feeding lip (south)",
+      "from": [
+        2,
+        5.5,
+        12.25
+      ],
+      "to": [
+        14,
+        6.75,
+        13.875
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2.125,
+            14,
+            3.75
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            2.125
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            2,
+            9.25,
+            14,
+            10.5
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            0.5,
+            13,
+            1.75
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            12.25,
+            9.25,
+            13.875,
+            10.5
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            2.125,
+            9.25,
+            3.75,
+            10.5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 2.5,1.25 (north)",
+      "from": [
+        2.5,
+        1.25,
+        2
+      ],
+      "to": [
+        3.25,
+        2,
+        2.125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 2.5,1.25 (south)",
+      "from": [
+        2.5,
+        1.25,
+        13.875
+      ],
+      "to": [
+        3.25,
+        2,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 2.5,5.75 (north)",
+      "from": [
+        2.5,
+        5.75,
+        2
+      ],
+      "to": [
+        3.25,
+        6.5,
+        2.125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 2.5,5.75 (south)",
+      "from": [
+        2.5,
+        5.75,
+        13.875
+      ],
+      "to": [
+        3.25,
+        6.5,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 12.75,1.25 (north)",
+      "from": [
+        12.75,
+        1.25,
+        2
+      ],
+      "to": [
+        13.5,
+        2,
+        2.125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 12.75,1.25 (south)",
+      "from": [
+        12.75,
+        1.25,
+        13.875
+      ],
+      "to": [
+        13.5,
+        2,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 12.75,5.75 (north)",
+      "from": [
+        12.75,
+        5.75,
+        2
+      ],
+      "to": [
+        13.5,
+        6.5,
+        2.125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Iron rail bolt 12.75,5.75 (south)",
+      "from": [
+        12.75,
+        5.75,
+        13.875
+      ],
+      "to": [
+        13.5,
+        6.5,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "Rabbit feed bed",
+      "from": [
+        1.875,
+        1.25,
+        3.625
+      ],
+      "to": [
+        14.125,
+        5.75,
+        12.375
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.875,
+            3.625,
+            14.125,
+            12.375
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.875,
+            10.25,
+            14.125,
+            14.75
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.875,
+            10.25,
+            14.125,
+            14.75
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            3.625,
+            10.25,
+            12.375,
+            14.75
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            3.625,
+            10.25,
+            12.375,
+            14.75
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Small central mound",
+      "from": [
+        3,
+        5.75,
+        4
+      ],
+      "to": [
+        13,
+        5.9375,
+        12
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            4,
+            13,
+            12
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            3,
+            10.0625,
+            13,
+            10.25
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            3,
+            10.0625,
+            13,
+            10.25
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            4,
+            10.0625,
+            12,
+            10.25
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            4,
+            10.0625,
+            12,
+            10.25
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 0",
+      "from": [
+        3,
+        5.9,
+        4.25
+      ],
+      "to": [
+        3.91,
+        6.075,
+        4.9
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 1",
+      "from": [
+        5.5,
+        5.9,
+        4.5
+      ],
+      "to": [
+        6.4799999999999995,
+        6.0925,
+        5.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 2",
+      "from": [
+        8,
+        5.9,
+        4.125
+      ],
+      "to": [
+        8.65,
+        6.3500000000000005,
+        4.775
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 3",
+      "from": [
+        10.5,
+        5.9,
+        4.25
+      ],
+      "to": [
+        11.34,
+        6.1275,
+        4.85
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 4",
+      "from": [
+        12.5,
+        5.9,
+        4.5
+      ],
+      "to": [
+        13.2,
+        6.04,
+        5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 5",
+      "from": [
+        4,
+        5.9,
+        6.5
+      ],
+      "to": [
+        4.75,
+        6.3500000000000005,
+        7.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 6",
+      "from": [
+        6.75,
+        5.9,
+        6.25
+      ],
+      "to": [
+        7.66,
+        6.075,
+        6.9
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 7",
+      "from": [
+        9.5,
+        5.9,
+        6.5
+      ],
+      "to": [
+        10.48,
+        6.11,
+        7.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 8",
+      "from": [
+        12,
+        5.9,
+        6.75
+      ],
+      "to": [
+        12.55,
+        6.4,
+        7.3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 9",
+      "from": [
+        3,
+        5.9,
+        8.75
+      ],
+      "to": [
+        3.91,
+        6.0925,
+        9.4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 10",
+      "from": [
+        5.5,
+        5.9,
+        8.5
+      ],
+      "to": [
+        6.55,
+        6.0575,
+        9.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 11",
+      "from": [
+        8,
+        5.9,
+        8.75
+      ],
+      "to": [
+        8.55,
+        6.5,
+        9.3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 12",
+      "from": [
+        10.5,
+        5.9,
+        9
+      ],
+      "to": [
+        11.55,
+        6.0575,
+        9.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 13",
+      "from": [
+        4,
+        5.9,
+        11
+      ],
+      "to": [
+        4.84,
+        6.0575,
+        11.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 14",
+      "from": [
+        6.5,
+        5.9,
+        10.75
+      ],
+      "to": [
+        7.2,
+        6.45,
+        11.45
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 15",
+      "from": [
+        9,
+        5.9,
+        11
+      ],
+      "to": [
+        9.84,
+        6.075,
+        11.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 16",
+      "from": [
+        12,
+        5.9,
+        10.75
+      ],
+      "to": [
+        12.91,
+        6.0925,
+        11.4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    }
+  ]
 }

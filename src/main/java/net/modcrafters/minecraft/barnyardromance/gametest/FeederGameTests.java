@@ -1,5 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import com.mojang.serialization.JsonOps;
+import net.modcrafters.minecraft.barnyardromance.feed.MangerBlock;
+import net.modcrafters.minecraft.barnyardromance.feed.GrainFeederBlock;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.BlockHitResult;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
@@ -84,6 +94,14 @@ public final class FeederGameTests {
     private static final long SUNRISE = clock(DAY);
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
+            new BreedingGameTests.Case("pet_bowl_food_tracks_dogs", 100, FeederGameTests::petBowlFoodTracksDogs),
+            new BreedingGameTests.Case("pet_bowl_food_tracks_cats", 100, FeederGameTests::petBowlFoodTracksCats),
+            new BreedingGameTests.Case("bird_feeder_seeds_track_inventory_and_herd", 100, FeederGameTests::birdFeederSeedsTrackInventoryAndHerd),
+            new BreedingGameTests.Case("trough_food_tracks_inventory_and_herd", 100, FeederGameTests::troughFoodTracksInventoryAndHerd),
+            new BreedingGameTests.Case("feeder_food_tracks_inventory_and_herd", 100, FeederGameTests::feederFoodTracksInventoryAndHerd),
+            new BreedingGameTests.Case("manger_hay_tracks_inventory_and_herd", 100, FeederGameTests::mangerHayTracksInventoryAndHerd),
+            new BreedingGameTests.Case("feeding_blocks_remember_placement_facing", 20, FeederGameTests::feedingBlocksRememberPlacementFacing),
+            new BreedingGameTests.Case("feeding_block_shapes_follow_their_models", 20, FeederGameTests::feedingBlockShapesFollowTheirModels),
             new BreedingGameTests.Case("feeder_takes_wheat_but_not_beef", 20, FeederGameTests::feederTakesWheatButNotBeef),
             new BreedingGameTests.Case("feeder_refuses_superfoods", 20, FeederGameTests::feederRefusesSuperfoods),
             new BreedingGameTests.Case("bird_feeder_takes_seeds", 20, FeederGameTests::birdFeederTakesSeeds),
@@ -126,6 +144,139 @@ public final class FeederGameTests {
     );
 
     private FeederGameTests() {
+    }
+
+    public static void feedingBlocksRememberPlacementFacing(GameTestHelper helper) {
+        Player player = holding(helper, Items.WHEAT);
+        BlockPos pos = helper.absolutePos(FEEDER);
+        helper.setBlock(FEEDER, Blocks.AIR);
+        helper.setBlock(FEEDER.below(), Blocks.STONE);
+        for (Block block : List.of(BarnyardBlocks.BIRD_FEEDER, BarnyardBlocks.TROUGH, BarnyardBlocks.FEEDER,
+                BarnyardBlocks.MANGER, BarnyardBlocks.PET_BOWL, BarnyardBlocks.NESTING_BOX)) {
+            for (Direction look : Direction.Plane.HORIZONTAL) {
+                player.setYRot(look.toYRot());
+                BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
+                        new ItemStack(block.asItem()), new BlockHitResult(Vec3.atCenterOf(pos.below()), Direction.UP, pos.below(), false));
+                BlockState state = block.getStateForPlacement(context);
+                Direction facing = look.getOpposite();
+                helper.assertTrue(state != null, block + " has no placement state");
+                BlockState restored = BlockState.CODEC.parse(JsonOps.INSTANCE,
+                        BlockState.CODEC.encodeStart(JsonOps.INSTANCE, state).getOrThrow()).getOrThrow();
+                helper.assertTrue(restored == state, block + " loses its facing when saved");
+                if (block == BarnyardBlocks.BIRD_FEEDER) {
+                    helper.assertTrue(!state.hasProperty(BlockStateProperties.HORIZONTAL_FACING), "symmetric feeding block saves a facing");
+                    helper.assertTrue(state == block.defaultBlockState(), "symmetric placement depends on player direction");
+                    helper.assertTrue(state.rotate(Rotation.CLOCKWISE_90) == state && state.mirror(Mirror.LEFT_RIGHT) == state,
+                            "symmetric feeding block changes when rotated or mirrored");
+                    helper.assertTrue(block.getStateDefinition().getPossibleStates().size() == 5, "symmetric feeding block has states other than food levels");
+                    continue;
+                }
+                helper.assertTrue(state.getValue(BlockStateProperties.HORIZONTAL_FACING) == facing, block + " does not face its placing player");
+                helper.assertTrue(state.rotate(Rotation.CLOCKWISE_90).getValue(BlockStateProperties.HORIZONTAL_FACING) == facing.getClockWise(),
+                        block + " does not rotate");
+                helper.assertTrue(state.mirror(Mirror.LEFT_RIGHT).getValue(BlockStateProperties.HORIZONTAL_FACING) == Mirror.LEFT_RIGHT.mirror(facing),
+                        block + " does not mirror");
+            }
+        }
+        helper.succeed();
+    }
+
+    // The outline is the model's; only the Manger and Feeder keep a fence-high wall for livestock.
+    public static void feedingBlockShapesFollowTheirModels(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(FEEDER);
+        double[][] heights = {
+                // outline, collision
+                {8.125, 8.125}, {11.375, 11.375}, {14.875, 24.0}, {16.0, 24.0}, {5.625, 5.625}};
+        List<Block> blocks = List.of(BarnyardBlocks.BIRD_FEEDER, BarnyardBlocks.TROUGH, BarnyardBlocks.FEEDER,
+                BarnyardBlocks.MANGER, BarnyardBlocks.PET_BOWL);
+        for (int i = 0; i < blocks.size(); i++) {
+            BlockState state = blocks.get(i).defaultBlockState();
+            double outline = state.getShape(helper.getLevel(), pos).max(Direction.Axis.Y) * 16.0;
+            double collision = state.getCollisionShape(helper.getLevel(), pos).max(Direction.Axis.Y) * 16.0;
+            helper.assertTrue(Math.abs(outline - heights[i][0]) < 1.0E-6, blocks.get(i) + " outline is " + outline + " high");
+            helper.assertTrue(Math.abs(collision - heights[i][1]) < 1.0E-6, blocks.get(i) + " collision is " + collision + " high");
+        }
+        BlockState trough = BarnyardBlocks.TROUGH.defaultBlockState();
+        helper.assertTrue(trough.getShape(helper.getLevel(), pos).min(Direction.Axis.Z) > 0.0
+                        && trough.setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST).getShape(helper.getLevel(), pos).min(Direction.Axis.X) > 0.0,
+                "the trough's outline doesn't turn with it");
+        BlockState bowl = BarnyardBlocks.PET_BOWL.defaultBlockState();
+        helper.assertTrue(bowl.getShape(helper.getLevel(), pos).min(Direction.Axis.X) > 0.0, "the pet bowl's outline is a full block wide");
+        helper.succeed();
+    }
+
+    public static void mangerHayTracksInventoryAndHerd(GameTestHelper helper) {
+        foodTracksInventoryAndHerd(helper, EntityTypes.COW, BarnyardBlocks.MANGER, MangerBlock.HAY_LEVEL);
+    }
+
+    public static void feederFoodTracksInventoryAndHerd(GameTestHelper helper) {
+        foodTracksInventoryAndHerd(helper, EntityTypes.PIG, BarnyardBlocks.FEEDER, GrainFeederBlock.FOOD_LEVEL);
+    }
+
+    public static void troughFoodTracksInventoryAndHerd(GameTestHelper helper) {
+        foodTracksInventoryAndHerd(helper, EntityTypes.RABBIT, BarnyardBlocks.TROUGH, GrainFeederBlock.FOOD_LEVEL);
+    }
+
+    public static void birdFeederSeedsTrackInventoryAndHerd(GameTestHelper helper) {
+        foodTracksInventoryAndHerd(helper, EntityTypes.CHICKEN, BarnyardBlocks.BIRD_FEEDER, GrainFeederBlock.FOOD_LEVEL);
+    }
+
+    public static void petBowlFoodTracksDogs(GameTestHelper helper) {
+        foodTracksInventoryAndHerd(helper, EntityTypes.WOLF, BarnyardBlocks.PET_BOWL, GrainFeederBlock.FOOD_LEVEL);
+    }
+
+    public static void petBowlFoodTracksCats(GameTestHelper helper) {
+        foodTracksInventoryAndHerd(helper, EntityTypes.CAT, BarnyardBlocks.PET_BOWL, GrainFeederBlock.FOOD_LEVEL);
+    }
+
+    private static void foodTracksInventoryAndHerd(GameTestHelper helper, EntityType<? extends Animal> type, Block block, IntegerProperty property) {
+        onceLanded(helper, type, new int[][]{{2, 3}, {6, 3}, {2, 5}, {6, 5}}, cows -> {
+            cows.forEach(cow -> familiar(cow, 0.8));
+            if (block == BarnyardBlocks.PET_BOWL) {
+                Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+                cows.forEach(pet -> ((TamableAnimal) pet).tame(owner));
+            }
+            FeederBlockEntity manger = blockAt(helper, block, walkingLayer(helper, cows.getFirst(), 4, 4));
+            BlockPos pos = manger.getBlockPos();
+            if (manger.getBlockState().hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+                helper.getLevel().setBlock(pos, manger.getBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_CLIENTS);
+            }
+            manger.refreshHerd(helper.getLevel());
+            assertHerd(helper, manger, cows);
+            Item food = block == BarnyardBlocks.PET_BOWL ? (type == EntityTypes.CAT ? Items.COD : Items.BEEF)
+                    : block == BarnyardBlocks.BIRD_FEEDER ? Items.WHEAT_SEEDS : block == BarnyardBlocks.MANGER ? Items.WHEAT : Items.CARROT;
+            helper.assertTrue(manger.canPlaceItem(0, new ItemStack(food)), "fill test food is not accepted");
+            manger.setItem(0, new ItemStack(food, 8));
+            assertFoodLevel(helper, manger, property, 4);
+            manger.takeOne(helper.getLevel());
+            assertFoodLevel(helper, manger, property, 3);
+            helper.assertTrue(manger.food() == 7, "changing fill level lost food");
+            manger.removeItem(0, 7);
+            assertFoodLevel(helper, manger, property, 0);
+            manger.setItem(0, new ItemStack(food, 6));
+            assertFoodLevel(helper, manger, property, 3);
+            familiar(cows.get(2), 0.0);
+            familiar(cows.get(3), 0.0);
+            manger.refreshHerd(helper.getLevel());
+            assertHerd(helper, manger, cows.subList(0, 2));
+            assertFoodLevel(helper, manger, property, 4);
+            manger.clearContent();
+            helper.runAfterDelay(21, () -> {
+                assertFoodLevel(helper, manger, property, 0);
+                helper.succeed();
+            });
+        });
+    }
+
+    private static void assertFoodLevel(GameTestHelper helper, FeederBlockEntity manger, IntegerProperty property, int expected) {
+        BlockState state = helper.getLevel().getBlockState(manger.getBlockPos());
+        helper.assertTrue(state.getValue(property) == expected, "expected food level " + expected + ", got " + state);
+        if (state.is(BarnyardBlocks.BIRD_FEEDER)) {
+            helper.assertTrue(!state.hasProperty(BlockStateProperties.HORIZONTAL_FACING), "food update added a facing");
+        } else {
+            helper.assertTrue(state.getValue(BlockStateProperties.HORIZONTAL_FACING) == Direction.WEST, "food update changed facing");
+        }
+        helper.assertTrue(helper.getLevel().getBlockEntity(manger.getBlockPos()) == manger, "food update replaced the inventory");
     }
 
     // By hand too: the window's slots ask the block.

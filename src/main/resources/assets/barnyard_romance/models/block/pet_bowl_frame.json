@@ -1,0 +1,2270 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "barnyard_romance:block/pet_bowl_brick",
+    "brick": "barnyard_romance:block/pet_bowl_brick",
+    "paw": "barnyard_romance:block/pet_bowl_paw",
+    "cat": "barnyard_romance:block/pet_bowl_cat_paw",
+    "inside": "barnyard_romance:block/pet_bowl_inside",
+    "food": "barnyard_romance:block/pet_bowl_food"
+  },
+  "elements": [
+    {
+      "name": "Quarter clay foot quarter 0",
+      "from": [
+        2.5,
+        0,
+        2.5
+      ],
+      "to": [
+        8,
+        0.75,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            8,
+            8,
+            13.5
+          ],
+          "texture": "#inside"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Quarter bowl floor quarter 0",
+      "from": [
+        3,
+        0.75,
+        3
+      ],
+      "to": [
+        8,
+        1.5,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            8,
+            8,
+            13
+          ],
+          "texture": "#inside"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Brick bowl wall quarter 0",
+      "from": [
+        3.5,
+        0.75,
+        1.75
+      ],
+      "to": [
+        12.5,
+        5,
+        3.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.75,
+            12.5,
+            14.25
+          ],
+          "texture": "#brick"
+        },
+        "up": {
+          "uv": [
+            3.5,
+            1.75,
+            12.5,
+            3.25
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            11,
+            3.25,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            12.75,
+            11,
+            14.25,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Stepped corner quarter 0",
+      "from": [
+        2,
+        0.75,
+        2
+      ],
+      "to": [
+        3.5,
+        5,
+        3.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            12.5,
+            3.5,
+            14
+          ],
+          "texture": "#brick"
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            3.5,
+            3.5
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Inner corner shoulder quarter 0",
+      "from": [
+        3.25,
+        0.75,
+        3.25
+      ],
+      "to": [
+        4,
+        4.75,
+        4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.25,
+            12,
+            4,
+            12.75
+          ],
+          "texture": "#inside"
+        },
+        "up": {
+          "uv": [
+            3.25,
+            3.25,
+            4,
+            4
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Broad top lip quarter 0",
+      "from": [
+        3.5,
+        5,
+        1.5
+      ],
+      "to": [
+        12.5,
+        5.625,
+        3.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.5,
+            12.5,
+            14.5
+          ],
+          "texture": "#brick"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            13,
+            3
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1,
+            1,
+            13,
+            1.625
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            3.5,
+            10.375,
+            12.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            10.375,
+            14.5,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Corner top lip quarter 0",
+      "from": [
+        1.75,
+        5,
+        1.75
+      ],
+      "to": [
+        3.5,
+        5.625,
+        3.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.75,
+            12.5,
+            3.5,
+            14.25
+          ],
+          "texture": "#brick"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            2.75,
+            2.75
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Cream paw medallion quarter 0",
+      "from": [
+        6.25,
+        1.25,
+        1.6875
+      ],
+      "to": [
+        9.75,
+        4.75,
+        1.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6.25,
+            14.25,
+            9.75,
+            14.3125
+          ],
+          "texture": "#brick"
+        },
+        "up": {
+          "uv": [
+            6.25,
+            1.6875,
+            9.75,
+            1.75
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#paw"
+        },
+        "south": {
+          "uv": [
+            6.25,
+            11.25,
+            9.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            1.6875,
+            11.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            14.25,
+            11.25,
+            14.3125,
+            14.75
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Quarter clay foot quarter 1",
+      "from": [
+        8,
+        0,
+        2.5
+      ],
+      "to": [
+        13.5,
+        0.75,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            8,
+            8,
+            13.5
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Quarter bowl floor quarter 1",
+      "from": [
+        8,
+        0.75,
+        3
+      ],
+      "to": [
+        13,
+        1.5,
+        8
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            8,
+            8,
+            13
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Brick bowl wall quarter 1",
+      "from": [
+        12.75,
+        0.75,
+        3.5
+      ],
+      "to": [
+        14.25,
+        5,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.75,
+            12.5,
+            14.25
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            3.5,
+            1.75,
+            12.5,
+            3.25
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            1.75,
+            11,
+            3.25,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            12.75,
+            11,
+            14.25,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Stepped corner quarter 1",
+      "from": [
+        12.5,
+        0.75,
+        2
+      ],
+      "to": [
+        14,
+        5,
+        3.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            12.5,
+            3.5,
+            14
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            3.5,
+            3.5
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Inner corner shoulder quarter 1",
+      "from": [
+        12,
+        0.75,
+        3.25
+      ],
+      "to": [
+        12.75,
+        4.75,
+        4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.25,
+            12,
+            4,
+            12.75
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            3.25,
+            3.25,
+            4,
+            4
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Broad top lip quarter 1",
+      "from": [
+        12.5,
+        5,
+        3.5
+      ],
+      "to": [
+        14.5,
+        5.625,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.5,
+            12.5,
+            14.5
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            13,
+            3
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            1,
+            1,
+            13,
+            1.625
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            3.5,
+            10.375,
+            12.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1.5,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            12.5,
+            10.375,
+            14.5,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Corner top lip quarter 1",
+      "from": [
+        12.5,
+        5,
+        1.75
+      ],
+      "to": [
+        14.25,
+        5.625,
+        3.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.75,
+            12.5,
+            3.5,
+            14.25
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            2.75,
+            2.75
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Cream paw medallion quarter 1",
+      "from": [
+        14.25,
+        1.25,
+        6.25
+      ],
+      "to": [
+        14.3125,
+        4.75,
+        9.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6.25,
+            14.25,
+            9.75,
+            14.3125
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "up": {
+          "uv": [
+            6.25,
+            1.6875,
+            9.75,
+            1.75
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#cat"
+        },
+        "west": {
+          "uv": [
+            6.25,
+            11.25,
+            9.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1.6875,
+            11.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            14.25,
+            11.25,
+            14.3125,
+            14.75
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Quarter clay foot quarter 2",
+      "from": [
+        8,
+        0,
+        8
+      ],
+      "to": [
+        13.5,
+        0.75,
+        13.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            8,
+            8,
+            13.5
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Quarter bowl floor quarter 2",
+      "from": [
+        8,
+        0.75,
+        8
+      ],
+      "to": [
+        13,
+        1.5,
+        13
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            8,
+            8,
+            13
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Brick bowl wall quarter 2",
+      "from": [
+        3.5,
+        0.75,
+        12.75
+      ],
+      "to": [
+        12.5,
+        5,
+        14.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.75,
+            12.5,
+            14.25
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            3.5,
+            1.75,
+            12.5,
+            3.25
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            1.75,
+            11,
+            3.25,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            12.75,
+            11,
+            14.25,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Stepped corner quarter 2",
+      "from": [
+        12.5,
+        0.75,
+        12.5
+      ],
+      "to": [
+        14,
+        5,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            12.5,
+            3.5,
+            14
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            3.5,
+            3.5
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Inner corner shoulder quarter 2",
+      "from": [
+        12,
+        0.75,
+        12
+      ],
+      "to": [
+        12.75,
+        4.75,
+        12.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.25,
+            12,
+            4,
+            12.75
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            3.25,
+            3.25,
+            4,
+            4
+          ],
+          "texture": "#inside",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "west": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Broad top lip quarter 2",
+      "from": [
+        3.5,
+        5,
+        12.5
+      ],
+      "to": [
+        12.5,
+        5.625,
+        14.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.5,
+            12.5,
+            14.5
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            13,
+            3
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            13,
+            1.625
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            3.5,
+            10.375,
+            12.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            10.375,
+            14.5,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Corner top lip quarter 2",
+      "from": [
+        12.5,
+        5,
+        12.5
+      ],
+      "to": [
+        14.25,
+        5.625,
+        14.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.75,
+            12.5,
+            3.5,
+            14.25
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            2.75,
+            2.75
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Cream paw medallion quarter 2",
+      "from": [
+        6.25,
+        1.25,
+        14.25
+      ],
+      "to": [
+        9.75,
+        4.75,
+        14.3125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6.25,
+            14.25,
+            9.75,
+            14.3125
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            6.25,
+            1.6875,
+            9.75,
+            1.75
+          ],
+          "texture": "#brick",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#paw"
+        },
+        "north": {
+          "uv": [
+            6.25,
+            11.25,
+            9.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            1.6875,
+            11.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "west": {
+          "uv": [
+            14.25,
+            11.25,
+            14.3125,
+            14.75
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Quarter clay foot quarter 3",
+      "from": [
+        2.5,
+        0,
+        8
+      ],
+      "to": [
+        8,
+        0.75,
+        13.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            8,
+            8,
+            13.5
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            15.25,
+            8,
+            16
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            8,
+            15.25,
+            13.5,
+            16
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Quarter bowl floor quarter 3",
+      "from": [
+        3,
+        0.75,
+        8
+      ],
+      "to": [
+        8,
+        1.5,
+        13
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            8,
+            8,
+            13
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            3,
+            14.5,
+            8,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            8,
+            14.5,
+            13,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Brick bowl wall quarter 3",
+      "from": [
+        1.75,
+        0.75,
+        3.5
+      ],
+      "to": [
+        3.25,
+        5,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.75,
+            12.5,
+            14.25
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            3.5,
+            1.75,
+            12.5,
+            3.25
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            1,
+            4,
+            15,
+            10
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            11,
+            3.25,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            12.75,
+            11,
+            14.25,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Stepped corner quarter 3",
+      "from": [
+        2,
+        0.75,
+        12.5
+      ],
+      "to": [
+        3.5,
+        5,
+        14
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            12.5,
+            3.5,
+            14
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            2,
+            2,
+            3.5,
+            3.5
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            2,
+            11,
+            3.5,
+            15.25
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            12.5,
+            11,
+            14,
+            15.25
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Inner corner shoulder quarter 3",
+      "from": [
+        3.25,
+        0.75,
+        12
+      ],
+      "to": [
+        4,
+        4.75,
+        12.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.25,
+            12,
+            4,
+            12.75
+          ],
+          "texture": "#inside",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            3.25,
+            3.25,
+            4,
+            4
+          ],
+          "texture": "#inside",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "east": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "south": {
+          "uv": [
+            3.25,
+            11.25,
+            4,
+            15.25
+          ],
+          "texture": "#inside"
+        },
+        "north": {
+          "uv": [
+            12,
+            11.25,
+            12.75,
+            15.25
+          ],
+          "texture": "#inside"
+        }
+      }
+    },
+    {
+      "name": "Broad top lip quarter 3",
+      "from": [
+        1.5,
+        5,
+        3.5
+      ],
+      "to": [
+        3.5,
+        5.625,
+        12.5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.5,
+            12.5,
+            12.5,
+            14.5
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            13,
+            3
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            1,
+            1,
+            13,
+            1.625
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            3.5,
+            10.375,
+            12.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            12.5,
+            10.375,
+            14.5,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Corner top lip quarter 3",
+      "from": [
+        1.75,
+        5,
+        12.5
+      ],
+      "to": [
+        3.5,
+        5.625,
+        14.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.75,
+            12.5,
+            3.5,
+            14.25
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            2.75,
+            2.75
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "east": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            10.375,
+            3.5,
+            11
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            12.5,
+            10.375,
+            14.25,
+            11
+          ],
+          "texture": "#brick"
+        }
+      }
+    },
+    {
+      "name": "Cream paw medallion quarter 3",
+      "from": [
+        1.6875,
+        1.25,
+        6.25
+      ],
+      "to": [
+        1.75,
+        4.75,
+        9.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6.25,
+            14.25,
+            9.75,
+            14.3125
+          ],
+          "texture": "#brick",
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            6.25,
+            1.6875,
+            9.75,
+            1.75
+          ],
+          "texture": "#brick",
+          "rotation": 270
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#cat"
+        },
+        "east": {
+          "uv": [
+            6.25,
+            11.25,
+            9.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "south": {
+          "uv": [
+            1.6875,
+            11.25,
+            1.75,
+            14.75
+          ],
+          "texture": "#brick"
+        },
+        "north": {
+          "uv": [
+            14.25,
+            11.25,
+            14.3125,
+            14.75
+          ],
+          "texture": "#brick"
+        }
+      }
+    }
+  ]
+}

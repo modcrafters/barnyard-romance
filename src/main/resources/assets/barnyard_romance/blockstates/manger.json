@@ -1,7 +1,195 @@
 {
-  "variants": {
-    "": {
-      "model": "barnyard_romance:block/manger"
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_frame"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "hay_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "hay_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "hay_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "hay_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_frame",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "hay_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "hay_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "hay_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "hay_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_frame",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "hay_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "hay_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "hay_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "hay_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_frame",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "hay_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "hay_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "hay_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "hay_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/manger_hay_4",
+        "y": 270
+      }
     }
-  }
+  ]
 }

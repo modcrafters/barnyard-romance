@@ -9,6 +9,46 @@ import static net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricBr
 // The hopper tests run real hoppers, so on Fabric they also check the block works with hoppers here. The herd,
 // catch-up and morning feeding tests are the shared ones, wrapped.
 public class FabricFeederGameTests {
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void petBowlFoodTracksDogs(GameTestHelper helper) {
+        FeederGameTests.petBowlFoodTracksDogs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void petBowlFoodTracksCats(GameTestHelper helper) {
+        FeederGameTests.petBowlFoodTracksCats(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void birdFeederSeedsTrackInventoryAndHerd(GameTestHelper helper) {
+        FeederGameTests.birdFeederSeedsTrackInventoryAndHerd(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void troughFoodTracksInventoryAndHerd(GameTestHelper helper) {
+        FeederGameTests.troughFoodTracksInventoryAndHerd(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void feederFoodTracksInventoryAndHerd(GameTestHelper helper) {
+        FeederGameTests.feederFoodTracksInventoryAndHerd(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void mangerHayTracksInventoryAndHerd(GameTestHelper helper) {
+        FeederGameTests.mangerHayTracksInventoryAndHerd(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void feedingBlocksRememberPlacementFacing(GameTestHelper helper) {
+        FeederGameTests.feedingBlocksRememberPlacementFacing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void feedingBlockShapesFollowTheirModels(GameTestHelper helper) {
+        FeederGameTests.feedingBlockShapesFollowTheirModels(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 20)
     public void feederTakesWheatButNotBeef(GameTestHelper helper) {
         FeederGameTests.feederTakesWheatButNotBeef(helper);
