@@ -12,9 +12,12 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
@@ -46,6 +49,17 @@ public final class FeederMeal {
         heal(animal, food);
         VersionCompat.playEatingSound(animal, food);
         return food;
+    }
+
+    // Crumbs of the food at the animal's mouth: just in front of its eyes and a little below, the way its head points.
+    static void crumbs(ServerLevel level, Animal animal, ItemStack food, int count) {
+        Vec3 facing = Vec3.directionFromRotation(animal.getXRot(), animal.getYHeadRot());
+        Vec3 mouth = animal.getEyePosition().add(facing.scale(animal.getBbWidth() * 0.5 + 0.15)).add(0.0, -0.15, 0.0);
+        //? if >=1.21.2 {
+        ItemParticleOption crumb = new ItemParticleOption(ParticleTypes.ITEM, food.getItem());
+        //?} else
+        //ItemParticleOption crumb = new ItemParticleOption(ParticleTypes.ITEM, food);
+        level.sendParticles(crumb, mouth.x, mouth.y, mouth.z, count, 0.08, 0.04, 0.08, 0.04);
     }
 
     // As the food heals when fed by hand (see FamiliarityActions). A block serving several species may hand an animal

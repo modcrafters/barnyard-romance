@@ -5,8 +5,6 @@ import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ItemParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -267,44 +265,33 @@ public class EatAtFeederGoal extends Goal {
             VersionCompat.playEatingSound(animal, food);
         }
         if (into % CRUMB_TICKS == 0) {
-            Vec3 mouth = mouth(animal);
-            level.sendParticles(crumbs(food), mouth.x, mouth.y, mouth.z, 3, 0.08, 0.04, 0.08, 0.04);
+            FeederMeal.crumbs(level, animal, food, 3);
         }
-    }
-
-    // Just in front of its eyes and a little below, the way its head points.
-    private static Vec3 mouth(Animal animal) {
-        Vec3 facing = Vec3.directionFromRotation(animal.getXRot(), animal.getYHeadRot());
-        return animal.getEyePosition().add(facing.scale(animal.getBbWidth() * 0.5 + 0.15)).add(0.0, -0.15, 0.0);
-    }
-
-    private static ItemParticleOption crumbs(ItemStack food) {
-        //? if >=1.21.2 {
-        return new ItemParticleOption(ParticleTypes.ITEM, food.getItem());
-        //?} else
-        //return new ItemParticleOption(ParticleTypes.ITEM, food);
     }
 
     // Done eating, it walks off a little way to make room at the block for the next one: to a random spot at least
-    // WALK_OFF_AT_LEAST from it, or, when no random spot will do (as on 26.3's barrier-floored test arena), straight
-    // away from it.
+    // WALK_OFF_AT_LEAST from it that it can get all the way to, or, when no such spot turns up (as on 26.3's barrier-floored
+    // test arena, where none ever does), straight away from it.
     private void walkOff(BlockPos feeder) {
         animal.getNavigation().stop();
         Vec3 block = Vec3.atCenterOf(feeder);
-        Vec3 away = null;
-        for (int i = 0; i < WALK_OFF_TRIES && away == null; i++) {
+        for (int i = 0; i < WALK_OFF_TRIES; i++) {
             Vec3 spot = DefaultRandomPos.getPosAway(animal, WALK_OFF, 2, block);
-            if (spot != null && Math.hypot(spot.x - block.x, spot.z - block.z) >= WALK_OFF_AT_LEAST) {
-                away = spot;
+            if (spot == null || Math.hypot(spot.x - block.x, spot.z - block.z) < WALK_OFF_AT_LEAST) {
+                continue;
             }
-        }
-        if (away == null) {
-            Vec3 off = new Vec3(animal.getX() - block.x, 0.0, animal.getZ() - block.z);
-            if (off.lengthSqr() < 1.0E-4) {
+            // A spot past a fence would leave it pressed against the fence, as close to the block as it was.
+            Path path = animal.getNavigation().createPath(BlockPos.containing(spot), 0);
+            if (path != null && path.canReach() && animal.getNavigation().moveTo(path, 1.0)) {
+                walkingOff = true;
                 return;
             }
-            away = animal.position().add(off.normalize().scale(WALK_OFF));
         }
+        Vec3 off = new Vec3(animal.getX() - block.x, 0.0, animal.getZ() - block.z);
+        if (off.lengthSqr() < 1.0E-4) {
+            return;
+        }
+        Vec3 away = animal.position().add(off.normalize().scale(WALK_OFF));
         walkingOff = animal.getNavigation().moveTo(away.x, away.y, away.z, 1.0);
     }
 

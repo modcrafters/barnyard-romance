@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -15,13 +16,15 @@ import java.util.UUID;
 // From sunrise to midnight a feeding block's herd walks over and eats, a few at a time and nearest first, so a big
 // herd never paths all at once. Each round sends the hungry ones on (EatAtFeederGoal) while there's food, so food put
 // in later in the day feeds whoever is still hungry at the next round. A pet told to sit isn't walked: it keeps its
-// orders and eats where it sits if it's close enough.
+// orders and eats where it sits if it's close enough, in a burst of crumbs.
 public final class MorningFeeding {
     // A round a second, on the block's own tick of it.
     public static final int ROUND_TICKS = 20;
     public static final int MAX_WALKING = 4;
     // From a sitting pet to the block.
     static final double SITTING_REACH = 2.0;
+    // A sitting pet's meal is over in a moment: one burst of crumbs.
+    private static final int SITTING_CRUMBS = 12;
 
     private MorningFeeding() {
     }
@@ -50,8 +53,14 @@ public final class MorningFeeding {
                 continue;
             }
             if (animal instanceof TamableAnimal pet && pet.isOrderedToSit()) {
-                if (EatAtFeederGoal.within(animal, pos, SITTING_REACH) && !FeederMeal.eat(animal, level, feeder, clock).isEmpty() && feeder.food() == 0) {
-                    return;
+                if (EatAtFeederGoal.within(animal, pos, SITTING_REACH)) {
+                    ItemStack food = FeederMeal.eat(animal, level, feeder, clock);
+                    if (!food.isEmpty()) {
+                        FeederMeal.crumbs(level, animal, food, SITTING_CRUMBS);
+                        if (feeder.food() == 0) {
+                            return;
+                        }
+                    }
                 }
                 continue;
             }

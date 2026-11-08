@@ -27,6 +27,10 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.ComparatorBlock;
+import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
@@ -117,6 +121,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_brief_morning_load_leaves_the_rest_of_the_day_to_catch_up", 400,
                     FeederGameTests::aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp),
             new BreedingGameTests.Case("a_cow_stays_to_eat_then_walks_off", 400, FeederGameTests::aCowStaysToEatThenWalksOff),
+            new BreedingGameTests.Case("a_comparator_reads_how_full_a_manger_is", 40, FeederGameTests::aComparatorReadsHowFullAMangerIs),
             new BreedingGameTests.Case("feeding_block_recipes_craft_their_blocks", 20, FeederGameTests::feedingBlockRecipesCraftTheirBlocks)
     );
 
@@ -580,9 +585,11 @@ public final class FeederGameTests {
     }
 
     // The meal counts the moment she reaches the Manger, and she stands there eating for EAT_TICKS, still on her trip,
-    // before she walks off and the trip is over.
+    // before she walks off and the trip is over. Off means two blocks from where she ate: with the Manger by the pen's
+    // edge, a fence may stop her before she's far from the block itself.
     public static void aCowStaysToEatThenWalksOff(GameTestHelper helper) {
         long[] ate = {-1L};
+        Vec3[] ateAt = {Vec3.ZERO};
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
@@ -590,6 +597,7 @@ public final class FeederGameTests {
                     if (ate[0] < 0L) {
                         if (ateOn(helper, cow, DAY)) {
                             ate[0] = m.clock;
+                            ateAt[0] = cow.position();
                         } else if (m.clock > SUNRISE + 300) {
                             helper.fail("she never reached the Manger: she's at " + cow.position() + ", it's at " + m.at);
                         }
@@ -600,11 +608,11 @@ public final class FeederGameTests {
                         helper.assertTrue(EatAtFeederGoal.within(cow, m.at, EatAtFeederGoal.REACH + 0.25),
                                 "she left the Manger " + into + " ticks into her meal");
                         helper.assertTrue(EatAtFeederGoal.walking(cow), "her trip ended " + into + " ticks into her meal");
-                    } else if (!EatAtFeederGoal.walking(cow) && !EatAtFeederGoal.within(cow, m.at, EatAtFeederGoal.REACH + 0.5)) {
+                    } else if (!EatAtFeederGoal.walking(cow) && cow.position().distanceTo(ateAt[0]) >= 2.0) {
                         helper.succeed();
                     } else if (into > EatAtFeederGoal.EAT_TICKS + 120) {
                         helper.fail("she hadn't walked off: on her trip " + EatAtFeederGoal.walking(cow) + ", at " + cow.position()
-                                + " by the Manger at " + m.at);
+                                + " after eating at " + ateAt[0]);
                     }
                 });
     }
@@ -1060,6 +1068,30 @@ public final class FeederGameTests {
             }
         }
         return count;
+    }
+
+    // A comparator reading the Manger gives a chest's signal for what it holds: up when wheat goes in, and 0 again
+    // once it's empty.
+    public static void aComparatorReadsHowFullAMangerIs(GameTestHelper helper) {
+        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        BlockPos comparator = FEEDER.east();
+        helper.setBlock(comparator.below(), Blocks.STONE.defaultBlockState());
+        // A comparator reads the block its FACING points at.
+        helper.setBlock(comparator, Blocks.COMPARATOR.defaultBlockState().setValue(ComparatorBlock.FACING, Direction.WEST));
+        manger.setItem(0, new ItemStack(Items.WHEAT, 64));
+        boolean[] emptied = {false};
+        helper.onEachTick(() -> {
+            int signal = helper.getLevel().getBlockEntity(helper.absolutePos(comparator)) instanceof ComparatorBlockEntity reader
+                    ? reader.getOutputSignal() : -1;
+            if (!emptied[0] && signal > 0) {
+                helper.assertTrue(signal == AbstractContainerMenu.getRedstoneSignalFromContainer(manger),
+                        "the comparator reads " + signal + " from 64 wheat");
+                manger.setItem(0, ItemStack.EMPTY);
+                emptied[0] = true;
+            } else if (emptied[0] && signal == 0) {
+                helper.succeed();
+            }
+        });
     }
 
     // Each grid has to make its own block and not a vanilla one: five planks in a U is a boat and three bricks in a

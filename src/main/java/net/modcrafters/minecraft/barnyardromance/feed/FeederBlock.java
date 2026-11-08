@@ -103,6 +103,7 @@ public class FeederBlock extends BaseEntityBlock {
         return level.isClientSide() ? null : createTickerHelper(type, BarnyardBlocks.FEEDER_ENTITY, FeederBlockEntity::serverTick);
     }
 
+    // A comparator reads how full it is, as it reads a chest: a farm can be told when a block runs low.
     @Override
     protected boolean hasAnalogOutputSignal(BlockState state) {
         return true;
