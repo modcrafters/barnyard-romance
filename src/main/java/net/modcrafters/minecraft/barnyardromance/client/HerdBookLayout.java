@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 // How the herd book is laid out: species bookmarks, contents pages grouped Females, Males, Kids, and the order
 // the arrows step through. Names come in already translated, so this has no Minecraft types and is unit tested.
 public final class HerdBookLayout {
-    public static final int LINES = 12;
+    public static final int LINES = 14;
     // How many bookmarks fit down one edge of the book.
     public static final int TABS_PER_SIDE = 12;
     public static final int TAB_LETTERS = 10;

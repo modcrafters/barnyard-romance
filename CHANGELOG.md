@@ -8,7 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
-- The herd book says which feeding block fed an animal today.
+- The herd book says which feeding block fed an animal today. Its list shows a half drumstick for an animal fed only from a feeding block, and holds two more animals a page.
 - New feeding blocks: the **Bird Feeder** (chickens, ducks, turkeys, parrots), **Trough** (rabbits), **Feeder** (pigs, goats, boar), **Manger** (cows, mooshrooms, sheep, the horse family, llamas, camels, deer, ostriches) and **Pet Bowl** (wolves, cats, ocelots). Craft one from wood (the Pet Bowl from bricks) and fill it with food by hand, with a hopper or with pipes. Every morning the familiar animals in the pen walk over and eat.
 - A meal from a feeding block keeps an animal fed, heals it and keeps its milk, eggs and Vigour coming, but only hand-feeding wins an animal over or puts it in love.
 - While you're away, a stocked feeder keeps feeding its animals. When you come back, every animal in the pen has shared the food it held evenly, day by day.

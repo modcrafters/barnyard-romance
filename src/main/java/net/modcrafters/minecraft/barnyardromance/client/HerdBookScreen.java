@@ -80,6 +80,7 @@ public class HerdBookScreen extends Screen {
     private static final int ICON = 9;
     private static final Identifier FOOD_EMPTY = Identifier.withDefaultNamespace("hud/food_empty");
     private static final Identifier FOOD_FULL = Identifier.withDefaultNamespace("hud/food_full");
+    private static final Identifier FOOD_HALF = Identifier.withDefaultNamespace("hud/food_half");
     private static final Identifier MILK_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk");
     private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier PREGNANT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant");
@@ -575,15 +576,31 @@ public class HerdBookScreen extends Screen {
             x -= 1;
         }
         x -= ICON;
-        // Like the hunger bar: the dark outline always, the drumstick on top when fed.
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y - 1, ICON, ICON);
-        if (entry.fedToday()) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, y - 1, ICON, ICON);
-        }
-        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, Component.translatable(entry.fedToday()
-                ? "gui.barnyard_romance.herd_book.fed_today"
-                : "gui.barnyard_romance.herd_book.not_fed_today")));
+        drawFood(graphics, entry.fed(), x, y - 1);
+        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, fedTooltip(entry)));
         return x;
+    }
+
+    // Like the hunger bar: the dark outline always, then a whole drumstick when fed by hand, half when only a
+    // feeding block fed it.
+    private static void drawFood(GuiGraphicsExtractor graphics, HerdEntry.Fed fed, int x, int y) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y, ICON, ICON);
+        switch (fed) {
+            case HAND -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, y, ICON, ICON);
+            case FEEDER -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_HALF, x, y, ICON, ICON);
+            case NOT_FED -> { }
+        }
+    }
+
+    private static Component fedTooltip(HerdEntry entry) {
+        return switch (entry.fed()) {
+            case HAND -> Component.translatable("gui.barnyard_romance.herd_book.fed_today");
+            case FEEDER -> entry.feeder().isEmpty()
+                    ? Component.translatable("gui.barnyard_romance.herd_book.fed_today")
+                    : Component.translatable("gui.barnyard_romance.herd_book.fed_from",
+                            Component.translatable("block." + Constants.MOD_ID + "." + entry.feeder()));
+            case NOT_FED -> Component.translatable("gui.barnyard_romance.herd_book.not_fed_today");
+        };
     }
 
     // An animal's page: a card with its head, name and size, its status lines, then its family.
@@ -714,10 +731,7 @@ public class HerdBookScreen extends Screen {
         List<Component> details = row.details().stream().map(HerdEntry.Line::text).toList();
         int iconY = y - 1;
         switch (line.kind()) {
-            case FED -> {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, iconY, ICON, ICON);
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, iconY, ICON, ICON);
-            }
+            case FED -> drawFood(graphics, entry.fed() == HerdEntry.Fed.FEEDER ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.HAND, x, iconY);
             case NOT_FED -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, iconY, ICON, ICON);
             case PREGNANT -> pregnancyHeart(graphics, Math.round(line.fill() * 100.0F), x, iconY);
             case MILK -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.milkReady() ? MILK_ICON : MILK_EMPTY, x, iconY, ICON, ICON);

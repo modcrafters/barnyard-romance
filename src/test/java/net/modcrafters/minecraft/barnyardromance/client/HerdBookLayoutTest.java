@@ -77,15 +77,17 @@ class HerdBookLayoutTest {
     @Test
     void aHeaderNeverEndsAPage() {
         List<HerdBookLayout.Row> rows = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        int females = HerdBookLayout.LINES - 2;
+        for (int i = 0; i < females; i++) {
             rows.add(cow(i, "Cow " + (char) ('a' + i), true, false));
         }
         rows.add(cow(50, "Tom", false, false));
 
         List<List<HerdBookLayout.Line>> pages = HerdBookLayout.contents(rows, "minecraft:cow");
 
-        // Header + 10 females fill 11 lines; the males' header would be line 12, so it starts page 2.
-        assertEquals(11, pages.getFirst().size());
+        // The females' header and the females fill all but the last line; the males' header would be that last line,
+        // so it starts page 2.
+        assertEquals(HerdBookLayout.LINES - 1, pages.getFirst().size());
         assertEquals(new HerdBookLayout.Header(HerdBookLayout.Group.MALES), pages.get(1).getFirst());
         assertEquals(1, HerdBookLayout.pageOf(pages, id(50)));
     }

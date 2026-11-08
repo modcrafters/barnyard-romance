@@ -733,7 +733,7 @@ public final class FeederGameTests {
     }
 
     // Fed at the Manger and not by hand, she is fed today on her stat sheet and her herd book page, which name the
-    // Manger. The book's contents icon is for hand-feeding, so it stays off.
+    // Manger. The book's contents icon is the half drumstick, and its tooltip names the Manger too.
     public static void aMangerMealShowsOnTheFedRow(GameTestHelper helper) {
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
@@ -756,7 +756,8 @@ public final class FeederGameTests {
                                 .map(line -> line.text().getString()).orElse("missing");
                         String how = loaded ? "" : " while unloaded";
                         helper.assertTrue(page.equals("Fed today (Manger)"), "her page's fed row reads " + page + how);
-                        helper.assertTrue(!entry.fedToday(), "the contents page shows her hand-fed today" + how);
+                        helper.assertTrue(entry.fed() == HerdEntry.Fed.FEEDER && entry.feeder().equals("manger"),
+                                "the contents page shows her " + entry.fed() + " by '" + entry.feeder() + "'" + how);
                     }
                     helper.succeed();
                 });
