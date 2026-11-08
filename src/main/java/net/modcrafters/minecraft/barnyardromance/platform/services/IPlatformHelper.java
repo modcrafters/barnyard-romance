@@ -35,8 +35,8 @@ public interface IPlatformHelper {
         T create(int containerId, Inventory inventory);
     }
 
-    // A block entity type for one block. 1.21.1's vanilla keeps the factory type package-private.
-    <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block block);
+    // A block entity type for one or more blocks. 1.21.1's vanilla keeps the factory type package-private.
+    <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 
     interface BlockEntityFactory<T extends BlockEntity> {
         T create(BlockPos pos, BlockState state);

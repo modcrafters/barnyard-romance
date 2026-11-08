@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": { "tag": "minecraft:wooden_slabs" }
+  },
+  "pattern": [
+    "S S",
+    "SSS"
+  ],
+  "result": {
+    "id": "barnyard_romance:trough"
+  }
+}

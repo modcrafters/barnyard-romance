@@ -65,6 +65,8 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                         .withOrigin(Origin.WILD)
                         .withBornTick(now - 430_000L)
                         .withFertility(0.9, now)
+                        // Her milk adds a page row: the notes that explain her rows live in tooltips, so they don't fill the page.
+                        .withLactation(Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L))
                         .withLineage(new Lineage(bess.getUUID(), null)));
                 Services.DATA.setPregnancy(daisyCow, new Pregnancy(now - 40_000L, 66_000L, "minecraft:cow", 1.3, 1, 0.8));
                 Animal bluebell = cow(level, player, "Bluebell", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 0.85, 0.9, -1L)

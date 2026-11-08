@@ -42,6 +42,14 @@ public final class RivalRolls {
     }
 
     public static boolean due(Animal male, long clock) {
+        if (rolling(male).isEmpty()) {
+            return false;
+        }
+        // The roll reads his familiarity, so his missed days are settled first. A male in a feeding block's herd may
+        // be waiting for the block to settle them; he rolls once it has.
+        if (FamiliarityCare.unsettled(male, clock)) {
+            return false;
+        }
         Optional<AnimalTraits> traits = rolling(male);
         return traits.isPresent()
                 && FightRules.due(traits.get().vigour().rollDay(), GameDay.of(clock), EggSchedule.sinceMidnight(clock), FightRules.rollTime(male.getUUID()));

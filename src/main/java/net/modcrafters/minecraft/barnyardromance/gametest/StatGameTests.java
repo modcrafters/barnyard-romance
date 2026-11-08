@@ -59,7 +59,7 @@ public final class StatGameTests {
 
         int at = kinds(lines).indexOf(StatKind.VIGOUR);
         helper.assertTrue(at >= 0 && at + 1 < lines.size(), "a hungry bull shows no Vigour: " + kinds(lines));
-        helper.assertTrue(lines.get(at + 1).kind() == StatKind.NOTE, "no note follows his Vigour: " + kinds(lines));
+        helper.assertTrue(lines.get(at + 1).kind() == StatKind.DETAIL, "no detail follows his Vigour: " + kinds(lines));
         helper.assertTrue(string(lines.get(at + 1)).equals("Hungry: mating costs health"), "the note reads " + string(lines.get(at + 1)));
         helper.succeed();
     }
@@ -70,7 +70,7 @@ public final class StatGameTests {
 
         List<StatLine> lines = lines(helper, cow, clock(DAY));
 
-        helper.assertTrue(lines.stream().anyMatch(line -> line.kind() == StatKind.NOTE && string(line).equals("Wild: max 40%")),
+        helper.assertTrue(lines.stream().anyMatch(line -> line.kind() == StatKind.DETAIL && string(line).equals("Wild: max 40%")),
                 "a wild-caught cow has no cap note: " + lines.stream().map(StatGameTests::string).toList());
         helper.succeed();
     }

@@ -1,0 +1,1326 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "barnyard_romance:block/manger_front",
+    "front": "barnyard_romance:block/manger_front",
+    "frame": "barnyard_romance:block/manger_frame",
+    "inside": "barnyard_romance:block/manger_inside",
+    "metal": "barnyard_romance:block/manger_metal",
+    "side": "barnyard_romance:block/trough_side",
+    "food": "barnyard_romance:block/trough_food"
+  },
+  "elements": [
+    {
+      "name": "Rabbit feed bed",
+      "from": [
+        1.875,
+        1.25,
+        3.625
+      ],
+      "to": [
+        14.125,
+        5.75,
+        12.375
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1.875,
+            3.625,
+            14.125,
+            12.375
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1.875,
+            10.25,
+            14.125,
+            14.75
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1.875,
+            10.25,
+            14.125,
+            14.75
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            3.625,
+            10.25,
+            12.375,
+            14.75
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            3.625,
+            10.25,
+            12.375,
+            14.75
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Small central mound",
+      "from": [
+        3,
+        5.75,
+        4
+      ],
+      "to": [
+        13,
+        5.9375,
+        12
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3,
+            4,
+            13,
+            12
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            3,
+            10.0625,
+            13,
+            10.25
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            3,
+            10.0625,
+            13,
+            10.25
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            4,
+            10.0625,
+            12,
+            10.25
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            4,
+            10.0625,
+            12,
+            10.25
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 0",
+      "from": [
+        3,
+        5.9,
+        4.25
+      ],
+      "to": [
+        3.91,
+        6.075,
+        4.9
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 1",
+      "from": [
+        5.5,
+        5.9,
+        4.5
+      ],
+      "to": [
+        6.4799999999999995,
+        6.0925,
+        5.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 2",
+      "from": [
+        8,
+        5.9,
+        4.125
+      ],
+      "to": [
+        8.65,
+        6.3500000000000005,
+        4.775
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 3",
+      "from": [
+        10.5,
+        5.9,
+        4.25
+      ],
+      "to": [
+        11.34,
+        6.1275,
+        4.85
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 4",
+      "from": [
+        12.5,
+        5.9,
+        4.5
+      ],
+      "to": [
+        13.2,
+        6.04,
+        5
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 5",
+      "from": [
+        4,
+        5.9,
+        6.5
+      ],
+      "to": [
+        4.75,
+        6.3500000000000005,
+        7.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 6",
+      "from": [
+        6.75,
+        5.9,
+        6.25
+      ],
+      "to": [
+        7.66,
+        6.075,
+        6.9
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 7",
+      "from": [
+        9.5,
+        5.9,
+        6.5
+      ],
+      "to": [
+        10.48,
+        6.11,
+        7.2
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 8",
+      "from": [
+        12,
+        5.9,
+        6.75
+      ],
+      "to": [
+        12.55,
+        6.4,
+        7.3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 9",
+      "from": [
+        3,
+        5.9,
+        8.75
+      ],
+      "to": [
+        3.91,
+        6.0925,
+        9.4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 10",
+      "from": [
+        5.5,
+        5.9,
+        8.5
+      ],
+      "to": [
+        6.55,
+        6.0575,
+        9.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 11",
+      "from": [
+        8,
+        5.9,
+        8.75
+      ],
+      "to": [
+        8.55,
+        6.5,
+        9.3
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 12",
+      "from": [
+        10.5,
+        5.9,
+        9
+      ],
+      "to": [
+        11.55,
+        6.0575,
+        9.75
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 13",
+      "from": [
+        4,
+        5.9,
+        11
+      ],
+      "to": [
+        4.84,
+        6.0575,
+        11.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Carrot chunk 14",
+      "from": [
+        6.5,
+        5.9,
+        10.75
+      ],
+      "to": [
+        7.2,
+        6.45,
+        11.45
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            1.5,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 15",
+      "from": [
+        9,
+        5.9,
+        11
+      ],
+      "to": [
+        9.84,
+        6.075,
+        11.6
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            0,
+            3,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    },
+    {
+      "name": "Lettuce leaf 16",
+      "from": [
+        12,
+        5.9,
+        10.75
+      ],
+      "to": [
+        12.91,
+        6.0925,
+        11.4
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "north": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "south": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#food"
+        }
+      }
+    }
+  ]
+}

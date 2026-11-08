@@ -16,6 +16,7 @@ import java.util.UUID;
 // One animal as the herd book shows it, worked out on the server when the book is opened.
 // pregnancyPercent is -1 when not pregnant; shear is NONE for animals that aren't sheared; eggs is what a hen lays
 // tomorrow (empty for everything else) and eggTip says why; the page's lines are already translatable components.
+// feeder is the feeding block's id (say "manger") when fed is FEEDER, and empty otherwise.
 public record HerdEntry(
         UUID id,
         String species,
@@ -24,7 +25,8 @@ public record HerdEntry(
         boolean kid,
         boolean alive,
         Familiar familiar,
-        boolean fedToday,
+        Fed fed,
+        String feeder,
         int pregnancyPercent,
         boolean milkReady,
         ShearState shear,
@@ -34,6 +36,13 @@ public record HerdEntry(
         Optional<UUID> father,
         List<Line> lines
 ) {
+    // How the animal was fed today. By hand wins over a feeding block, which keeps it fed but wins nothing over.
+    public enum Fed {
+        NOT_FED,
+        FEEDER,
+        HAND
+    }
+
     // A line of the animal's page; see StatLine.
     public record Line(StatKind kind, Component text, float fill) {
         private static final StatKind[] KINDS = StatKind.values();
@@ -61,7 +70,8 @@ public record HerdEntry(
                 ByteBufCodecs.BOOL.encode(buf, entry.kid());
                 ByteBufCodecs.BOOL.encode(buf, entry.alive());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.familiar().ordinal());
-                ByteBufCodecs.BOOL.encode(buf, entry.fedToday());
+                ByteBufCodecs.VAR_INT.encode(buf, entry.fed().ordinal());
+                ByteBufCodecs.STRING_UTF8.encode(buf, entry.feeder());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.pregnancyPercent());
                 ByteBufCodecs.BOOL.encode(buf, entry.milkReady());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.shear().ordinal());
@@ -80,7 +90,8 @@ public record HerdEntry(
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     Familiar.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, Familiar.values().length - 1)],
-                    ByteBufCodecs.BOOL.decode(buf),
+                    Fed.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, Fed.values().length - 1)],
+                    ByteBufCodecs.STRING_UTF8.decode(buf),
                     ByteBufCodecs.VAR_INT.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     ShearState.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, ShearState.values().length - 1)],

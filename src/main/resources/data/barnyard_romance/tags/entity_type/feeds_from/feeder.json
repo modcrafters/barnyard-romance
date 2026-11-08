@@ -1,0 +1,10 @@
+{
+  "values": [
+    "minecraft:pig",
+    "minecraft:goat",
+    {
+      "id": "naturalist:boar",
+      "required": false
+    }
+  ]
+}

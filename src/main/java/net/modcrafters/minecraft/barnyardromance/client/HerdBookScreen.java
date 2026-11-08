@@ -10,6 +10,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
@@ -79,9 +80,11 @@ public class HerdBookScreen extends Screen {
     private static final int ICON = 9;
     private static final Identifier FOOD_EMPTY = Identifier.withDefaultNamespace("hud/food_empty");
     private static final Identifier FOOD_FULL = Identifier.withDefaultNamespace("hud/food_full");
+    private static final Identifier FOOD_HALF = Identifier.withDefaultNamespace("hud/food_half");
     private static final Identifier MILK_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk");
     private static final Identifier HEART_EMPTY = Identifier.withDefaultNamespace("hud/heart/container");
     private static final Identifier PREGNANT_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant");
+    private static final Identifier PREGNANT_BASE = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/pregnant_base");
     private static final Identifier MILK_EMPTY = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/milk_empty");
     private static final Identifier HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
     private static final Identifier SHEARS_ICON = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/shears");
@@ -116,8 +119,14 @@ public class HerdBookScreen extends Screen {
     private static final int RETURN_HEIGHT = 13;
     private static final int REMOVE_WIDTH = 11;
     private static final int REMOVE_HEIGHT = 12;
+    private static final int TOOLTIP_WIDTH = 170;
 
-    private record Hit(int x0, int y0, int x1, int y1, @Nullable Runnable action, @Nullable Component tooltip) {
+    // A tooltip's first line is in white; any more lines are grey details.
+    private record Hit(int x0, int y0, int x1, int y1, @Nullable Runnable action, List<Component> tooltip) {
+        Hit(int x0, int y0, int x1, int y1, @Nullable Runnable action, @Nullable Component tooltip) {
+            this(x0, y0, x1, y1, action, tooltip == null ? List.of() : List.of(tooltip));
+        }
+
         boolean contains(double x, double y) {
             return x >= x0 && x < x1 && y >= y0 && y < y1;
         }
@@ -406,14 +415,25 @@ public class HerdBookScreen extends Screen {
             drawContents(graphics, x, y);
         }
         for (Hit hit : this.hits) {
-            if (hit.tooltip() != null && hit.contains(mouseX, mouseY)) {
+            if (!hit.tooltip().isEmpty() && hit.contains(mouseX, mouseY)) {
+                List<FormattedCharSequence> tooltip = tooltipLines(hit.tooltip());
                 //? if >=26.1 {
-                graphics.setTooltipForNextFrame(hit.tooltip(), mouseX, mouseY);
+                graphics.setTooltipForNextFrame(this.font, tooltip, mouseX, mouseY);
                 //?} else
-                //graphics.renderTooltip(this.font, hit.tooltip(), mouseX, mouseY);
+                //graphics.renderTooltip(this.font, tooltip, mouseX, mouseY);
                 break;
             }
         }
+    }
+
+    // Each part wrapped to the tooltip's width, details in grey.
+    private List<FormattedCharSequence> tooltipLines(List<Component> parts) {
+        List<FormattedCharSequence> lines = new ArrayList<>();
+        for (int i = 0; i < parts.size(); i++) {
+            Component part = i == 0 ? parts.get(i) : parts.get(i).copy().withStyle(ChatFormatting.GRAY);
+            lines.addAll(this.font.split(part, TOOLTIP_WIDTH));
+        }
+        return lines;
     }
 
     // A bookmark on screen: the whole sprite, part of which is tucked under the cover, and the part that shows.
@@ -517,7 +537,7 @@ public class HerdBookScreen extends Screen {
         int iconsX = drawIcons(graphics, entry, x + TEXT_WIDTH, y);
         String name = fit(this.names.get(entry.id()), iconsX - 2 - nameX);
         graphics.text(this.font, name, nameX, y, TEXT, false);
-        this.hits.add(new Hit(nameX, y - 1, nameX + this.font.width(name), y + LINE - 1, () -> showAnimal(entry.id()), null));
+        this.hits.add(new Hit(nameX, y - 1, nameX + this.font.width(name), y + LINE - 1, () -> showAnimal(entry.id()), List.of()));
     }
 
     // Draws the status icons right-aligned to `right` and returns where they start.
@@ -556,15 +576,31 @@ public class HerdBookScreen extends Screen {
             x -= 1;
         }
         x -= ICON;
-        // Like the hunger bar: the dark outline always, the drumstick on top when fed.
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y - 1, ICON, ICON);
-        if (entry.fedToday()) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, y - 1, ICON, ICON);
-        }
-        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, Component.translatable(entry.fedToday()
-                ? "gui.barnyard_romance.herd_book.fed_today"
-                : "gui.barnyard_romance.herd_book.not_fed_today")));
+        drawFood(graphics, entry.fed(), x, y - 1);
+        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, fedTooltip(entry)));
         return x;
+    }
+
+    // Like the hunger bar: the dark outline always, then a whole drumstick when fed by hand, half when only a
+    // feeding block fed it.
+    private static void drawFood(GuiGraphicsExtractor graphics, HerdEntry.Fed fed, int x, int y) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, y, ICON, ICON);
+        switch (fed) {
+            case HAND -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, y, ICON, ICON);
+            case FEEDER -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_HALF, x, y, ICON, ICON);
+            case NOT_FED -> { }
+        }
+    }
+
+    private static Component fedTooltip(HerdEntry entry) {
+        return switch (entry.fed()) {
+            case HAND -> Component.translatable("gui.barnyard_romance.herd_book.fed_today");
+            case FEEDER -> entry.feeder().isEmpty()
+                    ? Component.translatable("gui.barnyard_romance.herd_book.fed_today")
+                    : Component.translatable("gui.barnyard_romance.herd_book.fed_from",
+                            Component.translatable("block." + Constants.MOD_ID + "." + entry.feeder()));
+            case NOT_FED -> Component.translatable("gui.barnyard_romance.herd_book.not_fed_today");
+        };
     }
 
     // An animal's page: a card with its head, name and size, its status lines, then its family.
@@ -584,7 +620,7 @@ public class HerdBookScreen extends Screen {
         for (int i = 0; i < this.leaf; i++) {
             from += leaves.get(i);
         }
-        List<HerdEntry.Line> status = statusLines(entry);
+        List<HerdBookLayout.Folded<HerdEntry.Line>> status = statusLines(entry);
         int textX = HerdBookHeads.AVAILABLE && this.leaf == 0 ? x + PORTRAIT + 4 : x;
         if (this.leaf == 0) {
             HerdBookHeads.draw(graphics, entry.id(), entry.species(), entry.kid(), x, y, PORTRAIT);
@@ -607,8 +643,8 @@ public class HerdBookScreen extends Screen {
         }
         graphics.fill(x, y, right, y + 1, RULE);
         y += RULE_GAP;
-        for (HerdEntry.Line line : status.subList(from, from + leaves.get(this.leaf))) {
-            y += drawPageLine(graphics, entry, line, x, y);
+        for (HerdBookLayout.Folded<HerdEntry.Line> row : status.subList(from, from + leaves.get(this.leaf))) {
+            y += drawPageLine(graphics, entry, row, x, y);
         }
         if (this.leaf == leaves.size() - 1) {
             drawFamily(graphics, entry, x, y + 2);
@@ -616,9 +652,10 @@ public class HerdBookScreen extends Screen {
         drawAnimalButtons(graphics, entry, mouseX, mouseY);
     }
 
-    // The lines under the card's rule: everything but the size, which is its subtitle.
-    private static List<HerdEntry.Line> statusLines(HerdEntry entry) {
-        return entry.lines().stream().filter(line -> line.kind() != StatKind.SIZE).toList();
+    // The rows under the card's rule: everything but the size, which is its subtitle. Details go in their row's tooltip.
+    private static List<HerdBookLayout.Folded<HerdEntry.Line>> statusLines(HerdEntry entry) {
+        return HerdBookLayout.foldDetails(entry.lines().stream().filter(line -> line.kind() != StatKind.SIZE).toList(),
+                line -> line.kind() == StatKind.DETAIL);
     }
 
     private List<Integer> leaves(HerdEntry entry) {
@@ -634,7 +671,7 @@ public class HerdBookScreen extends Screen {
         int space = BUTTONS_Y - (ANIMAL_TOP + 12 + 1 + RULE_GAP);
         // The family: its header, the mother and father, and a row of young when there are any.
         int familyHeight = HerdBookLayout.familyHeight(!youngOf(entry).isEmpty(), HerdBookHeads.AVAILABLE, STATUS_LINE, ICON, LINK_LINE);
-        List<Integer> heights = statusLines(entry).stream().map(this::lineHeight).toList();
+        List<Integer> heights = statusLines(entry).stream().map(row -> lineHeight(row.line())).toList();
         return HerdBookLayout.leaves(heights, firstSpace, space, familyHeight);
     }
 
@@ -688,14 +725,13 @@ public class HerdBookScreen extends Screen {
         };
     }
 
-    // Draws one status line and returns the height it took.
-    private int drawPageLine(GuiGraphicsExtractor graphics, HerdEntry entry, HerdEntry.Line line, int x, int y) {
+    // Draws one status row and returns the height it took. Hovering it shows its details; a bar's tooltip leads with its words.
+    private int drawPageLine(GuiGraphicsExtractor graphics, HerdEntry entry, HerdBookLayout.Folded<HerdEntry.Line> row, int x, int y) {
+        HerdEntry.Line line = row.line();
+        List<Component> details = row.details().stream().map(HerdEntry.Line::text).toList();
         int iconY = y - 1;
         switch (line.kind()) {
-            case FED -> {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, iconY, ICON, ICON);
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_FULL, x, iconY, ICON, ICON);
-            }
+            case FED -> drawFood(graphics, entry.fed() == HerdEntry.Fed.FEEDER ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.HAND, x, iconY);
             case NOT_FED -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FOOD_EMPTY, x, iconY, ICON, ICON);
             case PREGNANT -> pregnancyHeart(graphics, Math.round(line.fill() * 100.0F), x, iconY);
             case MILK -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.milkReady() ? MILK_ICON : MILK_EMPTY, x, iconY, ICON, ICON);
@@ -707,7 +743,7 @@ public class HerdBookScreen extends Screen {
             case SHEAR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, iconY, ICON, ICON);
             case EGGS -> entry.eggs().ifPresent(eggs -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, eggIcon(eggs), x, iconY, ICON, ICON));
             case GROWTH, WEIGHT, HEALTH, BREEDING, VIGOUR -> graphics.blitSprite(RenderPipelines.GUI_TEXTURED, StatIcons.of(line.kind()), x, iconY, ICON, ICON);
-            case SIZE, NOTE -> {
+            case SIZE, NOTE, DETAIL -> {
             }
         }
         int textX = x + ICON + 3;
@@ -726,15 +762,22 @@ public class HerdBookScreen extends Screen {
             graphics.text(this.font, label, textX, y, INK, false);
             bar(graphics, textX + barLabelWidth() + 4, y + 1, right, line.fill(), StatIcons.barColor(line.kind()));
             // The bar's words, such as how long until the birth, are in its tooltip.
-            this.hits.add(new Hit(x, iconY, right, iconY + ICON, null, line.text()));
+            List<Component> tooltip = new ArrayList<>();
+            tooltip.add(line.text());
+            tooltip.addAll(details);
+            this.hits.add(new Hit(x, iconY, right, iconY + ICON, null, tooltip));
             return STATUS_LINE;
         }
         int lineY = y;
         for (FormattedCharSequence part : this.font.split(line.text(), right - textX)) {
-            graphics.text(this.font, part, textX, lineY, line.kind() == StatKind.NOTE ? MUTED : INK, false);
+            graphics.text(this.font, part, textX, lineY, line.kind() == StatKind.NOTE || line.kind() == StatKind.DETAIL ? MUTED : INK, false);
             lineY += LINE;
         }
-        return lineHeight(line);
+        int height = lineHeight(line);
+        if (!details.isEmpty()) {
+            this.hits.add(new Hit(x, iconY, right, y + height - 1, null, details));
+        }
+        return height;
     }
 
     // Every bar starts at the same place, past the longest label.
@@ -758,9 +801,9 @@ public class HerdBookScreen extends Screen {
         }
     }
 
-    // An empty heart that fills with color from the bottom as the pregnancy goes on.
+    // A muted pink heart that brightens from the bottom as pregnancy progresses.
     private static void pregnancyHeart(GuiGraphicsExtractor graphics, int percent, int x, int y) {
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_EMPTY, x, y, ICON, ICON);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_BASE, x, y, ICON, ICON);
         int filled = HerdBookLayout.filledRows(percent, ICON);
         if (filled > 0) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PREGNANT_ICON, ICON, ICON, 0, ICON - filled, x, y + ICON - filled, ICON, filled);
@@ -820,7 +863,7 @@ public class HerdBookScreen extends Screen {
         int color = target != null && target.alive() ? LINK : MUTED;
         graphics.text(this.font, name, x, y, color, false);
         graphics.fill(x, y + 8, x + this.font.width(name), y + 9, color);
-        this.hits.add(new Hit(x, y - 1, x + this.font.width(name), y + LINE, () -> showAnimal(id), null));
+        this.hits.add(new Hit(x, y - 1, x + this.font.width(name), y + LINE, () -> showAnimal(id), List.of()));
     }
 
     // The return arrow between the page arrows goes back to the contents; the cross on the right removes the animal

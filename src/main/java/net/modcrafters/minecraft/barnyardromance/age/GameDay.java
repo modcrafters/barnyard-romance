@@ -17,6 +17,11 @@ public final class GameDay {
         return (of(clock) + 1L) * TICKS - (TICKS - MIDNIGHT) - clock;
     }
 
+    // Sunrise is clock 0 of each 24,000, 6,000 ticks into the day; the day runs on from there to midnight.
+    public static boolean afterSunrise(long clock) {
+        return Math.floorMod(clock, TICKS) < MIDNIGHT;
+    }
+
     public static boolean sameDay(long clockA, long clockB) {
         return of(clockA) == of(clockB);
     }

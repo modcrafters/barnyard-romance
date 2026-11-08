@@ -53,7 +53,8 @@ public final class HerdStatus {
                 view.stage() == AgeStage.BABY || view.stage() == AgeStage.YOUNG,
                 record.alive(),
                 view.familiar(),
-                view.fedToday(),
+                view.fed(),
+                view.feeder(),
                 view.pregnancy() == null ? -1 : PregnancyText.percent(view.progress()),
                 view.milk().map(status -> status.left() > 0).orElse(false),
                 view.shear(),
@@ -73,7 +74,7 @@ public final class HerdStatus {
     }
 
     // Everything worked out once, for the page's lines and for the parts of the entry that sit beside them.
-    private record View(AgeStage stage, boolean female, Familiar familiar, boolean fedToday, @Nullable Pregnancy pregnancy,
+    private record View(AgeStage stage, boolean female, Familiar familiar, HerdEntry.Fed fed, String feeder, @Nullable Pregnancy pregnancy,
                         double progress, Optional<MilkStatus> milk, ShearState shear, @Nullable EggOutlook eggs, AnimalFacts facts) {
     }
 
@@ -89,7 +90,11 @@ public final class HerdStatus {
         Familiar familiar = Familiarity.ready(traits.familiarity())
                 ? Familiar.FAMILIAR
                 : node.everFamiliar() ? Familiar.NO_LONGER : Familiar.NOT_YET;
-        boolean fedToday = Familiarity.fedToday(traits.lastFedTick(), clock);
+        // The contents page's icon is full for hand-feeding and half for a feeding block's meal.
+        HerdEntry.Fed fed = Familiarity.fedToday(traits.lastFedTick(), clock)
+                ? HerdEntry.Fed.HAND
+                : traits.upkeep().fedByFeederOn(GameDay.of(clock)) ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.NOT_FED;
+        String feeder = fed == HerdEntry.Fed.FEEDER ? traits.upkeep().feeder() : "";
         Pregnancy pregnancy = record.alive() ? record.pregnancy() : null;
         double progress = pregnancy == null ? 0.0 : PregnancyClock.progress(now, pregnancy);
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species()));
@@ -116,7 +121,8 @@ public final class HerdStatus {
         );
         AnimalFacts facts = AnimalFacts.builder(size.name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
-                .fedToday(fedToday)
+                .fedToday(LiveFacts.fedToday(traits, clock))
+                .fedBy(StatText.feeder(traits.upkeep(), today))
                 .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
                 .pregnant(pregnancy != null)
                 .pregnancy(progress)
@@ -132,6 +138,7 @@ public final class HerdStatus {
                 .eggs(eggs)
                 .cap(WildCaught.cap(traits.origin(), sheet.needsTaming() || record.tamed(), config.tuning()))
                 .killedByRival(!record.alive() && record.cause() == DeathCause.RIVAL)
+                .ranAway(traits.upkeep().ranAway())
                 .growthTicks(traits.growthTicks())
                 .weight(traits.weight())
                 .health(sheet.health())
@@ -144,7 +151,7 @@ public final class HerdStatus {
                         SizeClass.of(Sex.MALE, pregnancy.fatherScale(), config.sizeFor(pregnancy.fatherSpecies())).name(), pregnancy.fatherSpecies()))
                 .lastBirth(StatText.lastBirth(LiveFacts.offspring(traits), traits.lastBirthTick(), now))
                 .build();
-        return new View(stage, female, familiar, fedToday, pregnancy, progress, milk, shear, eggs, facts);
+        return new View(stage, female, familiar, fed, feeder, pregnancy, progress, milk, shear, eggs, facts);
     }
 
     // A hen counts the eggs she laid on the day the book last saw her, if that is today; a rooster says whether he makes them fertile.

@@ -37,8 +37,21 @@ class StatSheetTest {
         return StatSheet.lines(facts.build()).stream().map(line -> English.of(line.text())).toList();
     }
 
+    private static StatLine line(AnimalFacts.Builder facts, StatKind kind) {
+        return StatSheet.lines(facts.build()).stream().filter(line -> line.kind() == kind).findFirst().orElseThrow();
+    }
+
+    private static String english(StatLine line) {
+        return English.of(line.text());
+    }
+
     private static List<StatKind> kinds(AnimalFacts.Builder facts) {
         return StatSheet.lines(facts.build()).stream().map(StatLine::kind).toList();
+    }
+
+    @Test
+    void aFeederMealNamesTheBlock() {
+        assertEquals("Fed today (Manger)", english(line(cow().fedBy(Text.of("block.barnyard_romance.manger")), FED)));
     }
 
     @Test
@@ -57,11 +70,11 @@ class StatSheetTest {
     }
 
     @Test
-    void notesAndHungerHaveTheirOwnKinds() {
+    void notesAndDetailsHaveTheirOwnKinds() {
         AnimalFacts.Builder calf = AnimalFacts.builder("S", AgeStage.BABY).ageTicks(500L).milk(Text.plain("Milk 1/1")).familiarity(0.2)
                 .seenTicksAgo(3 * DAY).familiar(Familiar.NOT_YET);
 
-        assertEquals(List.of(SIZE, FAMILIARITY, NOTE, NOT_FED, MILK, NOTE), kinds(calf));
+        assertEquals(List.of(SIZE, FAMILIARITY, DETAIL, NOT_FED, MILK, NOTE), kinds(calf));
         assertEquals(NOTE, kinds(cow().diedDay(42L)).get(1));
     }
 
@@ -83,7 +96,7 @@ class StatSheetTest {
 
         assertEquals(List.of("Size M · Adult", "Familiar 20%", "Fed today", "Fertile 90%", "Plain eggs tomorrow (1)", "No rooster nearby",
                 "Not familiar: one egg fewer"), english(hen));
-        assertEquals(List.of(SIZE, FAMILIARITY, FED, FERTILITY, EGGS, NOTE, NOTE), kinds(hen));
+        assertEquals(List.of(SIZE, FAMILIARITY, FED, FERTILITY, EGGS, DETAIL, DETAIL), kinds(hen));
     }
 
     @Test
@@ -106,6 +119,17 @@ class StatSheetTest {
     void aMaleKilledByARivalSaysSo() {
         assertEquals(List.of("Size L · Adult · 18d old", "Died on day 42", "Killed by a rival", "Familiar 80%", "Fertile 90%"),
                 english(cow().diedDay(42L).killedByRival(true)));
+    }
+
+    @Test
+    void aRunawayIsNoted() {
+        AnimalFacts.Builder cow = AnimalFacts.builder("L", AgeStage.ADULT).ticksSinceFed(3 * DAY).familiarity(0.05).familiar(Familiar.NO_LONGER)
+                .ranAway(true);
+
+        assertEquals(List.of("Size L · Adult", "Familiar 5%", "No longer familiar", "Ran away", "Last fed 3d ago"), english(cow));
+        assertEquals(List.of(SIZE, FAMILIARITY, DETAIL, NOTE, NOT_FED), kinds(cow));
+        assertEquals(List.of("Size L · Adult · 18d old", "Died on day 42", "Ran away", "Familiar 80%", "Fertile 90%"),
+                english(cow().diedDay(42L).ranAway(true)));
     }
 
     @Test
@@ -163,7 +187,7 @@ class StatSheetTest {
 
     @Test
     void aHungryBullNotesTheCost() {
-        assertEquals(List.of(SIZE, FAMILIARITY, FED, GROWTH, WEIGHT, HEALTH, VIGOUR, NOTE, BREEDING), kinds(bull().vigourHungry(true)));
+        assertEquals(List.of(SIZE, FAMILIARITY, FED, GROWTH, WEIGHT, HEALTH, VIGOUR, DETAIL, BREEDING), kinds(bull().vigourHungry(true)));
         assertEquals("Hungry: mating costs health", english(bull().vigourHungry(true)).get(7));
     }
 
@@ -172,7 +196,7 @@ class StatSheetTest {
         AnimalFacts.Builder hen = AnimalFacts.builder("M", AgeStage.ADULT).fedToday(true).ticksSinceFed(0L).familiarity(0.2)
                 .eggs(outlook()).eggsToday(Text.plain("Eggs: 2/3 today"));
 
-        assertEquals(List.of(SIZE, FAMILIARITY, FED, EGGS, NOTE, NOTE, NOTE), kinds(hen));
+        assertEquals(List.of(SIZE, FAMILIARITY, FED, EGGS, DETAIL, DETAIL, DETAIL), kinds(hen));
         assertEquals(List.of("Size M · Adult", "Familiar 20%", "Fed today", "Plain eggs tomorrow (1)", "No rooster nearby",
                 "Not familiar: one egg fewer", "Eggs: 2/3 today"), english(hen));
     }
@@ -199,16 +223,16 @@ class StatSheetTest {
     void pregnancyNamesTheFather() {
         AnimalFacts.Builder expecting = cow().father(StatText.father("L", "minecraft:cow"));
 
-        assertEquals(List.of(SIZE, FAMILIARITY, FED, FERTILITY, PREGNANT, NOTE), kinds(expecting));
+        assertEquals(List.of(SIZE, FAMILIARITY, FED, FERTILITY, PREGNANT, DETAIL), kinds(expecting));
         assertEquals("Father L bull", english(expecting).getLast());
     }
 
     @Test
-    void afterBirthTheLastBirthIsANoteUnderBreeding() {
+    void afterBirthTheLastBirthIsADetailUnderBreeding() {
         AnimalFacts.Builder mother = AnimalFacts.builder("L", AgeStage.ADULT).familiarity(0.8).breeding(StatText.READY)
                 .lastBirth(StatText.lastBirth("Calf", 0L, 3 * 60 * 20));
 
-        assertEquals(List.of(SIZE, FAMILIARITY, NOT_FED, BREEDING, NOTE), kinds(mother));
+        assertEquals(List.of(SIZE, FAMILIARITY, NOT_FED, BREEDING, DETAIL), kinds(mother));
         assertEquals("Last birth: Calf, 3m ago", english(mother).getLast());
     }
 

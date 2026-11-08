@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.item;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -41,6 +42,9 @@ public final class BarnyardTab {
         List<ItemStack> contents = new ArrayList<>();
         contents.add(new ItemStack(BarnyardItems.HERD_BOOK));
         contents.add(new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM));
+        for (FeederKind kind : FeederKind.values()) {
+            contents.add(new ItemStack(BarnyardBlocks.item(kind)));
+        }
         if (herdSticks) {
             contents.add(HerdStick.create(HerdTool.info()));
             contents.add(HerdStick.create(HerdTool.familiarity(1)));

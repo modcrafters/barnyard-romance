@@ -15,6 +15,8 @@ public record AnimalFacts(
         long ageTicks,
         // Counted on the overworld clock, like the once-a-day rule.
         boolean fedToday,
+        // The feeding block that fed it today, by name; empty when none did.
+        Text fedBy,
         // -1 when never fed.
         long ticksSinceFed,
         boolean pregnant,
@@ -39,6 +41,8 @@ public record AnimalFacts(
         double cap,
         // Killed by another male in a fight.
         boolean killedByRival,
+        // Ran off for want of care; the note stays until it is familiar again.
+        boolean ranAway,
         // -1 hides the row.
         long growthTicks,
         // -1 hides the row.
@@ -65,6 +69,7 @@ public record AnimalFacts(
         private final AgeStage stage;
         private long ageTicks = -1L;
         private boolean fedToday = false;
+        private Text fedBy = Text.EMPTY;
         private long ticksSinceFed = -1L;
         private boolean pregnant = false;
         private double pregnancy = -1.0;
@@ -80,6 +85,7 @@ public record AnimalFacts(
         private @Nullable EggOutlook eggs = null;
         private double cap = 1.0;
         private boolean killedByRival = false;
+        private boolean ranAway = false;
         private long growthTicks = -1L;
         private double weight = -1.0;
         private float health = -1.0F;
@@ -98,6 +104,11 @@ public record AnimalFacts(
 
         public Builder ageTicks(long ageTicks) {
             this.ageTicks = ageTicks;
+            return this;
+        }
+
+        public Builder fedBy(Text fedBy) {
+            this.fedBy = fedBy;
             return this;
         }
 
@@ -181,6 +192,11 @@ public record AnimalFacts(
             return this;
         }
 
+        public Builder ranAway(boolean ranAway) {
+            this.ranAway = ranAway;
+            return this;
+        }
+
         public Builder growthTicks(long growthTicks) {
             this.growthTicks = growthTicks;
             return this;
@@ -235,6 +251,7 @@ public record AnimalFacts(
             return new AnimalFacts(sizeLetter, stage,
                     ageTicks,
                     fedToday,
+                    fedBy,
                     ticksSinceFed,
                     pregnant,
                     pregnancy,
@@ -250,6 +267,7 @@ public record AnimalFacts(
                     eggs,
                     cap,
                     killedByRival,
+                    ranAway,
                     growthTicks,
                     weight,
                     health,

@@ -117,6 +117,41 @@ In the herd book, each adult hen has an egg icon for tomorrow: speckled for fert
 
 Each species entry can have an `eggs` block: `enabled`, `plainEgg` (an item id), `hatchTicksMin`, `hatchTicksMax`, `smallPerDay`, `largePerDay`, `happyBonus`, `boxRange`, `roosterRange` and `thrownHatchChance`. Chickens lay by default. Another bird lays once its entry has `"eggs": { "enabled": true, "plainEgg": "somemod:duck_egg" }`.
 
+## Feeding blocks
+
+Five blocks feed your animals when you can't:
+
+| Block | Feeds | Made from |
+|---|---|---|
+| **Bird Feeder** | chickens and parrots, and Naturalist's ducks and turkeys | a stick, seeds and planks |
+| **Trough** | rabbits | wooden slabs |
+| **Feeder** | pigs and goats, and Naturalist's boar | planks around a hay bale |
+| **Manger** | cows, mooshrooms, sheep, the horse family, llamas and camels, and Naturalist's deer and ostriches | slabs and planks around a hay bale |
+| **Pet Bowl** | wolves, cats and ocelots | bricks |
+
+Each takes any ordinary food one of its animals eats, by hand, from a hopper or from pipes; superfoods are for feeding by hand. Its herd is the familiar animals of its kinds within 16 blocks (`feederRange`) that can walk to it. Each morning from sunrise they come over a few at a time, nearest first, and each eats one item: it stands a few seconds with its head down, crumbs at its mouth, then wanders off to make room. A pet told to sit within two blocks of its bowl eats where it sits.
+
+A meal from a block is the animal's meal for the day. It heals, keeps hunger away and keeps milk, eggs and Vigour coming, but it never wins familiarity, puts an animal in love or does what a superfood does: that takes your hand. The herd book says which block fed an animal today, with a half drumstick in its list.
+
+While you're away the block keeps feeding. When you come back, the days you missed are settled in order, the food it held shared evenly among its herd day by day, and the days it ran out count as hungry ones.
+
+You can see how full a block is: its food rises and falls through four levels, full at two days' food for its herd (one item is one animal's meal). A comparator reads it too, as it reads a chest. All but the Bird Feeder face you when placed. The Manger and the Feeder are as tall as a fence to livestock, so nobody climbs onto them; you can step over a Pet Bowl, and a chicken may hop onto its feeder.
+
+**Going hungry.** An animal you've won over loses half a heart for each day it goes without food, but never drops below half a heart, and loses 5% familiarity as before. One neglected down to under 10% familiarity may jump the fence one day, one chance in ten, and run off: its herd book page says it ran away, and you can win it back with food. Tamed pets never run off, and nor does an animal on a lead or being ridden.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `hunger.hurts` | true | Whether hungry animals lose health |
+| `hunger.dailyDamage` | 1.0 | Health lost for each hungry day |
+| `hunger.minHealth` | 1.0 | Hunger never takes an animal below this |
+| `hunger.catchUp` | `EVERY_DAY` | What days away from a pen do: all of them count, `ONE_DAY` only one, or `NONE` |
+| `tuning.feederRange` | 16 | Blocks a feeding block's herd can be from it |
+| `tuning.escapeBelow` | 0.10 | Familiarity under which a neglected animal may run off |
+| `tuning.escapeChance` | 0.10 | Chance a day that it does (0 turns it off) |
+| `tuning.birdFeederFullDays`, `troughFullDays`, `feederFullDays`, `mangerFullDays`, `petBowlFullDays` | 2 | Days of food for its herd that show as full (1 to 365); only the look, not how much it holds |
+
+A pack can move a species to another block with the entity tags `barnyard_romance:feeds_from/<block>`.
+
 ## Naturalist
 
 With [Naturalist](https://modrinth.com/mod/naturalist) installed, five of its creatures count as livestock. They get sexes, sizes and familiarity, and males are only different in size.

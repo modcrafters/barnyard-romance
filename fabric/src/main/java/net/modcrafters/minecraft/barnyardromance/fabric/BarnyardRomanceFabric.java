@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -20,6 +21,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -64,6 +66,13 @@ public class BarnyardRomanceFabric implements ModInitializer {
         Registry.register(BuiltInRegistries.ITEM, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX_ITEM);
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX_ENTITY);
         Registry.register(BuiltInRegistries.MENU, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX_MENU);
+        for (FeederKind kind : FeederKind.values()) {
+            Registry.register(BuiltInRegistries.BLOCK, BarnyardBlocks.id(kind), BarnyardBlocks.block(kind));
+            Registry.register(BuiltInRegistries.ITEM, BarnyardBlocks.id(kind), BarnyardBlocks.item(kind));
+        }
+        // Hoppers and pipes reach the feeding blocks through the Transfer API's fallback for vanilla containers.
+        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, BarnyardBlocks.FEEDING_BLOCK_ID, BarnyardBlocks.FEEDER_ENTITY);
+        Registry.register(BuiltInRegistries.MENU, BarnyardBlocks.FEEDING_BLOCK_ID, BarnyardBlocks.FEEDER_MENU);
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, BarnyardTab.ID, BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
@@ -100,6 +109,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
             }
         });
         ServerTickEvents.END_SERVER_TICK.register(server -> HerdBooks.tick(server, server.getTickCount()));
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> BarnyardRomance.serverStopped());
         PayloadTypeRegistry.clientboundPlay().registerLarge(HerdBookPayloads.ShowBook.TYPE, HerdBookPayloads.ShowBook.STREAM_CODEC,
                 HerdBookPayloads.ShowBook.MAX_BYTES);
         PayloadTypeRegistry.serverboundPlay().register(HerdBookPayloads.RemoveFromBook.TYPE, HerdBookPayloads.RemoveFromBook.STREAM_CODEC);

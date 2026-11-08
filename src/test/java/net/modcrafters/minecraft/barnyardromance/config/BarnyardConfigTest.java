@@ -18,6 +18,57 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardConfigTest {
     @Test
+    void hungerDefaultsWhenMissing() {
+        assertEquals(HungerSettings.DEFAULTS, BarnyardConfig.parse("{}").hunger());
+    }
+
+    @Test
+    void hungerBlockParses() {
+        assertEquals(new HungerSettings(false, 0.0, 2.0, HungerSettings.CatchUp.ONE_DAY), BarnyardConfig.parse("""
+                { "hunger": { "hurts": false, "minHealth": 0, "dailyDamage": 2, "catchUp": "ONE_DAY" } }
+                """).hunger());
+    }
+
+    @Test
+    void catchUpIgnoresCase() {
+        assertEquals(HungerSettings.CatchUp.NONE, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "none" } }
+                """).hunger().catchUp());
+        assertEquals(HungerSettings.CatchUp.ONE_DAY, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "one_day" } }
+                """).hunger().catchUp());
+        assertEquals(HungerSettings.CatchUp.EVERY_DAY, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "Every_Day" } }
+                """).hunger().catchUp());
+    }
+
+    @Test
+    void unknownCatchUpFallsBackToEveryDay() {
+        assertEquals(HungerSettings.CatchUp.EVERY_DAY, BarnyardConfig.parse("""
+                { "hunger": { "catchUp": "SOMETIMES" } }
+                """).hunger().catchUp());
+    }
+
+    @Test
+    void negativeNumbersClampToZero() {
+        HungerSettings hunger = BarnyardConfig.parse("""
+                { "hunger": { "minHealth": -3, "dailyDamage": -1 } }
+                """).hunger();
+
+        assertEquals(0.0, hunger.minHealth());
+        assertEquals(0.0, hunger.dailyDamage());
+    }
+
+    @Test
+    void hungerRoundTrips() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "hunger": { "hurts": false, "minHealth": 2.5, "dailyDamage": 3, "catchUp": "NONE" } }
+                """);
+
+        assertEquals(config.hunger(), BarnyardConfig.parse(config.toJson()).hunger());
+    }
+
+    @Test
     void herdSticksAreOffByDefault() {
         assertFalse(BarnyardConfig.parse("{}").herdSticks());
     }

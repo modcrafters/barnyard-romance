@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_grains": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#barnyard_romance:superfood/grains"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "barnyard_romance:stud_mash"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_grains"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "barnyard_romance:stud_mash"
+    ]
+  }
+}

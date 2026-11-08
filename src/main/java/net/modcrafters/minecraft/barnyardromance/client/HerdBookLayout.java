@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 // How the herd book is laid out: species bookmarks, contents pages grouped Females, Males, Kids, and the order
 // the arrows step through. Names come in already translated, so this has no Minecraft types and is unit tested.
 public final class HerdBookLayout {
-    public static final int LINES = 12;
+    public static final int LINES = 14;
     // How many bookmarks fit down one edge of the book.
     public static final int TABS_PER_SIDE = 12;
     public static final int TAB_LETTERS = 10;
@@ -43,7 +44,24 @@ public final class HerdBookLayout {
     public record Tab(String species, Side side, int column, int row) {
     }
 
+    // A row of an animal's page and the details under it, which show in its tooltip instead of on the page.
+    public record Folded<T>(T line, List<T> details) {
+    }
+
     private HerdBookLayout() {
+    }
+
+    // Each detail joins the row above it; one with no row above keeps a row of its own.
+    public static <T> List<Folded<T>> foldDetails(List<T> lines, Predicate<T> isDetail) {
+        List<Folded<T>> rows = new ArrayList<>();
+        for (T line : lines) {
+            if (isDetail.test(line) && !rows.isEmpty()) {
+                rows.getLast().details().add(line);
+            } else {
+                rows.add(new Folded<>(line, new ArrayList<>()));
+            }
+        }
+        return rows;
     }
 
     // Species with at least one living animal, sorted by their translated names.

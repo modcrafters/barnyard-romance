@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.client;
 
+import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
@@ -41,6 +42,7 @@ public class BarnyardRomanceFabricClient implements ClientModInitializer {
                 AnimalHoverTooltip::render
         );
         MenuScreens.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
+        MenuScreens.register(BarnyardBlocks.FEEDER_MENU, FeederScreen::new);
         BlockEntityRenderers.register(BarnyardBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(HerdBookPayloads.ShowBook.TYPE, (payload, context) -> HerdBookClient.show(payload));
     }

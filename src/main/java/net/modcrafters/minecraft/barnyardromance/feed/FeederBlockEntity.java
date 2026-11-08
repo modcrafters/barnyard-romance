@@ -1,0 +1,388 @@
+package net.modcrafters.minecraft.barnyardromance.feed;
+
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import org.jspecify.annotations.Nullable;
+//? if >=1.21.6 {
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+*///?}
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
+
+// Nine slots of plain food for a feeding block's animals. Food goes in by hand, hopper or pipe from any side, but
+// only what FeederFoods allows, and only the animals take it out (takeOne). The block remembers its herd (FeederHerd)
+// and, when its pen loads after missed days, settles them for the whole herd at once (FeederCatchUp).
+public class FeederBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+    public static final int SLOTS = 9;
+    private static final int[] ALL_SLOTS = IntStream.range(0, SLOTS).toArray();
+    private static final long NEVER = -1L;
+    // A block that hasn't ticked for longer than this isn't running (unloaded, outside the world border, or waiting
+    // for the animals around it to load), so no animal waits for it.
+    private static final long RUNNING_TICKS = 2L;
+
+    private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+    private final FeederHerd herd = new FeederHerd();
+    // The herd's days before this one are settled.
+    private long settledDay = NEVER;
+    // The last day the block ticked after sunrise, when its herd could walk over and eat from it.
+    private long liveDay = NEVER;
+    // Not saved: a catch-up cut short by an unload starts again from where each animal's own days have reached.
+    private @Nullable FeederCatchUp catchUp;
+    // A block just placed finds its herd on its first tick; one loaded from a save has its herd already.
+    private boolean placed = true;
+    // The game time it last ticked with the animals around it loaded.
+    private long lastTick = Long.MIN_VALUE;
+    // Every tick, waiting or not, so a wait for the animals isn't taken for an unload (see TickGap).
+    private final TickGap gap = new TickGap();
+    // Not saved, and always 0 in a game: a test runs a block on a clock of its own, this far from the overworld's.
+    private long clockShift;
+    // For the window: the days of food and the herd's size.
+    private final ContainerData windowData = new ContainerData() {
+        @Override
+        public int get(int index) {
+            int animals = herd.size();
+            if (index == FeederMenu.ANIMALS) {
+                return animals;
+            }
+            return food() / Math.max(1, animals);
+        }
+
+        @Override
+        public void set(int index, int value) {
+        }
+
+        @Override
+        public int getCount() {
+            return FeederMenu.DATA;
+        }
+    };
+
+    public FeederBlockEntity(BlockPos pos, BlockState state) {
+        super(BarnyardBlocks.FEEDER_ENTITY, pos, state);
+    }
+
+    public FeederKind kind() {
+        return getBlockState().getBlock() instanceof FeederBlock block ? block.kind() : FeederKind.MANGER;
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, FeederBlockEntity feeder) {
+        if (level instanceof ServerLevel server) {
+            feeder.tick(server, feeder.clock(server));
+        }
+    }
+
+    // One tick at this overworld clock time (a test passes its own): the herd is found again on the block's own tick
+    // of the minute, the herd's missed days are settled once a day has turned, and from sunrise the herd walks over to
+    // eat (MorningFeeding) on the block's own tick of each second.
+    public void tick(ServerLevel level, long clock) {
+        // Inventory edits update immediately; this also picks up config reloads and direct stack edits.
+        if (placed || Math.floorMod(level.getGameTime() - refreshSlot(), 20L) == 0L) {
+            updateFoodLevel();
+        }
+        long today = GameDay.of(clock);
+        gap.tick(level.getGameTime());
+        boolean refresh = placed || FeederHerd.due(level.getGameTime(), refreshSlot());
+        // Finding the herd and settling its days both need the animals around the block. Entities load apart from
+        // blocks, and a neighbouring chunk's may come later, so the block waits for them. Its herd doesn't wait for it
+        // meanwhile (see running).
+        if ((refresh || catchUp != null || settledDay < today) && !animalsLoaded(level, getBlockPos())) {
+            return;
+        }
+        // Ticking all along, through any wait for its animals, it ran on to the end of its last live day, so the
+        // morning feeding had all of it. Loaded again after a break, it may have stopped partway through that day.
+        boolean ranOn = gap.ranOn();
+        lastTick = level.getGameTime();
+        if (refresh) {
+            placed = false;
+            refreshHerd(level);
+        }
+        if (catchUp == null && settledDay < today) {
+            catchUp = FeederCatchUp.start(this, level, today, liveDay, ranOn);
+        }
+        if (catchUp != null && catchUp.step(this, level, FeederCatchUp.ANIMAL_DAYS_PER_TICK)) {
+            settledDay = catchUp.today();
+            catchUp = null;
+            setChanged();
+        }
+        if (catchUp == null && liveDay < today && GameDay.afterSunrise(clock)) {
+            liveDay = today;
+            setChanged();
+        }
+        // Only once today is settled, and so only on a day that is live: catch-up never hands out food for it again.
+        if (catchUp == null && settledDay >= today && liveDay == today
+                && Math.floorMod(level.getGameTime() - refreshSlot(), MorningFeeding.ROUND_TICKS) == 0L) {
+            MorningFeeding.tick(this, level, clock);
+        }
+    }
+
+    public void refreshHerd(ServerLevel level) {
+        HerdRefresh.refresh(this, level);
+    }
+
+    // The animals that eat here, nearest first when last found.
+    public List<UUID> herd() {
+        return herd.members();
+    }
+
+    public boolean herdHolds(UUID id) {
+        return herd.contains(id);
+    }
+
+    void setHerd(List<UUID> ids) {
+        herd.set(ids);
+        index();
+        setChanged();
+    }
+
+    // The overworld clock as this block sees it: the overworld's own in a game.
+    public long clock(ServerLevel level) {
+        return level.getOverworldClockTime() + clockShift;
+    }
+
+    // For tests: the block runs on this clock from now on, moving on with the overworld's.
+    public void runOnClock(ServerLevel level, long clock) {
+        clockShift = clock - level.getOverworldClockTime();
+    }
+
+    public long settledDay() {
+        return settledDay;
+    }
+
+    public int refreshSlot() {
+        return FeederHerd.refreshSlot(getBlockPos().hashCode());
+    }
+
+    // One item eaten from the first slot with food in it; empty when there's nothing left.
+    public ItemStack takeOne(ServerLevel level) {
+        for (int slot = 0; slot < SLOTS; slot++) {
+            ItemStack stack = items.get(slot);
+            if (!stack.isEmpty()) {
+                ItemStack taken = stack.split(1);
+                setChanged();
+                return taken;
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    // Every item inside, counted one by one.
+    public int food() {
+        int food = 0;
+        for (ItemStack stack : items) {
+            food += stack.getCount();
+        }
+        return food;
+    }
+
+    @Override
+    public void setChanged() {
+        super.setChanged();
+        updateFoodLevel();
+    }
+
+    private void updateFoodLevel() {
+        if (!(level instanceof ServerLevel server)) {
+            return;
+        }
+        BlockState state = server.getBlockState(worldPosition);
+        IntegerProperty property;
+        int fullDays;
+        if (state.hasProperty(MangerBlock.HAY_LEVEL)) {
+            property = MangerBlock.HAY_LEVEL;
+            fullDays = BarnyardConfig.current().tuning().mangerFullDays();
+        } else if (state.hasProperty(GrainFeederBlock.FOOD_LEVEL)) {
+            property = GrainFeederBlock.FOOD_LEVEL;
+            fullDays = switch (kind()) {
+                case BIRD_FEEDER -> BarnyardConfig.current().tuning().birdFeederFullDays();
+                case PET_BOWL -> BarnyardConfig.current().tuning().petBowlFullDays();
+                case TROUGH -> BarnyardConfig.current().tuning().troughFullDays();
+                default -> BarnyardConfig.current().tuning().feederFullDays();
+            };
+        } else {
+            return;
+        }
+        int fill = FeederFill.level(food(), herd.size(), fullDays);
+        if (state.getValue(property) != fill) {
+            server.setBlock(worldPosition, state.setValue(property, fill), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    // The server decides; the client's copy takes anything and is corrected by it.
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        return !(level instanceof ServerLevel server) || FeederFoods.accepts(server, kind(), stack);
+    }
+
+    @Override
+    public int[] getSlotsForFace(Direction side) {
+        return ALL_SLOTS;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        return canPlaceItem(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        return false;
+    }
+
+    @Override
+    public int getContainerSize() {
+        return SLOTS;
+    }
+
+    @Override
+    protected NonNullList<ItemStack> getItems() {
+        return items;
+    }
+
+    @Override
+    protected void setItems(NonNullList<ItemStack> items) {
+        this.items = items;
+    }
+
+    @Override
+    protected Component getDefaultName() {
+        return getBlockState().getBlock().getName();
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int containerId, Inventory inventory) {
+        return new FeederMenu(containerId, inventory, this, windowData);
+    }
+
+    ContainerData windowData() {
+        return windowData;
+    }
+
+    @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+        index();
+    }
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        index();
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        FeederIndex.remove(this);
+    }
+
+    private void index() {
+        if (level instanceof ServerLevel && !isRemoved()) {
+            FeederIndex.add(this);
+        }
+    }
+
+    @Nullable GlobalPos globalPos() {
+        return level == null ? null : GlobalPos.of(level.dimension(), getBlockPos());
+    }
+
+    // Running now on the animal's server, so it will get to the animal: it has ticked within the last RUNNING_TICKS
+    // with the animals around it loaded.
+    boolean running(Animal animal) {
+        return !isRemoved() && level instanceof ServerLevel server && animal.level() instanceof ServerLevel other
+                && server.getServer() == other.getServer() && lastTick >= server.getGameTime() - RUNNING_TICKS;
+    }
+
+    // Whether the entities are loaded in every chunk the reach of a block here touches: nine at the usual reach.
+    public static boolean animalsLoaded(ServerLevel level, BlockPos pos) {
+        int range = BarnyardConfig.current().tuning().feederRange();
+        for (int x = FeederHerd.firstChunk(pos.getX(), range); x <= FeederHerd.lastChunk(pos.getX(), range); x++) {
+            for (int z = FeederHerd.firstChunk(pos.getZ(), range); z <= FeederHerd.lastChunk(pos.getZ(), range); z++) {
+                //? if >=26.1 {
+                long chunk = ChunkPos.pack(x, z);
+                //?} else
+                //long chunk = ChunkPos.asLong(x, z);
+                if (!level.areEntitiesLoaded(chunk)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    //? if >=1.21.6 {
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(input, items);
+        herd.set(input.read("herd", UUIDUtil.CODEC.listOf()).orElse(List.of()));
+        settledDay = input.getLongOr("settledDay", NEVER);
+        liveDay = input.getLongOr("liveDay", NEVER);
+        loaded();
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        ContainerHelper.saveAllItems(output, items);
+        output.store("herd", UUIDUtil.CODEC.listOf(), herd.members());
+        output.putLong("settledDay", settledDay);
+        output.putLong("liveDay", liveDay);
+    }
+    //?} else {
+    /*@Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, items, registries);
+        herd.set(tag.contains("herd") ? UUIDUtil.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("herd")).result().orElse(List.of()) : List.of());
+        settledDay = tag.contains("settledDay") ? tag.getLong("settledDay") : NEVER;
+        liveDay = tag.contains("liveDay") ? tag.getLong("liveDay") : NEVER;
+        loaded();
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        ContainerHelper.saveAllItems(tag, items, registries);
+        UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, herd.members()).result().ifPresent(saved -> tag.put("herd", saved));
+        tag.putLong("settledDay", settledDay);
+        tag.putLong("liveDay", liveDay);
+    }
+    *///?}
+
+    // Loaded from a save, or given new data in place: the herd is known, and the index is told of it if the block is
+    // in a level already.
+    private void loaded() {
+        placed = false;
+        index();
+    }
+}

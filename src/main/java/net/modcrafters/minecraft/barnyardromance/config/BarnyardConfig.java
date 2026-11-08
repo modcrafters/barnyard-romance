@@ -49,6 +49,7 @@ public final class BarnyardConfig {
     private final BellySettings belly;
     private final Map<String, SpeciesSettings> species;
     private final List<String> exclude;
+    private final HungerSettings hunger;
     private final Tuning tuning;
     // eggsFor runs several times per chicken per tick, so each species' eggs block is read once.
     private final Map<String, EggSettings> eggs = new ConcurrentHashMap<>();
@@ -65,6 +66,7 @@ public final class BarnyardConfig {
             BellySettings belly,
             Map<String, SpeciesSettings> species,
             List<String> exclude,
+            HungerSettings hunger,
             Tuning tuning
     ) {
         this.enabled = enabled;
@@ -78,11 +80,12 @@ public final class BarnyardConfig {
         this.belly = belly;
         this.species = species;
         this.exclude = exclude;
+        this.hunger = hunger;
         this.tuning = tuning;
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, herdSticksByDefault(), 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), Tuning.DEFAULTS);
+        return new BarnyardConfig(true, herdSticksByDefault(), 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
     }
 
     // The dev client runs set -Dbarnyard_romance.herd_sticks=true; a config file's own herdSticks wins over it.
@@ -173,6 +176,7 @@ public final class BarnyardConfig {
                 belly,
                 Collections.unmodifiableMap(species),
                 exclude(object),
+                object.get("hunger") instanceof JsonObject hunger ? HungerSettings.from(hunger) : HungerSettings.DEFAULTS,
                 object.get("tuning") instanceof JsonObject tuning ? Tuning.from(tuning) : Tuning.DEFAULTS
         );
     }
@@ -213,6 +217,7 @@ public final class BarnyardConfig {
         JsonArray excludeArray = new JsonArray();
         exclude.forEach(excludeArray::add);
         object.add("exclude", excludeArray);
+        object.add("hunger", hunger.toJson());
         object.add("tuning", tuning.toJson());
         StringWriter writer = new StringWriter();
         JsonWriter jsonWriter = new JsonWriter(writer);
@@ -230,6 +235,10 @@ public final class BarnyardConfig {
 
     public double femaleRatio() {
         return femaleRatio;
+    }
+
+    public HungerSettings hunger() {
+        return hunger;
     }
 
     public Tuning tuning() {

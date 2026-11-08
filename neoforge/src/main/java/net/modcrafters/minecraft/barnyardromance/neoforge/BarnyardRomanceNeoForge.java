@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
@@ -37,10 +38,18 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.minecraft.core.Direction;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+//? if >=1.21.9 {
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
+//?} else
+//import net.neoforged.neoforge.items.wrapper.SidedInvWrapper;
 
 @Mod(Constants.MOD_ID)
 public class BarnyardRomanceNeoForge {
@@ -49,6 +58,7 @@ public class BarnyardRomanceNeoForge {
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
+        modBus.addListener(BarnyardRomanceNeoForge::registerCapabilities);
         modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(BarnyardRomance::setup));
         NeoForgeBreedingGameTests.register(modBus);
         //? if >=1.21.9 {
@@ -61,6 +71,7 @@ public class BarnyardRomanceNeoForge {
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> BarnyardRomance.serverStopped());
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
         NeoForge.EVENT_BUS.addListener((TagsUpdatedEvent event) -> FoodData.tagsReloaded());
@@ -95,6 +106,12 @@ public class BarnyardRomanceNeoForge {
         event.register(Registries.ITEM, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ITEM);
         event.register(Registries.BLOCK_ENTITY_TYPE, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ENTITY);
         event.register(Registries.MENU, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_MENU);
+        for (FeederKind kind : FeederKind.values()) {
+            event.register(Registries.BLOCK, BarnyardBlocks.id(kind), () -> BarnyardBlocks.block(kind));
+            event.register(Registries.ITEM, BarnyardBlocks.id(kind), () -> BarnyardBlocks.item(kind));
+        }
+        event.register(Registries.BLOCK_ENTITY_TYPE, BarnyardBlocks.FEEDING_BLOCK_ID, () -> BarnyardBlocks.FEEDER_ENTITY);
+        event.register(Registries.MENU, BarnyardBlocks.FEEDING_BLOCK_ID, () -> BarnyardBlocks.FEEDER_MENU);
         event.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), () -> BarnyardTab.titled(CreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
@@ -108,6 +125,19 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
                 () -> BarnyardParticles.OLD_HEART
         );
+    }
+
+    // Pipes from other mods reach the feeding blocks through the item capability, which follows the block's own rules
+    // for each side: food in, nothing out. The wrappers let a caller with no side take items out, but that's still
+    // automation, so it counts as coming from above.
+    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        //? if >=1.21.9 {
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BarnyardBlocks.FEEDER_ENTITY,
+                (feeder, side) -> new WorldlyContainerWrapper(feeder, side == null ? Direction.UP : side));
+        //?} else {
+        /*event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BarnyardBlocks.FEEDER_ENTITY,
+                (feeder, side) -> new SidedInvWrapper(feeder, side == null ? Direction.UP : side));
+        *///?}
     }
 
     // From 1.21.6 on, the client registers its own handler for ShowBook (see BarnyardRomanceNeoForgeClient).

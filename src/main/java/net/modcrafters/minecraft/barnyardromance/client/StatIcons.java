@@ -16,6 +16,8 @@ public final class StatIcons {
 
     private static final Identifier HEART = sprite("inspector/heart");
     private static final Identifier GOLD_HEART = sprite("inspector/gold_heart");
+    private static final Identifier BREEDING = sprite("inspector/breeding");
+    private static final Identifier PREGNANT = sprite("herd_book/pregnant");
     private static final Identifier WHEAT = sprite("inspector/wheat");
     private static final Identifier HOURGLASS = sprite("inspector/hourglass");
     private static final Identifier WEIGHT = sprite("inspector/weight");
@@ -34,18 +36,19 @@ public final class StatIcons {
 
     public static @Nullable Identifier of(StatKind kind) {
         return switch (kind) {
-            case SIZE, NOTE -> null;
+            case SIZE, NOTE, DETAIL -> null;
             case FAMILIARITY -> HEART;
             case FED, NOT_FED -> WHEAT;
             case GROWTH -> HOURGLASS;
             case WEIGHT -> WEIGHT;
-            case HEALTH, BREEDING -> GOLD_HEART;
+            case HEALTH -> GOLD_HEART;
+            case BREEDING -> BREEDING;
             case FERTILITY -> FERTILITY;
             case VIGOUR -> VIGOUR;
             case MILK -> MILK;
             case SHEAR -> SHEARS;
             case EGGS -> EGG;
-            case PREGNANT -> HEART;
+            case PREGNANT -> PREGNANT;
         };
     }
 

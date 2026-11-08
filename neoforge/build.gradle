@@ -78,6 +78,17 @@ neoForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'r
 neoForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
 neoForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
 
+// Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
+// midnight partway through and hunger or Vigour refills would hit unrelated tests. 1.21.1 saves the world
+// in world, 26.3 in gametestserver.
+['gameTestServer': 'runs/gametest', 'gameTestServerNaturalist': 'runs/naturalist-gametest'].each { runName, runDir ->
+    def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
+        description = "Deletes the ${runDir} world so the run starts fresh."
+        delete file("${runDir}/world"), file("${runDir}/gametestserver")
+    }
+    neoForge.runs.named(runName) { it.taskBefore(clean) }
+}
+
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 // Implement mcgradleconventions loader attribute

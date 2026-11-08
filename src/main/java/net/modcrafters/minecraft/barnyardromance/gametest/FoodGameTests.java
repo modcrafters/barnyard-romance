@@ -24,6 +24,9 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -56,6 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // In-game checks for diets, food files and superfoods, run by each loader's game test server.
 public final class FoodGameTests {
@@ -78,6 +84,7 @@ public final class FoodGameTests {
             new BreedingGameTests.Case("golden_bran_feeds_the_litter", 20, FoodGameTests::goldenBranFeedsTheLitter),
             new BreedingGameTests.Case("superfoods_need_a_pregnant_mother", 20, FoodGameTests::superfoodsNeedAPregnantMother),
             new BreedingGameTests.Case("superfood_recipes_load", 20, FoodGameTests::superfoodRecipesLoad),
+            new BreedingGameTests.Case("every_recipe_unlocks_in_the_recipe_book", 20, FoodGameTests::everyRecipeUnlocksInTheRecipeBook),
             new BreedingGameTests.Case("dairy_mash_starts_milk", 20, FoodGameTests::dairyMashStartsMilk),
             new BreedingGameTests.Case("ordinary_food_can_start_milk", 20, FoodGameTests::ordinaryFoodCanStartMilk),
             new BreedingGameTests.Case("a_known_answer_follows_a_food_file_reload", 20, FoodGameTests::aKnownAnswerFollowsAFoodFileReload),
@@ -455,6 +462,31 @@ public final class FoodGameTests {
             helper.assertTrue(lore != null && lore.lines().size() == lines, item + " has no tooltip");
         }
         helper.succeed();
+    }
+
+    // Each of the mod's recipes is handed out by an advancement, as vanilla's are, so it shows in the recipe book.
+    public static void everyRecipeUnlocksInTheRecipeBook(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        Set<String> unlocked = new HashSet<>();
+        for (AdvancementHolder advancement : server.getAdvancements().getAllAdvancements()) {
+            advancement.value().rewards().recipes().forEach(recipe -> unlocked.add(modId(recipe.toString())));
+        }
+        int recipes = 0;
+        for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
+            String id = modId(holder.id().toString());
+            if (!id.isEmpty()) {
+                recipes++;
+                helper.assertTrue(unlocked.contains(id), "nothing unlocks the " + id + " recipe");
+            }
+        }
+        helper.assertTrue(recipes >= 12, "only " + recipes + " of the mod's recipes loaded");
+        helper.succeed();
+    }
+
+    // The mod's id in a recipe key's text: a ResourceKey on 26.3 and a plain id on 1.21.1 print it differently.
+    private static String modId(String text) {
+        Matcher match = Pattern.compile(Constants.MOD_ID + ":[a-z0-9_/]+").matcher(text);
+        return match.find() ? match.group() : "";
     }
 
     static Animal pregnantCow(GameTestHelper helper, double motherFamiliarity) {

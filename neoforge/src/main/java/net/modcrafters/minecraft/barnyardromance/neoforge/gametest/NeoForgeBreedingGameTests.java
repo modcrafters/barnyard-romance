@@ -4,17 +4,27 @@ import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.FeederGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.GameTestCompat;
 import net.modcrafters.minecraft.barnyardromance.gametest.NaturalistGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.StatGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.UpkeepGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FightGameTests;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
@@ -30,6 +40,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+//? if >=1.21.9 {
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+//?} else {
+/*import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+*///?}
 //? if >=1.21.5 {
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -92,6 +110,8 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(EggGameTests.CASES);
         cases.addAll(NaturalistGameTests.CASES);
         cases.addAll(VigourGameTests.CASES);
+        cases.addAll(UpkeepGameTests.CASES);
+        cases.addAll(FeederGameTests.CASES);
         cases.addAll(StatGameTests.CASES);
         cases.addAll(CourtshipGameTests.CASES);
         cases.addAll(FightGameTests.CASES);
@@ -104,6 +124,8 @@ public final class NeoForgeBreedingGameTests {
                 helper -> refusedBreeding(helper, Answer.NOTHING)));
         cases.add(new BreedingGameTests.Case("swapped_baby_is_the_one_carried", 20,
                 NeoForgeBreedingGameTests::swappedBabyIsTheOneCarried));
+        cases.add(new BreedingGameTests.Case("pipes_put_food_in_a_manger_but_take_none_out", 20,
+                NeoForgeBreedingGameTests::pipesPutFoodInAMangerButTakeNoneOut));
         return List.copyOf(cases);
     }
 
@@ -181,6 +203,52 @@ public final class NeoForgeBreedingGameTests {
         //String first = pregnancy.litter().getFirst().getString("id");
         helper.assertTrue("minecraft:cow".equals(first), "the first baby is " + first + ", not the swapped calf");
         helper.succeed();
+    }
+
+    // Other mods' pipes use the item capability rather than the container, so it must keep the block's rules: from a
+    // side or from no side at all, wheat goes in, beef doesn't, and nothing comes out.
+    private static void pipesPutFoodInAMangerButTakeNoneOut(GameTestHelper helper) {
+        FeederBlockEntity manger = FeederGameTests.feeder(helper, BarnyardBlocks.MANGER, FeederGameTests.FEEDER);
+        BlockPos at = helper.absolutePos(FeederGameTests.FEEDER);
+        for (Direction side : new Direction[]{Direction.UP, Direction.NORTH, null}) {
+            int[] moved = throughThePipe(helper, at, side);
+            helper.assertTrue(moved[0] == 2, "a pipe from " + side + " put in " + moved[0] + " of 2 wheat");
+            helper.assertTrue(moved[1] == 0, "a pipe from " + side + " put in " + moved[1] + " beef");
+            helper.assertTrue(moved[2] == 0, "a pipe from " + side + " took out " + moved[2] + " wheat");
+        }
+        helper.assertTrue(manger.food() == 6, "the Manger holds " + manger.food() + " items, not 6 wheat");
+        helper.succeed();
+    }
+
+    // Wheat put in, beef put in, and wheat taken out.
+    private static int[] throughThePipe(GameTestHelper helper, BlockPos at, Direction side) {
+        //? if >=1.21.9 {
+        ResourceHandler<ItemResource> pipe = helper.getLevel().getCapability(Capabilities.Item.BLOCK, at, side);
+        if (pipe == null) {
+            throw GameTestCompat.failure(helper, "the Manger has no item capability from " + side);
+        }
+        try (Transaction transaction = Transaction.openRoot()) {
+            int[] moved = {
+                    pipe.insert(ItemResource.of(Items.WHEAT), 2, transaction),
+                    pipe.insert(ItemResource.of(Items.BEEF), 2, transaction),
+                    pipe.extract(ItemResource.of(Items.WHEAT), 2, transaction)
+            };
+            transaction.commit();
+            return moved;
+        }
+        //?} else {
+        /*IItemHandler pipe = helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, at, side);
+        if (pipe == null) {
+            throw GameTestCompat.failure(helper, "the Manger has no item capability from " + side);
+        }
+        int wheat = 2 - ItemHandlerHelper.insertItem(pipe, new ItemStack(Items.WHEAT, 2), false).getCount();
+        int beef = 2 - ItemHandlerHelper.insertItem(pipe, new ItemStack(Items.BEEF, 2), false).getCount();
+        int out = 0;
+        for (int slot = 0; slot < pipe.getSlots(); slot++) {
+            out += pipe.extractItem(slot, 2, false).getCount();
+        }
+        return new int[]{wheat, beef, out};
+        *///?}
     }
 
     private static Identifier id(String path) {

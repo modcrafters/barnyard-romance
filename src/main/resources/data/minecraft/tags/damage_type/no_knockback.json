@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "barnyard_romance:old_age"
+    "barnyard_romance:old_age",
+    "barnyard_romance:hunger"
   ]
 }

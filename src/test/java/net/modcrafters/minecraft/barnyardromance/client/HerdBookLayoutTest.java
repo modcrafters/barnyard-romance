@@ -77,15 +77,17 @@ class HerdBookLayoutTest {
     @Test
     void aHeaderNeverEndsAPage() {
         List<HerdBookLayout.Row> rows = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        int females = HerdBookLayout.LINES - 2;
+        for (int i = 0; i < females; i++) {
             rows.add(cow(i, "Cow " + (char) ('a' + i), true, false));
         }
         rows.add(cow(50, "Tom", false, false));
 
         List<List<HerdBookLayout.Line>> pages = HerdBookLayout.contents(rows, "minecraft:cow");
 
-        // Header + 10 females fill 11 lines; the males' header would be line 12, so it starts page 2.
-        assertEquals(11, pages.getFirst().size());
+        // The females' header and the females fill all but the last line; the males' header would be that last line,
+        // so it starts page 2.
+        assertEquals(HerdBookLayout.LINES - 1, pages.getFirst().size());
         assertEquals(new HerdBookLayout.Header(HerdBookLayout.Group.MALES), pages.get(1).getFirst());
         assertEquals(1, HerdBookLayout.pageOf(pages, id(50)));
     }
@@ -246,5 +248,23 @@ class HerdBookLayoutTest {
         assertEquals(32, HerdBookLayout.familyHeight(false, false, 10, 9, 10));
         assertEquals(41, HerdBookLayout.familyHeight(true, true, 10, 9, 10));
         assertEquals(52, HerdBookLayout.familyHeight(true, false, 10, 9, 10));
+    }
+
+    @Test
+    void detailsFoldIntoTheRowAboveThem() {
+        List<HerdBookLayout.Folded<String>> rows = HerdBookLayout.foldDetails(
+                List.of("familiar", "-grumpy", "-wild", "fed", "vigour", "-hungry", "seen"), line -> line.startsWith("-"));
+
+        assertEquals(List.of("familiar", "fed", "vigour", "seen"), rows.stream().map(HerdBookLayout.Folded::line).toList());
+        assertEquals(List.of("-grumpy", "-wild"), rows.get(0).details());
+        assertEquals(List.of(), rows.get(1).details());
+        assertEquals(List.of("-hungry"), rows.get(2).details());
+    }
+
+    @Test
+    void aDetailWithNothingAboveItKeepsItsOwnRow() {
+        List<HerdBookLayout.Folded<String>> rows = HerdBookLayout.foldDetails(List.of("-alone", "fed"), line -> line.startsWith("-"));
+
+        assertEquals(List.of("-alone", "fed"), rows.stream().map(HerdBookLayout.Folded::line).toList());
     }
 }

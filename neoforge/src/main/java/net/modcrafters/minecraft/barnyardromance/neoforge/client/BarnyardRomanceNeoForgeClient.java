@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.client;
 
+import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -70,6 +71,7 @@ public final class BarnyardRomanceNeoForgeClient {
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
+        event.register(BarnyardBlocks.FEEDER_MENU, FeederScreen::new);
     }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {

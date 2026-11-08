@@ -87,6 +87,11 @@ public final class MilkActions {
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
         long clock = animal.level().getOverworldClockTime();
+        // Whether she went hungry yesterday isn't known until her days are settled, which for one in a feeding
+        // block's herd may take a few ticks; until then the bucket does nothing.
+        if (!animal.level().isClientSide() && traits.hunger().settledDay() < GameDay.of(clock)) {
+            return InteractionResult.CONSUME;
+        }
         MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.lactation(), now, clock, tuning,
                 traits.hunger().hungryYesterday(GameDay.of(clock)));
         if (check != MilkRules.Check.OK) {

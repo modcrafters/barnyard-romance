@@ -1,0 +1,1536 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "particle": "barnyard_romance:block/manger_front",
+    "front": "barnyard_romance:block/manger_front",
+    "top": "barnyard_romance:block/manger_top",
+    "frame": "barnyard_romance:block/manger_frame",
+    "inside": "barnyard_romance:block/manger_inside",
+    "hay": "barnyard_romance:block/manger_hay",
+    "metal": "barnyard_romance:block/manger_metal",
+    "side": "barnyard_romance:block/manger_side"
+  },
+  "elements": [
+    {
+      "name": "Loose straw in catch tray (north)",
+      "from": [
+        5.625,
+        2.75,
+        0.875
+      ],
+      "to": [
+        10.375,
+        2.78125,
+        2.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.25,
+            12.5,
+            12.75,
+            16
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            5
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            3.25,
+            13.125,
+            12.75,
+            13.25
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            3.25,
+            13.125,
+            12.75,
+            13.25
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            0,
+            13.125,
+            3.5,
+            13.25
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            12.5,
+            13.125,
+            16,
+            13.25
+          ],
+          "texture": "#hay"
+        }
+      }
+    },
+    {
+      "name": "Loose straw in catch tray (south)",
+      "from": [
+        5.625,
+        2.75,
+        13.375
+      ],
+      "to": [
+        10.375,
+        2.78125,
+        15.125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            3.25,
+            0,
+            12.75,
+            3.5
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            5
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            3.25,
+            13.125,
+            12.75,
+            13.25
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            3.25,
+            13.125,
+            12.75,
+            13.25
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            12.5,
+            13.125,
+            16,
+            13.25
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            0,
+            13.125,
+            3.5,
+            13.25
+          ],
+          "texture": "#hay"
+        }
+      }
+    },
+    {
+      "name": "Lower hay",
+      "from": [
+        2,
+        3.5,
+        4.818182
+      ],
+      "to": [
+        14,
+        3.875,
+        11.181818
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            4,
+            14,
+            12
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            9
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            11,
+            14,
+            12.5
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            11,
+            14,
+            12.5
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            4,
+            11,
+            12,
+            12.5
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            4,
+            11,
+            12,
+            12.5
+          ],
+          "texture": "#hay"
+        }
+      }
+    },
+    {
+      "name": "Middle hay",
+      "from": [
+        2,
+        3.875,
+        4.420455
+      ],
+      "to": [
+        14,
+        4.25,
+        11.579545
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            3.5,
+            14,
+            12.5
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            1,
+            2,
+            15,
+            11
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            9.5,
+            14,
+            11
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            9.5,
+            14,
+            11
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            3.5,
+            9.5,
+            12.5,
+            11
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            3.5,
+            9.5,
+            12.5,
+            11
+          ],
+          "texture": "#hay"
+        }
+      }
+    },
+    {
+      "name": "Upper hay",
+      "from": [
+        2,
+        4.25,
+        4.022727
+      ],
+      "to": [
+        14,
+        4.625,
+        11.977273
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            13
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            8,
+            14,
+            9.5
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            8,
+            14,
+            9.5
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            3,
+            8,
+            13,
+            9.5
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            3,
+            8,
+            13,
+            9.5
+          ],
+          "texture": "#hay"
+        }
+      }
+    },
+    {
+      "name": "Top hay",
+      "from": [
+        2,
+        4.625,
+        3.625
+      ],
+      "to": [
+        14,
+        4.9375,
+        12.375
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            2.5,
+            14,
+            13.5
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            6.75,
+            14,
+            8
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            6.75,
+            14,
+            8
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2.5,
+            6.75,
+            13.5,
+            8
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2.5,
+            6.75,
+            13.5,
+            8
+          ],
+          "texture": "#hay"
+        }
+      }
+    },
+    {
+      "name": "Loose straw 0 (north)",
+      "from": [
+        3.25,
+        4.8375,
+        4.818182
+      ],
+      "to": [
+        3.75,
+        6.3375,
+        5.215909
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          3.5,
+          4.8375,
+          5.017045
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 0 (south)",
+      "from": [
+        3.25,
+        4.8375,
+        10.784091
+      ],
+      "to": [
+        3.75,
+        6.3375,
+        11.181818
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          3.5,
+          4.8375,
+          10.982955
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 1 (north)",
+      "from": [
+        6,
+        4.8375,
+        4.420455
+      ],
+      "to": [
+        6.5,
+        6.5875,
+        4.818182
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          6.25,
+          4.8375,
+          4.619318
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 1 (south)",
+      "from": [
+        6,
+        4.8375,
+        11.181818
+      ],
+      "to": [
+        6.5,
+        6.5875,
+        11.579545
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          6.25,
+          4.8375,
+          11.380682
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 2 (north)",
+      "from": [
+        9,
+        4.8375,
+        5.414773
+      ],
+      "to": [
+        9.5,
+        6.5875,
+        5.8125
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          9.25,
+          4.8375,
+          5.613636
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 2 (south)",
+      "from": [
+        9,
+        4.8375,
+        10.1875
+      ],
+      "to": [
+        9.5,
+        6.5875,
+        10.585227
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          9.25,
+          4.8375,
+          10.386364
+        ],
+        "axis": "z",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 3 (north)",
+      "from": [
+        11.75,
+        4.8375,
+        4.818182
+      ],
+      "to": [
+        12.25,
+        6.3375,
+        5.215909
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          12,
+          4.8375,
+          5.017045
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 3 (south)",
+      "from": [
+        11.75,
+        4.8375,
+        10.784091
+      ],
+      "to": [
+        12.25,
+        6.3375,
+        11.181818
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          12,
+          4.8375,
+          10.982955
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 4 (north)",
+      "from": [
+        4.5,
+        4.9375,
+        5.613636
+      ],
+      "to": [
+        5,
+        5.1875,
+        7.602273
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          4.75,
+          4.9375,
+          6.607955
+        ],
+        "axis": "y",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 4 (south)",
+      "from": [
+        4.5,
+        4.9375,
+        8.397727
+      ],
+      "to": [
+        5,
+        5.1875,
+        10.386364
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            4,
+            1,
+            4.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          4.75,
+          4.9375,
+          9.392045
+        ],
+        "axis": "y",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 5 (north)",
+      "from": [
+        9,
+        4.9875,
+        5.215909
+      ],
+      "to": [
+        9.5,
+        5.2375,
+        7.602273
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          9.25,
+          4.9875,
+          6.409091
+        ],
+        "axis": "y",
+        "angle": -45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 5 (south)",
+      "from": [
+        9,
+        4.9875,
+        8.397727
+      ],
+      "to": [
+        9.5,
+        5.2375,
+        10.784091
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            6,
+            1,
+            6.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          9.25,
+          4.9875,
+          9.590909
+        ],
+        "axis": "y",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 6 (north)",
+      "from": [
+        6,
+        2.775,
+        1.375
+      ],
+      "to": [
+        6.25,
+        2.8375,
+        2.25
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          6.125,
+          2.775,
+          1.8125
+        ],
+        "axis": "y",
+        "angle": 45,
+        "rescale": false
+      }
+    },
+    {
+      "name": "Loose straw 6 (south)",
+      "from": [
+        6,
+        2.775,
+        13.75
+      ],
+      "to": [
+        6.25,
+        2.8375,
+        14.625
+      ],
+      "faces": {
+        "down": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "north": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "south": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "west": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        },
+        "east": {
+          "uv": [
+            2,
+            1,
+            2.5,
+            3
+          ],
+          "texture": "#hay"
+        }
+      },
+      "rotation": {
+        "origin": [
+          6.125,
+          2.775,
+          14.1875
+        ],
+        "axis": "y",
+        "angle": -45,
+        "rescale": false
+      }
+    }
+  ]
+}

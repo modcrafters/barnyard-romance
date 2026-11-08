@@ -5,11 +5,21 @@ import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 // Whether one animal can walk to another: within range, and with a path that really gets there, so a fence or a wall
 // between pens keeps them apart. It's a path search, so it's only asked now and then, never every tick.
 public final class Reach {
+    // What a path search says about walking somewhere: it can, it can't (the path goes some way and stops short), or
+    // nothing, when the search never left the block it started in. That happens to an animal standing in some spots
+    // of a pen's corner, between two fence lines, though it can walk out of it.
+    public enum Walk {
+        YES,
+        NO,
+        UNKNOWN
+    }
+
     private Reach() {
     }
 
@@ -19,6 +29,30 @@ public final class Reach {
         }
         Path path = path(from, to);
         return path != null && (path.canReach() || endsBeside(path.getEndNode(), to.blockPosition()));
+    }
+
+    // The same for a block: a feeder, or a spot a runaway is headed for.
+    public static boolean canWalkTo(Animal from, BlockPos to, int range) {
+        if (from.distanceToSqr(Vec3.atBottomCenterOf(to)) > (double) range * range) {
+            return false;
+        }
+        Path path = path(from, to);
+        return path != null && (path.canReach() || endsBeside(path.getEndNode(), to));
+    }
+
+    // The same as canWalkTo, but a search that never got anywhere is UNKNOWN rather than NO.
+    public static Walk walkTo(Animal from, BlockPos to, int range) {
+        if (from.distanceToSqr(Vec3.atBottomCenterOf(to)) > (double) range * range) {
+            return Walk.NO;
+        }
+        Path path = path(from, to);
+        if (path == null) {
+            return Walk.UNKNOWN;
+        }
+        if (path.canReach() || endsBeside(path.getEndNode(), to)) {
+            return Walk.YES;
+        }
+        return path.getNodeCount() <= 1 ? Walk.UNKNOWN : Walk.NO;
     }
 
     // For a moment that can't wait for a better one, such as an egg being laid: only a path that is found and falls
@@ -36,6 +70,10 @@ public final class Reach {
     // about the same target twice, and asking it would also change where it thinks it's headed. Some mods' own
     // navigation aims somewhere other than the animal's block, too (Naturalist's ostrich does).
     private static @Nullable Path path(Animal from, Animal to) {
+        return new GroundPathNavigation(from, from.level()).createPath(to, 0);
+    }
+
+    private static @Nullable Path path(Animal from, BlockPos to) {
         return new GroundPathNavigation(from, from.level()).createPath(to, 0);
     }
 

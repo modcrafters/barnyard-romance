@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
+import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
 import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
 import net.modcrafters.minecraft.barnyardromance.rivalry.FightGoal;
 import net.minecraft.world.entity.animal.Animal;
@@ -11,10 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // Every animal gets the nesting goal, so turning eggs on for a species in the config works without a respawn. The goal
 // does nothing until EggLaying sends an animal on a trip, and checking for one is only a map lookup. The fight goal is
 // the same: it waits for Fights to give the animal a rival, and comes before everything else so nothing pulls him away.
+// So is the feeding goal, which waits for MorningFeeding to send the animal to its feeding block; laying comes first.
 @Mixin(Animal.class)
 public class AnimalNestGoalMixin {
     private static final int PRIORITY = 2;
     private static final int FIGHT_PRIORITY = 0;
+    private static final int EAT_PRIORITY = 3;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void barnyardromance$nestGoal(CallbackInfo callback) {
@@ -22,6 +25,7 @@ public class AnimalNestGoalMixin {
         if (!self.level().isClientSide()) {
             ((MobGoalsAccessor) self).barnyardromance$goalSelector().addGoal(PRIORITY, new LayInNestGoal(self));
             ((MobGoalsAccessor) self).barnyardromance$goalSelector().addGoal(FIGHT_PRIORITY, new FightGoal(self));
+            ((MobGoalsAccessor) self).barnyardromance$goalSelector().addGoal(EAT_PRIORITY, new EatAtFeederGoal(self));
         }
     }
 }

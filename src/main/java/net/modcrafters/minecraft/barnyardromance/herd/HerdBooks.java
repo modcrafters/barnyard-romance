@@ -249,6 +249,11 @@ public final class HerdBooks {
         return null;
     }
 
+    // Whether any herd book lists the animal.
+    public static boolean listed(MinecraftServer server, UUID animal) {
+        return HerdBookData.get(server).ledger().listed(animal);
+    }
+
     public static @Nullable Animal find(MinecraftServer server, UUID id) {
         for (ServerLevel level : server.getAllLevels()) {
             if (level.getEntity(id) instanceof Animal animal && animal.isAlive()) {

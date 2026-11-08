@@ -73,7 +73,9 @@ public final class VigourActions {
 
     public static boolean canPay(Animal male, double cost, double healthCost, long clock) {
         Optional<AnimalTraits> traits = current(male, clock);
-        if (traits.isEmpty()) {
+        // Until his days are settled (one in a feeding block's herd may wait a few ticks for it), neither his Vigour
+        // nor whether he's hungry is known, so he waits too.
+        if (traits.isEmpty() || traits.get().hunger().settledDay() < GameDay.of(clock)) {
             return false;
         }
         boolean hungry = VigourRules.hungry(traits.get().hunger().lastAteDay(), GameDay.of(clock));

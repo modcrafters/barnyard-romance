@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Locale;
 
 // The status lines of one animal, in the order the spec gives. Lines that don't apply are left out, so the rest close up.
+// The words that explain a line (why familiarity is low, a hungry male's health cost, a hen's reasons, the father,
+// the last birth) are DETAIL lines under it; deaths, running away and when the animal was last seen
+// stay NOTE lines.
 public final class StatSheet {
     private StatSheet() {
     }
@@ -25,13 +28,17 @@ public final class StatSheet {
             if (facts.killedByRival()) {
                 lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.killed_by_rival")));
             }
+            ranAway(lines, facts);
             familiarity(lines, facts, false);
             fertility(lines, facts);
             return lines;
         }
         familiarity(lines, facts, true);
+        ranAway(lines, facts);
         if (facts.fedToday()) {
-            lines.add(StatLine.of(StatKind.FED, Text.of("gui.barnyard_romance.herd_book.fed_today")));
+            lines.add(StatLine.of(StatKind.FED, facts.fedBy().isEmpty()
+                    ? Text.of("gui.barnyard_romance.herd_book.fed_today")
+                    : Text.of("gui.barnyard_romance.herd_book.fed_today_by", facts.fedBy())));
         } else if (facts.ticksSinceFed() < 0L) {
             lines.add(StatLine.of(StatKind.NOT_FED, Text.of("gui.barnyard_romance.herd_book.never_fed")));
         } else {
@@ -53,7 +60,7 @@ public final class StatSheet {
         if (facts.vigour() >= 0.0) {
             lines.add(new StatLine(StatKind.VIGOUR, Text.of("gui.barnyard_romance.sheet.vigour", Familiarity.percent(facts.vigour())), facts.vigour()));
             if (facts.vigourHungry()) {
-                lines.add(StatLine.of(StatKind.NOTE, StatText.VIGOUR_HUNGRY_TEXT));
+                lines.add(StatLine.of(StatKind.DETAIL, StatText.VIGOUR_HUNGRY_TEXT));
             }
         }
         if (!facts.milk().isEmpty()) {
@@ -70,14 +77,15 @@ public final class StatSheet {
         if (facts.pregnant()) {
             lines.add(new StatLine(StatKind.PREGNANT, PregnancyText.describe(facts.pregnancy(), facts.dueTicks()), facts.pregnancy()));
             if (!facts.father().isEmpty()) {
-                lines.add(StatLine.of(StatKind.NOTE, facts.father()));
+                lines.add(StatLine.of(StatKind.DETAIL, facts.father()));
             }
         } else {
-            if (!facts.breeding().isEmpty()) {
+            boolean breeding = !facts.breeding().isEmpty();
+            if (breeding) {
                 lines.add(StatLine.of(StatKind.BREEDING, StatText.labelled(Text.of("gui.barnyard_romance.inspector.breeding"), facts.breeding())));
             }
             if (!facts.lastBirth().isEmpty()) {
-                lines.add(StatLine.of(StatKind.NOTE, facts.lastBirth()));
+                lines.add(StatLine.of(breeding ? StatKind.DETAIL : StatKind.NOTE, facts.lastBirth()));
             }
         }
         if (facts.seenTicksAgo() >= 0L) {
@@ -94,16 +102,23 @@ public final class StatSheet {
             return;
         }
         switch (facts.familiar()) {
-            case NOT_YET -> lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.not_familiar")));
-            case NO_LONGER -> lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.no_longer_familiar")));
+            case NOT_YET -> lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.not_familiar")));
+            case NO_LONGER -> lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.no_longer_familiar")));
             case FAMILIAR -> {
             }
         }
         if (facts.grumpy()) {
-            lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.grumpy")));
+            lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.grumpy")));
         }
         if (facts.cap() < 1.0) {
-            lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.wild_caught", Familiarity.percent(facts.cap()))));
+            lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.wild_caught", Familiarity.percent(facts.cap()))));
+        }
+    }
+
+    // Kept until it's familiar again: under the familiarity lines that explain it, or with the death notes.
+    private static void ranAway(List<StatLine> lines, AnimalFacts facts) {
+        if (facts.ranAway()) {
+            lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.ran_away")));
         }
     }
 
@@ -120,9 +135,9 @@ public final class StatSheet {
         boolean today = !facts.eggsToday().isEmpty();
         if (facts.eggs() != null) {
             lines.add(StatLine.of(StatKind.EGGS, facts.eggs().title()));
-            facts.eggs().reasons().forEach(reason -> lines.add(StatLine.of(StatKind.NOTE, reason.text())));
+            facts.eggs().reasons().forEach(reason -> lines.add(StatLine.of(StatKind.DETAIL, reason.text())));
             if (today) {
-                lines.add(StatLine.of(StatKind.NOTE, facts.eggsToday()));
+                lines.add(StatLine.of(StatKind.DETAIL, facts.eggsToday()));
             }
         } else if (today) {
             lines.add(StatLine.of(StatKind.EGGS, facts.eggsToday()));

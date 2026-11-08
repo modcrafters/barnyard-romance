@@ -1,0 +1,195 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_frame"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "food_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_1"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "food_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_2"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "food_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_3"
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "food_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_4"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_frame",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "food_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "food_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "food_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_3",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "food_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_4",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_frame",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "food_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_1",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "food_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_2",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "food_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_3",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "food_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_4",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_frame",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "food_level": "1"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_1",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "food_level": "2"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_2",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "food_level": "3"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_3",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "food_level": "4"
+      },
+      "apply": {
+        "model": "barnyard_romance:block/pet_bowl_food_4",
+        "y": 270
+      }
+    }
+  ]
+}
