@@ -50,7 +50,7 @@ public final class MorningFeeding {
                 continue;
             }
             if (animal instanceof TamableAnimal pet && pet.isOrderedToSit()) {
-                if (EatAtFeederGoal.within(animal, pos, SITTING_REACH) && FeederMeal.eat(animal, level, feeder, clock) && feeder.food() == 0) {
+                if (EatAtFeederGoal.within(animal, pos, SITTING_REACH) && !FeederMeal.eat(animal, level, feeder, clock).isEmpty() && feeder.food() == 0) {
                     return;
                 }
                 continue;

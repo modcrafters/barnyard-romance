@@ -1,13 +1,18 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ItemParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -20,24 +25,37 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-// An animal MorningFeeding sent walks over to its feeding block, eats one item there and walks off to make room. If
+// An animal MorningFeeding sent walks over to its feeding block, eats one item there and walks off to make room. The
+// meal counts the moment it starts; the animal then stands a few seconds with its head down in the block, crumbs of
+// the food at its mouth, before it goes, and a scare or a lead cuts that short without undoing the meal. If
 // the crowd keeps it from the block for 30 seconds it eats where it stands when it's close, and otherwise rests a while
 // before it's sent again. A panic stops the walk, and the next round sends it again. Every animal has this goal, and it
 // does nothing until the animal is sent: checking for that is only a map lookup.
 public class EatAtFeederGoal extends Goal {
     static final int GIVE_UP_TICKS = 600;
-    // A trip whose walk never got going (another goal kept the animal busy, or it has no AI) is let go after this.
-    private static final int FORGET_TICKS = GIVE_UP_TICKS + 2 * MorningFeeding.ROUND_TICKS;
+    // How long it stands eating at the block.
+    public static final int EAT_TICKS = 70;
+    // Crumbs at its mouth this often, a munch this often, and a sheep's grazing nod (40 ticks long) this often.
+    private static final int CRUMB_TICKS = 4;
+    private static final int MUNCH_TICKS = 25;
+    private static final int GRAZE_TICKS = 35;
+    // The client event that starts a sheep's grazing nod, as when it eats grass.
+    private static final byte GRAZE_EVENT = 10;
+    // A trip whose walk never got going (another goal kept the animal busy, or it has no AI) is let go after this. A
+    // trip that ends in a meal just before giving up runs on for the meal, so this leaves room for it.
+    private static final int FORGET_TICKS = GIVE_UP_TICKS + EAT_TICKS + 2 * MorningFeeding.ROUND_TICKS;
     // After giving up from too far off, so an animal that can't get through doesn't take a walker's place each round.
     private static final int REST_TICKS = 600;
     // Between path searches while it's still on its way and its path has run out.
     private static final int PATH_TICKS = 40;
     private static final int STEP_TICKS = 20;
     // From the animal's body to the block (see within).
-    static final double REACH = 1.5;
+    public static final double REACH = 1.5;
     static final double CLOSE_ENOUGH = 4.0;
     // How far it walks off once it has eaten.
     private static final int WALK_OFF = 5;
+    private static final double WALK_OFF_AT_LEAST = 3.0;
+    private static final int WALK_OFF_TRIES = 5;
     private static final Map<Animal, Trip> TRIPS = new WeakHashMap<>();
     private static final Map<Animal, Long> RESTING = new WeakHashMap<>();
 
@@ -48,6 +66,9 @@ public class EatAtFeederGoal extends Goal {
     private boolean walkingOff;
     // Until this game time it steps straight at the block, having found no way on from where it stood.
     private long stepping;
+    // While it eats: when it's done (-1 when it isn't eating), and what it's eating, for the crumbs.
+    private long eatingUntil = -1L;
+    private ItemStack food = ItemStack.EMPTY;
 
     // over is set once it has eaten or given up. The trip is only forgotten when the goal stops, so the animals still
     // counted as walking (MorningFeeding's limit) are never fewer than those with the goal running.
@@ -56,7 +77,8 @@ public class EatAtFeederGoal extends Goal {
 
     public EatAtFeederGoal(Animal animal) {
         this.animal = animal;
-        this.setFlags(EnumSet.of(Flag.MOVE));
+        // LOOK too, so a look-at-player goal doesn't lift its head out of the block while it eats.
+        this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
     // Sends the animal off to the block; it plans its path once the goal starts.
@@ -137,6 +159,8 @@ public class EatAtFeederGoal extends Goal {
     public void start() {
         pathed = animal.level().getGameTime() - PATH_TICKS;
         stepping = 0L;
+        eatingUntil = -1L;
+        food = ItemStack.EMPTY;
     }
 
     @Override
@@ -151,6 +175,15 @@ public class EatAtFeederGoal extends Goal {
             end(trip);
             return;
         }
+        if (eatingUntil >= 0L) {
+            if (now >= eatingUntil) {
+                walkOff(trip.feeder());
+                end(trip);
+            } else {
+                chew(level, trip.feeder(), now);
+            }
+            return;
+        }
         long clock = feeder.clock(level);
         // Fed by hand on the way, or the day ended (at midnight, or by sleeping): no meal from this trip.
         if (!FeederMeal.due(animal, clock)) {
@@ -158,13 +191,16 @@ public class EatAtFeederGoal extends Goal {
             return;
         }
         if (within(animal, trip.feeder(), REACH)) {
-            eat(level, feeder, clock);
-            end(trip);
+            if (!eat(level, feeder, clock, now)) {
+                end(trip);
+            }
             return;
         }
         if (now - trip.since() >= GIVE_UP_TICKS) {
             if (within(animal, trip.feeder(), CLOSE_ENOUGH)) {
-                eat(level, feeder, clock);
+                if (eat(level, feeder, clock, now)) {
+                    return;
+                }
             } else {
                 RESTING.put(animal, now + REST_TICKS);
             }
@@ -194,6 +230,8 @@ public class EatAtFeederGoal extends Goal {
 
     @Override
     public void stop() {
+        eatingUntil = -1L;
+        food = ItemStack.EMPTY;
         if (walkingOff) {
             walkingOff = false;
             TRIPS.remove(animal);
@@ -203,16 +241,71 @@ public class EatAtFeederGoal extends Goal {
         TRIPS.remove(animal);
     }
 
-    // It eats, then walks off a little way to make room at the block for the next one.
-    private void eat(ServerLevel level, FeederBlockEntity feeder, long clock) {
-        if (!FeederMeal.eat(animal, level, feeder, clock)) {
-            return;
+    // Its meal, if the block has food: it stops where it is and starts eating.
+    private boolean eat(ServerLevel level, FeederBlockEntity feeder, long clock, long now) {
+        ItemStack eaten = FeederMeal.eat(animal, level, feeder, clock);
+        if (eaten.isEmpty()) {
+            return false;
         }
-        Vec3 away = DefaultRandomPos.getPosAway(animal, WALK_OFF, 2, Vec3.atCenterOf(feeder.getBlockPos()));
-        if (away != null) {
-            animal.getNavigation().stop();
-            walkingOff = animal.getNavigation().moveTo(away.x, away.y, away.z, 1.0);
+        food = eaten;
+        eatingUntil = now + EAT_TICKS;
+        stepping = 0L;
+        animal.getNavigation().stop();
+        chew(level, feeder.getBlockPos(), now);
+        return true;
+    }
+
+    // A tick of eating: head down into the block (a sheep nods down to graze), crumbs of the food at its mouth, and
+    // now and then a munch. The meal's first munch came with the meal.
+    private void chew(ServerLevel level, BlockPos feeder, long now) {
+        long into = EAT_TICKS - (eatingUntil - now);
+        animal.getLookControl().setLookAt(feeder.getX() + 0.5, feeder.getY() + 0.4, feeder.getZ() + 0.5, 10.0F, animal.getMaxHeadXRot());
+        if (animal instanceof Sheep && into % GRAZE_TICKS == 0) {
+            level.broadcastEntityEvent(animal, GRAZE_EVENT);
         }
+        if (into > 0 && into % MUNCH_TICKS == 0) {
+            VersionCompat.playEatingSound(animal, food);
+        }
+        if (into % CRUMB_TICKS == 0) {
+            Vec3 mouth = mouth(animal);
+            level.sendParticles(crumbs(food), mouth.x, mouth.y, mouth.z, 3, 0.08, 0.04, 0.08, 0.04);
+        }
+    }
+
+    // Just in front of its eyes and a little below, the way its head points.
+    private static Vec3 mouth(Animal animal) {
+        Vec3 facing = Vec3.directionFromRotation(animal.getXRot(), animal.getYHeadRot());
+        return animal.getEyePosition().add(facing.scale(animal.getBbWidth() * 0.5 + 0.15)).add(0.0, -0.15, 0.0);
+    }
+
+    private static ItemParticleOption crumbs(ItemStack food) {
+        //? if >=1.21.2 {
+        return new ItemParticleOption(ParticleTypes.ITEM, food.getItem());
+        //?} else
+        //return new ItemParticleOption(ParticleTypes.ITEM, food);
+    }
+
+    // Done eating, it walks off a little way to make room at the block for the next one: to a random spot at least
+    // WALK_OFF_AT_LEAST from it, or, when no random spot will do (as on 26.3's barrier-floored test arena), straight
+    // away from it.
+    private void walkOff(BlockPos feeder) {
+        animal.getNavigation().stop();
+        Vec3 block = Vec3.atCenterOf(feeder);
+        Vec3 away = null;
+        for (int i = 0; i < WALK_OFF_TRIES && away == null; i++) {
+            Vec3 spot = DefaultRandomPos.getPosAway(animal, WALK_OFF, 2, block);
+            if (spot != null && Math.hypot(spot.x - block.x, spot.z - block.z) >= WALK_OFF_AT_LEAST) {
+                away = spot;
+            }
+        }
+        if (away == null) {
+            Vec3 off = new Vec3(animal.getX() - block.x, 0.0, animal.getZ() - block.z);
+            if (off.lengthSqr() < 1.0E-4) {
+                return;
+            }
+            away = animal.position().add(off.normalize().scale(WALK_OFF));
+        }
+        walkingOff = animal.getNavigation().moveTo(away.x, away.y, away.z, 1.0);
     }
 
     private void end(Trip trip) {

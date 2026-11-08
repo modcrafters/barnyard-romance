@@ -168,4 +168,9 @@ public class FabricFeederGameTests {
     public void feedingBlockRecipesCraftTheirBlocks(GameTestHelper helper) {
         FeederGameTests.feedingBlockRecipesCraftTheirBlocks(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aCowStaysToEatThenWalksOff(GameTestHelper helper) {
+        FeederGameTests.aCowStaysToEatThenWalksOff(helper);
+    }
 }

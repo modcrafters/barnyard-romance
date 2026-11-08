@@ -36,16 +36,16 @@ public final class FeederMeal {
                 && Familiarity.ready(traits.get().familiarity());
     }
 
-    // Today's meal: one item from the block, if it has one.
-    static boolean eat(Animal animal, ServerLevel level, FeederBlockEntity feeder, long clock) {
+    // Today's meal: one item from the block, if it has one. Returns what it ate, or an empty stack.
+    static ItemStack eat(Animal animal, ServerLevel level, FeederBlockEntity feeder, long clock) {
         ItemStack food = feeder.takeOne(level);
         if (food.isEmpty()) {
-            return false;
+            return ItemStack.EMPTY;
         }
         FamiliarityCare.markFedBy(animal, clock, feeder.kind().id());
         heal(animal, food);
         VersionCompat.playEatingSound(animal, food);
-        return true;
+        return food;
     }
 
     // As the food heals when fed by hand (see FamiliarityActions). A block serving several species may hand an animal

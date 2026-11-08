@@ -116,6 +116,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_manger_meal_shows_on_the_fed_row", 400, FeederGameTests::aMangerMealShowsOnTheFedRow),
             new BreedingGameTests.Case("a_brief_morning_load_leaves_the_rest_of_the_day_to_catch_up", 400,
                     FeederGameTests::aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp),
+            new BreedingGameTests.Case("a_cow_stays_to_eat_then_walks_off", 400, FeederGameTests::aCowStaysToEatThenWalksOff),
             new BreedingGameTests.Case("feeding_block_recipes_craft_their_blocks", 20, FeederGameTests::feedingBlockRecipesCraftTheirBlocks)
     );
 
@@ -574,6 +575,36 @@ public final class FeederGameTests {
                             helper.assertTrue(upkeep.fedByFeederOn(DAY) && upkeep.feeder().equals("manger"), "the cow's upkeep is " + upkeep);
                         }
                         helper.succeed();
+                    }
+                });
+    }
+
+    // The meal counts the moment she reaches the Manger, and she stands there eating for EAT_TICKS, still on her trip,
+    // before she walks off and the trip is over.
+    public static void aCowStaysToEatThenWalksOff(GameTestHelper helper) {
+        long[] ate = {-1L};
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
+                m -> {
+                    Animal cow = m.animals.getFirst();
+                    if (ate[0] < 0L) {
+                        if (ateOn(helper, cow, DAY)) {
+                            ate[0] = m.clock;
+                        } else if (m.clock > SUNRISE + 300) {
+                            helper.fail("she never reached the Manger: she's at " + cow.position() + ", it's at " + m.at);
+                        }
+                        return;
+                    }
+                    long into = m.clock - ate[0];
+                    if (into < EatAtFeederGoal.EAT_TICKS - 2) {
+                        helper.assertTrue(EatAtFeederGoal.within(cow, m.at, EatAtFeederGoal.REACH + 0.25),
+                                "she left the Manger " + into + " ticks into her meal");
+                        helper.assertTrue(EatAtFeederGoal.walking(cow), "her trip ended " + into + " ticks into her meal");
+                    } else if (!EatAtFeederGoal.walking(cow) && !EatAtFeederGoal.within(cow, m.at, EatAtFeederGoal.REACH + 0.5)) {
+                        helper.succeed();
+                    } else if (into > EatAtFeederGoal.EAT_TICKS + 120) {
+                        helper.fail("she hadn't walked off: on her trip " + EatAtFeederGoal.walking(cow) + ", at " + cow.position()
+                                + " by the Manger at " + m.at);
                     }
                 });
     }
