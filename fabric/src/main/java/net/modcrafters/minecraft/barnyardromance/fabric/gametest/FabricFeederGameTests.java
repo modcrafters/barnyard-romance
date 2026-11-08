@@ -163,4 +163,9 @@ public class FabricFeederGameTests {
     public void aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp(GameTestHelper helper) {
         FeederGameTests.aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void feedingBlockRecipesCraftTheirBlocks(GameTestHelper helper) {
+        FeederGameTests.feedingBlockRecipesCraftTheirBlocks(helper);
+    }
 }

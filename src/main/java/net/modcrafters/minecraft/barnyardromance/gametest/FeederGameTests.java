@@ -40,6 +40,10 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -52,6 +56,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -110,7 +115,8 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_cow_in_a_corner_walks_out_to_eat", 400, FeederGameTests::aCowInACornerWalksOutToEat),
             new BreedingGameTests.Case("a_manger_meal_shows_on_the_fed_row", 400, FeederGameTests::aMangerMealShowsOnTheFedRow),
             new BreedingGameTests.Case("a_brief_morning_load_leaves_the_rest_of_the_day_to_catch_up", 400,
-                    FeederGameTests::aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp)
+                    FeederGameTests::aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp),
+            new BreedingGameTests.Case("feeding_block_recipes_craft_their_blocks", 20, FeederGameTests::feedingBlockRecipesCraftTheirBlocks)
     );
 
     private FeederGameTests() {
@@ -1022,6 +1028,33 @@ public final class FeederGameTests {
             }
         }
         return count;
+    }
+
+    // Each grid has to make its own block and not a vanilla one: five planks in a U is a boat and three bricks in a
+    // V a flower pot, which is why the Trough takes slabs and the Pet Bowl a full row of bricks.
+    public static void feedingBlockRecipesCraftTheirBlocks(GameTestHelper helper) {
+        Item e = Items.AIR, p = Items.OAK_PLANKS, s = Items.STICK, h = Items.HAY_BLOCK, b = Items.BRICK;
+        Item w = Items.WHEAT_SEEDS, l = Items.OAK_SLAB;
+        crafts(helper, "bird_feeder", e, s, e, e, w, e, p, p, p);
+        crafts(helper, "trough", l, e, l, l, l, l);
+        crafts(helper, "feeder", p, e, p, p, h, p, p, p, p);
+        crafts(helper, "manger", s, s, s, s, h, s, p, s, p);
+        crafts(helper, "pet_bowl", b, e, b, b, b, b);
+        helper.succeed();
+    }
+
+    // Six items are a 3x2 grid, nine a 3x3 one.
+    private static void crafts(GameTestHelper helper, String name, Item... grid) {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (Item item : grid) {
+            stacks.add(new ItemStack(item));
+        }
+        CraftingInput input = CraftingInput.of(3, grid.length / 3, stacks);
+        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
+                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        // The holder's id is a ResourceKey on 26.3 and a plain id on 1.21.1; both print the recipe's name.
+        helper.assertTrue(recipe.isPresent() && recipe.get().id().toString().contains("barnyard_romance:" + name),
+                "the " + name + " grid makes " + recipe.map(holder -> holder.id().toString()).orElse("nothing"));
     }
 
     private static int dropped(List<ItemEntity> dropped, Item item) {
