@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_milk": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#barnyard_romance:milk_buckets"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "barnyard_romance:dairy_mash"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_milk"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "barnyard_romance:dairy_mash"
+    ]
+  }
+}

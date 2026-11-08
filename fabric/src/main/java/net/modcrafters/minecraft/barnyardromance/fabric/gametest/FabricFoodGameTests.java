@@ -141,4 +141,9 @@ public class FabricFoodGameTests {
     public void ourCreativeTabHoldsEveryItem(GameTestHelper helper) {
         FoodGameTests.ourCreativeTabHoldsEveryItem(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void everyRecipeUnlocksInTheRecipeBook(GameTestHelper helper) {
+        FoodGameTests.everyRecipeUnlocksInTheRecipeBook(helper);
+    }
 }
