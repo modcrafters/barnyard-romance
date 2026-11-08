@@ -116,12 +116,14 @@ public final class Escapes {
         }
         switch (escape.stage()) {
             case QUEUED -> {
-                if (canSearch(animal) && takeStart(level)) {
+                // Leashed or mounted while it waited: it stays where it's held, cared for after all, and leaves the
+                // tick's starts to the others.
+                if (held(animal)) {
                     RUNNING.remove(animal.getUUID());
-                    // Leashed or mounted since it ran: it stays where it's held.
-                    if (!held(animal)) {
-                        setOff(animal, level, escape.catchingUp());
-                    }
+                    Services.DATA.get(animal).ifPresent(traits -> Services.DATA.set(animal, traits.withUpkeep(traits.upkeep().caredFor())));
+                } else if (canSearch(animal) && takeStart(level)) {
+                    RUNNING.remove(animal.getUUID());
+                    setOff(animal, level, escape.catchingUp());
                 }
             }
             case APPROACH -> approach(animal, level, escape, late);

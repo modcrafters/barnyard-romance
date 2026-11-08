@@ -58,6 +58,8 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     private boolean placed = true;
     // The game time it last ticked with the animals around it loaded.
     private long lastTick = Long.MIN_VALUE;
+    // Every tick, waiting or not, so a wait for the animals isn't taken for an unload (see TickGap).
+    private final TickGap gap = new TickGap();
     // Not saved, and always 0 in a game: a test runs a block on a clock of its own, this far from the overworld's.
     private long clockShift;
     // For the window: the days of food and the herd's size.
@@ -100,6 +102,7 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     // eat (MorningFeeding) on the block's own tick of each second.
     public void tick(ServerLevel level, long clock) {
         long today = GameDay.of(clock);
+        gap.tick(level.getGameTime());
         boolean refresh = placed || FeederHerd.due(level.getGameTime(), refreshSlot());
         // Finding the herd and settling its days both need the animals around the block. Entities load apart from
         // blocks, and a neighbouring chunk's may come later, so the block waits for them. Its herd doesn't wait for it
@@ -107,9 +110,9 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         if ((refresh || catchUp != null || settledDay < today) && !animalsLoaded(level, getBlockPos())) {
             return;
         }
-        // Ticking a moment ago, it ran on to the end of its last live day, so the morning feeding had all of it.
-        // Loaded again after a break, it may have stopped partway through that day.
-        boolean ranOn = lastTick >= level.getGameTime() - RUNNING_TICKS;
+        // Ticking all along, through any wait for its animals, it ran on to the end of its last live day, so the
+        // morning feeding had all of it. Loaded again after a break, it may have stopped partway through that day.
+        boolean ranOn = gap.ranOn();
         lastTick = level.getGameTime();
         if (refresh) {
             placed = false;

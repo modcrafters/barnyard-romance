@@ -101,4 +101,9 @@ public class FabricUpkeepGameTests {
     public void aTamedParrotNeverRunsAway(GameTestHelper helper) {
         UpkeepGameTests.aTamedParrotNeverRunsAway(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aCowLeashedWhileQueuedStaysAndLeavesHerStart(GameTestHelper helper) {
+        UpkeepGameTests.aCowLeashedWhileQueuedStaysAndLeavesHerStart(helper);
+    }
 }

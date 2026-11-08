@@ -59,6 +59,8 @@ public final class UpkeepGameTests {
             new BreedingGameTests.Case("a_runaway_never_rolls_again", 20, UpkeepGameTests::aRunawayNeverRollsAgain),
             new BreedingGameTests.Case("runaways_set_off_a_few_a_tick", 200, UpkeepGameTests::runawaysSetOffAFewATick),
             new BreedingGameTests.Case("a_leashed_cow_does_not_run_away", 100, UpkeepGameTests::aLeashedCowDoesNotRunAway),
+            new BreedingGameTests.Case("a_cow_leashed_while_queued_stays_and_leaves_her_start", 100,
+                    UpkeepGameTests::aCowLeashedWhileQueuedStaysAndLeavesHerStart),
             new BreedingGameTests.Case("a_tamed_parrot_never_runs_away", 20, UpkeepGameTests::aTamedParrotNeverRunsAway)
     );
 
@@ -297,6 +299,53 @@ public final class UpkeepGameTests {
             upkeep = traits(helper, cow).upkeep();
             helper.assertTrue(upkeep.ranAway() && !upkeep.cared() && Escapes.queued(cow), "let off the lead, her upkeep is " + upkeep);
             helper.succeed();
+        });
+    }
+
+    // Four cows queue to run away and two are put on a lead before their turn. Those two stay, cared for and not marked
+    // as run away, and they leave the queue on the very next tick without waiting for one of its starts (the tests
+    // beside this one share the level's starts). The other two set off when their turn comes.
+    public static void aCowLeashedWhileQueuedStaysAndLeavesHerStart(GameTestHelper helper) {
+        List<Animal> cows = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 2 + 2 * (i % 2), 1, 3 + 2 * (i / 2));
+            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+            cows.add(cow);
+        }
+        boolean[] queued = {false};
+        boolean[] checked = {false};
+        helper.onEachTick(() -> {
+            if (!queued[0]) {
+                if (!cows.stream().allMatch(Animal::onGround)) {
+                    return;
+                }
+                for (Animal cow : cows) {
+                    neglected(helper, cow);
+                    Escapes.runAway(cow, helper.getLevel(), false);
+                }
+                for (Animal cow : cows.subList(0, 2)) {
+                    BlockPos post = cow.blockPosition().north();
+                    helper.getLevel().setBlockAndUpdate(post, Blocks.OAK_FENCE.defaultBlockState());
+                    cow.setLeashedTo(LeashFenceKnotEntity.getOrCreateKnot(helper.getLevel(), post), true);
+                }
+                queued[0] = true;
+                return;
+            }
+            if (!checked[0]) {
+                for (Animal cow : cows.subList(0, 2)) {
+                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    helper.assertTrue(!Escapes.queued(cow), "a leashed cow is still queued a tick later");
+                    helper.assertTrue(upkeep.cared() && !upkeep.ranAway(), "a cow leashed in the queue has upkeep " + upkeep);
+                }
+                checked[0] = true;
+            }
+            if (cows.subList(2, 4).stream().noneMatch(Escapes::queued)) {
+                for (Animal cow : cows.subList(2, 4)) {
+                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a free runaway has upkeep " + upkeep);
+                }
+                helper.succeed();
+            }
         });
     }
 
