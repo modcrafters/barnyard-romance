@@ -48,6 +48,11 @@ public class FabricAdvancementGameTests {
         AdvancementGameTests.offlineBreederIsCreditedAtLogin(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aBreederWhoLeftBeforeMatingIsRemembered(GameTestHelper helper) {
+        AdvancementGameTests.aBreederWhoLeftBeforeMatingIsRemembered(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 100)
     public void aPregnancyWithoutABreederCreditsNobody(GameTestHelper helper) {
         AdvancementGameTests.aPregnancyWithoutABreederCreditsNobody(helper);
@@ -116,6 +121,11 @@ public class FabricAdvancementGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void killingAFamiliarCowIsDinner(GameTestHelper helper) {
         AdvancementGameTests.killingAFamiliarCowIsDinner(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCowBurningToDeathAfterAHitIsDinner(GameTestHelper helper) {
+        AdvancementGameTests.aCowBurningToDeathAfterAHitIsDinner(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

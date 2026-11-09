@@ -78,7 +78,10 @@ public final class ShearActions {
             return InteractionResult.FAIL;
         }
         if (!animal.level().isClientSide()) {
-            SHEARERS.put(animal.getUUID(), new Shearer(player.getUUID(), animal.level().getGameTime()));
+            long tick = animal.level().getGameTime();
+            // Only this tick's shearers are ever read, so older ones (shears used on a sheep that wasn't shorn) go.
+            SHEARERS.values().removeIf(shearer -> shearer.tick() != tick);
+            SHEARERS.put(animal.getUUID(), new Shearer(player.getUUID(), tick));
         }
         return null;
     }

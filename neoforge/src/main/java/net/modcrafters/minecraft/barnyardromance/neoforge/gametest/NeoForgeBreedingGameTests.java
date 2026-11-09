@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.gametest.AdvancementGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests;
@@ -34,11 +35,14 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.gametest.GameTestHooks;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 //? if >=1.21.9 {
@@ -81,6 +85,8 @@ public final class NeoForgeBreedingGameTests {
 
     // Only mothers a test put here are touched, so the listener cannot affect anything else.
     private static final Map<UUID, Answer> ANSWERS = new ConcurrentHashMap<>();
+    // Animals whose death a test has another mod cancel.
+    private static final Set<UUID> SPARED = ConcurrentHashMap.newKeySet();
 
     private static final List<BreedingGameTests.Case> CASES = cases();
 
@@ -100,6 +106,7 @@ public final class NeoForgeBreedingGameTests {
         //?}
         modBus.addListener(NeoForgeBreedingGameTests::registerTests);
         NeoForge.EVENT_BUS.addListener(NeoForgeBreedingGameTests::onBabySpawn);
+        NeoForge.EVENT_BUS.addListener(NeoForgeBreedingGameTests::onDeath);
     }
 
     private static List<BreedingGameTests.Case> cases() {
@@ -126,6 +133,8 @@ public final class NeoForgeBreedingGameTests {
                 helper -> refusedBreeding(helper, Answer.NOTHING)));
         cases.add(new BreedingGameTests.Case("swapped_baby_is_the_one_carried", 20,
                 NeoForgeBreedingGameTests::swappedBabyIsTheOneCarried));
+        cases.add(new BreedingGameTests.Case("a_death_another_mod_cancels_is_no_dinner", 20,
+                NeoForgeBreedingGameTests::aDeathAnotherModCancelsIsNoDinner));
         cases.add(new BreedingGameTests.Case("pipes_put_food_in_a_manger_but_take_none_out", 20,
                 NeoForgeBreedingGameTests::pipesPutFoodInAMangerButTakeNoneOut));
         return List.copyOf(cases);
@@ -169,6 +178,26 @@ public final class NeoForgeBreedingGameTests {
             //?} else
             //case CALF -> event.setChild(EntityTypes.COW.create(event.getParentA().level()));
         }
+    }
+
+    private static void onDeath(LivingDeathEvent event) {
+        if (SPARED.remove(event.getEntity().getUUID())) {
+            event.setCanceled(true);
+        }
+    }
+
+    // A mod that cancels LivingDeathEvent (a totem-like revive) leaves the cow alive, so killing it isn't dinner.
+    private static void aDeathAnotherModCancelsIsNoDinner(GameTestHelper helper) {
+        Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        SPARED.add(cow.getUUID());
+
+        cow.die(helper.getLevel().damageSources().playerAttack(player));
+
+        helper.assertTrue(!SPARED.contains(cow.getUUID()), "LivingDeathEvent did not fire");
+        helper.assertTrue(!AdvancementGameTests.earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER),
+                "a cancelled death earned the dinner advancement");
+        helper.succeed();
     }
 
     private static void refusedBreeding(GameTestHelper helper, Answer answer) {
