@@ -1,0 +1,39 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "naturalist"
+    }
+  ],
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:all_mods_loaded",
+      "values": [
+        "naturalist"
+      ]
+    }
+  ],
+  "parent": "barnyard_romance:barnyard/ladder/ostrich_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.ostrich_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "naturalist:ostrich_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.ostrich_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

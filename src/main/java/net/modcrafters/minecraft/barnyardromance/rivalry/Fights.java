@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
@@ -66,6 +67,7 @@ public final class Fights {
         Fight fight = new Fight(a.getUUID(), b.getUUID(), female, foodNear);
         FIGHTS.put(a.getUUID(), fight);
         FIGHTS.put(b.getUUID(), fight);
+        BarnyardAdvancements.fightStarted(a, b);
     }
 
     public static boolean fighting(Animal animal) {

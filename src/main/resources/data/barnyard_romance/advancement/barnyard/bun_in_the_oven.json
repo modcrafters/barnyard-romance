@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.bun_in_the_oven.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "barnyard_romance:breeders_mash"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.bun_in_the_oven.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

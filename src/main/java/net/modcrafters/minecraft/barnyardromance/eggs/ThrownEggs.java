@@ -1,12 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.Growth;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.sex.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
@@ -58,13 +60,17 @@ public final class ThrownEggs {
 
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, EggData data, RandomSource random) {
         SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
-        return hatchTainted(level, position, data.species(), data.variant(),
+        Optional<Animal> chick = hatchTainted(level, position, data.species(), data.variant(),
                 SizeClass.of(Sex.FEMALE, data.motherScale(), size), SizeClass.of(Sex.MALE, data.fatherScale(), size), random);
+        chick.ifPresent(hatched -> BarnyardAdvancements.hatched(level, hatched, new Lineage(data.mother(), data.father())));
+        return chick;
     }
 
     // A wild egg's parents are unknown, so its chick is sized as if both were average.
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, WildEgg egg, RandomSource random) {
-        return hatchTainted(level, position, egg.species(), egg.variant(), SizeClass.M, SizeClass.M, random);
+        Optional<Animal> chick = hatchTainted(level, position, egg.species(), egg.variant(), SizeClass.M, SizeClass.M, random);
+        chick.ifPresent(hatched -> BarnyardAdvancements.hatched(level, hatched, null));
+        return chick;
     }
 
     private static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, String species, String variant,

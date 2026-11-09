@@ -22,10 +22,30 @@ public record Pregnancy(
         // Null for pregnancies from older saves; clients never see it.
         @Nullable UUID fatherId,
         // Server only, like fatherId.
-        SkippedTime seen
+        SkippedTime seen,
+        // The player who put the mother in love, credited with the birth's advancements. Server only, like fatherId;
+        // null for no player, or a pregnancy from an older save.
+        @Nullable UUID breederId
 ) {
     public Pregnancy {
         litter = List.copyOf(litter);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter,
+            PregnancyCare care,
+            @Nullable UUID fatherId,
+            SkippedTime seen
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seen, null);
     }
 
     public Pregnancy(
@@ -112,20 +132,24 @@ public record Pregnancy(
 
     // Debug steps set an exact elapsed time, so food's gained or lost ticks are dropped.
     public Pregnancy withConceivedAt(long tick) {
-        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care.withoutTicks(), fatherId, seen);
+        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care.withoutTicks(), fatherId, seen, breederId);
     }
 
     public Pregnancy withCare(PregnancyCare next) {
-        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, next, fatherId, seen);
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, next, fatherId, seen, breederId);
     }
 
     public Pregnancy withFatherId(@Nullable UUID id) {
-        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, id, seen);
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, id, seen, breederId);
+    }
+
+    public Pregnancy withBreederId(@Nullable UUID id) {
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seen, id);
     }
 
     // Moved on by ticks of skipped time: everything that was counting from a tick now counts from that much earlier.
     public Pregnancy skipped(long ticks, SkippedTime now) {
         return new Pregnancy(conceivedAt - ticks, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter,
-                care.shifted(ticks), fatherId, now);
+                care.shifted(ticks), fatherId, now, breederId);
     }
 }

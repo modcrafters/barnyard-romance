@@ -91,4 +91,14 @@ public class FabricNaturalistGameTests {
     public void familiarLivestockStaysNearPlayers(GameTestHelper helper) {
         NaturalistGameTests.familiarLivestockStaysNearPlayers(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anOstrichHatchingCountsForPlayersNearby(GameTestHelper helper) {
+        NaturalistGameTests.anOstrichHatchingCountsForPlayersNearby(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void killingAFamiliarDuckIsDinner(GameTestHelper helper) {
+        NaturalistGameTests.killingAFamiliarDuckIsDinner(helper);
+    }
 }

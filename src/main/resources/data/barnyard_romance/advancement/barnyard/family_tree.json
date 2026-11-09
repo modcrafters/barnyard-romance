@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/special_delivery",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.family_tree.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "minecraft:oak_sapling"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.family_tree.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -28,6 +28,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -66,6 +67,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -128,6 +130,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_cow_below_familiar_gets_no_food", 100, FeederGameTests::aCowBelowFamiliarGetsNoFood),
             new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", 100, FeederGameTests::aHerdHenHungryYesterdayLaysNothing),
             new BreedingGameTests.Case("cows_walk_to_the_manger_and_eat", 400, FeederGameTests::cowsWalkToTheMangerAndEat),
+            new BreedingGameTests.Case("a_morning_feeder_meal_earns_self_service", 400, FeederGameTests::aMorningFeederMealEarnsSelfService),
             new BreedingGameTests.Case("no_more_than_four_walk_at_once", 800, FeederGameTests::noMoreThanFourWalkAtOnce),
             new BreedingGameTests.Case("a_hand_fed_cow_stays_put", 400, FeederGameTests::aHandFedCowStaysPut),
             new BreedingGameTests.Case("a_feeder_meal_is_not_love", 400, FeederGameTests::aFeederMealIsNotLove),
@@ -730,6 +733,21 @@ public final class FeederGameTests {
                             Upkeep upkeep = BreedingGameTests.traits(helper, cow).upkeep();
                             helper.assertTrue(upkeep.fedByFeederOn(DAY) && upkeep.feeder().equals("manger"), "the cow's upkeep is " + upkeep);
                         }
+                        helper.succeed();
+                    }
+                });
+    }
+
+    public static void aMorningFeederMealEarnsSelfService(GameTestHelper helper) {
+        // Above the pen, in range but out of the cow's way: standing between her and the Manger, a player can keep her
+        // from reaching it in time.
+        ServerPlayer watching = AdvancementGameTests.playerAt(helper, new Vec3(4.5, 6.0, 4.5));
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
+                m -> {
+                    if (ateOn(helper, m.animals.getFirst(), DAY)) {
+                        helper.assertTrue(AdvancementGameTests.earned(watching, BarnyardAdvancements.SELF_SERVICE),
+                                "a morning meal at a manger didn't earn Self-Service nearby");
                         helper.succeed();
                     }
                 });

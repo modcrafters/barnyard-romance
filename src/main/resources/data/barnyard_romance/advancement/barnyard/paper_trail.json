@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.paper_trail.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "minecraft:writable_book"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.paper_trail.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

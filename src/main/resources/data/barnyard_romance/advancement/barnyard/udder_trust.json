@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.udder_trust.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "minecraft:milk_bucket"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.udder_trust.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}
