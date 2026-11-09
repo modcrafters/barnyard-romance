@@ -71,7 +71,8 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_duck_on_water_uses_a_box", WALK_TICKS, NaturalistGameTests::duckOnWaterUsesABox),
             new BreedingGameTests.Case("naturalist_sitting_duck_lays_where_she_sits", 20, NaturalistGameTests::sittingDuckLaysWhereSheSits),
             new BreedingGameTests.Case("naturalist_familiar_livestock_stays_near_players", 20, NaturalistGameTests::familiarLivestockStaysNearPlayers),
-            new BreedingGameTests.Case("naturalist_an_ostrich_hatching_counts_for_players_nearby", 20, NaturalistGameTests::anOstrichHatchingCountsForPlayersNearby)
+            new BreedingGameTests.Case("naturalist_an_ostrich_hatching_counts_for_players_nearby", 20, NaturalistGameTests::anOstrichHatchingCountsForPlayersNearby),
+            new BreedingGameTests.Case("naturalist_killing_a_familiar_duck_is_dinner", 20, NaturalistGameTests::killingAFamiliarDuckIsDinner)
     );
 
     private NaturalistGameTests() {
@@ -419,6 +420,23 @@ public final class NaturalistGameTests {
         helper.assertTrue(AdvancementGameTests.earned(near, BarnyardAdvancements.WHICH_CAME_FIRST), "an ostrich hatching didn't earn Which Came First?");
         helper.assertTrue(AdvancementGameTests.births(helper, near, "ostrich") == 1, "an ostrich hatching made "
                 + AdvancementGameTests.births(helper, near, "ostrich") + " ostrich births, not 1");
+        helper.succeed();
+    }
+
+    // Familiarity tames Naturalist's livestock, but they're still livestock.
+    public static void killingAFamiliarDuckIsDinner(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        Animal duck = GameTestCompat.spawn(helper, type(helper, DUCK), 4, 1, 4);
+        Services.DATA.set(duck, BreedingGameTests.traits(helper, duck).fed(1.0, -1L));
+        FamiliarityActions.tameIfFamiliar(duck, player, 1.0);
+        helper.assertTrue(duck instanceof TamableAnimal tame && tame.isTame(), "a familiar duck wasn't tamed, so this proves nothing");
+
+        duck.die(helper.getLevel().damageSources().playerAttack(player));
+
+        helper.assertTrue(AdvancementGameTests.earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER), "killing a familiar duck didn't earn the dinner advancement");
         helper.succeed();
     }
 

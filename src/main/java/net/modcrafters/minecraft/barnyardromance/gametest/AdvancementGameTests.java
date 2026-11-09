@@ -69,6 +69,7 @@ public final class AdvancementGameTests {
             new BreedingGameTests.Case("dispenser_shearing_credits_nobody", 20, AdvancementGameTests::dispenserShearingCreditsNobody),
             new BreedingGameTests.Case("killing_a_familiar_cow_is_dinner", 20, AdvancementGameTests::killingAFamiliarCowIsDinner),
             new BreedingGameTests.Case("killing_a_tamed_pet_is_not_dinner", 20, AdvancementGameTests::killingATamedPetIsNotDinner),
+            new BreedingGameTests.Case("killing_a_familiar_fox_is_not_dinner", 20, AdvancementGameTests::killingAFamiliarFoxIsNotDinner),
             new BreedingGameTests.Case("writing_an_animal_into_a_herd_book_earns_paper_trail", 20, AdvancementGameTests::writingAnAnimalIntoAHerdBookEarnsPaperTrail),
             new BreedingGameTests.Case("a_fight_starting_earns_locking_horns", 20, AdvancementGameTests::aFightStartingEarnsLockingHorns)
     );
@@ -103,7 +104,20 @@ public final class AdvancementGameTests {
 
         helper.assertTrue(earned(player, BarnyardAdvancements.ROOT), "a held grant wasn't given at login");
         helper.assertTrue(ledger.held(player.getUUID()).isEmpty(), "a grant given at login is still held");
+        // The client shows no toast for anything in the first advancement packet, which resets its list.
+        helper.assertTrue(!firstPacketPending(helper, player), "a held grant went out in the login reset, with no toast");
         helper.succeed();
+    }
+
+    // PlayerAdvancements.isFirstPacket: whether the next update the player gets is the reset one sent at login.
+    static boolean firstPacketPending(GameTestHelper helper, ServerPlayer player) {
+        try {
+            java.lang.reflect.Field field = player.getAdvancements().getClass().getDeclaredField("isFirstPacket");
+            field.setAccessible(true);
+            return field.getBoolean(player.getAdvancements());
+        } catch (ReflectiveOperationException exception) {
+            throw GameTestCompat.failure(helper, "can't read isFirstPacket: " + exception);
+        }
     }
 
     public static void grantingToAnOfflinePlayerHoldsIt(GameTestHelper helper) {
@@ -353,6 +367,18 @@ public final class AdvancementGameTests {
         horse.die(helper.getLevel().damageSources().playerAttack(player));
 
         helper.assertTrue(!earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER), "killing a tamed pet earned the dinner advancement");
+        helper.succeed();
+    }
+
+    // A fox isn't livestock, however familiar.
+    public static void killingAFamiliarFoxIsNotDinner(GameTestHelper helper) {
+        Animal fox = female(helper, EntityTypes.FOX);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        helper.assertTrue(Services.DATA.get(fox).isPresent(), "the fox isn't tracked, so this proves nothing");
+
+        fox.die(helper.getLevel().damageSources().playerAttack(player));
+
+        helper.assertTrue(!earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER), "killing a familiar fox earned the dinner advancement");
         helper.succeed();
     }
 

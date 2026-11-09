@@ -124,6 +124,11 @@ public class FabricAdvancementGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void killingAFamiliarFoxIsNotDinner(GameTestHelper helper) {
+        AdvancementGameTests.killingAFamiliarFoxIsNotDinner(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void writingAnAnimalIntoAHerdBookEarnsPaperTrail(GameTestHelper helper) {
         AdvancementGameTests.writingAnAnimalIntoAHerdBookEarnsPaperTrail(helper);
     }

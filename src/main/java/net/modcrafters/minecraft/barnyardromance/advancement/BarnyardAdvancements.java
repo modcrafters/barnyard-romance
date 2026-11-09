@@ -18,7 +18,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
@@ -203,11 +202,12 @@ public final class BarnyardAdvancements {
         }
     }
 
-    // A player killing a familiar animal that isn't a pet: livestock, slaughtered.
+    // A player killing a familiar livestock animal: a kind with a breeding ladder, and not a pet. Naturalist's
+    // livestock are tamed by familiarity, so being tamed isn't what makes a pet; wolves, cats and the horse family are.
     public static void died(Animal animal, DamageSource source) {
         try {
             if (!(source.getEntity() instanceof ServerPlayer killer) || FamiliarityCare.tamed(animal)
-                    || (animal instanceof TamableAnimal pet && pet.isTame())) {
+                    || Ladders.ladderFor(AnimalSex.speciesId(animal)).isEmpty()) {
                 return;
             }
             boolean familiar = FamiliarityCare.tracked(animal).map(traits -> Familiarity.ready(traits.familiarity())).orElse(false);
@@ -269,6 +269,12 @@ public final class BarnyardAdvancements {
                 return;
             }
             data.setDirty();
+            // Login comes before the player's first tick, whose advancement update resets the client's list and shows
+            // no toasts. Sending that reset now lets these go out in the next update, with their toasts.
+            //? if >=26.1 {
+            player.getAdvancements().flushDirty(player, true);
+            //?} else
+            //player.getAdvancements().flushDirty(player);
             for (CreditLedger.Held grant : held) {
                 Identifier id = Identifier.tryParse(grant.advancement());
                 if (id != null) {
