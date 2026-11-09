@@ -4,8 +4,12 @@ import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancement
 import net.modcrafters.minecraft.barnyardromance.advancement.CreditData;
 import net.modcrafters.minecraft.barnyardromance.advancement.CreditLedger;
 import net.modcrafters.minecraft.barnyardromance.advancement.Grants;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
@@ -16,10 +20,13 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.List;
 import java.util.UUID;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
+import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.male;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.withFamiliarity;
 
 // In-game checks for the Barnyard Romance advancement tab: each moment grants its advancement to the right player,
@@ -29,8 +36,17 @@ public final class AdvancementGameTests {
             new BreedingGameTests.Case("befriending_a_wild_animal_earns_the_root", 20, AdvancementGameTests::befriendingAWildAnimalEarnsTheRoot),
             new BreedingGameTests.Case("feeding_an_already_familiar_animal_does_not_earn_the_root", 20, AdvancementGameTests::feedingAnAlreadyFamiliarAnimalDoesNotEarnTheRoot),
             new BreedingGameTests.Case("held_grants_are_given_at_login", 20, AdvancementGameTests::heldGrantsAreGivenAtLogin),
-            new BreedingGameTests.Case("granting_to_an_offline_player_holds_it", 20, AdvancementGameTests::grantingToAnOfflinePlayerHoldsIt)
+            new BreedingGameTests.Case("granting_to_an_offline_player_holds_it", 20, AdvancementGameTests::grantingToAnOfflinePlayerHoldsIt),
+            new BreedingGameTests.Case("two_by_two_counts_a_calf_born_from_a_pregnancy", 100, AdvancementGameTests::twoByTwoCountsACalfBornFromAPregnancy),
+            new BreedingGameTests.Case("mating_earns_a_bun_in_the_oven", 20, AdvancementGameTests::matingEarnsABunInTheOven),
+            new BreedingGameTests.Case("a_birth_earns_special_delivery_for_the_breeder", 100, AdvancementGameTests::aBirthEarnsSpecialDeliveryForTheBreeder),
+            new BreedingGameTests.Case("offline_breeder_is_credited_at_login", 100, AdvancementGameTests::offlineBreederIsCreditedAtLogin),
+            new BreedingGameTests.Case("a_pregnancy_without_a_breeder_credits_nobody", 100, AdvancementGameTests::aPregnancyWithoutABreederCreditsNobody),
+            new BreedingGameTests.Case("pregnancy_off_still_earns_both", 20, AdvancementGameTests::pregnancyOffStillEarnsBoth),
+            new BreedingGameTests.Case("a_grandchild_earns_family_tree", 100, AdvancementGameTests::aGrandchildEarnsFamilyTree),
+            new BreedingGameTests.Case("a_calf_of_wild_parents_is_no_family_tree", 100, AdvancementGameTests::aCalfOfWildParentsIsNoFamilyTree)
     );
+    static final Identifier TWO_BY_TWO = Identifier.fromNamespaceAndPath("minecraft", "husbandry/bred_all_animals");
 
     private AdvancementGameTests() {
     }
@@ -72,6 +88,123 @@ public final class AdvancementGameTests {
         helper.assertTrue(held.equals(List.of(new CreditLedger.Held(BarnyardAdvancements.ROOT.toString(), Grants.CRITERION))),
                 "an offline player's grant is held as " + held);
         helper.succeed();
+    }
+
+    public static void twoByTwoCountsACalfBornFromAPregnancy(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        Animal mother = bredCow(helper, breeder);
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the cow is still pregnant");
+            helper.assertTrue(criterionDone(breeder, TWO_BY_TWO, "minecraft:cow"), "Two by Two didn't count the calf");
+        });
+    }
+
+    public static void matingEarnsABunInTheOven(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+
+        bredCow(helper, breeder);
+
+        helper.assertTrue(earned(breeder, BarnyardAdvancements.BUN_IN_THE_OVEN), "mating didn't earn A Bun in the Oven");
+        helper.assertTrue(!earned(breeder, BarnyardAdvancements.SPECIAL_DELIVERY), "mating earned Special Delivery before the birth");
+        helper.succeed();
+    }
+
+    public static void aBirthEarnsSpecialDeliveryForTheBreeder(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        Animal mother = bredCow(helper, breeder);
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(earned(breeder, BarnyardAdvancements.SPECIAL_DELIVERY), "the breeder didn't earn Special Delivery");
+            helper.assertTrue(!earned(bystander, BarnyardAdvancements.SPECIAL_DELIVERY), "a bystander earned Special Delivery");
+        });
+    }
+
+    public static void offlineBreederIsCreditedAtLogin(GameTestHelper helper) {
+        UUID offline = UUID.randomUUID();
+        Animal mother = bredCow(helper, null);
+        Services.DATA.setPregnancy(mother, BreedingGameTests.pregnancy(helper, mother).withBreederId(offline));
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            List<CreditLedger.Held> held = CreditData.get(helper.getLevel().getServer()).ledger().held(offline);
+            helper.assertTrue(held.contains(new CreditLedger.Held(BarnyardAdvancements.SPECIAL_DELIVERY.toString(), Grants.CRITERION)),
+                    "Special Delivery isn't held for an offline breeder: " + held);
+            helper.assertTrue(held.contains(new CreditLedger.Held(TWO_BY_TWO.toString(), "minecraft:cow")),
+                    "Two by Two isn't held for an offline breeder: " + held);
+        });
+    }
+
+    public static void aPregnancyWithoutABreederCreditsNobody(GameTestHelper helper) {
+        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        Animal mother = bredCow(helper, null);
+        helper.assertTrue(BreedingGameTests.pregnancy(helper, mother).breederId() == null, "a pregnancy without a player has a breeder");
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the cow is still pregnant");
+            helper.assertTrue(!earned(bystander, BarnyardAdvancements.SPECIAL_DELIVERY), "a bystander earned Special Delivery");
+        });
+    }
+
+    public static void pregnancyOffStillEarnsBoth(GameTestHelper helper) {
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"pregnancyEnabled\": false}"));
+            ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+            Animal mother = female(helper, EntityTypes.COW);
+            Animal father = male(helper, EntityTypes.COW);
+            mother.setInLove(breeder);
+            father.setInLove(null);
+
+            mother.spawnChildFromBreeding(helper.getLevel(), father);
+
+            helper.assertTrue(earned(breeder, BarnyardAdvancements.BUN_IN_THE_OVEN), "vanilla breeding didn't earn A Bun in the Oven");
+            helper.assertTrue(earned(breeder, BarnyardAdvancements.SPECIAL_DELIVERY), "vanilla breeding didn't earn Special Delivery");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    public static void aGrandchildEarnsFamilyTree(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        Animal mother = bredCow(helper, breeder);
+        Services.DATA.set(mother, BreedingGameTests.traits(helper, mother).withLineage(new Lineage(UUID.randomUUID(), null)));
+
+        due(helper, mother);
+        helper.succeedWhen(() -> helper.assertTrue(earned(breeder, BarnyardAdvancements.FAMILY_TREE), "a grandchild didn't earn Family Tree"));
+    }
+
+    public static void aCalfOfWildParentsIsNoFamilyTree(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        Animal mother = bredCow(helper, breeder);
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(earned(breeder, BarnyardAdvancements.SPECIAL_DELIVERY), "the calf isn't born yet");
+            helper.assertTrue(!earned(breeder, BarnyardAdvancements.FAMILY_TREE), "a calf of wild parents earned Family Tree");
+        });
+    }
+
+    // A cow and a bull mated, with the cow put in love by the breeder (null for no player).
+    static Animal bredCow(GameTestHelper helper, @Nullable ServerPlayer breeder) {
+        Animal mother = female(helper, EntityTypes.COW);
+        Animal father = male(helper, EntityTypes.COW);
+        mother.setInLove(breeder);
+        father.setInLove(null);
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+        BreedingGameTests.pregnancy(helper, mother);
+        return mother;
+    }
+
+    // The pregnancy is moved back so the birth comes on the next tick.
+    static void due(GameTestHelper helper, Animal mother) {
+        Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
+        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
     }
 
     // A player sneaking up with wheat, as one wins over a wild animal.

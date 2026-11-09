@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.animal.Animal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.Optional;
 
 public final class PregnancyController {
@@ -112,6 +114,7 @@ public final class PregnancyController {
                 restWithoutPregnancy(self, partner);
                 return true;
             }
+            UUID breeder = BarnyardAdvancements.breeder(mother, father);
             Services.DATA.setPregnancy(mother, new Pregnancy(
                     level.getGameTime(),
                     durationTicks,
@@ -122,7 +125,8 @@ public final class PregnancyController {
                     fatherTraits.growthTicks(),
                     fatherTraits.weight(),
                     litter.get()
-            ).withFatherId(father.getUUID()));
+            ).withFatherId(father.getUUID()).withBreederId(breeder));
+            BarnyardAdvancements.conceived(mother, breeder);
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
@@ -190,6 +194,10 @@ public final class PregnancyController {
             HerdBooks.born(mother, born);
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to add {} young to herd books", AnimalSex.speciesId(mother), exception);
+        }
+        BarnyardAdvancements.born(mother, born, pregnancy.breederId());
+        for (Animal baby : born) {
+            BarnyardAdvancements.twoByTwo(level, pregnancy.breederId(), mother, baby);
         }
     }
 

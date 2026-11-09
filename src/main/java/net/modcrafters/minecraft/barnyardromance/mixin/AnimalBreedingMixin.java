@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
@@ -18,10 +19,13 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.UUID;
 
 @Mixin(Animal.class)
 public class AnimalBreedingMixin {
@@ -47,9 +51,19 @@ public class AnimalBreedingMixin {
         }
     }
 
+    // Vanilla clears love by the end of finalizing, so who bred them is read at the start.
+    @Unique
+    private @Nullable UUID barnyardromance$breeder;
+
+    @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("HEAD"))
+    private void barnyardromance$breeder(ServerLevel level, Animal partner, @Nullable AgeableMob baby, CallbackInfo callback) {
+        barnyardromance$breeder = BarnyardAdvancements.breeder((Animal) (Object) this, partner);
+    }
+
     @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))
     private void barnyardromance$vanillaBirth(ServerLevel level, Animal partner, @Nullable AgeableMob baby, CallbackInfo callback) {
-        VanillaBirth.born((Animal) (Object) this, partner, baby);
+        VanillaBirth.born((Animal) (Object) this, partner, baby, barnyardromance$breeder);
+        barnyardromance$breeder = null;
     }
 
     @Inject(method = "customServerAiStep", at = @At("TAIL"))

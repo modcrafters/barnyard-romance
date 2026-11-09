@@ -226,5 +226,11 @@
   "tag.item.barnyard_romance.superfood.roots": "Superfood Roots",
   "tag.item.barnyard_romance.superfood.vigour": "Superfood Berries",
   "advancements.barnyard_romance.root.title": "Animal Magnetism",
-  "advancements.barnyard_romance.root.description": "Befriend a wild animal"
+  "advancements.barnyard_romance.root.description": "Befriend a wild animal",
+  "advancements.barnyard_romance.bun_in_the_oven.title": "A Bun in the Oven",
+  "advancements.barnyard_romance.bun_in_the_oven.description": "Get a familiar female pregnant",
+  "advancements.barnyard_romance.special_delivery.title": "Special Delivery",
+  "advancements.barnyard_romance.special_delivery.description": "A baby you bred is born",
+  "advancements.barnyard_romance.family_tree.title": "Family Tree",
+  "advancements.barnyard_romance.family_tree.description": "Breed three generations of one line"
 }

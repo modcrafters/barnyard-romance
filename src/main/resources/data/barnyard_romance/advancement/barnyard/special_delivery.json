@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/bun_in_the_oven",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.special_delivery.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "minecraft:wheat"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.special_delivery.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

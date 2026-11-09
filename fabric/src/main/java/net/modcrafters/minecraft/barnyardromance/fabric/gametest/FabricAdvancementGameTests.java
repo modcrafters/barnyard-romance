@@ -27,4 +27,44 @@ public class FabricAdvancementGameTests {
     public void grantingToAnOfflinePlayerHoldsIt(GameTestHelper helper) {
         AdvancementGameTests.grantingToAnOfflinePlayerHoldsIt(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void twoByTwoCountsACalfBornFromAPregnancy(GameTestHelper helper) {
+        AdvancementGameTests.twoByTwoCountsACalfBornFromAPregnancy(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void matingEarnsABunInTheOven(GameTestHelper helper) {
+        AdvancementGameTests.matingEarnsABunInTheOven(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aBirthEarnsSpecialDeliveryForTheBreeder(GameTestHelper helper) {
+        AdvancementGameTests.aBirthEarnsSpecialDeliveryForTheBreeder(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void offlineBreederIsCreditedAtLogin(GameTestHelper helper) {
+        AdvancementGameTests.offlineBreederIsCreditedAtLogin(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aPregnancyWithoutABreederCreditsNobody(GameTestHelper helper) {
+        AdvancementGameTests.aPregnancyWithoutABreederCreditsNobody(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void pregnancyOffStillEarnsBoth(GameTestHelper helper) {
+        AdvancementGameTests.pregnancyOffStillEarnsBoth(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aGrandchildEarnsFamilyTree(GameTestHelper helper) {
+        AdvancementGameTests.aGrandchildEarnsFamilyTree(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aCalfOfWildParentsIsNoFamilyTree(GameTestHelper helper) {
+        AdvancementGameTests.aCalfOfWildParentsIsNoFamilyTree(helper);
+    }
 }
