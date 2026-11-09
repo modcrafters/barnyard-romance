@@ -421,7 +421,7 @@ public final class CareGameTests {
         ServerPlayer owner = helper.makeMockServerPlayerInLevel();
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
-        owner.setPos(wolf.getX() + Sulk.WATCH_RANGE + 4.0, wolf.getY(), wolf.getZ());
+        owner.setPos(wolf.getX() + BarnyardConfig.current().tuning().sulkRange() + 4.0, wolf.getY(), wolf.getZ());
 
         Sulk.ownerHurt(wolf, owner, helper.getLevel().getGameTime());
 

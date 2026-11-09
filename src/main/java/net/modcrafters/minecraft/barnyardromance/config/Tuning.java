@@ -3,7 +3,8 @@ package net.modcrafters.minecraft.barnyardromance.config;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-// The numbers behind familiarity, growth, inheritance, fertility, old age, food healing, milk, yield, Vigour, fights, feeders and escapes.
+// The numbers behind familiarity, growth, inheritance, fertility, old age, food healing, milk, yield, Vigour, fights,
+// feeders, escapes and grumpy pets. Ranges are in blocks.
 // The familiarity losses are per hungry day, per milking and per shearing.
 public record Tuning(
         double familiarityGain,
@@ -41,7 +42,7 @@ public record Tuning(
         double vigourPerEgg,
         double hungryMatingHealth,
         double hungryEggHealth,
-        int rivalRange,
+        int matingRange,
         double rivalFightChance,
         double roosterFightChance,
         double wildFightChance,
@@ -54,7 +55,8 @@ public record Tuning(
         int birdFeederFullDays,
         int petBowlFullDays,
         double escapeBelow,
-        double escapeChance
+        double escapeChance,
+        int sulkRange
 ) {
     private static final double MAX_FOOD_HEAL = 20.0;
     private static final long MAX_MILK_TICKS = 2_400_000L;
@@ -65,7 +67,7 @@ public record Tuning(
 
     public static final Tuning DEFAULTS = new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
             72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
-            0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10);
+            0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10, 16);
 
     // A bad or missing value keeps its default; this never throws.
     static Tuning from(JsonObject object) {
@@ -113,7 +115,8 @@ public record Tuning(
                 unit(object, "vigourPerEgg", DEFAULTS.vigourPerEgg),
                 Math.clamp(number(object, "hungryMatingHealth", DEFAULTS.hungryMatingHealth), 0.0, MAX_HEALTH_COST),
                 Math.clamp(number(object, "hungryEggHealth", DEFAULTS.hungryEggHealth), 0.0, MAX_HEALTH_COST),
-                range(object, "rivalRange", DEFAULTS.rivalRange),
+                // Configs from before the rename say rivalRange.
+                range(object, object.has("matingRange") ? "matingRange" : "rivalRange", DEFAULTS.matingRange),
                 unit(object, "rivalFightChance", DEFAULTS.rivalFightChance),
                 unit(object, "roosterFightChance", DEFAULTS.roosterFightChance),
                 unit(object, "wildFightChance", DEFAULTS.wildFightChance),
@@ -126,7 +129,8 @@ public record Tuning(
                 (int) Math.clamp(Math.round(number(object, "birdFeederFullDays", DEFAULTS.birdFeederFullDays)), 1L, 365L),
                 (int) Math.clamp(Math.round(number(object, "petBowlFullDays", DEFAULTS.petBowlFullDays)), 1L, 365L),
                 unit(object, "escapeBelow", DEFAULTS.escapeBelow),
-                unit(object, "escapeChance", DEFAULTS.escapeChance)
+                unit(object, "escapeChance", DEFAULTS.escapeChance),
+                range(object, "sulkRange", DEFAULTS.sulkRange)
         );
     }
 
@@ -167,7 +171,7 @@ public record Tuning(
         object.addProperty("vigourPerEgg", vigourPerEgg);
         object.addProperty("hungryMatingHealth", hungryMatingHealth);
         object.addProperty("hungryEggHealth", hungryEggHealth);
-        object.addProperty("rivalRange", rivalRange);
+        object.addProperty("matingRange", matingRange);
         object.addProperty("rivalFightChance", rivalFightChance);
         object.addProperty("roosterFightChance", roosterFightChance);
         object.addProperty("wildFightChance", wildFightChance);
@@ -181,6 +185,7 @@ public record Tuning(
         object.addProperty("petBowlFullDays", petBowlFullDays);
         object.addProperty("escapeBelow", escapeBelow);
         object.addProperty("escapeChance", escapeChance);
+        object.addProperty("sulkRange", sulkRange);
         return object;
     }
 

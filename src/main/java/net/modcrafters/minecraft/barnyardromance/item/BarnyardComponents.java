@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.item;
 
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 
@@ -21,6 +22,11 @@ public final class BarnyardComponents {
     public static final DataComponentType<EggData> EGG_DATA = DataComponentType.<EggData>builder()
             .persistent(EggData.CODEC)
             .networkSynchronized(EggData.STREAM_CODEC)
+            .build();
+    // A fertilized egg that has been out of a nesting box: its species, and its countdown while back in one.
+    public static final DataComponentType<WildEgg> WILD_EGG = DataComponentType.<WildEgg>builder()
+            .persistent(WildEgg.CODEC)
+            .networkSynchronized(WildEgg.STREAM_CODEC)
             .build();
 
     private BarnyardComponents() {

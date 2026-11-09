@@ -1,5 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.Items;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
@@ -91,7 +96,10 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("a_member_no_longer_familiar_still_opens", 20, HerdBookGameTests::aMemberNoLongerFamiliarStillOpens),
             new BreedingGameTests.Case("adding_an_animal_focuses_it", 20, HerdBookGameTests::addingAnAnimalFocusesIt),
             new BreedingGameTests.Case("an_unfamiliar_stranger_gets_no_focus", 20, HerdBookGameTests::anUnfamiliarStrangerGetsNoFocus),
-            new BreedingGameTests.Case("an_animal_in_another_book_is_added_to_this_one", 20, HerdBookGameTests::anAnimalInAnotherBookIsAddedToThisOne)
+            new BreedingGameTests.Case("an_animal_in_another_book_is_added_to_this_one", 20, HerdBookGameTests::anAnimalInAnotherBookIsAddedToThisOne),
+            new BreedingGameTests.Case("a_herd_book_copies_with_a_book_feather_and_ink", 20, HerdBookGameTests::aHerdBookCopiesWithABookFeatherAndInk),
+            new BreedingGameTests.Case("a_fresh_herd_book_does_not_copy", 20, HerdBookGameTests::aFreshHerdBookDoesNotCopy),
+            new BreedingGameTests.Case("a_copy_shares_the_herd", 20, HerdBookGameTests::aCopySharesTheHerd)
     );
 
     private HerdBookGameTests() {
@@ -624,6 +632,71 @@ public final class HerdBookGameTests {
 
         helper.assertTrue(use.result() == HerdBooks.RegisterResult.ADDED, "a cow from another book was " + use.result());
         helper.assertTrue(data(helper).ledger().members(bookId(helper, bookB)).contains(cow.getUUID()), "the second book does not hold her");
+        helper.succeed();
+    }
+
+    // A herd book, a book, a feather and an ink sac in any slots make a copy with the same ID; the herd book stays.
+    public static void aHerdBookCopiesWithABookFeatherAndInk(GameTestHelper helper) {
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(book, female(helper, EntityTypes.COW));
+        CraftingInput input = CraftingInput.of(3, 3, List.of(
+                new ItemStack(Items.FEATHER), ItemStack.EMPTY, ItemStack.EMPTY,
+                ItemStack.EMPTY, book.copy(), new ItemStack(Items.BOOK),
+                ItemStack.EMPTY, new ItemStack(Items.INK_SAC), ItemStack.EMPTY
+        ));
+
+        Optional<RecipeHolder<CraftingRecipe>> recipe = server(helper).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+
+        helper.assertTrue(recipe.isPresent(), "a herd book, a book, a feather and an ink sac craft nothing");
+        //? if >=1.21.2 {
+        ItemStack copy = recipe.get().value().assemble(input);
+        //?} else
+        //ItemStack copy = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
+        helper.assertTrue(copy.is(BarnyardItems.HERD_BOOK) && copy.getCount() == 1, "the copy is " + copy);
+        helper.assertTrue(bookId(helper, book).equals(copy.get(BarnyardComponents.HERD_BOOK)), "the copy has another ID");
+        ItemStack kept = recipe.get().value().getRemainingItems(input).get(4);
+        helper.assertTrue(kept.is(BarnyardItems.HERD_BOOK) && bookId(helper, book).equals(kept.get(BarnyardComponents.HERD_BOOK)),
+                "the herd book didn't stay in the grid: " + kept);
+        helper.succeed();
+    }
+
+    // A book with no herd has nothing to copy, and anything extra in the grid spoils the recipe.
+    public static void aFreshHerdBookDoesNotCopy(GameTestHelper helper) {
+        ItemStack registered = new ItemStack(BarnyardItems.HERD_BOOK);
+        HerdBooks.register(registered, female(helper, EntityTypes.COW));
+        CraftingInput fresh = CraftingInput.of(2, 2, List.of(
+                new ItemStack(BarnyardItems.HERD_BOOK), new ItemStack(Items.BOOK),
+                new ItemStack(Items.FEATHER), new ItemStack(Items.INK_SAC)
+        ));
+        CraftingInput extra = CraftingInput.of(3, 2, List.of(
+                registered.copy(), new ItemStack(Items.BOOK), new ItemStack(Items.FEATHER),
+                new ItemStack(Items.INK_SAC), new ItemStack(Items.WHEAT), ItemStack.EMPTY
+        ));
+        CraftingInput noInk = CraftingInput.of(2, 2, List.of(
+                registered.copy(), new ItemStack(Items.BOOK),
+                new ItemStack(Items.FEATHER), ItemStack.EMPTY
+        ));
+
+        for (CraftingInput input : List.of(fresh, extra, noInk)) {
+            helper.assertTrue(server(helper).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel()).isEmpty(),
+                    "a copy was crafted from " + input.items());
+        }
+        helper.succeed();
+    }
+
+    // An animal added with the copy is in the first book too: both are the same herd.
+    public static void aCopySharesTheHerd(GameTestHelper helper) {
+        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        Animal first = female(helper, EntityTypes.COW);
+        HerdBooks.register(book, first);
+        ItemStack copy = book.copy();
+        Animal second = female(helper, EntityTypes.COW);
+
+        HerdBooks.register(copy, second);
+
+        helper.assertTrue(data(helper).ledger().members(bookId(helper, book)).equals(java.util.Set.of(first.getUUID(), second.getUUID())),
+                "the first book holds " + data(helper).ledger().members(bookId(helper, book)));
+        helper.assertTrue(HerdBooks.register(book, second) == HerdBooks.RegisterResult.ALREADY, "the first book didn't know the copy's cow");
         helper.succeed();
     }
 

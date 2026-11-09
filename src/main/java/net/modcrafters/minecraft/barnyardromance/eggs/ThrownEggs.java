@@ -38,38 +38,52 @@ public final class ThrownEggs {
 
     public static void land(ServerLevel level, Vec3 position, ItemStack thrown, RandomSource random) {
         EggData data = thrown.get(BarnyardComponents.EGG_DATA);
-        if (data == null) {
+        WildEgg wild = thrown.get(BarnyardComponents.WILD_EGG);
+        String species = data != null ? data.species() : wild != null ? wild.species() : null;
+        if (species == null) {
             return;
         }
         try {
-            if (random.nextDouble() < BarnyardConfig.current().eggsFor(data.species()).thrownHatchChance()) {
-                hatchTainted(level, position, data, random);
+            if (random.nextDouble() < BarnyardConfig.current().eggsFor(species).thrownHatchChance()) {
+                if (data != null) {
+                    hatchTainted(level, position, data, random);
+                } else {
+                    hatchTainted(level, position, wild, random);
+                }
             }
         } catch (RuntimeException exception) {
-            Constants.LOG.error("Failed to hatch a thrown {} egg", data.species(), exception);
+            Constants.LOG.error("Failed to hatch a thrown {} egg", species, exception);
         }
     }
 
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, EggData data, RandomSource random) {
-        Optional<Animal> created = Hatching.create(level, data.species());
+        SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
+        return hatchTainted(level, position, data.species(), data.variant(),
+                SizeClass.of(Sex.FEMALE, data.motherScale(), size), SizeClass.of(Sex.MALE, data.fatherScale(), size), random);
+    }
+
+    // A wild egg's parents are unknown, so its chick is sized as if both were average.
+    public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, WildEgg egg, RandomSource random) {
+        return hatchTainted(level, position, egg.species(), egg.variant(), SizeClass.M, SizeClass.M, random);
+    }
+
+    private static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, String species, String variant,
+                                                 SizeClass mother, SizeClass father, RandomSource random) {
+        Optional<Animal> created = Hatching.create(level, species);
         if (created.isEmpty()) {
             return Optional.empty();
         }
         Animal chick = created.get();
         BarnyardConfig config = BarnyardConfig.current();
-        SizeSettings size = config.sizeFor(data.species());
+        SizeSettings size = config.sizeFor(species);
         Sex sex = SexRoll.roll(random.nextDouble(), config.femaleRatio());
-        SizeClass chickSize = EggRules.thrownChickSize(
-                SizeClass.of(Sex.FEMALE, data.motherScale(), size),
-                SizeClass.of(Sex.MALE, data.fatherScale(), size),
-                random.nextDouble()
-        );
+        SizeClass chickSize = EggRules.thrownChickSize(mother, father, random.nextDouble());
         double scale = ScaleRoll.fromPercent(sex, size, chickSize == SizeClass.M ? MEDIUM : SMALL);
         int growth = Growth.wild();
         Services.DATA.set(chick, new AnimalTraits(sex, scale, 0.0, -1L, growth)
                 .withWeight(TAINTED_WEIGHT)
                 .withBornTick(level.getGameTime()));
-        Hatching.place(chick, data, growth, position);
+        Hatching.place(chick, variant, growth, position);
         level.addFreshEntityWithPassengers(chick);
         return Optional.of(chick);
     }

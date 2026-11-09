@@ -75,7 +75,7 @@ public final class Courtship {
                 return;
             }
             Tuning tuning = BarnyardConfig.current().tuning();
-            int range = tuning.rivalRange();
+            int range = tuning.matingRange();
             boolean fights = !state.rolled && BarnyardConfig.current().fightsFor(AnimalSex.speciesId(female));
             CourtshipRules.Outcome<Animal> outcome = CourtshipRules.decide(candidates(female, tuning),
                     male -> Reach.canWalk(male, female, range), fights, rolls, tuning.rivalFightChance());
@@ -146,7 +146,7 @@ public final class Courtship {
 
     // The males who could mate with her now, closest first, before anyone checks they can walk to her.
     private static List<Animal> candidates(Animal female, Tuning tuning) {
-        return female.level().getEntitiesOfClass(Animal.class, female.getBoundingBox().inflate(tuning.rivalRange()),
+        return female.level().getEntitiesOfClass(Animal.class, female.getBoundingBox().inflate(tuning.matingRange()),
                         male -> male != female && male.isAlive() && !male.isBaby() && sameKind(female, male))
                 .stream()
                 .filter(male -> available(female, male, tuning))
@@ -176,7 +176,7 @@ public final class Courtship {
                 return;
             }
             Tuning tuning = BarnyardConfig.current().tuning();
-            if (sameKind(female, winner) && available(female, winner, tuning) && Reach.canWalk(winner, female, tuning.rivalRange())) {
+            if (sameKind(female, winner) && available(female, winner, tuning) && Reach.canWalk(winner, female, tuning.matingRange())) {
                 choose(female, state, winner);
             }
         } catch (RuntimeException exception) {

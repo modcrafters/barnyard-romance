@@ -168,4 +168,19 @@ public class FabricHerdBookGameTests {
     public void anAnimalInAnotherBookIsAddedToThisOne(GameTestHelper helper) {
         HerdBookGameTests.anAnimalInAnotherBookIsAddedToThisOne(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aHerdBookCopiesWithABookFeatherAndInk(GameTestHelper helper) {
+        HerdBookGameTests.aHerdBookCopiesWithABookFeatherAndInk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aFreshHerdBookDoesNotCopy(GameTestHelper helper) {
+        HerdBookGameTests.aFreshHerdBookDoesNotCopy(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCopySharesTheHerd(GameTestHelper helper) {
+        HerdBookGameTests.aCopySharesTheHerd(helper);
+    }
 }

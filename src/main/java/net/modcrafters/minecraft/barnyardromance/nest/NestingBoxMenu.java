@@ -9,6 +9,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
 
 // The nesting box window: sixteen nests (NestSlot), then the player's inventory and hotbar.
 public class NestingBoxMenu extends AbstractContainerMenu {
@@ -70,9 +71,12 @@ public class NestingBoxMenu extends AbstractContainerMenu {
         ItemStack moved = stack.copy();
         int nests = NestingBoxBlockEntity.SLOTS;
         if (index < nests) {
-            if (!this.moveItemStackTo(stack, nests, this.slots.size(), true)) {
+            // A fertilized egg goes wild on the way out; one that finds no room stays in its nest as it was.
+            ItemStack out = WildEggs.taint(stack.copy());
+            if (!this.moveItemStackTo(out, nests, this.slots.size(), true)) {
                 return ItemStack.EMPTY;
             }
+            stack.setCount(out.getCount());
         } else if (!NestingBoxBlockEntity.allowedByHand(stack) || !this.moveItemStackTo(stack, 0, nests, false)) {
             // Shift-clicking would otherwise top up a pile of plain eggs, which only hens may add to.
             return ItemStack.EMPTY;
@@ -91,7 +95,8 @@ public class NestingBoxMenu extends AbstractContainerMenu {
         box.stopOpen(player);
     }
 
-    // A nest: by hand only a fertilized egg goes in, one to a nest, and never in the nest a hen is sitting in.
+    // A nest: by hand only a fertilized egg goes in, one to a nest, and never in the nest a hen is sitting in. It goes
+    // in wild, so one carried straight from another box forgets its parents too, and its countdown starts afresh.
     static class NestSlot extends Slot {
         private final NestingBoxMenu menu;
 
@@ -103,6 +108,16 @@ public class NestingBoxMenu extends AbstractContainerMenu {
         @Override
         public boolean mayPlace(ItemStack stack) {
             return NestingBoxBlockEntity.allowedByHand(stack) && !hasItem() && menu.sittingSlot() != getContainerSlot();
+        }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return NestingBoxBlockEntity.allowedByHand(stack) ? 1 : super.getMaxStackSize(stack);
+        }
+
+        @Override
+        public void setByPlayer(ItemStack stack, ItemStack previous) {
+            super.setByPlayer(WildEggs.taint(stack), previous);
         }
     }
 }

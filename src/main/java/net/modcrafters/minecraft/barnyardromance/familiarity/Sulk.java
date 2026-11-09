@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
+import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -11,7 +12,6 @@ import java.util.WeakHashMap;
 // sulk at once.
 public final class Sulk {
     public static final int SULK_TICKS = 100;
-    public static final double WATCH_RANGE = 16.0;
     // Server thread only. Weak keys, so a pet that is unloaded mid-sulk is simply forgotten.
     private static final Map<TamableAnimal, Long> UNTIL = new WeakHashMap<>();
 
@@ -20,7 +20,8 @@ public final class Sulk {
 
     // Called once for each time the owner is hurt.
     public static void ownerHurt(TamableAnimal pet, LivingEntity owner, long now) {
-        if (pet.getLastHurtByMob() != null || pet.distanceToSqr(owner) > WATCH_RANGE * WATCH_RANGE) {
+        double range = BarnyardConfig.current().tuning().sulkRange();
+        if (pet.getLastHurtByMob() != null || pet.distanceToSqr(owner) > range * range) {
             return;
         }
         start(pet, now);

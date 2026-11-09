@@ -102,11 +102,6 @@ public class FabricEggGameTests {
         EggGameTests.hopperPullsOnlyPlainEggs(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 80)
-    public void countdownPausesOutsideTheBox(GameTestHelper helper) {
-        EggGameTests.countdownPausesOutsideTheBox(helper);
-    }
-
     @GameTest(structure = PEN, maxTicks = 20)
     public void boxDropsEggsWhenBroken(GameTestHelper helper) {
         EggGameTests.boxDropsEggsWhenBroken(helper);
@@ -325,5 +320,50 @@ public class FabricEggGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void warmHenLaysBrownEggs(GameTestHelper helper) {
         EggGameTests.warmHenLaysBrownEggs(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 80)
+    public void aShiftClickedEggGoesWild(GameTestHelper helper) {
+        EggGameTests.aShiftClickedEggGoesWild(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anEggTakenByHandGoesWild(GameTestHelper helper) {
+        EggGameTests.anEggTakenByHandGoesWild(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anEggSwappedOutGoesWild(GameTestHelper helper) {
+        EggGameTests.anEggSwappedOutGoesWild(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wildEggsOfAKindStack(GameTestHelper helper) {
+        EggGameTests.wildEggsOfAKindStack(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWildEggPutBackStartsAfresh(GameTestHelper helper) {
+        EggGameTests.aWildEggPutBackStartsAfresh(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void wildEggsGoInOneToANest(GameTestHelper helper) {
+        EggGameTests.wildEggsGoInOneToANest(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void aWildEggHatchesAChickWithNoParents(GameTestHelper helper) {
+        EggGameTests.aWildEggHatchesAChickWithNoParents(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aThrownWildEggHatchesTainted(GameTestHelper helper) {
+        EggGameTests.aThrownWildEggHatchesTainted(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void onlyABoxEggWarnsAboutTakingItOut(GameTestHelper helper) {
+        EggGameTests.onlyABoxEggWarnsAboutTakingItOut(helper);
     }
 }

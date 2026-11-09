@@ -104,7 +104,7 @@ public final class Fights {
         }
         try {
             Animal other = level.getEntity(fight.other(animal.getUUID())) instanceof Animal found ? found : null;
-            int range = BarnyardConfig.current().tuning().rivalRange();
+            int range = BarnyardConfig.current().tuning().matingRange();
             if (!animal.isAlive()) {
                 end(fight, level, other != null && other.isAlive() ? other : null);
                 return;

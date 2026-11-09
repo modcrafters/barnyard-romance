@@ -13,13 +13,49 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.ChatFormatting;
+//? if >=1.21.5 {
+import net.minecraft.world.item.component.TooltipDisplay;
+import java.util.function.Consumer;
+//?} else
+//import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
-// Use it on a familiar animal to add it to this book; use it in the air to open it.
+// Use it on a familiar animal to add it to this book; use it in the air to open it. A book with a herd shows a short
+// mark of its ID, which its copies share (HerdBookCopyRecipe).
 public class HerdBookItem extends Item {
     public HerdBookItem(Properties properties) {
         super(properties);
     }
+
+    public static String mark(UUID id) {
+        return id.toString().substring(0, 6).toUpperCase(Locale.ROOT);
+    }
+
+    private static Component herdLine(UUID id) {
+        return Component.translatable("item.barnyard_romance.herd_book.herd", mark(id)).withStyle(ChatFormatting.GRAY);
+    }
+
+    //? if >=1.21.5 {
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+        UUID id = stack.get(BarnyardComponents.HERD_BOOK);
+        if (id != null) {
+            builder.accept(herdLine(id));
+        }
+    }
+    //?} else {
+    /*@Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
+        UUID id = stack.get(BarnyardComponents.HERD_BOOK);
+        if (id != null) {
+            lines.add(herdLine(id));
+        }
+    }
+    *///?}
 
     //? if >=1.21.2 {
     @Override
