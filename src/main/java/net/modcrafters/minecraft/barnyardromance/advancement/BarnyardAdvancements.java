@@ -19,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 // The moments the Barnyard Romance advancement tab grants, each called from where the mod already handles it.
@@ -88,8 +89,25 @@ public final class BarnyardAdvancements {
             if (FamilyTree.third(level, lineage)) {
                 Grants.grant(server, breeder, FAMILY_TREE, Grants.CRITERION);
             }
+            counted(server, breeder, AnimalSex.speciesId(babies.getFirst()), babies.size());
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to grant a {} birth", AnimalSex.speciesId(mother), exception);
+        }
+    }
+
+    // Births towards a player's breeding ladder: counted even while they're offline, and each step reached is granted
+    // (or held until they log in).
+    public static void counted(MinecraftServer server, UUID player, String speciesId, int babies) {
+        Optional<String> ladder = Ladders.ladderFor(speciesId);
+        if (ladder.isEmpty() || babies <= 0) {
+            return;
+        }
+        CreditData data = CreditData.get(server);
+        int before = data.ledger().births(player, ladder.get());
+        int after = data.ledger().addBirths(player, ladder.get(), babies);
+        data.setDirty();
+        for (int step : Ladders.crossed(before, after)) {
+            Grants.grant(server, player, Ladders.advancement(ladder.get(), step), Grants.CRITERION);
         }
     }
 

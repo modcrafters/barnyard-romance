@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/special_delivery",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.mooshroom_10.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "minecraft:mooshroom_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.mooshroom_10.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

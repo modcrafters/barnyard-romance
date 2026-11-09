@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/ladder/chicken_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.chicken_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:chicken_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.chicken_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/ladder/llama_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.llama_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:llama_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.llama_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

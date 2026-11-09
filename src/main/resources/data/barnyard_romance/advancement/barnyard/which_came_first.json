@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.which_came_first.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "barnyard_romance:fertilized_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.which_came_first.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

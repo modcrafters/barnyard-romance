@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/ladder/goat_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.goat_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:goat_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.goat_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

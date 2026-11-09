@@ -67,4 +67,19 @@ public class FabricAdvancementGameTests {
     public void aCalfOfWildParentsIsNoFamilyTree(GameTestHelper helper) {
         AdvancementGameTests.aCalfOfWildParentsIsNoFamilyTree(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void tenPigletsEarnTheFirstPigStep(GameTestHelper helper) {
+        AdvancementGameTests.tenPigletsEarnTheFirstPigStep(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 100)
+    public void aDonkeyFoalCountsForTheHorseLadder(GameTestHelper helper) {
+        AdvancementGameTests.aDonkeyFoalCountsForTheHorseLadder(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void naturalistLaddersLoadOnlyWithNaturalist(GameTestHelper helper) {
+        AdvancementGameTests.naturalistLaddersLoadOnlyWithNaturalist(helper);
+    }
 }

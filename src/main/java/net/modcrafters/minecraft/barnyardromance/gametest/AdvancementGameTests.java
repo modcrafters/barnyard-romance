@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancement
 import net.modcrafters.minecraft.barnyardromance.advancement.CreditData;
 import net.modcrafters.minecraft.barnyardromance.advancement.CreditLedger;
 import net.modcrafters.minecraft.barnyardromance.advancement.Grants;
+import net.modcrafters.minecraft.barnyardromance.advancement.Ladders;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
@@ -15,6 +16,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
@@ -44,7 +46,10 @@ public final class AdvancementGameTests {
             new BreedingGameTests.Case("a_pregnancy_without_a_breeder_credits_nobody", 100, AdvancementGameTests::aPregnancyWithoutABreederCreditsNobody),
             new BreedingGameTests.Case("pregnancy_off_still_earns_both", 20, AdvancementGameTests::pregnancyOffStillEarnsBoth),
             new BreedingGameTests.Case("a_grandchild_earns_family_tree", 100, AdvancementGameTests::aGrandchildEarnsFamilyTree),
-            new BreedingGameTests.Case("a_calf_of_wild_parents_is_no_family_tree", 100, AdvancementGameTests::aCalfOfWildParentsIsNoFamilyTree)
+            new BreedingGameTests.Case("a_calf_of_wild_parents_is_no_family_tree", 100, AdvancementGameTests::aCalfOfWildParentsIsNoFamilyTree),
+            new BreedingGameTests.Case("ten_piglets_earn_the_first_pig_step", 100, AdvancementGameTests::tenPigletsEarnTheFirstPigStep),
+            new BreedingGameTests.Case("a_donkey_foal_counts_for_the_horse_ladder", 100, AdvancementGameTests::aDonkeyFoalCountsForTheHorseLadder),
+            new BreedingGameTests.Case("naturalist_ladders_load_only_with_naturalist", 20, AdvancementGameTests::naturalistLaddersLoadOnlyWithNaturalist)
     );
     static final Identifier TWO_BY_TWO = Identifier.fromNamespaceAndPath("minecraft", "husbandry/bred_all_animals");
 
@@ -190,10 +195,51 @@ public final class AdvancementGameTests {
         });
     }
 
+    public static void tenPigletsEarnTheFirstPigStep(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        CreditLedger ledger = CreditData.get(helper.getLevel().getServer()).ledger();
+        ledger.addBirths(breeder.getUUID(), "pig", 8);
+        Animal mother = bred(helper, EntityTypes.PIG, breeder);
+        int litter = BreedingGameTests.pregnancy(helper, mother).litterSize();
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(ledger.births(breeder.getUUID(), "pig") == 8 + litter,
+                    "pig births are " + ledger.births(breeder.getUUID(), "pig") + ", not " + (8 + litter));
+            helper.assertTrue(earned(breeder, Ladders.advancement("pig", 10)), "ten piglets didn't earn the first pig step");
+            helper.assertTrue(!earned(breeder, Ladders.advancement("pig", 100)), "ten piglets earned the second pig step");
+        });
+    }
+
+    public static void aDonkeyFoalCountsForTheHorseLadder(GameTestHelper helper) {
+        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        Animal mother = bred(helper, EntityTypes.DONKEY, breeder);
+
+        due(helper, mother);
+        helper.succeedWhen(() -> {
+            int births = CreditData.get(helper.getLevel().getServer()).ledger().births(breeder.getUUID(), "horse");
+            helper.assertTrue(births == 1, "a donkey foal made " + births + " horse births, not 1");
+        });
+    }
+
+    public static void naturalistLaddersLoadOnlyWithNaturalist(GameTestHelper helper) {
+        boolean loaded = Services.PLATFORM.isModLoaded("naturalist");
+        boolean present = helper.getLevel().getServer().getAdvancements().get(Ladders.advancement("deer", 10)) != null;
+
+        helper.assertTrue(present == loaded, "the deer ladder is " + (present ? "" : "not ") + "loaded, and Naturalist is "
+                + (loaded ? "" : "not ") + "installed");
+        helper.assertTrue(helper.getLevel().getServer().getAdvancements().get(Ladders.advancement("cow", 10)) != null, "the cow ladder isn't loaded");
+        helper.succeed();
+    }
+
     // A cow and a bull mated, with the cow put in love by the breeder (null for no player).
     static Animal bredCow(GameTestHelper helper, @Nullable ServerPlayer breeder) {
-        Animal mother = female(helper, EntityTypes.COW);
-        Animal father = male(helper, EntityTypes.COW);
+        return bred(helper, EntityTypes.COW, breeder);
+    }
+
+    static Animal bred(GameTestHelper helper, EntityType<? extends Animal> type, @Nullable ServerPlayer breeder) {
+        Animal mother = female(helper, type);
+        Animal father = male(helper, type);
         mother.setInLove(breeder);
         father.setInLove(null);
         mother.spawnChildFromBreeding(helper.getLevel(), father);

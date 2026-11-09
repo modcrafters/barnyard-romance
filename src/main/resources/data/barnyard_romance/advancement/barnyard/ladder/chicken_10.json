@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/which_came_first",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.chicken_10.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "minecraft:chicken_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.chicken_10.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}
