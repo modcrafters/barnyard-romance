@@ -82,4 +82,19 @@ public class FabricAdvancementGameTests {
     public void naturalistLaddersLoadOnlyWithNaturalist(GameTestHelper helper) {
         AdvancementGameTests.naturalistLaddersLoadOnlyWithNaturalist(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aBredEggHatchingCreditsPlayersNearby(GameTestHelper helper) {
+        AdvancementGameTests.aBredEggHatchingCreditsPlayersNearby(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWildEggEarnsWhichCameFirstButNoLadder(GameTestHelper helper) {
+        AdvancementGameTests.aWildEggEarnsWhichCameFirstButNoLadder(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aThrownBredEggCounts(GameTestHelper helper) {
+        AdvancementGameTests.aThrownBredEggCounts(helper);
+    }
 }

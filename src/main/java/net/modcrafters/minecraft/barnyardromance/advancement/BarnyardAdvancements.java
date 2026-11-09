@@ -95,6 +95,28 @@ public final class BarnyardAdvancements {
         }
     }
 
+    // A chick (or duckling, or poult) out of a fertilized egg, credited to the players nearby: nobody feeds a hen into
+    // love. parents is null for a wild egg, which forgot them; only an egg that remembers them is breeding, so only
+    // that one counts towards the ladders, Two by Two and Family Tree.
+    public static void hatched(ServerLevel level, Animal chick, @Nullable Lineage parents) {
+        try {
+            for (ServerPlayer player : Grants.nearby(level, chick.position())) {
+                Grants.grant(player, WHICH_CAME_FIRST);
+                if (parents == null) {
+                    continue;
+                }
+                counted(level.getServer(), player.getUUID(), AnimalSex.speciesId(chick), 1);
+                Animal mother = parents.mother() != null && level.getEntity(parents.mother()) instanceof Animal hen ? hen : chick;
+                twoByTwo(level, player.getUUID(), mother, chick);
+                if (FamilyTree.third(level, parents)) {
+                    Grants.grant(player, FAMILY_TREE);
+                }
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant a {} hatching", AnimalSex.speciesId(chick), exception);
+        }
+    }
+
     // Births towards a player's breeding ladder: counted even while they're offline, and each step reached is granted
     // (or held until they log in).
     public static void counted(MinecraftServer server, UUID player, String speciesId, int babies) {

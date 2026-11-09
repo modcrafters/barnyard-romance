@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
@@ -71,6 +72,7 @@ public final class Hatching {
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to add a hatched {} to herd books", data.species(), exception);
         }
+        BarnyardAdvancements.hatched(level, chick, new Lineage(data.mother(), data.father()));
         return Optional.of(chick);
     }
 
@@ -94,6 +96,7 @@ public final class Hatching {
                 Constants.LOG.warn("Couldn't hatch a wild {} egg: the level refused the chick", egg.species());
                 return Optional.empty();
             }
+            BarnyardAdvancements.hatched(level, chick, null);
             return Optional.of(chick);
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to hatch a wild {} egg", egg.species(), exception);
