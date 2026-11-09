@@ -70,7 +70,7 @@ class TuningTest {
         assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
         assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
                 72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
-                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10), Tuning.DEFAULTS);
+                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10, 16), Tuning.DEFAULTS);
     }
 
     @Test
@@ -154,7 +154,7 @@ class TuningTest {
         assertEquals(0.15, tuning.vigourPerEgg(), 1.0e-9);
         assertEquals(2.0, tuning.hungryMatingHealth(), 1.0e-9);
         assertEquals(1.0, tuning.hungryEggHealth(), 1.0e-9);
-        assertEquals(16, tuning.rivalRange());
+        assertEquals(16, tuning.matingRange());
         assertEquals(0.5, tuning.rivalFightChance(), 1.0e-9);
         assertEquals(0.25, tuning.roosterFightChance(), 1.0e-9);
         assertEquals(0.05, tuning.wildFightChance(), 1.0e-9);
@@ -166,7 +166,7 @@ class TuningTest {
     void territorialTuningIsReadAndClamped() {
         Tuning tuning = BarnyardConfig.parse("""
                 { "tuning": { "vigourPerMating": 2, "vigourPerEgg": 0.2, "hungryMatingHealth": 50, "hungryEggHealth": -3,
-                  "rivalRange": 500, "rivalFightChance": -1, "roosterFightChance": 0.75, "wildFightChance": 3,
+                  "matingRange": 500, "rivalFightChance": -1, "roosterFightChance": 0.75, "wildFightChance": 3,
                   "fightStopRange": 0, "fightTruceTicks": -20 } }
                 """).tuning();
 
@@ -174,12 +174,26 @@ class TuningTest {
         assertEquals(0.2, tuning.vigourPerEgg(), 1.0e-9);
         assertEquals(20.0, tuning.hungryMatingHealth(), 1.0e-9);
         assertEquals(0.0, tuning.hungryEggHealth(), 1.0e-9);
-        assertEquals(64, tuning.rivalRange());
+        assertEquals(64, tuning.matingRange());
         assertEquals(0.0, tuning.rivalFightChance(), 1.0e-9);
         assertEquals(0.75, tuning.roosterFightChance(), 1.0e-9);
         assertEquals(1.0, tuning.wildFightChance(), 1.0e-9);
         assertEquals(1, tuning.fightStopRange());
         assertEquals(0, tuning.fightTruceTicks());
+    }
+
+    @Test
+    void matingRangeStillReadsTheOldRivalRangeKey() {
+        assertEquals(12, BarnyardConfig.parse("{ \"tuning\": { \"rivalRange\": 12 } }").tuning().matingRange());
+        assertEquals(20, BarnyardConfig.parse("{ \"tuning\": { \"rivalRange\": 12, \"matingRange\": 20 } }").tuning().matingRange());
+    }
+
+    @Test
+    void sulkRangeDefaultsTo16AndClamps() {
+        assertEquals(16, Tuning.DEFAULTS.sulkRange());
+        assertEquals(24, BarnyardConfig.parse("{ \"tuning\": { \"sulkRange\": 24 } }").tuning().sulkRange());
+        assertEquals(64, BarnyardConfig.parse("{ \"tuning\": { \"sulkRange\": 500 } }").tuning().sulkRange());
+        assertEquals(1, BarnyardConfig.parse("{ \"tuning\": { \"sulkRange\": 0 } }").tuning().sulkRange());
     }
 
     @Test

@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Config: `rivalRange` is now `matingRange` (an old config's `rivalRange` still counts), and how far a grumpy wolf watches its owner being attacked is `sulkRange` (16 blocks).
+
 - The mod's recipes show in the recipe book: the feeding blocks, the Nesting Box, the Herd Book, the mashes, Golden Bran and the cake that takes any milk. Each one unlocks when you pick up one of its ingredients.
 - The herd book says which feeding block fed an animal today. Its list shows a half drumstick for an animal fed only from a feeding block, and holds two more animals a page.
 - New feeding blocks: the **Bird Feeder** (chickens, ducks, turkeys, parrots), **Trough** (rabbits), **Feeder** (pigs, goats, boar), **Manger** (cows, mooshrooms, sheep, the horse family, llamas, camels, deer, ostriches) and **Pet Bowl** (wolves, cats, ocelots). Craft one from wood (the Pet Bowl from bricks) and fill it with food by hand, with a hopper or with pipes. Every morning the familiar animals in the pen walk over and eat, standing a few seconds with their heads down and crumbs of the food at their mouths before they wander off; a pet told to sit by its bowl eats where it sits. You can see how full each one is, its food rising and falling from empty to two days' worth for its animals, and a comparator reads it too. All but the Bird Feeder face you when placed. Like a fence, the Manger and the Feeder are too tall for livestock to jump onto.

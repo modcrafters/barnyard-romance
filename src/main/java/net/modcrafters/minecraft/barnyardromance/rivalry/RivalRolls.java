@@ -71,13 +71,13 @@ public final class RivalRolls {
         boolean rooster = BarnyardConfig.current().eggsFor(AnimalSex.speciesId(male)).enabled();
         boolean wild = !Familiarity.ready(traits.get().familiarity());
         long now = level.getGameTime();
-        for (Animal rival : rivals(male, tuning.rivalRange())) {
+        for (Animal rival : rivals(male, tuning.matingRange())) {
             Optional<AnimalTraits> theirs = Services.DATA.get(rival);
             if (theirs.isEmpty() || Fights.fighting(rival) || Fights.inTruce(male, rival, now)) {
                 continue;
             }
             double chance = FightRules.randomChance(rooster, wild, !Familiarity.ready(theirs.get().familiarity()), tuning);
-            if (roll < chance && Reach.canWalk(male, rival, tuning.rivalRange())) {
+            if (roll < chance && Reach.canWalk(male, rival, tuning.matingRange())) {
                 Fights.start(male, rival, null);
                 return;
             }

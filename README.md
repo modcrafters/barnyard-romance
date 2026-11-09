@@ -48,7 +48,7 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 
 Familiarity, from sneak-feeding, doesn't last on its own. Each day an animal goes without food it loses 5%, and each milking or shearing costs 5%, since animals don't much enjoy them. Feeding every day never loses anything. A female that went hungry yesterday gives no milk today, and like any day she isn't milked it counts towards her drying up. **Dairy Mash** (a bowl, grains, a root and any milk bucket; you get the bowl back) starts a dry, familiar female's milk for three days (`milkKeepsFlowingTicks`); milking keeps it going from there. A pack can give any food file `"startsMilk": true` in its effects to do the same as an ordinary meal. Babies don't go hungry while they're nursing.
 
-Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told, and a grumpy wolf sits down and watches while you're attacked nearby. A grumpy pet still follows you and still fights back when it's attacked itself. Feed it back above the threshold to win it back. However a pet is tamed, it starts a week's hunger above the threshold, and so do pets tamed before this change.
+Tamed wolves, cats and horses never go wild again. Below the familiarity threshold they're **grumpy**: a horse rears instead of letting you on, a cat or wolf won't sit or stand when told, and a grumpy wolf sits down and watches while you're attacked within 16 blocks (`sulkRange` in `tuning`). A grumpy pet still follows you and still fights back when it's attacked itself. Feed it back above the threshold to win it back. However a pet is tamed, it starts a week's hunger above the threshold, and so do pets tamed before this change.
 
 Animals that shy away from players, such as rabbits or Naturalist's deer, stop running from you once they're familiar. Before that, they hold still if you sneak up holding food they eat.
 
@@ -89,7 +89,7 @@ Only females fall in love. Feed a familiar female and she goes into love as befo
 | `vigourPerEgg` | 0.15 | Vigour one fertilized egg costs a rooster |
 | `hungryMatingHealth` | 2.0 | Health a mating costs a hungry male |
 | `hungryEggHealth` | 1.0 | Health a fertilized egg costs a hungry rooster |
-| `rivalRange` | 16 | Blocks around a female in love where males count |
+| `matingRange` | 16 | Blocks around a female in love where males count, and between roosters or wild males that fight on their own (older configs call it `rivalRange`, which still works) |
 | `rivalFightChance` | 0.5 | Chance two males fight over a female (0 turns it off) |
 | `roosterFightChance` | 0.25 | Chance a day that a pair of roosters fight |
 | `wildFightChance` | 0.05 | Chance a day that a pair of wild males fight |

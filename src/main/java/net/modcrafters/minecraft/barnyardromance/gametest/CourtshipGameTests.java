@@ -210,7 +210,7 @@ public final class CourtshipGameTests {
         });
     }
 
-    // Vanilla's breed goal only looks 8 blocks for a partner, but a male up to rivalRange (16) away can be chosen, so he
+    // Vanilla's breed goal only looks 8 blocks for a partner, but a male up to matingRange (16) away can be chosen, so he
     // has to come to her. She stands still here, and he starts across the pen, more than 8 blocks off.
     public static void aChosenMaleWalksToAFarFemale(GameTestHelper helper) {
         Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 1, 1, 1);
