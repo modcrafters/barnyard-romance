@@ -45,7 +45,7 @@ public final class WildEggs {
         stack.remove(BarnyardComponents.EGG_DATA);
         stack.set(BarnyardComponents.WILD_EGG, outside);
         stack.set(DataComponents.MAX_STACK_SIZE, STACK);
-        stack.set(DataComponents.ITEM_NAME, Component.translatable("item.barnyard_romance.wild_fertilized_egg"));
+        stack.set(DataComponents.ITEM_NAME, Component.translatable("item.barnyard_romance.fertilized_egg.wild"));
         return stack;
     }
 

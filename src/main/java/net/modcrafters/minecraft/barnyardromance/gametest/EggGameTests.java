@@ -616,7 +616,7 @@ public final class EggGameTests {
 
     public static void onlyABoxEggWarnsAboutTakingItOut(GameTestHelper helper) {
         Text warning = Text.of("item.barnyard_romance.fertilized_egg.taking_out");
-        Text unknown = Text.of("item.barnyard_romance.wild_fertilized_egg.parents");
+        Text unknown = Text.of("item.barnyard_romance.fertilized_egg.parents_unknown");
         ItemStack inBox = FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L));
         ItemStack wild = WildEggs.taint(inBox.copy());
 

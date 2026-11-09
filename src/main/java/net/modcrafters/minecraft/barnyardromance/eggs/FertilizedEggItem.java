@@ -71,7 +71,7 @@ public class FertilizedEggItem extends EggItem {
         }
         List<Text> lines = new ArrayList<>();
         WildEggs.remainingTicks(stack).ifPresent(ticks -> lines.add(Text.of("item.barnyard_romance.fertilized_egg.time", Growth.clock(ticks))));
-        lines.add(Text.of("item.barnyard_romance.wild_fertilized_egg.parents"));
+        lines.add(Text.of("item.barnyard_romance.fertilized_egg.parents_unknown"));
         return lines;
     }
 }
