@@ -739,7 +739,9 @@ public final class FeederGameTests {
     }
 
     public static void aMorningFeederMealEarnsSelfService(GameTestHelper helper) {
-        ServerPlayer watching = AdvancementGameTests.playerAt(helper, new Vec3(4.5, 2.0, 4.5));
+        // Above the pen, in range but out of the cow's way: standing between her and the Manger, a player can keep her
+        // from reaching it in time.
+        ServerPlayer watching = AdvancementGameTests.playerAt(helper, new Vec3(4.5, 6.0, 4.5));
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
