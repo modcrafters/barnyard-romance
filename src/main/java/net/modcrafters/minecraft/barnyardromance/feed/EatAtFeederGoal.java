@@ -272,14 +272,16 @@ public class EatAtFeederGoal extends Goal {
     }
 
     // Done eating, it walks off a little way to make room at the block for the next one: to a random spot at least
-    // WALK_OFF_AT_LEAST from it that it can get all the way to, or, when no such spot turns up (as on 26.3's barrier-floored
-    // test arena, where none ever does), straight away from it.
+    // WALK_OFF_AT_LEAST from the block and from where it stands, that it can get all the way to, or, when no such spot
+    // turns up (as on 26.3's barrier-floored test arena, where none ever does), straight away from it. A spot measured
+    // only from the block could lie a step away from an animal that ate on the far side, which then barely moved.
     private void walkOff(BlockPos feeder) {
         animal.getNavigation().stop();
         Vec3 block = Vec3.atCenterOf(feeder);
         for (int i = 0; i < WALK_OFF_TRIES; i++) {
             Vec3 spot = DefaultRandomPos.getPosAway(animal, WALK_OFF, 2, block);
-            if (spot == null || Math.hypot(spot.x - block.x, spot.z - block.z) < WALK_OFF_AT_LEAST) {
+            if (spot == null || Math.hypot(spot.x - block.x, spot.z - block.z) < WALK_OFF_AT_LEAST
+                    || Math.hypot(spot.x - animal.getX(), spot.z - animal.getZ()) < WALK_OFF_AT_LEAST) {
                 continue;
             }
             // A spot past a fence would leave it pressed against the fence, as close to the block as it was.
