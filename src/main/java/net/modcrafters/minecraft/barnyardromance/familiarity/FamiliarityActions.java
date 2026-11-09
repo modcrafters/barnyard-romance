@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
 import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
@@ -139,6 +140,9 @@ public final class FamiliarityActions {
         FamiliarityCare.markEaten(animal);
         if (eaten.effects().startsMilk()) {
             MilkActions.startMilkWithMeal(animal);
+        }
+        if (!familiar && Familiarity.ready(gained)) {
+            BarnyardAdvancements.befriended(animal, player);
         }
         tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {

@@ -224,5 +224,7 @@
   "tag.item.barnyard_romance.superfood.golden": "Superfood Golden Treats",
   "tag.item.barnyard_romance.superfood.grains": "Superfood Grains",
   "tag.item.barnyard_romance.superfood.roots": "Superfood Roots",
-  "tag.item.barnyard_romance.superfood.vigour": "Superfood Berries"
+  "tag.item.barnyard_romance.superfood.vigour": "Superfood Berries",
+  "advancements.barnyard_romance.root.title": "Animal Magnetism",
+  "advancements.barnyard_romance.root.description": "Befriend a wild animal"
 }

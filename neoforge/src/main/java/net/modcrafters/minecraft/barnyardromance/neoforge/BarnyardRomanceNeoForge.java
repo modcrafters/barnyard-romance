@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.neoforge;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
@@ -40,6 +41,8 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -73,6 +76,11 @@ public class BarnyardRomanceNeoForge {
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> BarnyardRomance.serverStopped());
+        NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerLoggedInEvent event) -> {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                BarnyardAdvancements.loggedIn(player);
+            }
+        });
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onAddReloadListeners);
         NeoForge.EVENT_BUS.addListener((TagsUpdatedEvent event) -> FoodData.tagsReloaded());
