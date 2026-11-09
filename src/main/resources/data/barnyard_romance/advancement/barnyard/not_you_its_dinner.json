@@ -1,0 +1,26 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.not_you_its_dinner.description"
+    },
+    "frame": "task",
+    "hidden": true,
+    "icon": {
+      "id": "minecraft:cooked_beef"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.not_you_its_dinner.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

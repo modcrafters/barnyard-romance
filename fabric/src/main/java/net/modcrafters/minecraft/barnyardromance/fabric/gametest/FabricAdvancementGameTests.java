@@ -97,4 +97,39 @@ public class FabricAdvancementGameTests {
     public void aThrownBredEggCounts(GameTestHelper helper) {
         AdvancementGameTests.aThrownBredEggCounts(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void milkingAFamiliarCowEarnsUdderTrust(GameTestHelper helper) {
+        AdvancementGameTests.milkingAFamiliarCowEarnsUdderTrust(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void handShearingEarnsFleeceNavidad(GameTestHelper helper) {
+        AdvancementGameTests.handShearingEarnsFleeceNavidad(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void dispenserShearingCreditsNobody(GameTestHelper helper) {
+        AdvancementGameTests.dispenserShearingCreditsNobody(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void killingAFamiliarCowIsDinner(GameTestHelper helper) {
+        AdvancementGameTests.killingAFamiliarCowIsDinner(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void killingATamedPetIsNotDinner(GameTestHelper helper) {
+        AdvancementGameTests.killingATamedPetIsNotDinner(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void writingAnAnimalIntoAHerdBookEarnsPaperTrail(GameTestHelper helper) {
+        AdvancementGameTests.writingAnAnimalIntoAHerdBookEarnsPaperTrail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aFightStartingEarnsLockingHorns(GameTestHelper helper) {
+        AdvancementGameTests.aFightStartingEarnsLockingHorns(helper);
+    }
 }

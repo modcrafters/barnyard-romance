@@ -218,4 +218,9 @@ public class FabricFeederGameTests {
     public void aComparatorReadsHowFullAMangerIs(GameTestHelper helper) {
         FeederGameTests.aComparatorReadsHowFullAMangerIs(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aMorningFeederMealEarnsSelfService(GameTestHelper helper) {
+        FeederGameTests.aMorningFeederMealEarnsSelfService(helper);
+    }
 }

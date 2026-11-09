@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.self_service.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "barnyard_romance:manger"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.self_service.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

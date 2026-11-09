@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -20,7 +22,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 // Once-a-day shearing for sheep (see ShearRule): shears by hand and from dispensers both ask here.
 public final class ShearActions {
@@ -72,7 +77,21 @@ public final class ShearActions {
             refuseShearing(animal, player);
             return InteractionResult.FAIL;
         }
+        if (!animal.level().isClientSide()) {
+            SHEARERS.put(animal.getUUID(), new Shearer(player.getUUID(), animal.level().getGameTime()));
+        }
         return null;
+    }
+
+    // Who the shearing that follows on this tick belongs to. Shears let through here shear the sheep a moment later on
+    // the same tick; a dispenser's shearing finds no shearer, or only one from an earlier tick.
+    private record Shearer(UUID player, long tick) {
+    }
+
+    private static final Map<UUID, Shearer> SHEARERS = new HashMap<>();
+
+    public static void clear() {
+        SHEARERS.clear();
     }
 
     // A refused shearing keeps the wool and costs no familiarity, but the sheep can't be sheared again until midnight.
@@ -93,9 +112,14 @@ public final class ShearActions {
 
     // Counts the shearing for the once-a-day rule, and takes its familiarity cost.
     public static void recordShearing(Animal animal) {
+        Shearer shearer = SHEARERS.remove(animal.getUUID());
+        UUID player = shearer != null && shearer.tick() == animal.level().getGameTime() ? shearer.player() : null;
         tracked(animal).ifPresent(traits -> {
             Services.DATA.set(animal, traits.sheared(animal.level().getOverworldClockTime()));
             FamiliarityCare.spend(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
+            if (Familiarity.ready(traits.familiarity())) {
+                BarnyardAdvancements.sheared(animal, player);
+            }
         });
     }
 

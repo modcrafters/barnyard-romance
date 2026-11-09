@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.minecraft.network.chat.Component;
@@ -88,6 +89,7 @@ public class HerdBookItem extends Item {
         HerdBooks.Use use = HerdBooks.use(held, animal);
         switch (use.result()) {
             case ADDED -> {
+                BarnyardAdvancements.registered(animal, player);
                 VersionCompat.sendOverlay(player, Component.translatable("message.barnyard_romance.herd_book.added", animal.getName()));
                 if (player instanceof ServerPlayer serverPlayer) {
                     HerdBooks.show(serverPlayer, held, true, use.focus());

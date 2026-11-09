@@ -1,0 +1,26 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.silent_treatment.description"
+    },
+    "frame": "task",
+    "hidden": true,
+    "icon": {
+      "id": "minecraft:bone"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.silent_treatment.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

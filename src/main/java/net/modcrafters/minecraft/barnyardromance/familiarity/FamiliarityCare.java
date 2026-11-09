@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
@@ -116,6 +117,7 @@ public final class FamiliarityCare {
         }
         updated = withCare(updated, upkeep, cared);
         Services.DATA.set(animal, updated);
+        BarnyardAdvancements.familiarityFell(animal, traits.familiarity(), updated.familiarity());
         toll(animal, level, damage, escaped, days > 1L);
         return escaped ? Services.DATA.get(animal) : Optional.of(updated);
     }
@@ -141,6 +143,7 @@ public final class FamiliarityCare {
         }
         AnimalTraits updated = withCare(traits.fed(outcome.familiarity(), traits.lastFedTick()).withHunger(next), upkeep, outcome.cared());
         Services.DATA.set(animal, updated);
+        BarnyardAdvancements.familiarityFell(animal, traits.familiarity(), updated.familiarity());
         return outcome;
     }
 

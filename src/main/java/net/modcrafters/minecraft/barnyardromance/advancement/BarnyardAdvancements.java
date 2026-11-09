@@ -1,6 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.advancement;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
@@ -13,7 +16,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
@@ -149,6 +154,92 @@ public final class BarnyardAdvancements {
             }
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to count a {} for Two by Two", AnimalSex.speciesId(child), exception);
+        }
+    }
+
+    // A familiar animal eating at a feeding block in the morning, seen by the players nearby.
+    public static void feederMeal(Animal animal) {
+        try {
+            if (animal.level() instanceof ServerLevel level) {
+                Grants.grantNearby(level, animal.position(), SELF_SERVICE);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant a {} feeder meal", AnimalSex.speciesId(animal), exception);
+        }
+    }
+
+    // Milk from an animal that was familiar when milked (the milking's cost may take it below).
+    public static void milked(Animal animal, Player player) {
+        try {
+            if (player instanceof ServerPlayer server) {
+                Grants.grant(server, UDDER_TRUST);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant milking a {}", AnimalSex.speciesId(animal), exception);
+        }
+    }
+
+    // A familiar sheep shorn; shearer is null for a dispenser.
+    public static void sheared(Animal animal, @Nullable UUID shearer) {
+        try {
+            if (shearer != null && animal.level() instanceof ServerLevel level) {
+                Grants.grant(level.getServer(), shearer, FLEECE_NAVIDAD, Grants.CRITERION);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant shearing a {}", AnimalSex.speciesId(animal), exception);
+        }
+    }
+
+    // A player killing a familiar animal that isn't a pet: livestock, slaughtered.
+    public static void died(Animal animal, DamageSource source) {
+        try {
+            if (!(source.getEntity() instanceof ServerPlayer killer) || FamiliarityCare.tamed(animal)
+                    || (animal instanceof TamableAnimal pet && pet.isTame())) {
+                return;
+            }
+            boolean familiar = FamiliarityCare.tracked(animal).map(traits -> Familiarity.ready(traits.familiarity())).orElse(false);
+            if (familiar) {
+                Grants.grant(killer, NOT_YOU_ITS_DINNER);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant the death of a {}", AnimalSex.speciesId(animal), exception);
+        }
+    }
+
+    public static void registered(Animal animal, Player player) {
+        try {
+            if (player instanceof ServerPlayer server) {
+                Grants.grant(server, PAPER_TRAIL);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant writing a {} into a herd book", AnimalSex.speciesId(animal), exception);
+        }
+    }
+
+    public static void fightStarted(Animal a, Animal b) {
+        try {
+            if (a.level() instanceof ServerLevel level) {
+                Grants.grantNearby(level, a.position(), LOCKING_HORNS);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant a {} fight", AnimalSex.speciesId(a), exception);
+        }
+    }
+
+    // A pet's familiarity settled from before to after: dropping below the threshold turns it grumpy, which its
+    // owner earns, online or not.
+    public static void familiarityFell(Animal animal, double before, double after) {
+        try {
+            if (!FamiliarityCare.tamed(animal) || !Familiarity.ready(before) || Familiarity.ready(after)
+                    || !(animal.level() instanceof ServerLevel level)) {
+                return;
+            }
+            UUID owner = VersionCompat.ownerId(animal);
+            if (owner != null) {
+                Grants.grant(level.getServer(), owner, SILENT_TREATMENT, Grants.CRITERION);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant a grumpy {}", AnimalSex.speciesId(animal), exception);
         }
     }
 

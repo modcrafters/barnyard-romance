@@ -4,6 +4,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.Fox;
@@ -15,12 +16,19 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
+import java.util.UUID;
+
 // The 1.21.1 copy of src/.../compat/VersionCompat.
 public final class VersionCompat {
     // SUCCESS returned on the server swings the player's arm for everyone, like SUCCESS_SERVER later.
     public static final InteractionResult SUCCESS_SERVER = InteractionResult.SUCCESS;
 
     private VersionCompat() {
+    }
+
+    // The player a tamed animal belongs to, online or not.
+    public static @Nullable UUID ownerId(Animal animal) {
+        return animal instanceof OwnableEntity owned ? owned.getOwnerUUID() : null;
     }
 
     public static void sendOverlay(Player player, Component message) {

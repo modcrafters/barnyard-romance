@@ -261,4 +261,9 @@ public class FabricCareGameTests {
     public void excludedAnimalKeepsRunning(GameTestHelper helper) {
         CareGameTests.excludedAnimalKeepsRunning(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aNeglectedPetEarnsItsOwnerTheSilentTreatment(GameTestHelper helper) {
+        CareGameTests.aNeglectedPetEarnsItsOwnerTheSilentTreatment(helper);
+    }
 }

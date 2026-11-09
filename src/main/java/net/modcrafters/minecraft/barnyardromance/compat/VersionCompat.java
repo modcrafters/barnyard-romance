@@ -3,9 +3,15 @@ package net.modcrafters.minecraft.barnyardromance.compat;
 import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
+
+import java.util.UUID;
 
 // Minecraft calls that are used in many places and look different on older versions. versions/1.21.1 has
 // the same class for 1.21.1, so callers stay free of version comments.
@@ -19,6 +25,15 @@ public final class VersionCompat {
     // The action bar text above the hotbar.
     public static void sendOverlay(Player player, Component message) {
         player.sendOverlayMessage(message);
+    }
+
+    // The player a tamed animal belongs to, online or not.
+    public static @Nullable UUID ownerId(Animal animal) {
+        if (!(animal instanceof OwnableEntity owned)) {
+            return null;
+        }
+        EntityReference<LivingEntity> owner = owned.getOwnerReference();
+        return owner == null ? null : owner.getUUID();
     }
 
     // The animal's own eating sound, the one vanilla plays when it feeds the animal (most animals have none).

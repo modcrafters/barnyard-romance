@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
@@ -90,6 +91,7 @@ public final class CareGameTests {
             new BreedingGameTests.Case("content_horse_takes_rider", 20, CareGameTests::contentHorseTakesRider),
             new BreedingGameTests.Case("grumpy_wolf_ignores_sit", 20, CareGameTests::grumpyWolfIgnoresSit),
             new BreedingGameTests.Case("wolf_stands_up_when_grumpy", 20, CareGameTests::wolfStandsUpWhenGrumpy),
+            new BreedingGameTests.Case("a_neglected_pet_earns_its_owner_the_silent_treatment", 20, CareGameTests::aNeglectedPetEarnsItsOwnerTheSilentTreatment),
             new BreedingGameTests.Case("grumpy_wolf_follows", 20, CareGameTests::grumpyWolfFollows),
             new BreedingGameTests.Case("sulking_wolf_does_not_follow", 20, CareGameTests::sulkingWolfDoesNotFollow),
             new BreedingGameTests.Case("far_owner_gets_no_sulk", 20, CareGameTests::farOwnerGetsNoSulk),
@@ -386,6 +388,21 @@ public final class CareGameTests {
 
         helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).familiarity() + " is not grumpy");
         helper.assertTrue(!wolf.isOrderedToSit() && !wolf.isInSittingPose(), "a wolf that turned grumpy kept sitting");
+        helper.succeed();
+    }
+
+    public static void aNeglectedPetEarnsItsOwnerTheSilentTreatment(GameTestHelper helper) {
+        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
+        // Already settled, so it doesn't get an old pet's taming grace.
+        Services.DATA.set(wolf, traits(helper, wolf).withHunger(new Hunger(9L, 9L, -1L)));
+        FamiliarityCare.settle(wolf, clock(10L));
+        helper.assertTrue(!AdvancementGameTests.earned(owner, BarnyardAdvancements.SILENT_TREATMENT), "a fed wolf earned The Silent Treatment");
+
+        FamiliarityCare.settle(wolf, clock(12L));
+
+        helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).familiarity() + " is not grumpy");
+        helper.assertTrue(AdvancementGameTests.earned(owner, BarnyardAdvancements.SILENT_TREATMENT), "a wolf turning grumpy didn't earn its owner The Silent Treatment");
         helper.succeed();
     }
 

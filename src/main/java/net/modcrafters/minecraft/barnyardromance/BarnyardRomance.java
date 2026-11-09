@@ -9,6 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.feed.FeederIndex;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 
 public final class BarnyardRomance {
     private BarnyardRomance() {
@@ -26,6 +27,7 @@ public final class BarnyardRomance {
         FeederFoods.clear();
         Escapes.clear();
         EatAtFeederGoal.clear();
+        ShearActions.clear();
     }
 
     public static void init() {

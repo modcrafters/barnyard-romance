@@ -1,0 +1,25 @@
+{
+  "parent": "barnyard_romance:barnyard/root",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.locking_horns.description"
+    },
+    "frame": "task",
+    "icon": {
+      "id": "minecraft:goat_horn"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.locking_horns.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

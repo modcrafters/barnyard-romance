@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -57,6 +58,7 @@ public final class MorningFeeding {
                     ItemStack food = FeederMeal.eat(animal, level, feeder, clock);
                     if (!food.isEmpty()) {
                         FeederMeal.crumbs(level, animal, food, SITTING_CRUMBS);
+                        BarnyardAdvancements.feederMeal(animal);
                         if (feeder.food() == 0) {
                             return;
                         }

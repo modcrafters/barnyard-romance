@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.sheep.Sheep;
@@ -246,6 +247,7 @@ public class EatAtFeederGoal extends Goal {
             return false;
         }
         food = eaten;
+        BarnyardAdvancements.feederMeal(animal);
         eatingUntil = now + EAT_TICKS;
         stepping = 0L;
         animal.getNavigation().stop();
