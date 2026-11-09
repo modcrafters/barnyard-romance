@@ -346,7 +346,7 @@ public final class CareGameTests {
     }
 
     public static void grumpyHorseRefusesRider(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         AbstractHorse horse = tamedHorse(helper, owner, 0.1);
 
         GameTestCompat.interact(horse, owner);
@@ -356,7 +356,7 @@ public final class CareGameTests {
     }
 
     public static void contentHorseTakesRider(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         AbstractHorse horse = tamedHorse(helper, owner, 0.5);
 
         GameTestCompat.interact(horse, owner);
@@ -366,7 +366,7 @@ public final class CareGameTests {
     }
 
     public static void grumpyWolfIgnoresSit(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
 
@@ -377,7 +377,7 @@ public final class CareGameTests {
     }
 
     public static void wolfStandsUpWhenGrumpy(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
         // Already settled, so it doesn't get an old pet's taming grace.
         Services.DATA.set(wolf, traits(helper, wolf).withHunger(new Hunger(9L, 9L, -1L)));
@@ -392,7 +392,7 @@ public final class CareGameTests {
     }
 
     public static void aNeglectedPetEarnsItsOwnerTheSilentTreatment(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
         // Already settled, so it doesn't get an old pet's taming grace.
         Services.DATA.set(wolf, traits(helper, wolf).withHunger(new Hunger(9L, 9L, -1L)));
@@ -408,7 +408,7 @@ public final class CareGameTests {
 
     // Grumpy isn't untamed: a grumpy wolf still comes after its owner, unless it was told to sit before.
     public static void grumpyWolfFollows(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         owner.setPos(wolf.getX() + 20.0, wolf.getY(), wolf.getZ());
@@ -421,7 +421,7 @@ public final class CareGameTests {
 
     // While it sits sulking it stays put.
     public static void sulkingWolfDoesNotFollow(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         owner.setPos(wolf.getX() + 12.0, wolf.getY(), wolf.getZ());
@@ -435,7 +435,7 @@ public final class CareGameTests {
 
     // An owner hurt far away isn't watched.
     public static void farOwnerGetsNoSulk(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         owner.setPos(wolf.getX() + BarnyardConfig.current().tuning().sulkRange() + 4.0, wolf.getY(), wolf.getZ());
@@ -448,7 +448,7 @@ public final class CareGameTests {
 
     // A grumpy wolf in a fight of its own keeps its target when its owner is hit too.
     public static void fightingWolfDoesNotSulk(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         owner.setPos(wolf.getX() + 2.0, wolf.getY(), wolf.getZ());
@@ -467,7 +467,7 @@ public final class CareGameTests {
     // The owner is attacked; a grumpy wolf sits down and watches, then gets up again. The test world never lets
     // vanilla's defend-the-owner check fire, so the sulk is started the way that check's hook starts it.
     public static void grumpyWolfSulksWhenOwnerHurt(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         long now = helper.getLevel().getGameTime();
@@ -485,7 +485,7 @@ public final class CareGameTests {
 
     // Being hurt itself ends a sulk at once.
     public static void hurtWolfStopsSulking(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         long now = helper.getLevel().getGameTime();
         Sulk.start(wolf, now);
@@ -499,7 +499,7 @@ public final class CareGameTests {
 
     // Grumpy or not, a wolf that is attacked fights back.
     public static void grumpyWolfFightsBack(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         Mob zombie = GameTestCompat.spawn(helper, EntityTypes.ZOMBIE, 1, 1, 1);
@@ -512,7 +512,7 @@ public final class CareGameTests {
     }
 
     public static void fedGrumpyWolfObeysAgain(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.1);
         wolf.setOrderedToSit(false);
         owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BEEF));
@@ -529,7 +529,7 @@ public final class CareGameTests {
     }
 
     public static void grumpyPetShowsInTheBook(GameTestHelper helper) {
-        ServerPlayer owner = helper.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.5);
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
         HerdBooks.register(book, wolf);
@@ -546,7 +546,7 @@ public final class CareGameTests {
     // back up, so it must never stop following its owner.
     public static void tamedParrotIsNeverGrumpy(GameTestHelper helper) {
         TamableAnimal parrot = (TamableAnimal) female(helper, EntityTypes.PARROT);
-        parrot.tame(helper.makeMockServerPlayerInLevel());
+        parrot.tame(MockPlayers.inLevel(helper));
         Services.DATA.set(parrot, traits(helper, parrot).fed(0.0, -1L));
 
         helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy");

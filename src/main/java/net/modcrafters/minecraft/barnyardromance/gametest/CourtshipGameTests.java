@@ -164,7 +164,7 @@ public final class CourtshipGameTests {
     // failure says what the near one was doing at that moment.
     public static void petsTakeTheClosestMale(GameTestHelper helper) {
         // Close by, or the wolves' follow-owner goal keeps them from their breed goal.
-        Player owner = helper.makeMockServerPlayerInLevel();
+        Player owner = MockPlayers.inLevel(helper);
         owner.setPos(helper.absoluteVec(new Vec3(4.5, 1.0, 6.5)));
         Animal female = tame(female(helper, EntityTypes.WOLF), owner);
         Animal near = tame(fed(male(helper, EntityTypes.WOLF)), owner);

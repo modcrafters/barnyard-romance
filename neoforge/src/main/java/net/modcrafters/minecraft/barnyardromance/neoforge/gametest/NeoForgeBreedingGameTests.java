@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FeederGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.GameTestCompat;
+import net.modcrafters.minecraft.barnyardromance.gametest.MockPlayers;
 import net.modcrafters.minecraft.barnyardromance.gametest.NaturalistGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.StatGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests;
@@ -189,7 +190,7 @@ public final class NeoForgeBreedingGameTests {
     // A mod that cancels LivingDeathEvent (a totem-like revive) leaves the cow alive, so killing it isn't dinner.
     private static void aDeathAnotherModCancelsIsNoDinner(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         SPARED.add(cow.getUUID());
 
         cow.die(helper.getLevel().damageSources().playerAttack(player));

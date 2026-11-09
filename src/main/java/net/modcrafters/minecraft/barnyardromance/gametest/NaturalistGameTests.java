@@ -428,7 +428,7 @@ public final class NaturalistGameTests {
         if (!naturalist(helper)) {
             return;
         }
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         Animal duck = GameTestCompat.spawn(helper, type(helper, DUCK), 4, 1, 4);
         Services.DATA.set(duck, BreedingGameTests.traits(helper, duck).fed(1.0, -1L));
         FamiliarityActions.tameIfFamiliar(duck, player, 1.0);

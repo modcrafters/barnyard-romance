@@ -222,7 +222,7 @@ public final class FightGameTests {
     }
 
     public static void petsNeverFight(GameTestHelper helper) {
-        Player owner = helper.makeMockServerPlayerInLevel();
+        Player owner = MockPlayers.inLevel(helper);
         owner.setPos(helper.absoluteVec(new Vec3(4.5, 1.0, 6.5)));
         Animal female = tame(female(helper, EntityTypes.WOLF), owner);
         Animal near = tame(male(helper, EntityTypes.WOLF, 5, 4, 1.0), owner);
@@ -347,7 +347,7 @@ public final class FightGameTests {
 
     // Standing in the pen with food in hand, so the bulls can see it.
     private static Player playerWith(GameTestHelper helper, net.minecraft.world.item.Item item) {
-        Player player = helper.makeMockServerPlayerInLevel();
+        Player player = MockPlayers.inLevel(helper);
         player.setPos(helper.absoluteVec(new Vec3(4.5, 1.0, 6.5)));
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(item));
         return player;

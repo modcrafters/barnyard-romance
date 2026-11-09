@@ -22,7 +22,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -99,7 +98,7 @@ public final class AdvancementGameTests {
     }
 
     public static void heldGrantsAreGivenAtLogin(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         CreditLedger ledger = CreditData.get(helper.getLevel().getServer()).ledger();
         ledger.hold(player.getUUID(), new CreditLedger.Held(BarnyardAdvancements.ROOT.toString(), Grants.CRITERION));
 
@@ -135,7 +134,7 @@ public final class AdvancementGameTests {
     }
 
     public static void twoByTwoCountsACalfBornFromAPregnancy(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
 
         due(helper, mother);
@@ -146,7 +145,7 @@ public final class AdvancementGameTests {
     }
 
     public static void matingEarnsABunInTheOven(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
 
         bredCow(helper, breeder);
 
@@ -156,8 +155,8 @@ public final class AdvancementGameTests {
     }
 
     public static void aBirthEarnsSpecialDeliveryForTheBreeder(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
-        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
+        ServerPlayer bystander = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
 
         due(helper, mother);
@@ -189,12 +188,12 @@ public final class AdvancementGameTests {
     // A player who feeds a cow into love and logs off (or leaves the dimension) before the bull reaches her is still
     // her breeder; vanilla's getLoveCause only finds players in the cow's level.
     public static void aBreederWhoLeftBeforeMatingIsRemembered(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = female(helper, EntityTypes.COW);
         Animal father = male(helper, EntityTypes.COW);
         mother.setInLove(breeder);
         father.setInLove(null);
-        helper.getLevel().removePlayerImmediately(breeder, Entity.RemovalReason.DISCARDED);
+        helper.getLevel().getServer().getPlayerList().remove(breeder);
         helper.assertTrue(mother.getLoveCause() == null, "vanilla still finds a breeder who left");
 
         mother.spawnChildFromBreeding(helper.getLevel(), father);
@@ -205,7 +204,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aPregnancyWithoutABreederCreditsNobody(GameTestHelper helper) {
-        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        ServerPlayer bystander = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, null);
         helper.assertTrue(BreedingGameTests.pregnancy(helper, mother).breederId() == null, "a pregnancy without a player has a breeder");
 
@@ -220,7 +219,7 @@ public final class AdvancementGameTests {
         BarnyardConfig config = BarnyardConfig.current();
         try {
             BarnyardConfig.set(BarnyardConfig.parse("{\"pregnancyEnabled\": false}"));
-            ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+            ServerPlayer breeder = MockPlayers.inLevel(helper);
             Animal mother = female(helper, EntityTypes.COW);
             Animal father = male(helper, EntityTypes.COW);
             mother.setInLove(breeder);
@@ -237,7 +236,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aGrandchildEarnsFamilyTree(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
         Services.DATA.set(mother, BreedingGameTests.traits(helper, mother).withLineage(new Lineage(UUID.randomUUID(), null)));
 
@@ -246,7 +245,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aCalfOfWildParentsIsNoFamilyTree(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
 
         due(helper, mother);
@@ -257,7 +256,7 @@ public final class AdvancementGameTests {
     }
 
     public static void tenPigletsEarnTheFirstPigStep(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         CreditLedger ledger = CreditData.get(helper.getLevel().getServer()).ledger();
         ledger.addBirths(breeder.getUUID(), "pig", 8);
         Animal mother = bred(helper, EntityTypes.PIG, breeder);
@@ -273,7 +272,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aDonkeyFoalCountsForTheHorseLadder(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bred(helper, EntityTypes.DONKEY, breeder);
 
         due(helper, mother);
@@ -327,7 +326,7 @@ public final class AdvancementGameTests {
 
     public static void milkingAFamiliarCowEarnsUdderTrust(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         // A creative player keeps the empty bucket.
         player.setGameMode(GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
@@ -341,7 +340,7 @@ public final class AdvancementGameTests {
 
     public static void handShearingEarnsFleeceNavidad(GameTestHelper helper) {
         Sheep sheep = (Sheep) female(helper, EntityTypes.SHEEP);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
 
         GameTestCompat.useOn(sheep, player);
@@ -355,7 +354,7 @@ public final class AdvancementGameTests {
     public static void dispenserShearingCreditsNobody(GameTestHelper helper) {
         Sheep sheep = (Sheep) female(helper, EntityTypes.SHEEP);
         sheep.setSheared(true);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
         GameTestCompat.useOn(sheep, player);
 
@@ -373,7 +372,7 @@ public final class AdvancementGameTests {
 
     public static void killingAFamiliarCowIsDinner(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
 
         cow.die(helper.getLevel().damageSources().playerAttack(player));
 
@@ -384,7 +383,7 @@ public final class AdvancementGameTests {
     // Fire Aspect: the hit is the player's, but the burning that finishes the cow names no attacker.
     public static void aCowBurningToDeathAfterAHitIsDinner(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         //? if >=1.21.2 {
         cow.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1.0F);
         //?} else
@@ -397,7 +396,7 @@ public final class AdvancementGameTests {
     }
 
     public static void killingATamedPetIsNotDinner(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         wolf.tame(player);
         AbstractHorse horse = (AbstractHorse) female(helper, EntityTypes.HORSE);
@@ -413,7 +412,7 @@ public final class AdvancementGameTests {
     // A fox isn't livestock, however familiar.
     public static void killingAFamiliarFoxIsNotDinner(GameTestHelper helper) {
         Animal fox = female(helper, EntityTypes.FOX);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         helper.assertTrue(Services.DATA.get(fox).isPresent(), "the fox isn't tracked, so this proves nothing");
 
         fox.die(helper.getLevel().damageSources().playerAttack(player));
@@ -424,7 +423,7 @@ public final class AdvancementGameTests {
 
     public static void writingAnAnimalIntoAHerdBookEarnsPaperTrail(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BarnyardItems.HERD_BOOK));
 
         try {
@@ -458,7 +457,7 @@ public final class AdvancementGameTests {
     }
 
     static ServerPlayer playerAt(GameTestHelper helper, Vec3 at) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         Vec3 absolute = helper.absoluteVec(at);
         player.setPos(absolute.x, absolute.y, absolute.z);
         return player;
@@ -491,7 +490,7 @@ public final class AdvancementGameTests {
 
     // A player sneaking up with wheat, as one wins over a wild animal.
     static ServerPlayer feeding(GameTestHelper helper, Animal animal) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WHEAT));
         player.setShiftKeyDown(true);
         FamiliarityActions.interact(animal, player, InteractionHand.MAIN_HAND);
