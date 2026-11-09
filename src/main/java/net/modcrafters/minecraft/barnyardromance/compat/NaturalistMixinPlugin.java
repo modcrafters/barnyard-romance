@@ -34,7 +34,7 @@ public final class NaturalistMixinPlugin implements IMixinConfigPlugin {
     @Override
     public List<String> getMixins() {
         return NaturalistMixinPlugin.class.getClassLoader().getResource(DUCK) != null
-                ? List.of("NaturalistDuckEggTimerMixin")
+                ? List.of("NaturalistDuckEggTimerMixin", "NaturalistOstrichHatchMixin")
                 : List.of();
     }
 

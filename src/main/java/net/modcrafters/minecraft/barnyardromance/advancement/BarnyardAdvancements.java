@@ -122,6 +122,19 @@ public final class BarnyardAdvancements {
         }
     }
 
+    // A chick out of one of Naturalist's own eggs (its ostriches), which only breeding lays; the egg keeps no parents,
+    // so it counts towards the ladder for the players nearby but can't be a Family Tree.
+    public static void hatchedFromNaturalistEgg(ServerLevel level, Animal chick) {
+        try {
+            for (ServerPlayer player : Grants.nearby(level, chick.position())) {
+                Grants.grant(player, WHICH_CAME_FIRST);
+                counted(level.getServer(), player.getUUID(), AnimalSex.speciesId(chick), 1);
+            }
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to grant a {} hatching", AnimalSex.speciesId(chick), exception);
+        }
+    }
+
     // Births towards a player's breeding ladder: counted even while they're offline, and each step reached is granted
     // (or held until they log in).
     public static void counted(MinecraftServer server, UUID player, String speciesId, int babies) {
