@@ -8,6 +8,11 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Barnyard Romance has its own advancement tab. It walks you through the mod: befriend a wild animal, then get one pregnant, see the baby born and raise three generations. Along the way are a feeder meal, milking, shearing, the herd book, a fight between males, a fertilized egg hatching, and two hidden ones.
+- Breeding ladders: each kind of livestock has an advancement at 10 births and a challenge at 100, Naturalist's deer, boar, ducks, turkeys and ostriches included when it's installed. A birth counts for the player who put the mother in love. A chick from a fertilized egg counts for the players nearby when it hatches, but only if its egg still remembers its parents.
+- Vanilla's Two by Two counts babies born from a pregnancy, and chicks from bred eggs, again.
+- An advancement earned while you're offline, such as a calf born while you were away, is yours the next time you log in.
+
 - Copy a herd book with a book, a feather and an ink sac. The copy shows the same herd as the original and stays in step with it, whichever book you add animals with. A herd book's tooltip shows its herd's mark, which its copies share.
 - A fertilized egg you take out of a nesting box becomes a **Wild Fertilized Egg**: it forgets its parents and stacks to 16 with others of its kind. Put back in a box, it starts its countdown again and hatches a chick with no parents. An egg's tooltip warns you while it's still in its box.
 - Config: `rivalRange` is now `matingRange` (an old config's `rivalRange` still counts), and how far a grumpy wolf watches its owner being attacked is `sulkRange` (16 blocks).
