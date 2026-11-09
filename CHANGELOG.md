@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Copy a herd book with a book, a feather and an ink sac. The copy shows the same herd as the original and stays in step with it, whichever book you add animals with. A herd book's tooltip shows its herd's mark, which its copies share.
+- A fertilized egg you take out of a nesting box becomes a **Wild Fertilized Egg**: it forgets its parents and stacks to 16 with others of its kind. Put back in a box, it starts its countdown again and hatches a chick with no parents. An egg's tooltip warns you while it's still in its box.
 - Config: `rivalRange` is now `matingRange` (an old config's `rivalRange` still counts), and how far a grumpy wolf watches its owner being attacked is `sulkRange` (16 blocks).
 
 - The mod's recipes show in the recipe book: the feeding blocks, the Nesting Box, the Herd Book, the mashes, Golden Bran and the cake that takes any milk. Each one unlocks when you pick up one of its ingredients.

@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxLayout;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxMenu;
@@ -56,8 +56,8 @@ public class NestingBoxScreen extends AbstractContainerScreen<NestingBoxMenu> {
                 graphics.drawString(this.font, count, slot.x + 17 - this.font.width(count), slot.y + 9, COUNT, true);
             }
             graphics.pose().popPose();
-            FertilizedEggItem.data(stack).ifPresent(data -> {
-                String timer = NestingBoxLayout.timer(data.remainingTicks());
+            WildEggs.remainingTicks(stack).ifPresent(ticks -> {
+                String timer = NestingBoxLayout.timer(ticks);
                 graphics.drawString(this.font, timer, slot.x + 8 - this.font.width(timer) / 2, slot.y + 19, TIMER, false);
             });
         }

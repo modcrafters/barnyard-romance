@@ -474,7 +474,8 @@ public final class FoodGameTests {
         int recipes = 0;
         for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
             String id = modId(holder.id().toString());
-            if (!id.isEmpty()) {
+            // Special recipes, such as copying a herd book, never show in the recipe book, so nothing unlocks them.
+            if (!id.isEmpty() && !holder.value().isSpecial()) {
                 recipes++;
                 helper.assertTrue(unlocked.contains(id), "nothing unlocks the " + id + " recipe");
             }

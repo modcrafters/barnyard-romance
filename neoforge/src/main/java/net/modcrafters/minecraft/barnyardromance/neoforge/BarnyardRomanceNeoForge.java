@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 //? if <1.21.6
 //import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.item.HerdBookCopyRecipe;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
@@ -93,6 +94,12 @@ public class BarnyardRomanceNeoForge {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "egg_data"),
                 () -> BarnyardComponents.EGG_DATA
         );
+        event.register(
+                Registries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "wild_egg"),
+                () -> BarnyardComponents.WILD_EGG
+        );
+        event.register(Registries.RECIPE_SERIALIZER, HerdBookCopyRecipe.ID, () -> HerdBookCopyRecipe.SERIALIZER);
         event.register(Registries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), () -> BarnyardItems.HERD_STICK);
         event.register(Registries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), () -> BarnyardItems.HERD_BOOK);
         event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);

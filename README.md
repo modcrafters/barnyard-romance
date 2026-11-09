@@ -105,13 +105,14 @@ Chickens lay eggs instead of breeding. Seeds feed them and win familiarity like 
 - **How many:** each day an adult hen lays 1 egg if she's S or M and 2 if she's L or XL, one more if she's familiar, and none on a day after she went hungry. She lays them all together at a random time between sunrise and sunset, and the count starts again at midnight.
 - **Where:** when her eggs are due, a hen looks for a **Nesting Box** within 16 blocks that she can walk to, that no other hen is sitting in and that has room. She walks over and goes in for a quarter of an in-game hour, plus five minutes for each egg after the first, and leaves them all in the nests. Any that don't fit are left in front of the box. With no box, or while she's on a lead, she lays on the ground, like vanilla.
 - **Fertilized eggs:** an egg laid in a box is a **Fertilized Egg** if an adult rooster within 16 blocks can walk to her and has the Vigour for it (15% an egg; see [Rival males](#rival-males)). The closest one is the father, and pays when she goes to the box. A spent rooster leaves the rest of her eggs plain. Eggs laid on the ground are always plain and cost him nothing.
-- **Hatching:** a fertilized egg left in a box hatches after about a day (sooner from a heavier hen). The chick inherits from both parents like a calf and joins its mother's herd books. Taking the egg out pauses its countdown; putting it back in any box carries on. Time skipped by sleeping or with `/time add` counts too.
-- **Throwing:** plain eggs never hatch. A fertilized egg hatches one time in eight, into a small, light chick with no known parents.
+- **Hatching:** a fertilized egg left in a box hatches after about a day (sooner from a heavier hen). The chick inherits from both parents like a calf and joins its mother's herd books. Time skipped by sleeping or with `/time add` counts too.
+- **Wild eggs:** taking a fertilized egg out of its box, any way at all, makes it a **Wild Fertilized Egg**. It forgets its parents and its countdown, and stacks to 16 with other wild eggs of its kind. Put back in any box, it starts a fresh countdown, as if from an average hen, and hatches a chick sized like one met in the wild, with no parents and no herd book. The tooltip of an egg still in its box warns you.
+- **Throwing:** plain eggs never hatch. A fertilized egg, wild or not, hatches one time in eight, into a small, light chick with no known parents.
 - **Roosters** are bigger than hens and wear a red comb and big wattles. Hens have no comb.
 
 The **Nesting Box** is planks in a U with wheat in the middle. Right-click it to see its sixteen nests: a fertilized egg has a nest to itself with its countdown underneath, plain eggs pile up to 16, and a sitting hen's nest is marked. You can take any egg out and put fertilized eggs back, but only hens add plain eggs. Hoppers underneath take plain eggs only. Breaking the box drops all its eggs, including the ones a sitting hen was about to leave, and lets her out.
 
-Fertilized eggs never stack. They count as eggs in recipes, so a cake can use one.
+Fertilized eggs in a box never stack, as each remembers its own parents; wild ones stack to 16. Both count as eggs in recipes, so a cake can use one.
 
 In the herd book, each adult hen has an egg icon for tomorrow: speckled for fertilized eggs, plain for plain ones and black for none. Its tooltip, and her page, say how many and why they're not better: not fed today, no rooster nearby, the rooster hasn't eaten today, no nesting box with room nearby, or not familiar (one egg fewer). The rooster and the box are checked around her when the book last saw her.
 
@@ -173,6 +174,8 @@ Set `"enabled": false` in a species entry to leave one species vanilla. To leave
 ## Herd book
 
 Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
+
+**Copies:** a herd book with a herd, a book, a feather and an ink sac, anywhere in the crafting grid, make a copy, and the herd book stays in the grid. The copy is the same herd, not a snapshot: an animal added or removed with either book shows in both. Give one to someone you farm with, or keep a spare in a chest. Each book's tooltip shows its herd's mark, such as "Herd 3FA2C1", which its copies share. A new book with no animals yet has nothing to copy.
 
 Sneak while looking at an animal to see all its stats on the card above it. Using the book on an animal that's already in it opens the book at that animal's page, which runs over several leaves for a long entry. With [Jade](https://modrinth.com/mod/jade) installed, the stats show in Jade's tooltip instead of the card.
 

@@ -1,6 +1,7 @@
 {
   "item.barnyard_romance.herd_stick": "Herd Stick",
   "item.barnyard_romance.herd_book": "Herd Book",
+  "item.barnyard_romance.herd_book.herd": "Herd %s",
   "gui.barnyard_romance.herd_book.size": "Size %s · %s",
   "gui.barnyard_romance.herd_book.size_age": "Size %s · %s · %s old",
   "gui.barnyard_romance.herd_book.died": "Died on day %s",
@@ -85,6 +86,9 @@
   "gui.barnyard_romance.feeder.empty": "Empty",
   "item.barnyard_romance.fertilized_egg.time": "Hatches after %s in a nesting box",
   "item.barnyard_romance.fertilized_egg.parents": "Mother %s, father %s",
+  "item.barnyard_romance.fertilized_egg.taking_out": "Taking it out makes it forget its parents",
+  "item.barnyard_romance.wild_fertilized_egg": "Wild Fertilized Egg",
+  "item.barnyard_romance.wild_fertilized_egg.parents": "Parents unknown",
   "itemGroup.barnyard_romance": "Barnyard Romance",
   "item.barnyard_romance.breeders_mash.use": "Feed to a pregnant mother",
   "item.barnyard_romance.breeders_mash.effect": "Her pregnancy goes twice as fast for a day",

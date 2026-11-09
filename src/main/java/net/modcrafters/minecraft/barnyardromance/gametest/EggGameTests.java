@@ -1,5 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import java.util.stream.IntStream;
+import net.minecraft.world.inventory.ContainerInput;
+import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.config.Range;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
@@ -114,7 +120,15 @@ public final class EggGameTests {
             new BreedingGameTests.Case("plain_eggs_stack_in_one_slot", 20, EggGameTests::plainEggsStackInOneSlot),
             new BreedingGameTests.Case("plain_eggs_cannot_be_put_in", 20, EggGameTests::plainEggsCannotBePutIn),
             new BreedingGameTests.Case("hopper_pulls_only_plain_eggs", 20, EggGameTests::hopperPullsOnlyPlainEggs),
-            new BreedingGameTests.Case("countdown_pauses_outside_the_box", 80, EggGameTests::countdownPausesOutsideTheBox),
+            new BreedingGameTests.Case("a_shift_clicked_egg_goes_wild", 80, EggGameTests::aShiftClickedEggGoesWild),
+            new BreedingGameTests.Case("an_egg_taken_by_hand_goes_wild", 20, EggGameTests::anEggTakenByHandGoesWild),
+            new BreedingGameTests.Case("an_egg_swapped_out_goes_wild", 20, EggGameTests::anEggSwappedOutGoesWild),
+            new BreedingGameTests.Case("wild_eggs_of_a_kind_stack", 20, EggGameTests::wildEggsOfAKindStack),
+            new BreedingGameTests.Case("a_wild_egg_put_back_starts_afresh", 20, EggGameTests::aWildEggPutBackStartsAfresh),
+            new BreedingGameTests.Case("wild_eggs_go_in_one_to_a_nest", 20, EggGameTests::wildEggsGoInOneToANest),
+            new BreedingGameTests.Case("a_wild_egg_hatches_a_chick_with_no_parents", 40, EggGameTests::aWildEggHatchesAChickWithNoParents),
+            new BreedingGameTests.Case("a_thrown_wild_egg_hatches_tainted", 20, EggGameTests::aThrownWildEggHatchesTainted),
+            new BreedingGameTests.Case("only_a_box_egg_warns_about_taking_it_out", 20, EggGameTests::onlyABoxEggWarnsAboutTakingItOut),
             new BreedingGameTests.Case("box_drops_eggs_when_broken", 20, EggGameTests::boxDropsEggsWhenBroken),
             new BreedingGameTests.Case("box_recipe", 20, EggGameTests::boxRecipe),
             new BreedingGameTests.Case("egg_hatches_in_the_box", 40, EggGameTests::eggHatchesInTheBox),
@@ -475,8 +489,8 @@ public final class EggGameTests {
         helper.succeed();
     }
 
-    // The box counts its eggs down; an egg taken out any way at all, shift-click included, stops counting.
-    public static void countdownPausesOutsideTheBox(GameTestHelper helper) {
+    // The box counts its eggs down; a shift-clicked egg goes wild: no parents and no countdown.
+    public static void aShiftClickedEggGoesWild(GameTestHelper helper) {
         NestingBoxBlockEntity box = box(helper, BOX);
         Player player = holding(helper, Items.STICK);
         NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
@@ -486,14 +500,137 @@ public final class EggGameTests {
             long inBox = FertilizedEggItem.data(box.getItem(0)).orElseThrow().remainingTicks();
             helper.assertTrue(inBox < 1_000L, "an egg in the box didn't count down: " + inBox + " left");
             menu.quickMoveStack(player, 0);
-            ItemStack carried = carriedEgg(helper, player);
-            long out = FertilizedEggItem.data(carried).orElseThrow().remainingTicks();
+            assertWild(helper, carriedEgg(helper, player), "a shift-clicked egg");
+            helper.assertTrue(box.getItem(0).isEmpty(), "the shift-clicked egg is still in the box");
             helper.runAfterDelay(25, () -> {
-                long later = FertilizedEggItem.data(carriedEgg(helper, player)).orElseThrow().remainingTicks();
-                helper.assertTrue(later == out, "a shift-clicked egg kept counting: " + out + " then " + later);
+                helper.assertTrue(WildEggs.remainingTicks(carriedEgg(helper, player)).isEmpty(), "a wild egg counts down outside the box");
                 helper.succeed();
             });
         });
+    }
+
+    public static void anEggTakenByHandGoesWild(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        Player player = holding(helper, ItemStack.EMPTY.getItem());
+        NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+
+        menu.clicked(0, 0, ContainerInput.PICKUP, player);
+
+        assertWild(helper, menu.getCarried(), "an egg picked up from its nest");
+        helper.assertTrue(box.getItem(0).isEmpty(), "the picked-up egg is still in the box");
+        helper.succeed();
+    }
+
+    // A hotbar key swaps the egg out without taking it from the box's slot the usual way.
+    public static void anEggSwappedOutGoesWild(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        Player player = holding(helper, ItemStack.EMPTY.getItem());
+        player.getInventory().setItem(8, ItemStack.EMPTY);
+        NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
+        box.setItem(0, FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+
+        menu.clicked(0, 8, ContainerInput.SWAP, player);
+
+        assertWild(helper, player.getInventory().getItem(8), "an egg swapped out with a hotbar key");
+        helper.succeed();
+    }
+
+    public static void wildEggsOfAKindStack(GameTestHelper helper) {
+        ItemStack first = WildEggs.taint(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        ItemStack second = WildEggs.taint(FertilizedEggItem.create(eggData(MEDIUM_HEN, 0.7, 20_000L)));
+        EggData duck = new EggData("naturalist:duck", UUID.randomUUID(), UUID.randomUUID(), LARGE_HEN, Growth.wild(), 0.5, 0.5,
+                1.2, Growth.wild(), 0.5, "", 1_000L, 1_000L);
+        ItemStack third = WildEggs.taint(FertilizedEggItem.create(duck));
+
+        helper.assertTrue(ItemStack.isSameItemSameComponents(first, second), "two wild hen's eggs differ: " + first.getComponents() + " / " + second.getComponents());
+        helper.assertTrue(first.getMaxStackSize() == 16, "a wild egg stacks to " + first.getMaxStackSize());
+        helper.assertTrue(!ItemStack.isSameItemSameComponents(first, third), "a wild duck egg stacks with a hen's");
+        helper.assertTrue(first.is(COMMON_EGGS), "a wild egg isn't in c:eggs");
+        helper.succeed();
+    }
+
+    // Put back in a nest by hand, a wild egg gets a fresh countdown from its species' hatch range.
+    public static void aWildEggPutBackStartsAfresh(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        Player player = holding(helper, ItemStack.EMPTY.getItem());
+        NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
+        ItemStack wild = WildEggs.taint(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 5L)));
+
+        menu.getSlot(0).setByPlayer(wild);
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+
+        WildEgg egg = box.getItem(0).get(BarnyardComponents.WILD_EGG);
+        Range range = BarnyardConfig.current().eggsFor("minecraft:chicken").hatchTicks();
+        helper.assertTrue(egg != null && egg.started(), "the wild egg has no countdown in the box: " + egg);
+        helper.assertTrue(egg.totalTicks() >= range.min() && egg.totalTicks() <= range.max(), "a wild egg's countdown is " + egg.totalTicks());
+        helper.succeed();
+    }
+
+    // Shift-clicked in, a stack of wild eggs takes one nest per egg.
+    public static void wildEggsGoInOneToANest(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        ItemStack wild = WildEggs.taint(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        wild.setCount(3);
+        Player player = holding(helper, ItemStack.EMPTY.getItem());
+        player.getInventory().setItem(0, wild);
+        NestingBoxMenu menu = new NestingBoxMenu(1, player.getInventory(), box);
+        int hotbar = menu.slots.size() - 9;
+
+        menu.clicked(hotbar, 0, ContainerInput.QUICK_MOVE, player);
+
+        long nests = IntStream.range(0, NestingBoxBlockEntity.SLOTS).filter(slot -> box.getItem(slot).getCount() == 1 && WildEggs.wild(box.getItem(slot))).count();
+        helper.assertTrue(nests == 3, "three wild eggs filled " + nests + " nests");
+        helper.succeed();
+    }
+
+    public static void aWildEggHatchesAChickWithNoParents(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        ItemStack wild = WildEggs.taint(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
+        wild.set(BarnyardComponents.WILD_EGG, wild.get(BarnyardComponents.WILD_EGG).withTicks(5L));
+        box.setItem(0, wild);
+
+        helper.runAfterDelay(COUNT_AND_HATCH, () -> {
+            helper.assertTrue(box.getItem(0).isEmpty(), "the wild egg is still in the box: " + box.getItem(0));
+            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())).expandTowards(0.0, -2.0, 0.0));
+            helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
+            AnimalTraits traits = traits(helper, chicks.getFirst());
+            helper.assertTrue(traits.lineage().equals(Lineage.UNKNOWN), "a wild egg's chick knows its parents: " + traits.lineage());
+            helper.assertTrue(traits.bornTick() >= 0L, "a wild egg's chick has no birth time");
+            helper.succeed();
+        });
+    }
+
+    public static void aThrownWildEggHatchesTainted(GameTestHelper helper) {
+        WildEgg egg = WildEgg.of("minecraft:chicken", "");
+
+        Animal chick = ThrownEggs.hatchTainted(helper.getLevel(), helper.absoluteVec(new Vec3(4.5, 2.0, 4.5)), egg, helper.getLevel().getRandom())
+                .orElseThrow(() -> GameTestCompat.failure(helper, "no chick hatched"));
+
+        AnimalTraits traits = traits(helper, chick);
+        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
+        helper.assertTrue(chick.isBaby() && size == SizeClass.S, "a thrown wild egg's chick is " + size);
+        helper.assertTrue(traits.weight() == 0.25 && traits.lineage().equals(Lineage.UNKNOWN), "a thrown wild egg's chick is " + traits);
+        helper.succeed();
+    }
+
+    public static void onlyABoxEggWarnsAboutTakingItOut(GameTestHelper helper) {
+        Text warning = Text.of("item.barnyard_romance.fertilized_egg.taking_out");
+        Text unknown = Text.of("item.barnyard_romance.wild_fertilized_egg.parents");
+        ItemStack inBox = FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L));
+        ItemStack wild = WildEggs.taint(inBox.copy());
+
+        helper.assertTrue(FertilizedEggItem.lines(inBox).contains(warning), "a box egg doesn't warn: " + FertilizedEggItem.lines(inBox));
+        helper.assertTrue(!FertilizedEggItem.lines(wild).contains(warning), "a wild egg still warns");
+        helper.assertTrue(FertilizedEggItem.lines(wild).equals(List.of(unknown)), "a wild egg's tooltip is " + FertilizedEggItem.lines(wild));
+        helper.succeed();
+    }
+
+    static void assertWild(GameTestHelper helper, ItemStack egg, String what) {
+        helper.assertTrue(egg.is(BarnyardItems.FERTILIZED_EGG), what + " is " + egg);
+        helper.assertTrue(FertilizedEggItem.data(egg).isEmpty(), what + " still knows its parents");
+        WildEgg wild = egg.get(BarnyardComponents.WILD_EGG);
+        helper.assertTrue(wild != null && !wild.started() && wild.species().equals("minecraft:chicken"), what + " isn't wild: " + wild);
     }
 
     static ItemStack carriedEgg(GameTestHelper helper, Player player) {
@@ -514,9 +651,10 @@ public final class EggGameTests {
 
         List<ItemEntity> dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0));
         int plain = dropped.stream().filter(item -> item.getItem().is(Items.EGG)).mapToInt(item -> item.getItem().getCount()).sum();
-        List<EggData> fertile = dropped.stream().map(item -> FertilizedEggItem.data(item.getItem())).flatMap(Optional::stream).toList();
+        List<ItemStack> fertile = dropped.stream().map(ItemEntity::getItem).filter(item -> item.is(BarnyardItems.FERTILIZED_EGG)).toList();
         helper.assertTrue(plain == 3, "breaking the box dropped " + plain + " plain eggs");
         helper.assertTrue(fertile.size() == 1, "breaking the box dropped fertilized eggs " + fertile);
+        assertWild(helper, fertile.getFirst(), "an egg dropped from a broken box");
         helper.succeed();
     }
 

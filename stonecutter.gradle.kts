@@ -26,6 +26,11 @@ stonecutter parameters {
         string(current.parsed >= "26.1") {
             replace("getDayTime()", "getOverworldClockTime()")
         }
+        // A menu click's kind.
+        string(current.parsed >= "26.1") {
+            replace("net.minecraft.world.inventory.ClickType;", "net.minecraft.world.inventory.ContainerInput;")
+            replace("ClickType.", "ContainerInput.")
+        }
         // Vanilla animals moved into one package per animal.
         string(current.parsed >= "26.1") {
             val animal = "net.minecraft.world.entity.animal"

@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.item.HerdBookCopyRecipe;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
@@ -53,6 +54,12 @@ public class BarnyardRomanceFabric implements ModInitializer {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "egg_data"),
                 BarnyardComponents.EGG_DATA
         );
+        Registry.register(
+                BuiltInRegistries.DATA_COMPONENT_TYPE,
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "wild_egg"),
+                BarnyardComponents.WILD_EGG
+        );
+        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, HerdBookCopyRecipe.ID, HerdBookCopyRecipe.SERIALIZER);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), BarnyardItems.HERD_STICK);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), BarnyardItems.HERD_BOOK);
         Registry.register(BuiltInRegistries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), BarnyardItems.BREEDERS_MASH);

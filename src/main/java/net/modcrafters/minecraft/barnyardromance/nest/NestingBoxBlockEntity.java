@@ -6,6 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.core.BlockPos;
@@ -50,7 +52,8 @@ import java.util.stream.IntStream;
 
 // Sixteen nests. A fertilized egg has a nest to itself and the box counts it down to hatching (EggData);
 // plain eggs pile up in a nest to their stack size. Players may put fertilized eggs back but never plain ones,
-// and hoppers may only take plain eggs out.
+// and hoppers may only take plain eggs out. A fertilized egg that leaves the box, any way at all, goes wild
+// (WildEggs); one put back starts a fresh countdown and hatches a chick with no parents.
 public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
     public static final int SLOTS = 16;
     private static final int[] ALL_SLOTS = IntStream.range(0, SLOTS).toArray();
@@ -182,7 +185,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         for (int i = 0; i < done.eggs().size(); i++) {
             ItemStack egg = done.eggs().get(i);
             if (!(i == 0 && intoNest(done.slot(), egg)) && !placeEgg(egg)) {
-                Containers.dropItemStack(server, front.x, front.y, front.z, egg.copy());
+                Containers.dropItemStack(server, front.x, front.y, front.z, WildEggs.taint(egg.copy()));
             }
         }
         sendToClients();
@@ -274,6 +277,10 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         }
         for (int slot = 0; slot < SLOTS; slot++) {
             ItemStack egg = box.items.get(slot);
+            if (WildEggs.wild(egg)) {
+                box.countWild(server, slot, egg, counting ? elapsed : 0L, now);
+                continue;
+            }
             Optional<EggData> data = FertilizedEggItem.data(egg);
             if (data.isEmpty()) {
                 continue;
@@ -297,6 +304,55 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             }
             box.setChanged();
         }
+    }
+
+    // A wild egg starts its countdown the first time the box sees it, then counts down and hatches like the others.
+    private void countWild(ServerLevel server, int slot, ItemStack egg, long elapsed, long now) {
+        if (WildEggs.start(egg, server.getRandom())) {
+            setChanged();
+            return;
+        }
+        WildEgg wild = egg.get(BarnyardComponents.WILD_EGG);
+        if (wild == null || elapsed <= 0L && wild.remainingTicks() > 0L) {
+            return;
+        }
+        WildEgg left = wild.counted(elapsed);
+        if (left.remainingTicks() <= 0L) {
+            if (stuck.contains(egg)) {
+                return;
+            }
+            long overdue = Math.max(0L, elapsed - wild.remainingTicks());
+            if (Hatching.hatchWild(server, left, exitPos(), now - overdue).isPresent()) {
+                items.set(slot, ItemStack.EMPTY);
+            } else {
+                egg.set(BarnyardComponents.WILD_EGG, left);
+                stuck.add(egg);
+            }
+        } else {
+            egg.set(BarnyardComponents.WILD_EGG, left);
+        }
+        setChanged();
+    }
+
+    // Whatever leaves a nest by any way at all goes wild if it's a fertilized egg: taken by hand, swapped out with a
+    // hotbar key, or replaced. The stack is changed in place, wherever it went.
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        ItemStack old = getItem(slot);
+        if (old != stack) {
+            WildEggs.taint(old);
+        }
+        super.setItem(slot, stack);
+    }
+
+    @Override
+    public ItemStack removeItem(int slot, int count) {
+        return WildEggs.taint(super.removeItem(slot, count));
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int slot) {
+        return WildEggs.taint(super.removeItemNoUpdate(slot));
     }
 
     // In front of the hole if there's room, else on top of the box, else the nearest free spot close by.
@@ -327,13 +383,15 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return stack.is(BarnyardItems.FERTILIZED_EGG);
     }
 
-    // Breaking the box drops the eggs a sitting hen was about to leave along with the rest, and lets her out.
+    // Breaking the box drops the eggs a sitting hen was about to leave along with the rest, and lets her out. Every
+    // fertilized egg comes out wild.
     void beforeRemoved() {
+        items.forEach(WildEggs::taint);
         if (occupant != null && level instanceof ServerLevel server) {
             NestOccupant hen = occupant;
             occupant = null;
             for (ItemStack egg : hen.eggs()) {
-                Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5, egg.copy());
+                Containers.dropItemStack(server, getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5, WildEggs.taint(egg.copy()));
             }
             release(server, hen);
             sendToClients();
