@@ -8,38 +8,55 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+### Males, courtship and Vigour
+
+- Only females fall in love now. Feed a familiar female and she's matched with a grown, familiar male nearby who can walk to her, so a fence keeps the next pen's bull out. Males get no breeding rest.
+- Males have **Vigour**, shown on the card and in the herd book: full after a day they were fed, 30% for each mating and 15% for each egg a rooster fertilizes. A male who hasn't eaten since yesterday pays with health too, and won't mate if it would leave him under half a heart.
+- Rival livestock males may fight over a female in love, butting heads until one dies, two at a time from the closest, while the first one left over quietly mates with her. Roosters fight now and then on their own, and wild males do too, rarely. Walking up with food in your hand stops a fight between two familiar males.
+- **Stud Mash** (two grains, a root, a berry and a gunpowder) gives a male back half his Vigour.
+
+### Feeding blocks and hunger
+
+- New feeding blocks: the **Bird Feeder** (chickens, ducks, turkeys, parrots), **Trough** (rabbits), **Feeder** (pigs, goats, boar), **Manger** (cows, mooshrooms, sheep, the horse family, llamas, camels, deer, ostriches) and **Pet Bowl** (wolves, cats, ocelots). Craft one from wood (the Pet Bowl from bricks) and fill it with food by hand, with a hopper or with pipes. Every morning the familiar animals in the pen walk over and eat, standing a few seconds with their heads down and crumbs of the food at their mouths before they wander off; a pet told to sit by its bowl eats where it sits. You can see how full each one is, its food rising and falling from empty to two days' worth for its animals, and a comparator reads it too. All but the Bird Feeder face you when placed. Like a fence, the Manger and the Feeder are too tall for livestock to jump onto.
+- A meal from a feeding block keeps an animal fed, heals it and keeps its milk, eggs and Vigour coming, but only hand-feeding wins an animal over or puts it in love.
+- While you're away, a stocked feeder keeps feeding its animals. When you come back, every animal in the pen has shared the food it held evenly, day by day.
+- Animals you've won over get hurt when they go a day without food: half a heart a day, though never below half a heart unless the config's `hunger` block says otherwise. The same block decides what days spent away from a pen do: all of them count (the default), only one, or none.
+- An animal you've neglected down to under 10% familiarity may jump the fence one day and run off. Its herd book page says it ran away, and you can win it back with food. A tamed pet never runs off, and nor does an animal on a lead or being ridden.
+
+### Advancements
+
 - Barnyard Romance has its own advancement tab. It walks you through the mod: befriend a wild animal, then get one pregnant, see the baby born and raise three generations. Along the way are a feeder meal, milking, shearing, the herd book, a fight between males, a fertilized egg hatching, and two hidden ones.
 - Breeding ladders: each kind of livestock has an advancement at 10 births and a challenge at 100, Naturalist's deer, boar, ducks, turkeys and ostriches included when it's installed. A birth counts for the player who put the mother in love. A chick from a fertilized egg counts for the players nearby when it hatches, but only if its egg still remembers its parents.
 - Vanilla's Two by Two counts babies born from a pregnancy, and chicks from bred eggs, again.
 - An advancement earned while you're offline, such as a calf born while you were away, is yours the next time you log in.
 
-- Copy a herd book with a book, a feather and an ink sac. The copy shows the same herd as the original and stays in step with it, whichever book you add animals with. A herd book's tooltip shows its herd's mark, which its copies share.
-- A fertilized egg you take out of a nesting box becomes a **Wild Fertilized Egg**: it forgets its parents and stacks to 16 with others of its kind. Put back in a box, it starts its countdown again and hatches a chick with no parents. An egg's tooltip warns you while it's still in its box.
-- Config: `rivalRange` is now `matingRange` (an old config's `rivalRange` still counts), and how far a grumpy wolf watches its owner being attacked is `sulkRange` (16 blocks).
+### The Inspector is gone
 
-- The mod's recipes show in the recipe book: the feeding blocks, the Nesting Box, the Herd Book, the mashes, Golden Bran and the cake that takes any milk. Each one unlocks when you pick up one of its ingredients.
-- The herd book says which feeding block fed an animal today. Its list shows a half drumstick for an animal fed only from a feeding block, and holds two more animals a page.
-- New feeding blocks: the **Bird Feeder** (chickens, ducks, turkeys, parrots), **Trough** (rabbits), **Feeder** (pigs, goats, boar), **Manger** (cows, mooshrooms, sheep, the horse family, llamas, camels, deer, ostriches) and **Pet Bowl** (wolves, cats, ocelots). Craft one from wood (the Pet Bowl from bricks) and fill it with food by hand, with a hopper or with pipes. Every morning the familiar animals in the pen walk over and eat, standing a few seconds with their heads down and crumbs of the food at their mouths before they wander off; a pet told to sit by its bowl eats where it sits. You can see how full each one is, its food rising and falling from empty to two days' worth for its animals, and a comparator reads it too. All but the Bird Feeder face you when placed. Like a fence, the Manger and the Feeder are too tall for livestock to jump onto.
-- A meal from a feeding block keeps an animal fed, heals it and keeps its milk, eggs and Vigour coming, but only hand-feeding wins an animal over or puts it in love.
-- While you're away, a stocked feeder keeps feeding its animals. When you come back, every animal in the pen has shared the food it held evenly, day by day.
-- An animal you've neglected down to under 10% familiarity may jump the fence one day and run off. Its herd book page says it ran away, and you can win it back with food. A tamed pet never runs off, and nor does an animal on a lead or being ridden.
-- Animals you've won over get hurt when they go a day without food: half a heart a day, though never below half a heart unless the config's `hunger` block says otherwise. The same block decides what days spent away from a pen do: all of them count (the default), only one, or none.
+- The Barnyard Inspector is gone. Sneak while looking at an animal to see all its stats on the card above it, or read them in the herd book, which now opens at an animal's page when you use it on one in the book. With Jade installed, the stats show in Jade's tooltip instead. `/barnyard info`, which handed the Inspector out, goes with it.
+- Herd Sticks and their commands are off unless `herdSticks` is turned on in the config.
+
+### Herd book
+
+- Copy a herd book with a book, a feather and an ink sac. The copy shows the same herd as the original and stays in step with it, whichever book you add animals with. A herd book's tooltip shows its herd's mark, which its copies share.
+- Animal pages are shorter. The notes that explain a row now show when you hover over that row: why an animal isn't familiar, a hungry male's health cost, a hen's reasons for tomorrow's eggs and her count for today, the father of a pregnancy, and the last birth.
+- The book says which feeding block fed an animal today. Its list shows a half drumstick for an animal fed only from a feeding block, and holds two more animals a page.
+- The book notes an animal killed in a fight.
+
+### Eggs
+
+- A fertilized egg you take out of a nesting box becomes a **Wild Fertilized Egg**: it forgets its parents and stacks to 16 with others of its kind. Put back in a box, it starts its countdown again and hatches a chick with no parents. An egg's tooltip warns you while it's still in its box.
+
+### Art
 
 - The Nesting Box has a new, more detailed model: a framed wooden crate with straw inside, metal fittings and a hen painted on its sides.
 - New icons in the herd book and on the stat card. Growth, weight, health and Vigour are redrawn, fertility is a shaded flower, and breeding has its own pair of hearts. Pregnancy shows a pink heart from the start that brightens as the pregnancy goes on.
 
-- Animal pages in the herd book are shorter. The notes that explain a row now show when you hover over that row: why an animal isn't familiar, a hungry male's health cost, a hen's reasons for tomorrow's eggs and her count for today, the father of a pregnancy, and the last birth.
+### Recipes, config and performance
 
+- The mod's recipes show in the recipe book: the feeding blocks, the Nesting Box, the Herd Book, the mashes, Golden Bran and the cake that takes any milk. Each one unlocks when you pick up one of its ingredients.
+- Config: `rivalRange` is now `matingRange` (an old config's `rivalRange` still counts), and how far a grumpy wolf watches its owner being attacked is `sulkRange` (16 blocks).
 - Animals work out much faster whether they want the food in your hand, so big farms with several players lag less.
 - The herd book no longer causes a lag spike once a minute on big farms. It updates its animals one at a time over the minute instead of all at once.
-
-- Herd Sticks and their commands are off unless `herdSticks` is turned on in the config.
-- The Barnyard Inspector is gone. Sneak while looking at an animal to see all its stats on the card above it, or read them in the herd book, which now opens at an animal's page when you use it on one in the book. With Jade installed, the stats show in Jade's tooltip instead. `/barnyard info`, which handed the Inspector out, goes with it.
-- Only females fall in love now. Feed a familiar female and she's matched with a grown, familiar male nearby who can walk to her, so a fence keeps the next pen's bull out. Males get no breeding rest.
-- Males have **Vigour**, shown on the card and in the herd book: full after a day they were fed, 30% for each mating and 15% for each egg a rooster fertilizes. A male who hasn't eaten since yesterday pays with health too, and won't mate if it would leave him under half a heart.
-- Rival livestock males may fight over a female in love, butting heads until one dies, two at a time from the closest, while the first one left over quietly mates with her. Roosters fight now and then on their own, and wild males do too, rarely. Walking up with food in your hand stops a fight between two familiar males.
-- **Stud Mash** (two grains, a root, a berry and a gunpowder) gives a male back half his Vigour.
-- The herd book notes an animal killed in a fight.
 
 ## 0.0.2
 
