@@ -26,7 +26,8 @@ import java.util.WeakHashMap;
 
 // An animal MorningFeeding sent walks over to its feeding block, eats one item there and walks off to make room. The
 // meal counts the moment it starts; the animal then stands a few seconds with its head down in the block, crumbs of
-// the food at its mouth, before it goes, and a scare or a lead cuts that short without undoing the meal. If
+// the food at its mouth, before it goes, and a scare or a lead cuts that short without undoing the meal. It keeps the
+// goal while it walks off, so wandering can't turn it round at the block. If
 // the crowd keeps it from the block for 30 seconds it eats where it stands when it's close, and otherwise rests a while
 // before it's sent again. A panic stops the walk, and the next round sends it again. Every animal has this goal, and it
 // does nothing until the animal is sent: checking for that is only a map lookup.
@@ -40,9 +41,11 @@ public class EatAtFeederGoal extends Goal {
     private static final int GRAZE_TICKS = 35;
     // The client event that starts a sheep's grazing nod, as when it eats grass.
     private static final byte GRAZE_EVENT = 10;
+    // The longest it keeps walking off before other goals may have it.
+    private static final int WALK_OFF_TICKS = 100;
     // A trip whose walk never got going (another goal kept the animal busy, or it has no AI) is let go after this. A
-    // trip that ends in a meal just before giving up runs on for the meal, so this leaves room for it.
-    private static final int FORGET_TICKS = GIVE_UP_TICKS + EAT_TICKS + 2 * MorningFeeding.ROUND_TICKS;
+    // trip that ends in a meal just before giving up runs on for the meal and the walk off, so this leaves room for them.
+    private static final int FORGET_TICKS = GIVE_UP_TICKS + EAT_TICKS + WALK_OFF_TICKS + 2 * MorningFeeding.ROUND_TICKS;
     // After giving up from too far off, so an animal that can't get through doesn't take a walker's place each round.
     private static final int REST_TICKS = 600;
     // Between path searches while it's still on its way and its path has run out.
@@ -61,8 +64,10 @@ public class EatAtFeederGoal extends Goal {
     private final Animal animal;
     // The game time of its last path search.
     private long pathed;
-    // Fed and on its way off, which the goal stopping leaves be.
+    // Fed and on its way off, until this game time at the latest. The goal runs on while it does, and stopping
+    // leaves the walk be.
     private boolean walkingOff;
+    private long walkingOffUntil;
     // Until this game time it steps straight at the block, having found no way on from where it stood.
     private long stepping;
     // While it eats: when it's done (-1 when it isn't eating), and what it's eating, for the crumbs.
@@ -70,7 +75,8 @@ public class EatAtFeederGoal extends Goal {
     private ItemStack food = ItemStack.EMPTY;
 
     // over is set once it has eaten or given up. The trip is only forgotten when the goal stops, so the animals still
-    // counted as walking (MorningFeeding's limit) are never fewer than those with the goal running.
+    // counted as walking are never fewer than those with the goal running. One walking off after its meal doesn't take
+    // a walker's place (see headingTo).
     private record Trip(BlockPos feeder, long since, boolean over) {
     }
 
@@ -101,9 +107,15 @@ public class EatAtFeederGoal extends Goal {
         return trip != null;
     }
 
+    // Sent to a block and not done there: on its way, or eating. One walking off after its meal isn't.
+    public static boolean onTheWay(Animal animal) {
+        Trip trip = TRIPS.get(animal);
+        return trip != null && !trip.over();
+    }
+
     static boolean headingTo(Animal animal, BlockPos feeder) {
         Trip trip = TRIPS.get(animal);
-        return trip != null && trip.feeder().equals(feeder);
+        return trip != null && !trip.over() && trip.feeder().equals(feeder);
     }
 
     static boolean resting(Animal animal, long now) {
@@ -145,7 +157,13 @@ public class EatAtFeederGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         Trip trip = TRIPS.get(animal);
-        return trip != null && !trip.over() && animal.isAlive() && !animal.isPanicking();
+        if (trip == null || !animal.isAlive() || animal.isPanicking()) {
+            return false;
+        }
+        if (!trip.over()) {
+            return true;
+        }
+        return walkingOff && walks(animal) && !animal.getNavigation().isDone() && animal.level().getGameTime() < walkingOffUntil;
     }
 
     @Override
@@ -177,6 +195,7 @@ public class EatAtFeederGoal extends Goal {
         if (eatingUntil >= 0L) {
             if (now >= eatingUntil) {
                 walkOff(trip.feeder());
+                walkingOffUntil = now + WALK_OFF_TICKS;
                 end(trip);
             } else {
                 chew(level, trip.feeder(), now);

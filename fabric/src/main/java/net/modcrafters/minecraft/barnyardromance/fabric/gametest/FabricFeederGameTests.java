@@ -214,6 +214,11 @@ public class FabricFeederGameTests {
         FeederGameTests.aCowStaysToEatThenWalksOff(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 400)
+    public void aCowWalkingOffDoesntWander(GameTestHelper helper) {
+        FeederGameTests.aCowWalkingOffDoesntWander(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 40)
     public void aComparatorReadsHowFullAMangerIs(GameTestHelper helper) {
         FeederGameTests.aComparatorReadsHowFullAMangerIs(helper);
