@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
 import net.minecraft.world.entity.animal.chicken.Chicken;
@@ -58,8 +59,8 @@ public class EatAtFeederGoal extends Goal {
     private static final int WALK_OFF = 5;
     private static final double WALK_OFF_AT_LEAST = 3.0;
     private static final int WALK_OFF_TRIES = 5;
-    private static final Map<Animal, Trip> TRIPS = new WeakHashMap<>();
-    private static final Map<Animal, Long> RESTING = new WeakHashMap<>();
+    private static final Map<Animal, Trip> TRIPS = ServerScoped.track(new WeakHashMap<>());
+    private static final Map<Animal, Long> RESTING = ServerScoped.track(new WeakHashMap<>());
 
     private final Animal animal;
     // The game time of its last path search.
@@ -141,11 +142,6 @@ public class EatAtFeederGoal extends Goal {
     // Between a span and the block's span from start to start + 1.
     private static double gap(double min, double max, int start) {
         return Math.max(0.0, Math.max(start - max, min - (start + 1)));
-    }
-
-    public static void clear() {
-        TRIPS.clear();
-        RESTING.clear();
     }
 
     @Override

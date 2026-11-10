@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -13,7 +14,7 @@ import java.util.WeakHashMap;
 public final class Sulk {
     public static final int SULK_TICKS = 100;
     // Server thread only. Weak keys, so a pet that is unloaded mid-sulk is simply forgotten.
-    private static final Map<TamableAnimal, Long> UNTIL = new WeakHashMap<>();
+    private static final Map<TamableAnimal, Long> UNTIL = ServerScoped.track(new WeakHashMap<>());
 
     private Sulk() {
     }

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
@@ -55,9 +56,9 @@ public final class Fights {
         }
     }
 
-    private static final Map<UUID, Fight> FIGHTS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Fight> FIGHTS = ServerScoped.track(new ConcurrentHashMap<>());
     // A pair's truce, keyed by both UUIDs in order, and the game tick it ends.
-    private static final Map<String, Long> TRUCES = new ConcurrentHashMap<>();
+    private static final Map<String, Long> TRUCES = ServerScoped.track(new ConcurrentHashMap<>());
 
     private Fights() {
     }

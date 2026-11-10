@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.minecraft.core.BlockPos;
@@ -68,8 +69,8 @@ public final class Escapes {
     private record Starts(long tick, int count) {
     }
 
-    private static final Map<UUID, Escape> RUNNING = new ConcurrentHashMap<>();
-    private static final Map<ResourceKey<Level>, Starts> STARTS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Escape> RUNNING = ServerScoped.track(new ConcurrentHashMap<>());
+    private static final Map<ResourceKey<Level>, Starts> STARTS = ServerScoped.track(new ConcurrentHashMap<>());
 
     private Escapes() {
     }
@@ -92,12 +93,6 @@ public final class Escapes {
     public static boolean queued(Animal animal) {
         Escape escape = RUNNING.get(animal.getUUID());
         return escape != null && escape.stage() == Stage.QUEUED;
-    }
-
-    // When the server stops, so nothing of its world is held on to.
-    public static void clear() {
-        RUNNING.clear();
-        STARTS.clear();
     }
 
     // Every tick, for every animal; it does nothing unless this one is running away.

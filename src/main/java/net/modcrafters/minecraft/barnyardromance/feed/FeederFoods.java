@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.food.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
@@ -27,10 +28,10 @@ public final class FeederFoods {
 
     // Hoppers offer the same items over and over, so each answer is worked out once. They hold until the config, the
     // diets, the food files or the tags change, as FoodData's do.
-    private static final Map<Key, Boolean> ANSWERS = new ConcurrentHashMap<>();
+    private static final Map<Key, Boolean> ANSWERS = ServerScoped.track(new ConcurrentHashMap<>());
     private static volatile Object config;
     // Dropped with the answers, which happens on every reload and so at each server start.
-    private static final Map<ServerLevel, Map<EntityType<?>, Optional<Animal>>> SAMPLES = new ConcurrentHashMap<>();
+    private static final Map<ServerLevel, Map<EntityType<?>, Optional<Animal>>> SAMPLES = ServerScoped.track(new ConcurrentHashMap<>());
 
     private FeederFoods() {
     }
