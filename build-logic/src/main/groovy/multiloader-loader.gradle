@@ -12,6 +12,14 @@ configurations {
         canBeResolved = true
         canBeConsumed = false
     }
+    commonGametestJava {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    commonGametestResources {
+        canBeResolved = true
+        canBeConsumed = false
+    }
 }
 
 // The common project for this loader's Minecraft version, e.g. :26.3 for :fabric:26.3.
@@ -26,6 +34,8 @@ dependencies {
     }
     commonJava(project(path: commonPath, configuration: 'commonJava'))
     commonResources(project(path: commonPath, configuration: 'commonResources'))
+    commonGametestJava(project(path: commonPath, configuration: 'commonGametestJava'))
+    commonGametestResources(project(path: commonPath, configuration: 'commonGametestResources'))
 }
 
 tasks.named('compileJava', JavaCompile) {
@@ -36,6 +46,17 @@ tasks.named('compileJava', JavaCompile) {
 processResources {
     dependsOn(configurations.commonResources)
     from(configurations.commonResources)
+}
+
+// The loader's game test mod: the shared tests plus the loader's own wrappers in <loader>/src/gametest.
+tasks.named('compileGametestJava', JavaCompile) {
+    dependsOn(configurations.commonGametestJava)
+    source(configurations.commonGametestJava)
+}
+
+tasks.named('processGametestResources', ProcessResources) {
+    dependsOn(configurations.commonGametestResources)
+    from(configurations.commonGametestResources)
 }
 
 tasks.named('javadoc', Javadoc).configure {

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.age.GameDay;
@@ -91,11 +92,7 @@ public final class ShearActions {
     private record Shearer(UUID player, long tick) {
     }
 
-    private static final Map<UUID, Shearer> SHEARERS = new HashMap<>();
-
-    public static void clear() {
-        SHEARERS.clear();
-    }
+    private static final Map<UUID, Shearer> SHEARERS = ServerScoped.track(new HashMap<>());
 
     // A refused shearing keeps the wool and costs no familiarity, but the sheep can't be sheared again until midnight.
     public static void refuseShearing(Animal animal, @Nullable Player player) {

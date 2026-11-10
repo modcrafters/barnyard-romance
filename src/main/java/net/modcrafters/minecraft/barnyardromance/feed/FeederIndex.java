@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.animal.Animal;
 
@@ -46,7 +47,11 @@ public final class FeederIndex {
     }
 
     // When the server stops: its blocks are never taken out one by one, and would hold on to the whole world.
-    public static synchronized void clear() {
+    static {
+        ServerScoped.onStop(FeederIndex::clear);
+    }
+
+    private static synchronized void clear() {
         LOADED.clear();
         INDEXED.clear();
         FEEDERS.clear();

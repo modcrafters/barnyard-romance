@@ -2,28 +2,26 @@ package net.modcrafters.minecraft.barnyardromance.neoforge;
 
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.BarnyardRegistrations;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
-import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 //? if <1.21.6
 //import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.HerdBookCopyRecipe;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
-import net.modcrafters.minecraft.barnyardromance.neoforge.gametest.NeoForgeBreedingGameTests;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import java.util.function.Supplier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.Registry;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.api.distmarker.Dist;
@@ -64,7 +62,6 @@ public class BarnyardRomanceNeoForge {
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
         modBus.addListener(BarnyardRomanceNeoForge::registerCapabilities);
         modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(BarnyardRomance::setup));
-        NeoForgeBreedingGameTests.register(modBus);
         //? if >=1.21.9 {
         if (FMLEnvironment.getDist() == Dist.CLIENT) {
         //?} else
@@ -86,60 +83,16 @@ public class BarnyardRomanceNeoForge {
         NeoForge.EVENT_BUS.addListener((TagsUpdatedEvent event) -> FoodData.tagsReloaded());
     }
 
+    // Each RegisterEvent keeps the entries for its own registry.
     private static void registerContent(RegisterEvent event) {
-        event.register(
-                Registries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_tool"),
-                () -> BarnyardComponents.HERD_TOOL
-        );
-        event.register(
-                Registries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book"),
-                () -> BarnyardComponents.HERD_BOOK
-        );
-        event.register(
-                Registries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "egg_data"),
-                () -> BarnyardComponents.EGG_DATA
-        );
-        event.register(
-                Registries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "wild_egg"),
-                () -> BarnyardComponents.WILD_EGG
-        );
-        event.register(Registries.RECIPE_SERIALIZER, HerdBookCopyRecipe.ID, () -> HerdBookCopyRecipe.SERIALIZER);
-        event.register(Registries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), () -> BarnyardItems.HERD_STICK);
-        event.register(Registries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), () -> BarnyardItems.HERD_BOOK);
-        event.register(Registries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), () -> BarnyardItems.BREEDERS_MASH);
-        event.register(Registries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), () -> BarnyardItems.GOLDEN_BRAN);
-        event.register(Registries.ITEM, BarnyardItems.DAIRY_MASH_ID.identifier(), () -> BarnyardItems.DAIRY_MASH);
-        event.register(Registries.ITEM, BarnyardItems.STUD_MASH_ID.identifier(), () -> BarnyardItems.STUD_MASH);
-        event.register(Registries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.SHEEP_MILK_BUCKET);
-        event.register(Registries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), () -> BarnyardItems.GOAT_MILK_BUCKET);
-        event.register(Registries.ITEM, BarnyardItems.FERTILIZED_EGG_ID.identifier(), () -> BarnyardItems.FERTILIZED_EGG);
-        event.register(Registries.BLOCK, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX);
-        event.register(Registries.ITEM, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ITEM);
-        event.register(Registries.BLOCK_ENTITY_TYPE, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ENTITY);
-        event.register(Registries.MENU, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_MENU);
-        for (FeederKind kind : FeederKind.values()) {
-            event.register(Registries.BLOCK, BarnyardBlocks.id(kind), () -> BarnyardBlocks.block(kind));
-            event.register(Registries.ITEM, BarnyardBlocks.id(kind), () -> BarnyardBlocks.item(kind));
-        }
-        event.register(Registries.BLOCK_ENTITY_TYPE, BarnyardBlocks.FEEDING_BLOCK_ID, () -> BarnyardBlocks.FEEDER_ENTITY);
-        event.register(Registries.MENU, BarnyardBlocks.FEEDING_BLOCK_ID, () -> BarnyardBlocks.FEEDER_MENU);
-        event.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), () -> BarnyardTab.titled(CreativeModeTab.builder())
+        BarnyardRegistrations.registerAll(new BarnyardRegistrations.Sink() {
+            @Override
+            public <T> void register(ResourceKey<? extends Registry<T>> registry, Identifier id, Supplier<? extends T> value) {
+                event.register(registry, id, value::get);
+            }
+        }, () -> BarnyardTab.titled(CreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
-        event.register(
-                Registries.PARTICLE_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pregnancy_heart"),
-                () -> BarnyardParticles.PREGNANCY_HEART
-        );
-        event.register(
-                Registries.PARTICLE_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
-                () -> BarnyardParticles.OLD_HEART
-        );
     }
 
     // Pipes from other mods reach the feeding blocks through the item capability, which follows the block's own rules
@@ -168,10 +121,7 @@ public class BarnyardRomanceNeoForge {
 
     private static void addToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == BarnyardItems.FOOD_AND_DRINKS) {
-            event.accept(BarnyardItems.BREEDERS_MASH);
-            event.accept(BarnyardItems.GOLDEN_BRAN);
-            event.accept(BarnyardItems.DAIRY_MASH);
-            event.accept(BarnyardItems.STUD_MASH);
+            BarnyardTab.foodAndDrinks().forEach(event::accept);
         }
     }
 

@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Leaving a world and opening another in the same game no longer carries over the first world's courtships, fights, truces or nesting hens.
+- The mod's jars no longer include its game tests, so they're smaller.
 - An animal done eating at a feeding block walks all the way off to make room, instead of sometimes wandering straight back to the block.
 
 ## 0.0.3

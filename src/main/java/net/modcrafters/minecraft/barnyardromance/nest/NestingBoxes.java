@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
@@ -18,7 +19,7 @@ import java.util.UUID;
 // in step with boxes being placed, broken, loaded or unloaded.
 public final class NestingBoxes {
     // Hens that left the world to sit in a box: they haven't died, whatever their removal says.
-    private static final Set<UUID> IN_NEST = new HashSet<>();
+    private static final Set<UUID> IN_NEST = ServerScoped.track(new HashSet<>());
 
     private NestingBoxes() {
     }

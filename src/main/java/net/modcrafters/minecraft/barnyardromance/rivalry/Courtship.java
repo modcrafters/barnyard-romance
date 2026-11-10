@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.Constants;
 import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.config.Tuning;
@@ -45,9 +46,9 @@ public final class Courtship {
         }
     }
 
-    private static final Map<UUID, State> STATES = new ConcurrentHashMap<>();
+    private static final Map<UUID, State> STATES = ServerScoped.track(new ConcurrentHashMap<>());
     // Each chosen male and the female he was chosen for.
-    private static final Map<UUID, UUID> CHOSEN_FOR = new ConcurrentHashMap<>();
+    private static final Map<UUID, UUID> CHOSEN_FOR = ServerScoped.track(new ConcurrentHashMap<>());
 
     private Courtship() {
     }

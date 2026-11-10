@@ -1,0 +1,17 @@
+# Game tests for the mod. Only the game test runs load this mod; it never ships.
+modLoader = "javafml"
+loaderVersion = "${neoforge_loader_version_range}"
+license = "${license}"
+[[mods]]
+modId = "${mod_id}_gametest"
+version = "${version}"
+displayName = "${mod_name} Game Tests"
+description = '''Game tests for ${mod_name}.'''
+[[mixins]]
+config = "${mod_id}_gametest.mixins.json"
+[[dependencies.${mod_id}_gametest]]
+modId = "${mod_id}"
+type = "required"
+versionRange = "[${version},)"
+ordering = "AFTER"
+side = "BOTH"

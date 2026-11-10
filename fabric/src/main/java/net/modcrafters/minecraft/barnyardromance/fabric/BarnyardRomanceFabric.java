@@ -2,19 +2,14 @@ package net.modcrafters.minecraft.barnyardromance.fabric;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.BarnyardRegistrations;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
-import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.HerdBookCopyRecipe;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.fabric.data.FabricAnimalData;
 import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
@@ -32,8 +27,12 @@ import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.animal.Animal;
+
+import java.util.Objects;
+import java.util.function.Supplier;
 
 public class BarnyardRomanceFabric implements ModInitializer {
     @Override
@@ -41,66 +40,10 @@ public class BarnyardRomanceFabric implements ModInitializer {
         FabricAnimalData.ANIMAL_TRAITS.identifier();
         FabricAnimalData.PREGNANCY.identifier();
         FabricAnimalData.LAYING.identifier();
-        Registry.register(
-                BuiltInRegistries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_tool"),
-                BarnyardComponents.HERD_TOOL
-        );
-        Registry.register(
-                BuiltInRegistries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book"),
-                BarnyardComponents.HERD_BOOK
-        );
-        Registry.register(
-                BuiltInRegistries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "egg_data"),
-                BarnyardComponents.EGG_DATA
-        );
-        Registry.register(
-                BuiltInRegistries.DATA_COMPONENT_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "wild_egg"),
-                BarnyardComponents.WILD_EGG
-        );
-        Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, HerdBookCopyRecipe.ID, HerdBookCopyRecipe.SERIALIZER);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_STICK_ID.identifier(), BarnyardItems.HERD_STICK);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.HERD_BOOK_ID.identifier(), BarnyardItems.HERD_BOOK);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.BREEDERS_MASH_ID.identifier(), BarnyardItems.BREEDERS_MASH);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.GOLDEN_BRAN_ID.identifier(), BarnyardItems.GOLDEN_BRAN);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.DAIRY_MASH_ID.identifier(), BarnyardItems.DAIRY_MASH);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.STUD_MASH_ID.identifier(), BarnyardItems.STUD_MASH);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.SHEEP_MILK_BUCKET_ID.identifier(), BarnyardItems.SHEEP_MILK_BUCKET);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.GOAT_MILK_BUCKET_ID.identifier(), BarnyardItems.GOAT_MILK_BUCKET);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardItems.FERTILIZED_EGG_ID.identifier(), BarnyardItems.FERTILIZED_EGG);
-        Registry.register(BuiltInRegistries.BLOCK, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX);
-        Registry.register(BuiltInRegistries.ITEM, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX_ITEM);
-        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX_ENTITY);
-        Registry.register(BuiltInRegistries.MENU, BarnyardBlocks.NESTING_BOX_ID, BarnyardBlocks.NESTING_BOX_MENU);
-        for (FeederKind kind : FeederKind.values()) {
-            Registry.register(BuiltInRegistries.BLOCK, BarnyardBlocks.id(kind), BarnyardBlocks.block(kind));
-            Registry.register(BuiltInRegistries.ITEM, BarnyardBlocks.id(kind), BarnyardBlocks.item(kind));
-        }
-        // Hoppers and pipes reach the feeding blocks through the Transfer API's fallback for vanilla containers.
-        Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, BarnyardBlocks.FEEDING_BLOCK_ID, BarnyardBlocks.FEEDER_ENTITY);
-        Registry.register(BuiltInRegistries.MENU, BarnyardBlocks.FEEDING_BLOCK_ID, BarnyardBlocks.FEEDER_MENU);
-        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, BarnyardTab.ID, BarnyardTab.titled(FabricCreativeModeTab.builder())
+        BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
-        CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> {
-            output.accept(BarnyardItems.BREEDERS_MASH);
-            output.accept(BarnyardItems.GOLDEN_BRAN);
-            output.accept(BarnyardItems.DAIRY_MASH);
-            output.accept(BarnyardItems.STUD_MASH);
-        });
-        Registry.register(
-                BuiltInRegistries.PARTICLE_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "pregnancy_heart"),
-                BarnyardParticles.PREGNANCY_HEART
-        );
-        Registry.register(
-                BuiltInRegistries.PARTICLE_TYPE,
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "old_heart"),
-                BarnyardParticles.OLD_HEART
-        );
+        CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
         BarnyardRomance.init();
         BarnyardRomance.setup();
         ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
@@ -126,5 +69,11 @@ public class BarnyardRomanceFabric implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(HerdBookPayloads.RemoveFromBook.TYPE,
                 (payload, context) -> HerdBooks.removeRequested(context.player(), payload));
         CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> BarnyardCommands.register(dispatcher));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> void register(ResourceKey<? extends Registry<T>> registry, Identifier id, Supplier<? extends T> value) {
+        Registry<T> target = (Registry<T>) BuiltInRegistries.REGISTRY.getValue(registry.identifier());
+        Registry.register(Objects.requireNonNull(target, registry::toString), id, value.get());
     }
 }

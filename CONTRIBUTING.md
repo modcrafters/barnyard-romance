@@ -23,7 +23,9 @@ One codebase builds three jars: Fabric and NeoForge for 26.3, and NeoForge for 1
 | `gradlew :neoforge:26.3:runGameTestServer`, `gradlew :neoforge:1.21.1:runGameTestServer` | Game tests on NeoForge |
 | `gradlew :fabric:26.3:runClientGametest` | Client tests, which open a real game window |
 
-A new shared game test also needs a `@GameTest` wrapper in `fabric/src/.../fabric/gametest/`. Without one, it's silently skipped on Fabric.
+Game tests live in `src/gametest` (shared), `fabric/src/gametest` and `neoforge/src/gametest`, with 1.21.1 overrides under `versions/1.21.1/src/gametest`. They build a small second mod, `barnyard_romance_gametest`, that only the game test runs load, so none of them ship in the mod's jars and main code can't depend on them.
+
+A new shared game test also needs a `@GameTest` wrapper in `fabric/src/gametest/.../fabric/gametest/`. Without one, it's silently skipped on Fabric.
 
 ### With Naturalist
 

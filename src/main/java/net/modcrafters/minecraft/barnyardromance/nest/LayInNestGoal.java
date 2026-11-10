@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
+import net.modcrafters.minecraft.barnyardromance.ServerScoped;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.TamableAnimal;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
@@ -29,7 +30,7 @@ public class LayInNestGoal extends Goal {
     private static final int GIVE_UP_TICKS = 600;
     // From the box to anywhere she can stop on a spot beside it.
     private static final double REACH_SQR = 2.0 * 2.0;
-    private static final Map<Animal, Trip> TRIPS = new WeakHashMap<>();
+    private static final Map<Animal, Trip> TRIPS = ServerScoped.track(new WeakHashMap<>());
 
     private final Animal hen;
 
