@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.compat;
 
 import net.modcrafters.minecraft.barnyardromance.mixin.AnimalEating;
+import net.modcrafters.minecraft.barnyardromance.mixin.AnimalLoveCauseAccessor;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityReference;
@@ -34,6 +36,12 @@ public final class VersionCompat {
         }
         EntityReference<LivingEntity> owner = owned.getOwnerReference();
         return owner == null ? null : owner.getUUID();
+    }
+
+    // The player who put an animal in love, online or not, wherever they are.
+    public static @Nullable UUID loveCauseId(Animal animal) {
+        EntityReference<ServerPlayer> cause = ((AnimalLoveCauseAccessor) animal).barnyardromance$loveCause();
+        return cause == null ? null : cause.getUUID();
     }
 
     // The animal's own eating sound, the one vanilla plays when it feeds the animal (most animals have none).

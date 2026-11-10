@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.compat;
 
+import net.modcrafters.minecraft.barnyardromance.mixin.AnimalLoveCauseAccessor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.sounds.SoundEvent;
@@ -29,6 +30,11 @@ public final class VersionCompat {
     // The player a tamed animal belongs to, online or not.
     public static @Nullable UUID ownerId(Animal animal) {
         return animal instanceof OwnableEntity owned ? owned.getOwnerUUID() : null;
+    }
+
+    // The player who put an animal in love, online or not, wherever they are.
+    public static @Nullable UUID loveCauseId(Animal animal) {
+        return ((AnimalLoveCauseAccessor) animal).barnyardromance$loveCause();
     }
 
     public static void sendOverlay(Player player, Component message) {

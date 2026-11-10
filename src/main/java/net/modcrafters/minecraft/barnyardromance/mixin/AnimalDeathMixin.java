@@ -5,21 +5,18 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// An animal's death, for the slaughter advancement. Both loaders end up here, whatever killed it.
+// An animal's death, for the slaughter advancement. Both loaders end up here, whatever killed it. It hooks where die
+// looks up the kill credit: past vanilla's guard against dying twice and past NeoForge's LivingDeathEvent, so a death
+// another mod cancels earns nothing.
 @Mixin(LivingEntity.class)
 public class AnimalDeathMixin {
-    // Vanilla's own guard against dying twice.
-    @Shadow
-    protected boolean dead;
-
-    @Inject(method = "die", at = @At("HEAD"))
+    @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getKillCredit()Lnet/minecraft/world/entity/LivingEntity;", ordinal = 0))
     private void barnyardromance$died(DamageSource source, CallbackInfo callback) {
-        if ((Object) this instanceof Animal animal && !animal.level().isClientSide() && !animal.isRemoved() && !dead) {
+        if ((Object) this instanceof Animal animal && !animal.level().isClientSide()) {
             BarnyardAdvancements.died(animal, source);
         }
     }

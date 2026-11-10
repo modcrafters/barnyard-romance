@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
@@ -54,6 +55,7 @@ public final class CourtshipGameTests {
     }
 
     public static void aFedMaleDoesNotFallInLove(GameTestHelper helper) {
+        clearOfMidnight(helper, 20);
         Animal bull = male(helper, EntityTypes.COW);
         FamiliarityActions.interact(bull, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
 
@@ -63,6 +65,7 @@ public final class CourtshipGameTests {
     }
 
     public static void aFemaleInLoveIsMatchedWithOneMale(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         Animal cow = female(helper, EntityTypes.COW);
         Animal bull = fed(male(helper, EntityTypes.COW));
         cow.setInLove(null);
@@ -75,6 +78,7 @@ public final class CourtshipGameTests {
     }
 
     public static void aFenceKeepsAMaleOut(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         Animal cow = female(helper, EntityTypes.COW);
         Animal bull = fed(male(helper, EntityTypes.COW));
         EggGameTests.once(helper, bull::onGround, () -> {
@@ -91,6 +95,7 @@ public final class CourtshipGameTests {
     }
 
     public static void aMaleOnlyMatesTheFemaleHeWasChosenFor(GameTestHelper helper) {
+        clearOfMidnight(helper, 800);
         Animal first = female(helper, EntityTypes.COW);
         Animal second = GameTestCompat.spawn(helper, EntityTypes.COW, 3, 1, 6);
         Services.DATA.set(second, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
@@ -116,6 +121,7 @@ public final class CourtshipGameTests {
 
     // Mating would cost him his last 2 health.
     public static void aHungryMaleAtTheCostIsNotChosen(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         Animal cow = female(helper, EntityTypes.COW);
         Animal bull = male(helper, EntityTypes.COW);
         bull.setHealth(2.0F);
@@ -129,6 +135,7 @@ public final class CourtshipGameTests {
     }
 
     public static void aHungryMalePaysHealthToMate(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         Animal cow = female(helper, EntityTypes.COW);
         Animal bull = male(helper, EntityTypes.COW);
         bull.setHealth(3.0F);
@@ -142,10 +149,12 @@ public final class CourtshipGameTests {
     }
 
     public static void goatsBreedByCourtship(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         breedsByCourtship(helper, EntityTypes.GOAT);
     }
 
     public static void horsesBreedByCourtship(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         Animal mare = female(helper, EntityTypes.HORSE);
         Animal stallion = fed(male(helper, EntityTypes.HORSE));
         ((AbstractHorse) mare).setTamed(true);
@@ -163,8 +172,9 @@ public final class CourtshipGameTests {
     // depends on entity ids while the wolves wander. Every tick after, the far wolf must not be chosen; if he is, the
     // failure says what the near one was doing at that moment.
     public static void petsTakeTheClosestMale(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         // Close by, or the wolves' follow-owner goal keeps them from their breed goal.
-        Player owner = helper.makeMockServerPlayerInLevel();
+        Player owner = MockPlayers.inLevel(helper);
         owner.setPos(helper.absoluteVec(new Vec3(4.5, 1.0, 6.5)));
         Animal female = tame(female(helper, EntityTypes.WOLF), owner);
         Animal near = tame(fed(male(helper, EntityTypes.WOLF)), owner);
@@ -197,6 +207,7 @@ public final class CourtshipGameTests {
     // Vanilla's path search hands back the path a mob is already walking when asked about the same target again, so a
     // second look must not mistake his own walk for the way to her.
     public static void reachIgnoresWhereTheMaleIsWalking(GameTestHelper helper) {
+        clearOfMidnight(helper, 100);
         Animal cow = female(helper, EntityTypes.COW);
         Animal bull = male(helper, EntityTypes.COW);
         EggGameTests.once(helper, () -> bull.onGround() && cow.onGround(), () -> {
@@ -213,6 +224,7 @@ public final class CourtshipGameTests {
     // Vanilla's breed goal only looks 8 blocks for a partner, but a male up to matingRange (16) away can be chosen, so he
     // has to come to her. She stands still here, and he starts across the pen, more than 8 blocks off.
     public static void aChosenMaleWalksToAFarFemale(GameTestHelper helper) {
+        clearOfMidnight(helper, 400);
         Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 1, 1, 1);
         Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
         Animal bull = GameTestCompat.spawn(helper, EntityTypes.COW, 7, 1, 7);
@@ -264,6 +276,17 @@ public final class CourtshipGameTests {
                     helper.getLevel().setBlockAndUpdate(at.offset(dx, 1, dz), Blocks.OAK_FENCE.defaultBlockState());
                 }
             }
+        }
+    }
+
+    // A day ending mid-test settles it: love ends, and an unfed animal loses familiarity and health. These tests run on
+    // the live overworld clock, where the suite before them leaves it anywhere, so one that would see midnight before its
+    // time is up starts at the next sunrise instead, before its animals are made.
+    static void clearOfMidnight(GameTestHelper helper, int ticks) {
+        long clock = helper.getLevel().getOverworldClockTime();
+        long untilMidnight = GameDay.ticksUntilMidnight(clock);
+        if (untilMidnight <= ticks) {
+            GameTestCompat.setOverworldClock(helper, clock + untilMidnight + GameDay.TICKS - 18_000L);
         }
     }
 

@@ -17,6 +17,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
@@ -62,13 +63,10 @@ public final class BarnyardAdvancements {
     }
 
     // The player who put either parent in love, before vanilla clears it; the mother's first, as only she is fed
-    // into love.
+    // into love. Read as a UUID, so a breeder who logged off or left the dimension before the pair mated still counts.
     public static @Nullable UUID breeder(Animal mother, Animal father) {
-        ServerPlayer cause = mother.getLoveCause();
-        if (cause == null) {
-            cause = father.getLoveCause();
-        }
-        return cause == null ? null : cause.getUUID();
+        UUID cause = VersionCompat.loveCauseId(mother);
+        return cause != null ? cause : VersionCompat.loveCauseId(father);
     }
 
     public static void conceived(Animal mother, @Nullable UUID breeder) {
@@ -206,7 +204,9 @@ public final class BarnyardAdvancements {
     // livestock are tamed by familiarity, so being tamed isn't what makes a pet; wolves, cats and the horse family are.
     public static void died(Animal animal, DamageSource source) {
         try {
-            if (!(source.getEntity() instanceof ServerPlayer killer) || FamiliarityCare.tamed(animal)
+            // The kill credit covers a death the player only started, such as burning after Fire Aspect.
+            Entity cause = source.getEntity() != null ? source.getEntity() : animal.getKillCredit();
+            if (!(cause instanceof ServerPlayer killer) || FamiliarityCare.tamed(animal)
                     || Ladders.ladderFor(AnimalSex.speciesId(animal)).isEmpty()) {
                 return;
             }

@@ -54,6 +54,7 @@ public final class AdvancementGameTests {
             new BreedingGameTests.Case("mating_earns_a_bun_in_the_oven", 20, AdvancementGameTests::matingEarnsABunInTheOven),
             new BreedingGameTests.Case("a_birth_earns_special_delivery_for_the_breeder", 100, AdvancementGameTests::aBirthEarnsSpecialDeliveryForTheBreeder),
             new BreedingGameTests.Case("offline_breeder_is_credited_at_login", 100, AdvancementGameTests::offlineBreederIsCreditedAtLogin),
+            new BreedingGameTests.Case("a_breeder_who_left_before_mating_is_remembered", 20, AdvancementGameTests::aBreederWhoLeftBeforeMatingIsRemembered),
             new BreedingGameTests.Case("a_pregnancy_without_a_breeder_credits_nobody", 100, AdvancementGameTests::aPregnancyWithoutABreederCreditsNobody),
             new BreedingGameTests.Case("pregnancy_off_still_earns_both", 20, AdvancementGameTests::pregnancyOffStillEarnsBoth),
             new BreedingGameTests.Case("a_grandchild_earns_family_tree", 100, AdvancementGameTests::aGrandchildEarnsFamilyTree),
@@ -68,6 +69,7 @@ public final class AdvancementGameTests {
             new BreedingGameTests.Case("hand_shearing_earns_fleece_navidad", 20, AdvancementGameTests::handShearingEarnsFleeceNavidad),
             new BreedingGameTests.Case("dispenser_shearing_credits_nobody", 20, AdvancementGameTests::dispenserShearingCreditsNobody),
             new BreedingGameTests.Case("killing_a_familiar_cow_is_dinner", 20, AdvancementGameTests::killingAFamiliarCowIsDinner),
+            new BreedingGameTests.Case("a_cow_burning_to_death_after_a_hit_is_dinner", 20, AdvancementGameTests::aCowBurningToDeathAfterAHitIsDinner),
             new BreedingGameTests.Case("killing_a_tamed_pet_is_not_dinner", 20, AdvancementGameTests::killingATamedPetIsNotDinner),
             new BreedingGameTests.Case("killing_a_familiar_fox_is_not_dinner", 20, AdvancementGameTests::killingAFamiliarFoxIsNotDinner),
             new BreedingGameTests.Case("writing_an_animal_into_a_herd_book_earns_paper_trail", 20, AdvancementGameTests::writingAnAnimalIntoAHerdBookEarnsPaperTrail),
@@ -96,7 +98,7 @@ public final class AdvancementGameTests {
     }
 
     public static void heldGrantsAreGivenAtLogin(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         CreditLedger ledger = CreditData.get(helper.getLevel().getServer()).ledger();
         ledger.hold(player.getUUID(), new CreditLedger.Held(BarnyardAdvancements.ROOT.toString(), Grants.CRITERION));
 
@@ -132,7 +134,7 @@ public final class AdvancementGameTests {
     }
 
     public static void twoByTwoCountsACalfBornFromAPregnancy(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
 
         due(helper, mother);
@@ -143,7 +145,7 @@ public final class AdvancementGameTests {
     }
 
     public static void matingEarnsABunInTheOven(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
 
         bredCow(helper, breeder);
 
@@ -153,8 +155,8 @@ public final class AdvancementGameTests {
     }
 
     public static void aBirthEarnsSpecialDeliveryForTheBreeder(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
-        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
+        ServerPlayer bystander = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
 
         due(helper, mother);
@@ -168,10 +170,14 @@ public final class AdvancementGameTests {
         UUID offline = UUID.randomUUID();
         Animal mother = bredCow(helper, null);
         Services.DATA.setPregnancy(mother, BreedingGameTests.pregnancy(helper, mother).withBreederId(offline));
+        int litter = BreedingGameTests.pregnancy(helper, mother).litterSize();
 
         due(helper, mother);
         helper.succeedWhen(() -> {
-            List<CreditLedger.Held> held = CreditData.get(helper.getLevel().getServer()).ledger().held(offline);
+            CreditLedger ledger = CreditData.get(helper.getLevel().getServer()).ledger();
+            helper.assertTrue(ledger.births(offline, "cow") == litter,
+                    "an offline breeder's cow births are " + ledger.births(offline, "cow") + ", not " + litter);
+            List<CreditLedger.Held> held = ledger.held(offline);
             helper.assertTrue(held.contains(new CreditLedger.Held(BarnyardAdvancements.SPECIAL_DELIVERY.toString(), Grants.CRITERION)),
                     "Special Delivery isn't held for an offline breeder: " + held);
             helper.assertTrue(held.contains(new CreditLedger.Held(TWO_BY_TWO.toString(), "minecraft:cow")),
@@ -179,8 +185,26 @@ public final class AdvancementGameTests {
         });
     }
 
+    // A player who feeds a cow into love and logs off (or leaves the dimension) before the bull reaches her is still
+    // her breeder; vanilla's getLoveCause only finds players in the cow's level.
+    public static void aBreederWhoLeftBeforeMatingIsRemembered(GameTestHelper helper) {
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
+        Animal mother = female(helper, EntityTypes.COW);
+        Animal father = male(helper, EntityTypes.COW);
+        mother.setInLove(breeder);
+        father.setInLove(null);
+        helper.getLevel().getServer().getPlayerList().remove(breeder);
+        helper.assertTrue(mother.getLoveCause() == null, "vanilla still finds a breeder who left");
+
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+
+        UUID recorded = BreedingGameTests.pregnancy(helper, mother).breederId();
+        helper.assertTrue(breeder.getUUID().equals(recorded), "the pregnancy's breeder is " + recorded + ", not the player who left");
+        helper.succeed();
+    }
+
     public static void aPregnancyWithoutABreederCreditsNobody(GameTestHelper helper) {
-        ServerPlayer bystander = helper.makeMockServerPlayerInLevel();
+        ServerPlayer bystander = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, null);
         helper.assertTrue(BreedingGameTests.pregnancy(helper, mother).breederId() == null, "a pregnancy without a player has a breeder");
 
@@ -195,7 +219,7 @@ public final class AdvancementGameTests {
         BarnyardConfig config = BarnyardConfig.current();
         try {
             BarnyardConfig.set(BarnyardConfig.parse("{\"pregnancyEnabled\": false}"));
-            ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+            ServerPlayer breeder = MockPlayers.inLevel(helper);
             Animal mother = female(helper, EntityTypes.COW);
             Animal father = male(helper, EntityTypes.COW);
             mother.setInLove(breeder);
@@ -212,7 +236,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aGrandchildEarnsFamilyTree(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
         Services.DATA.set(mother, BreedingGameTests.traits(helper, mother).withLineage(new Lineage(UUID.randomUUID(), null)));
 
@@ -221,7 +245,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aCalfOfWildParentsIsNoFamilyTree(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bredCow(helper, breeder);
 
         due(helper, mother);
@@ -232,7 +256,7 @@ public final class AdvancementGameTests {
     }
 
     public static void tenPigletsEarnTheFirstPigStep(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         CreditLedger ledger = CreditData.get(helper.getLevel().getServer()).ledger();
         ledger.addBirths(breeder.getUUID(), "pig", 8);
         Animal mother = bred(helper, EntityTypes.PIG, breeder);
@@ -248,7 +272,7 @@ public final class AdvancementGameTests {
     }
 
     public static void aDonkeyFoalCountsForTheHorseLadder(GameTestHelper helper) {
-        ServerPlayer breeder = helper.makeMockServerPlayerInLevel();
+        ServerPlayer breeder = MockPlayers.inLevel(helper);
         Animal mother = bred(helper, EntityTypes.DONKEY, breeder);
 
         due(helper, mother);
@@ -302,7 +326,7 @@ public final class AdvancementGameTests {
 
     public static void milkingAFamiliarCowEarnsUdderTrust(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         // A creative player keeps the empty bucket.
         player.setGameMode(GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BUCKET));
@@ -316,7 +340,7 @@ public final class AdvancementGameTests {
 
     public static void handShearingEarnsFleeceNavidad(GameTestHelper helper) {
         Sheep sheep = (Sheep) female(helper, EntityTypes.SHEEP);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
 
         GameTestCompat.useOn(sheep, player);
@@ -330,7 +354,7 @@ public final class AdvancementGameTests {
     public static void dispenserShearingCreditsNobody(GameTestHelper helper) {
         Sheep sheep = (Sheep) female(helper, EntityTypes.SHEEP);
         sheep.setSheared(true);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
         GameTestCompat.useOn(sheep, player);
 
@@ -348,7 +372,7 @@ public final class AdvancementGameTests {
 
     public static void killingAFamiliarCowIsDinner(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
 
         cow.die(helper.getLevel().damageSources().playerAttack(player));
 
@@ -356,8 +380,23 @@ public final class AdvancementGameTests {
         helper.succeed();
     }
 
+    // Fire Aspect: the hit is the player's, but the burning that finishes the cow names no attacker.
+    public static void aCowBurningToDeathAfterAHitIsDinner(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        ServerPlayer player = MockPlayers.inLevel(helper);
+        //? if >=1.21.2 {
+        cow.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(player), 1.0F);
+        //?} else
+        //cow.hurt(helper.getLevel().damageSources().playerAttack(player), 1.0F);
+
+        cow.die(helper.getLevel().damageSources().onFire());
+
+        helper.assertTrue(earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER), "a cow the player set burning didn't earn the dinner advancement");
+        helper.succeed();
+    }
+
     public static void killingATamedPetIsNotDinner(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         wolf.tame(player);
         AbstractHorse horse = (AbstractHorse) female(helper, EntityTypes.HORSE);
@@ -373,7 +412,7 @@ public final class AdvancementGameTests {
     // A fox isn't livestock, however familiar.
     public static void killingAFamiliarFoxIsNotDinner(GameTestHelper helper) {
         Animal fox = female(helper, EntityTypes.FOX);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         helper.assertTrue(Services.DATA.get(fox).isPresent(), "the fox isn't tracked, so this proves nothing");
 
         fox.die(helper.getLevel().damageSources().playerAttack(player));
@@ -384,7 +423,7 @@ public final class AdvancementGameTests {
 
     public static void writingAnAnimalIntoAHerdBookEarnsPaperTrail(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BarnyardItems.HERD_BOOK));
 
         try {
@@ -418,7 +457,7 @@ public final class AdvancementGameTests {
     }
 
     static ServerPlayer playerAt(GameTestHelper helper, Vec3 at) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         Vec3 absolute = helper.absoluteVec(at);
         player.setPos(absolute.x, absolute.y, absolute.z);
         return player;
@@ -451,7 +490,7 @@ public final class AdvancementGameTests {
 
     // A player sneaking up with wheat, as one wins over a wild animal.
     static ServerPlayer feeding(GameTestHelper helper, Animal animal) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.WHEAT));
         player.setShiftKeyDown(true);
         FamiliarityActions.interact(animal, player, InteractionHand.MAIN_HAND);
@@ -459,7 +498,7 @@ public final class AdvancementGameTests {
         return player;
     }
 
-    static boolean earned(ServerPlayer player, Identifier id) {
+    public static boolean earned(ServerPlayer player, Identifier id) {
         AdvancementHolder holder = player.level().getServer().getAdvancements().get(id);
         return holder != null && player.getAdvancements().getOrStartProgress(holder).isDone();
     }

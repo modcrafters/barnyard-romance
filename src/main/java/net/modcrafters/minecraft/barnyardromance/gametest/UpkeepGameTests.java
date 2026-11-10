@@ -166,7 +166,7 @@ public final class UpkeepGameTests {
     }
 
     public static void hungerKeepsASittingWolfSitting(GameTestHelper helper) {
-        TamableAnimal wolf = CareGameTests.tamedWolf(helper, helper.makeMockServerPlayerInLevel(), 1.0);
+        TamableAnimal wolf = CareGameTests.tamedWolf(helper, MockPlayers.inLevel(helper), 1.0);
         settledOn(wolf, traits(helper, wolf), 1.0, 6.0F, DAY - 1L);
         wolf.setOrderedToSit(true);
         wolf.setInSittingPose(true);
