@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.modcrafters.minecraft.barnyardromance.gametest.mixin",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "mixins": [
+    "GameTestHelperAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

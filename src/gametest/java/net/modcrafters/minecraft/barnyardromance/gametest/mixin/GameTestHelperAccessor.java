@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.mixin;
+package net.modcrafters.minecraft.barnyardromance.gametest.mixin;
 
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestInfo;

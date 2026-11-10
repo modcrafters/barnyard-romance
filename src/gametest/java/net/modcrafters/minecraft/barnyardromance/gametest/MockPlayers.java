@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.mixin.GameTestHelperAccessor;
+import net.modcrafters.minecraft.barnyardromance.gametest.mixin.GameTestHelperAccessor;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;

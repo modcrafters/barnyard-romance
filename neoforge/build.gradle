@@ -18,8 +18,19 @@ neoForge {
     if (at.exists()) {
         accessTransformers.from(at.absolutePath)
     }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+        // The game test mod, built from src/gametest. It never goes in the jar.
+        "${mod_id}_gametest" {
+            sourceSet sourceSets.gametest
+        }
+    }
     runs {
         configureEach {
+            // Only the game test runs load the game test mod, below.
+            loadedMods = [neoForge.mods.named(mod_id).get()]
             systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
             ideName = "NeoForge ${it.name.capitalize()} (${project.path})" // Unify the run config names with fabric
         }
@@ -44,6 +55,8 @@ neoForge {
         }
         gameTestServer {
             type = 'gameTestServer'
+            sourceSet = sourceSets.gametest
+            loadedMods = [neoForge.mods.named(mod_id).get(), neoForge.mods.named("${mod_id}_gametest").get()]
             gameDirectory = this.mkdir(this.file('runs/gametest'))
         }
         // Compatibility testing with Naturalist, see gradle/naturalist-runs.gradle.
@@ -55,6 +68,8 @@ neoForge {
         }
         gameTestServerNaturalist {
             type = 'gameTestServer'
+            sourceSet = sourceSets.gametest
+            loadedMods = [neoForge.mods.named(mod_id).get(), neoForge.mods.named("${mod_id}_gametest").get()]
             gameDirectory = this.mkdir(this.file('runs/naturalist-gametest'))
             systemProperty('barnyard_romance.expect_naturalist', 'true')
         }
@@ -64,11 +79,6 @@ neoForge {
             gameDirectory = this.mkdir(this.file('runs/jade-client'))
             programArguments.addAll '--width', '2560', '--height', '1440'
             systemProperty('barnyard_romance.herd_sticks', 'true')
-        }
-    }
-    mods {
-        "${mod_id}" {
-            sourceSet sourceSets.main
         }
     }
 }

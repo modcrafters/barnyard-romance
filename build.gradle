@@ -47,6 +47,15 @@ configurations {
         canBeResolved = false
         canBeConsumed = true
     }
+    // The shared game tests, for each loader's game test mod.
+    commonGametestJava {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    commonGametestResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
 }
 
 // Loaders compile the common sources for their own Minecraft version: Stonecutter's processed copy of src/,
@@ -57,6 +66,12 @@ artifacts {
     }
     sourceSets.main.resources.srcDirs.each { dir ->
         add('commonResources', dir) { builtBy 'stonecutterGenerate' }
+    }
+    sourceSets.gametest.java.srcDirs.each { dir ->
+        add('commonGametestJava', dir) { builtBy 'stonecutterGenerateGametest' }
+    }
+    sourceSets.gametest.resources.srcDirs.each { dir ->
+        add('commonGametestResources', dir) { builtBy 'stonecutterGenerateGametest' }
     }
 }
 
