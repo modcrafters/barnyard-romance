@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -30,6 +31,11 @@ public final class BarnyardTab {
         return builder
                 .title(Component.translatable("itemGroup." + Constants.MOD_ID))
                 .icon(() -> new ItemStack(BarnyardItems.HERD_BOOK));
+    }
+
+    // The superfoods the loaders add to vanilla's Food & Drinks tab, as well as to ours.
+    public static List<Item> foodAndDrinks() {
+        return List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, BarnyardItems.DAIRY_MASH, BarnyardItems.STUD_MASH);
     }
 
     // The Herd Sticks are there only while the config's herdSticks is on. The loaders call this each time the tab is
