@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- An animal done eating at a feeding block walks all the way off to make room, instead of sometimes wandering straight back to the block.
+
 ## 0.0.3
 
 ### Males, courtship and Vigour

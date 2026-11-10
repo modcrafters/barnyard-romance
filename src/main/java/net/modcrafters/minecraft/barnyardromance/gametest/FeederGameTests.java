@@ -50,6 +50,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -142,6 +144,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_brief_morning_load_leaves_the_rest_of_the_day_to_catch_up", 400,
                     FeederGameTests::aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp),
             new BreedingGameTests.Case("a_cow_stays_to_eat_then_walks_off", 400, FeederGameTests::aCowStaysToEatThenWalksOff),
+            new BreedingGameTests.Case("a_cow_walking_off_doesnt_wander", 400, FeederGameTests::aCowWalkingOffDoesntWander),
             new BreedingGameTests.Case("a_comparator_reads_how_full_a_manger_is", 40, FeederGameTests::aComparatorReadsHowFullAMangerIs),
             new BreedingGameTests.Case("feeding_block_recipes_craft_their_blocks", 20, FeederGameTests::feedingBlockRecipesCraftTheirBlocks)
     );
@@ -786,6 +789,45 @@ public final class FeederGameTests {
                 });
     }
 
+    // Done eating, she walks off before anything else can take her: her wandering, forced on every tick from her meal
+    // on, only starts once she's off. Wandering used to take over the moment she set off, and could lead her straight
+    // back to the Manger.
+    public static void aCowWalkingOffDoesntWander(GameTestHelper helper) {
+        long[] ate = {-1L};
+        Vec3[] ateAt = {Vec3.ZERO};
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+                m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
+                m -> {
+                    Animal cow = m.animals.getFirst();
+                    if (ate[0] < 0L) {
+                        if (ateOn(helper, cow, DAY)) {
+                            ate[0] = m.clock;
+                            ateAt[0] = cow.position();
+                        } else if (m.clock > SUNRISE + 300) {
+                            helper.fail("she never reached the Manger: she's at " + cow.position() + ", it's at " + m.at);
+                        }
+                        return;
+                    }
+                    List<WrappedGoal> goals = List.copyOf(((MobGoalsAccessor) cow).barnyardromance$goalSelector().getAvailableGoals());
+                    boolean wandering = goals.stream().anyMatch(goal -> goal.getGoal() instanceof RandomStrollGoal && goal.isRunning());
+                    double off = cow.position().distanceTo(ateAt[0]);
+                    if (wandering) {
+                        helper.assertTrue(off >= 2.0, "she wandered off " + (m.clock - ate[0]) + " ticks after her meal, only "
+                                + off + " from where she ate");
+                        helper.succeed();
+                        return;
+                    }
+                    goals.forEach(goal -> {
+                        if (goal.getGoal() instanceof RandomStrollGoal stroll) {
+                            stroll.trigger();
+                        }
+                    });
+                    if (m.clock - ate[0] > EatAtFeederGoal.EAT_TICKS + 200) {
+                        helper.fail("she never wandered: she's " + off + " from where she ate");
+                    }
+                });
+    }
+
     // Ten hungry cows and ten wheat: they go four at a time, and in the end all of them eat.
     public static void noMoreThanFourWalkAtOnce(GameTestHelper helper) {
         int[] most = {0};
@@ -795,7 +837,8 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, columns, BarnyardBlocks.MANGER, new int[]{2, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 10)),
                 m -> {
-                    int walking = (int) m.animals.stream().filter(FeederGameTests::goalRunning).count();
+                    // Walking there or eating, with the goal running; one walking off afterwards leaves its place.
+                    int walking = (int) m.animals.stream().filter(cow -> goalRunning(cow) && EatAtFeederGoal.onTheWay(cow)).count();
                     helper.assertTrue(walking <= MorningFeeding.MAX_WALKING, walking + " cows are walking to the Manger at once");
                     most[0] = Math.max(most[0], walking);
                     if (m.animals.stream().allMatch(cow -> ateOn(helper, cow, DAY)) && m.feeder.food() == 0) {
