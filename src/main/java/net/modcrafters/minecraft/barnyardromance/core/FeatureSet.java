@@ -24,6 +24,9 @@ public final class FeatureSet {
     // Each field of the animal record to the slice that saves it.
     private final Map<String, String> sliceFields = new LinkedHashMap<>();
     private final Map<String, AttachmentKey<?>> attachments = new LinkedHashMap<>();
+    // Each tick hook's name to the hook, as registered; AnimalTicks puts them in order once every feature has registered.
+    private final Map<String, AnimalHook> hooks = new LinkedHashMap<>();
+    private Map<AnimalPhase, Map<String, AnimalHook>> orderedHooks = Map.of();
     private final Map<Class<?>, List<Consumer<?>>> listeners = new LinkedHashMap<>();
     private final List<Consumer<BarnyardRegistrations.Sink>> content = new ArrayList<>();
     private final Map<String, Supplier<List<ItemStack>>> tabEntries = new LinkedHashMap<>();
@@ -31,6 +34,7 @@ public final class FeatureSet {
 
     private FeatureSet() {
         AnimalTraitCodecs.coreFields().forEach(field -> sliceFields.put(field, "the core record"));
+        hooks.putAll(AnimalTicks.coreHooks());
     }
 
     // Runs every feature's register in order; each feature's registrar closes when its register returns.
@@ -44,6 +48,7 @@ public final class FeatureSet {
                 registrar.closed = true;
             }
         }
+        set.orderedHooks = AnimalTicks.arrange(set.hooks);
         return set;
     }
 
@@ -75,6 +80,11 @@ public final class FeatureSet {
 
     public Map<String, Supplier<List<ItemStack>>> tabEntries() {
         return Collections.unmodifiableMap(tabEntries);
+    }
+
+    // The phase's hooks by name, in the order AnimalTicks runs them.
+    public Map<String, AnimalHook> hooks(AnimalPhase phase) {
+        return orderedHooks.get(phase);
     }
 
     public boolean ignoredByDefault(String speciesId) {
@@ -120,6 +130,15 @@ public final class FeatureSet {
             open();
             if (attachments.putIfAbsent(key.id(), key) != null) {
                 throw new IllegalStateException("Two attachments use the id " + key.id() + "; the second is from " + feature);
+            }
+        }
+
+        @Override
+        public void hook(AnimalPhase phase, String name, AnimalHook hook) {
+            open();
+            AnimalTicks.checkPlaced(phase, name);
+            if (hooks.putIfAbsent(name, hook) != null) {
+                throw new IllegalStateException("Tick hook " + name + " is registered twice; the second is from " + feature);
             }
         }
 

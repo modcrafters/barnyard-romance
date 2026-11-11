@@ -1,18 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Escapes;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.VanillaBirth;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
-import net.modcrafters.minecraft.barnyardromance.rivalry.RivalRolls;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import org.jspecify.annotations.Nullable;
@@ -68,31 +64,24 @@ public class AnimalBreedingMixin {
 
     @Inject(method = "customServerAiStep", at = @At("TAIL"))
     //? if >=1.21.2 {
-    private void barnyardromance$birth(ServerLevel level, CallbackInfo callback) {
+    private void barnyardromance$serverAiStep(ServerLevel level, CallbackInfo callback) {
         Animal self = (Animal) (Object) this;
     //?} else {
-    /*private void barnyardromance$birth(CallbackInfo callback) {
+    /*private void barnyardromance$serverAiStep(CallbackInfo callback) {
         Animal self = (Animal) (Object) this;
         ServerLevel level = (ServerLevel) self.level();
     *///?}
-        PregnancyController.catchUp(self, level);
-        AnimalHearts.serverTick(self, level);
-        AgeController.serverTick(self, level);
-        FamiliarityCare.serverTick(self, level);
-        EggLaying.serverTick(self, level);
+        AnimalTicks.run(AnimalPhase.SERVER_AI_STEP, self, level);
     }
 
     // Some mods' animals (Naturalist's ostrich) override customServerAiStep without calling it, but every animal runs
     // aiStep, so what must reach them all ticks from here.
     @Inject(method = "aiStep", at = @At("TAIL"))
-    private void barnyardromance$pregnancyHearts(CallbackInfo callback) {
+    private void barnyardromance$aiStep(CallbackInfo callback) {
         Animal self = (Animal) (Object) this;
         AnimalHearts.clientTick(self);
         if (self.level() instanceof ServerLevel level) {
-            Courtship.tick(self, level);
-            Fights.tick(self, level);
-            RivalRolls.tick(self, level);
-            Escapes.tick(self, level);
+            AnimalTicks.run(AnimalPhase.AI_STEP_SERVER, self, level);
         }
     }
 }

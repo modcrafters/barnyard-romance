@@ -4,6 +4,7 @@ import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
@@ -17,7 +18,6 @@ import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceKey;
@@ -130,7 +130,7 @@ public class BarnyardRomanceNeoForge {
         if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Animal animal)) {
             return;
         }
-        AnimalSex.onJoin(animal);
+        AnimalTicks.joined(animal);
     }
 
     private static void onEntityLeave(EntityLeaveLevelEvent event) {

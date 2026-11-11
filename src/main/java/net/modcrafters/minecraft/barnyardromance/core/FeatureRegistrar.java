@@ -23,6 +23,9 @@ public interface FeatureRegistrar {
     // Data the feature keeps on an animal, saved and synced to clients. Each id is used once.
     void attachment(AttachmentKey<?> key);
 
+    // A step run on every animal in the phase, at the place AnimalTicks gives its name; each name is registered once.
+    void hook(AnimalPhase phase, String name, AnimalHook hook);
+
     // Runs when the event is posted, after the listeners of features registered earlier.
     <E extends AnimalEvent> void listen(Class<E> event, Consumer<? super E> listener);
 

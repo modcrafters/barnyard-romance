@@ -11,7 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.fabric.data.FabricAnimalData;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -51,7 +51,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> FoodData.tagsReloaded());
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (entity instanceof Animal animal) {
-                AnimalSex.onJoin(animal);
+                AnimalTicks.joined(animal);
             }
         });
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {

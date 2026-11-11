@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.core.event;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureRegistrar;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureSet;
+import net.modcrafters.minecraft.barnyardromance.core.QuietTickHooks;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ class EventsTest {
     @Test
     void aThrowingListenerDoesNotStopTheNext() {
         List<String> heard = new ArrayList<>();
-        FeatureSet features = FeatureSet.of(List.of(new Feature() {
+        FeatureSet features = FeatureSet.of(QuietTickHooks.with(List.of(new Feature() {
             @Override
             public String name() {
                 return "listener";
@@ -31,7 +32,7 @@ class EventsTest {
                 });
                 registrar.listen(Ping.class, ping -> heard.add("after " + ping.note()));
             }
-        }));
+        })));
 
         Events.post(features, new Ping("moo"));
 

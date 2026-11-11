@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
@@ -10,7 +11,6 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
@@ -327,7 +327,7 @@ public final class BreedingGameTests {
         BarnyardConfig config = BarnyardConfig.current();
         try {
             BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:cow\"]}"));
-            AnimalSex.onJoin(cow);
+            AnimalTicks.joined(cow);
             helper.assertTrue(AgeController.deathAt(cow) == Long.MAX_VALUE, "an excluded cow still ages");
             helper.assertTrue(!FamiliarityActions.denies(cow), "an excluded cow still asks for familiarity");
         } finally {

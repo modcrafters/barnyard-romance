@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
@@ -31,7 +32,7 @@ public final class VanillaBirth {
         Animal mother;
         try {
             // The baby joins the level after this, so its traits are made now, the way joining would make them.
-            AnimalSex.onJoin(child);
+            AnimalTicks.joined(child);
             Optional<AnimalTraits> traits = Services.DATA.get(child);
             if (traits.isEmpty() || !traits.get().lineage().equals(Lineage.UNKNOWN)) {
                 return;

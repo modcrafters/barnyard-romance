@@ -28,14 +28,14 @@ class FeatureSetTest {
     @Test
     void providedApiIsFound() {
         GreetingApi hello = () -> "hello";
-        FeatureSet features = FeatureSet.of(List.of(feature("greeter", registrar -> registrar.provide(GreetingApi.class, hello))));
+        FeatureSet features = setOf(List.of(feature("greeter", registrar -> registrar.provide(GreetingApi.class, hello))));
 
         assertSame(hello, features.api(GreetingApi.class));
     }
 
     @Test
     void missingApiThrowsNamingTheInterface() {
-        FeatureSet features = FeatureSet.of(List.of(feature("quiet", registrar -> {
+        FeatureSet features = setOf(List.of(feature("quiet", registrar -> {
         })));
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> features.api(GreetingApi.class));
@@ -48,14 +48,14 @@ class FeatureSetTest {
                 feature("first", registrar -> registrar.provide(GreetingApi.class, () -> "hello")),
                 feature("second", registrar -> registrar.provide(GreetingApi.class, () -> "hi")));
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains(GreetingApi.class.getName()), thrown.getMessage());
     }
 
     @Test
     void registeringAfterCloseThrows() {
         AtomicReference<FeatureRegistrar> kept = new AtomicReference<>();
-        FeatureSet.of(List.of(feature("late", kept::set)));
+        setOf(List.of(feature("late", kept::set)));
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
                 () -> kept.get().provide(GreetingApi.class, () -> "too late"));
@@ -68,12 +68,14 @@ class FeatureSetTest {
         assertThrows(IllegalStateException.class, () -> kept.get().tabEntry("late", List::of));
         assertThrows(IllegalStateException.class, () -> kept.get().ignoredByDefault(species -> true));
         assertThrows(IllegalStateException.class, () -> kept.get().slice(slice("late", "late")));
+        assertThrows(IllegalStateException.class, () -> kept.get().hook(AnimalPhase.JOINED, "milk.joined", (animal, level) -> {
+        }));
     }
 
     @Test
     void listenersRunInRegistrationOrder() {
         List<String> heard = new ArrayList<>();
-        FeatureSet features = FeatureSet.of(List.of(
+        FeatureSet features = setOf(List.of(
                 feature("first", registrar -> registrar.listen(Ping.class, ping -> heard.add("first " + ping.note()))),
                 feature("second", registrar -> {
                     registrar.listen(Ping.class, ping -> heard.add("second " + ping.note()));
@@ -92,7 +94,7 @@ class FeatureSetTest {
                 feature("first", registrar -> registrar.attachment(key("laying"))),
                 feature("second", registrar -> registrar.attachment(key("laying"))));
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains("laying"), thrown.getMessage());
     }
 
@@ -100,7 +102,7 @@ class FeatureSetTest {
     void slicesAreKeptInRegistrationOrder() {
         AnimalSlice<Integer> care = slice("care", "familiarity");
         AnimalSlice<Integer> lactation = slice("lactation", "lactation");
-        FeatureSet features = FeatureSet.of(List.of(
+        FeatureSet features = setOf(List.of(
                 feature("familiarity", registrar -> registrar.slice(care)),
                 feature("milk", registrar -> registrar.slice(lactation))));
 
@@ -113,7 +115,7 @@ class FeatureSetTest {
                 feature("first", registrar -> registrar.slice(slice("care", "familiarity"))),
                 feature("second", registrar -> registrar.slice(slice("care", "lastFedTick"))));
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains("care"), thrown.getMessage());
     }
 
@@ -124,7 +126,7 @@ class FeatureSetTest {
                 feature("first", registrar -> registrar.slice(slice("care", "hunger"))),
                 feature("second", registrar -> registrar.slice(slice("appetite", "hunger"))));
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains("hunger"), thrown.getMessage());
     }
 
@@ -132,8 +134,13 @@ class FeatureSetTest {
     void aSliceWithACoreFieldIsRejected() {
         List<Feature> features = List.of(feature("first", registrar -> registrar.slice(slice("care", "scale"))));
 
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains("scale"), thrown.getMessage());
+    }
+
+    // Every set needs the tick hooks AnimalTicks places (see AnimalTicksTest); these tests are about everything else.
+    private static FeatureSet setOf(List<Feature> features) {
+        return FeatureSet.of(QuietTickHooks.with(features));
     }
 
     private static AnimalSlice<Integer> slice(String name, String field) {

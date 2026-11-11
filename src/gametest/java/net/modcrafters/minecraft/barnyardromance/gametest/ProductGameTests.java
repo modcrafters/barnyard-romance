@@ -17,6 +17,8 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -295,10 +297,10 @@ public final class ProductGameTests {
 
     public static void wildCowGetsOneMilkWindow(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        AnimalSex.onJoin(cow);
+        AnimalTicks.joined(cow);
         Lactation first = BreedingGameTests.traits(helper, cow).get(LACTATION);
         helper.assertTrue(first.hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()), "a wild cow got no milk window");
-        AnimalSex.onJoin(cow);
+        AnimalTicks.joined(cow);
         helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(first), "a wild cow got a second milk window");
         helper.succeed();
     }
@@ -472,7 +474,7 @@ public final class ProductGameTests {
     private static Animal sized(GameTestHelper helper, Animal animal, double scale) {
         AnimalTraits traits = BreedingGameTests.traits(helper, animal);
         Services.DATA.set(animal, AnimalTraits.of(traits.sex(), scale).with(CARE, FamiliarityState.NONE.fed(traits.get(CARE).familiarity(), traits.get(CARE).lastFedTick())));
-        AnimalSex.onAgeBoundary(animal);
+        AnimalTicks.run(AnimalPhase.AGE_BOUNDARY, animal, helper.getLevel());
         return animal;
     }
 

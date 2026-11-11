@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
+import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureRegistrar;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
@@ -17,5 +18,6 @@ public final class EggsFeature implements Feature {
     @Override
     public void register(FeatureRegistrar registrar) {
         registrar.attachment(LAYING);
+        registrar.hook(AnimalPhase.SERVER_AI_STEP, "eggs.laying", EggLaying::serverTick);
     }
 }
