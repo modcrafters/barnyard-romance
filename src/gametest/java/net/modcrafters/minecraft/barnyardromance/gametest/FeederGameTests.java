@@ -37,6 +37,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -83,6 +84,7 @@ import java.util.stream.Collectors;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.holding;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // In-game checks for the feeding blocks: what each takes, by hand and by hopper, and that nothing takes the food
 // back out (the Manger's grazers eat seeds, so beef is the plain food it turns away); then which animals make a
@@ -389,7 +391,7 @@ public final class FeederGameTests {
 
             assertHerd(helper, manger, cows.subList(0, 3));
             for (int i = 0; i < cows.size(); i++) {
-                boolean inHerd = BreedingGameTests.traits(helper, cows.get(i)).upkeep().inHerd();
+                boolean inHerd = BreedingGameTests.traits(helper, cows.get(i)).get(CARE).upkeep().inHerd();
                 helper.assertTrue(inHerd == i < 3, "cow " + i + (inHerd ? " is" : " isn't") + " marked as in a herd");
             }
             helper.succeed();
@@ -409,7 +411,7 @@ public final class FeederGameTests {
         EggGameTests.once(helper, () -> ready(helper, animals), () -> {
             animals.forEach(FeederGameTests::holdStill);
             penIn(helper, animals.getFirst());
-            Services.DATA.set(animals.get(1), new AnimalTraits(Sex.FEMALE, 1.3, 0.8, -1L).withOrigin(Origin.FARM));
+            Services.DATA.set(animals.get(1), AnimalTraits.of(Sex.FEMALE, 1.3).with(CARE, FamiliarityState.NONE.fed(0.8, -1L).withOrigin(Origin.FARM)));
             animals.get(1).getAttribute(Attributes.SCALE).setBaseValue(1.3);
             animals.get(1).refreshDimensions();
             familiar(animals.get(0), 0.8);
@@ -469,10 +471,10 @@ public final class FeederGameTests {
             for (Animal cow : cows) {
                 assertSettled(helper, cow, 2.0F, 0.4);
                 AnimalTraits traits = BreedingGameTests.traits(helper, cow);
-                helper.assertTrue(traits.hunger().lastAteDay() == DAY - 9L, "the cow last ate on day " + traits.hunger().lastAteDay());
-                helper.assertTrue(traits.hunger().lastHungryDay() == DAY - 1L, "the cow was last hungry on day " + traits.hunger().lastHungryDay());
-                helper.assertTrue(traits.upkeep().fedByFeederOn(DAY - 9L) && traits.upkeep().feeder().equals("manger"),
-                        "the cow's upkeep is " + traits.upkeep());
+                helper.assertTrue(traits.get(CARE).hunger().lastAteDay() == DAY - 9L, "the cow last ate on day " + traits.get(CARE).hunger().lastAteDay());
+                helper.assertTrue(traits.get(CARE).hunger().lastHungryDay() == DAY - 1L, "the cow was last hungry on day " + traits.get(CARE).hunger().lastHungryDay());
+                helper.assertTrue(traits.get(CARE).upkeep().fedByFeederOn(DAY - 9L) && traits.get(CARE).upkeep().feeder().equals("manger"),
+                        "the cow's upkeep is " + traits.get(CARE).upkeep());
             }
             helper.succeed();
         });
@@ -484,7 +486,7 @@ public final class FeederGameTests {
         unsettled(cow, 0.8, DAY - 3L, Upkeep.NONE.withInHerd(true));
         helper.onEachTick(() -> {
             FamiliarityCare.settle(cow, clock(DAY));
-            long settled = BreedingGameTests.traits(helper, cow).hunger().settledDay();
+            long settled = BreedingGameTests.traits(helper, cow).get(CARE).hunger().settledDay();
             long tick = helper.getTick();
             if (tick <= 98L) {
                 helper.assertTrue(settled == DAY - 3L, "the cow settled alone after only " + tick + " ticks");
@@ -711,7 +713,7 @@ public final class FeederGameTests {
             helper.assertTrue(manger.food() == 3, "the Manger holds " + contents(manger));
             for (Animal cow : cows) {
                 assertSettled(helper, cow, 10.0F, 0.8);
-                long ate = BreedingGameTests.traits(helper, cow).hunger().lastAteDay();
+                long ate = BreedingGameTests.traits(helper, cow).get(CARE).hunger().lastAteDay();
                 helper.assertTrue(ate == DAY - 1L, "the cow last ate on day " + ate);
             }
             helper.succeed();
@@ -733,7 +735,7 @@ public final class FeederGameTests {
                     }
                     if (m.animals.stream().allMatch(cow -> ateOn(helper, cow, DAY)) && m.feeder.food() == 0 && near.size() == 3) {
                         for (Animal cow : m.animals) {
-                            Upkeep upkeep = BreedingGameTests.traits(helper, cow).upkeep();
+                            Upkeep upkeep = BreedingGameTests.traits(helper, cow).get(CARE).upkeep();
                             helper.assertTrue(upkeep.fedByFeederOn(DAY) && upkeep.feeder().equals("manger"), "the cow's upkeep is " + upkeep);
                         }
                         helper.succeed();
@@ -873,9 +875,9 @@ public final class FeederGameTests {
                         return;
                     }
                     helper.assertTrue(m.feeder.food() == 1, "the Manger holds " + contents(m.feeder));
-                    double before = BreedingGameTests.traits(helper, other).familiarity();
+                    double before = BreedingGameTests.traits(helper, other).get(CARE).familiarity();
                     handFeed(helper, other, m.clock);
-                    double after = BreedingGameTests.traits(helper, other).familiarity();
+                    double after = BreedingGameTests.traits(helper, other).get(CARE).familiarity();
                     helper.assertTrue(after > before + 1.0e-9, "hand-feeding after her Manger meal left her at " + after);
                     helper.succeed();
                 });
@@ -896,8 +898,8 @@ public final class FeederGameTests {
                     AnimalTraits traits = BreedingGameTests.traits(helper, cow);
                     helper.assertTrue(m.feeder.food() == 0, "the Manger holds " + contents(m.feeder));
                     helper.assertTrue(!cow.isInLove(), "a Manger meal put her in love");
-                    helper.assertTrue(Math.abs(traits.familiarity() - 0.8) < 1.0e-9, "a Manger meal moved her familiarity to " + traits.familiarity());
-                    helper.assertTrue(traits.lastFedTick() == -1L, "a Manger meal counted as hand-feeding at " + traits.lastFedTick());
+                    helper.assertTrue(Math.abs(traits.get(CARE).familiarity() - 0.8) < 1.0e-9, "a Manger meal moved her familiarity to " + traits.get(CARE).familiarity());
+                    helper.assertTrue(traits.get(CARE).lastFedTick() == -1L, "a Manger meal counted as hand-feeding at " + traits.get(CARE).lastFedTick());
                     helper.assertTrue(cow.getHealth() > 6.0F, "a Manger meal left her health at " + cow.getHealth());
                     helper.succeed();
                 });
@@ -1048,11 +1050,11 @@ public final class FeederGameTests {
                     helper.assertTrue(reloaded[0].food() == 0, "the Manger holds " + contents(reloaded[0]));
                     for (Animal cow : m.animals) {
                         AnimalTraits traits = BreedingGameTests.traits(helper, cow);
-                        helper.assertTrue(traits.hunger().settledDay() == DAY + 3L, "a cow is settled to day " + traits.hunger().settledDay());
-                        helper.assertTrue(traits.hunger().lastAteDay() == DAY + 1L && traits.hunger().lastHungryDay() == DAY + 2L,
-                                "a cow last ate on day " + traits.hunger().lastAteDay() + " and was last hungry on " + traits.hunger().lastHungryDay());
+                        helper.assertTrue(traits.get(CARE).hunger().settledDay() == DAY + 3L, "a cow is settled to day " + traits.get(CARE).hunger().settledDay());
+                        helper.assertTrue(traits.get(CARE).hunger().lastAteDay() == DAY + 1L && traits.get(CARE).hunger().lastHungryDay() == DAY + 2L,
+                                "a cow last ate on day " + traits.get(CARE).hunger().lastAteDay() + " and was last hungry on " + traits.get(CARE).hunger().lastHungryDay());
                         // One hungry day each: one that missed the brief morning would have lost twice this.
-                        helper.assertTrue(Math.abs(traits.familiarity() - 0.75) < 1.0e-6, "a cow's familiarity is " + traits.familiarity());
+                        helper.assertTrue(Math.abs(traits.get(CARE).familiarity() - 0.75) < 1.0e-6, "a cow's familiarity is " + traits.get(CARE).familiarity());
                         helper.assertTrue(Math.abs(cow.getHealth() - 9.0F) < 1.0e-4F, "a cow's health is " + cow.getHealth());
                     }
                     helper.succeed();
@@ -1135,7 +1137,7 @@ public final class FeederGameTests {
     }
 
     private static boolean ateOn(GameTestHelper helper, Animal animal, long day) {
-        return BreedingGameTests.traits(helper, animal).hunger().lastAteDay() == day;
+        return BreedingGameTests.traits(helper, animal).get(CARE).hunger().lastAteDay() == day;
     }
 
     // The animal's walk to a feeding block is under way: its goal is running.
@@ -1238,18 +1240,18 @@ public final class FeederGameTests {
 
     // Farm-raised and familiar.
     private static void familiar(Animal animal, double familiarity) {
-        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, familiarity, -1L).withOrigin(Origin.FARM));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L).withOrigin(Origin.FARM)));
     }
 
     // Farm-raised, at this familiarity and 10 health, settled up to the start of day `from` and unfed since.
     private static void unsettled(Animal animal, double familiarity, long from, Upkeep upkeep) {
-        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, familiarity, -1L).withOrigin(Origin.FARM)
-                .withHunger(new Hunger(from, -1L, -1L)).withUpkeep(upkeep));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L).withOrigin(Origin.FARM)
+                .withHunger(new Hunger(from, -1L, -1L)).withUpkeep(upkeep)));
         animal.setHealth(10.0F);
     }
 
     private static long settledDay(GameTestHelper helper, Animal animal) {
-        return BreedingGameTests.traits(helper, animal).hunger().settledDay();
+        return BreedingGameTests.traits(helper, animal).get(CARE).hunger().settledDay();
     }
 
     private static void assertHerd(GameTestHelper helper, FeederBlockEntity feeder, List<Animal> expected) {
@@ -1261,10 +1263,10 @@ public final class FeederGameTests {
 
     private static void assertSettled(GameTestHelper helper, Animal animal, float health, double familiarity) {
         AnimalTraits traits = BreedingGameTests.traits(helper, animal);
-        helper.assertTrue(traits.hunger().settledDay() == DAY, "the cow is settled to day " + traits.hunger().settledDay() + ", not " + DAY);
+        helper.assertTrue(traits.get(CARE).hunger().settledDay() == DAY, "the cow is settled to day " + traits.get(CARE).hunger().settledDay() + ", not " + DAY);
         helper.assertTrue(Math.abs(animal.getHealth() - health) < 1.0e-4F, "the cow's health is " + animal.getHealth() + ", expected " + health);
-        helper.assertTrue(Math.abs(traits.familiarity() - familiarity) < 1.0e-6,
-                "the cow's familiarity is " + traits.familiarity() + ", expected " + familiarity);
+        helper.assertTrue(Math.abs(traits.get(CARE).familiarity() - familiarity) < 1.0e-6,
+                "the cow's familiarity is " + traits.get(CARE).familiarity() + ", expected " + familiarity);
     }
 
     public static FeederBlockEntity feeder(GameTestHelper helper, Block block, BlockPos pos) {

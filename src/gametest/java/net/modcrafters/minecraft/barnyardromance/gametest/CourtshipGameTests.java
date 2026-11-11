@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +33,8 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.male;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.holding;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
 
 // In-game checks for female-led breeding: only females fall in love, and each is matched with one male who can reach
 // her and has the Vigour for it. Pen walls keep neighbouring tests' animals out, since a male has to walk to her.
@@ -60,7 +63,7 @@ public final class CourtshipGameTests {
         Animal bull = male(helper, EntityTypes.COW);
         FamiliarityActions.interact(bull, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(traits(helper, bull).lastFedTick() >= 0L, "the bull didn't eat");
+        helper.assertTrue(traits(helper, bull).get(CARE).lastFedTick() >= 0L, "the bull didn't eat");
         helper.assertTrue(!bull.isInLove(), "a fed bull fell in love");
         helper.succeed();
     }
@@ -99,7 +102,7 @@ public final class CourtshipGameTests {
         clearOfMidnight(helper, 800);
         Animal first = female(helper, EntityTypes.COW);
         Animal second = GameTestCompat.spawn(helper, EntityTypes.COW, 3, 1, 6);
-        Services.DATA.set(second, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+        Services.DATA.set(second, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         Animal bull = fed(male(helper, EntityTypes.COW));
         first.setInLove(null);
         second.setInLove(null);
@@ -180,7 +183,7 @@ public final class CourtshipGameTests {
         Animal female = tame(female(helper, EntityTypes.WOLF), owner);
         Animal near = tame(fed(male(helper, EntityTypes.WOLF)), owner);
         Animal far = GameTestCompat.spawn(helper, EntityTypes.WOLF, 7, 1, 4);
-        Services.DATA.set(far, new AnimalTraits(Sex.MALE, 1.0, 1.0, -1L));
+        Services.DATA.set(far, AnimalTraits.of(Sex.MALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         tame(fed(far), owner);
         boolean[] inLove = {false};
 
@@ -227,9 +230,9 @@ public final class CourtshipGameTests {
     public static void aChosenMaleWalksToAFarFemale(GameTestHelper helper) {
         clearOfMidnight(helper, 400);
         Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 1, 1, 1);
-        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+        Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         Animal bull = GameTestCompat.spawn(helper, EntityTypes.COW, 7, 1, 7);
-        Services.DATA.set(bull, new AnimalTraits(Sex.MALE, 1.0, 1.0, -1L));
+        Services.DATA.set(bull, AnimalTraits.of(Sex.MALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         fed(bull);
         // Frozen once she's down: a mob without AI never lands.
         EggGameTests.once(helper, () -> bull.onGround() && cow.onGround(), () -> {
@@ -299,7 +302,7 @@ public final class CourtshipGameTests {
     }
 
     public static void assertVigour(GameTestHelper helper, Animal male, double expected) {
-        double actual = VigourActions.current(male).map(value -> value.vigour().value()).orElse(-1.0);
+        double actual = VigourActions.current(male).map(value -> value.get(VIGOUR).value()).orElse(-1.0);
         helper.assertTrue(Math.abs(actual - expected) < 1.0e-6, "Vigour is " + actual + ", expected " + expected);
     }
 }

@@ -11,6 +11,8 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 
@@ -52,7 +54,7 @@ public final class RivalRolls {
         }
         Optional<AnimalTraits> traits = rolling(male);
         return traits.isPresent()
-                && FightRules.due(traits.get().vigour().rollDay(), GameDay.of(clock), EggSchedule.sinceMidnight(clock), FightRules.rollTime(male.getUUID()));
+                && FightRules.due(traits.get().get(VigourSlices.VIGOUR).rollDay(), GameDay.of(clock), EggSchedule.sinceMidnight(clock), FightRules.rollTime(male.getUUID()));
     }
 
     // Rolls today's fights for this male: roll below a pair's chance starts that fight, and at most one starts. The
@@ -63,20 +65,20 @@ public final class RivalRolls {
             return;
         }
         long today = GameDay.of(level.getOverworldClockTime());
-        Services.DATA.set(male, traits.get().withVigour(traits.get().vigour().withRollDay(today)));
+        Services.DATA.set(male, traits.get().with(VigourSlices.VIGOUR, traits.get().get(VigourSlices.VIGOUR).withRollDay(today)));
         if (Fights.fighting(male)) {
             return;
         }
         Tuning tuning = BarnyardConfig.current().tuning();
         boolean rooster = BarnyardConfig.current().eggsFor(AnimalSex.speciesId(male)).enabled();
-        boolean wild = !Familiarity.ready(traits.get().familiarity());
+        boolean wild = !Familiarity.ready(traits.get().get(FamiliaritySlices.CARE).familiarity());
         long now = level.getGameTime();
         for (Animal rival : rivals(male, tuning.matingRange())) {
             Optional<AnimalTraits> theirs = Services.DATA.get(rival);
             if (theirs.isEmpty() || Fights.fighting(rival) || Fights.inTruce(male, rival, now)) {
                 continue;
             }
-            double chance = FightRules.randomChance(rooster, wild, !Familiarity.ready(theirs.get().familiarity()), tuning);
+            double chance = FightRules.randomChance(rooster, wild, !Familiarity.ready(theirs.get().get(FamiliaritySlices.CARE).familiarity()), tuning);
             if (roll < chance && Reach.canWalk(male, rival, tuning.matingRange())) {
                 Fights.start(male, rival, null);
                 return;

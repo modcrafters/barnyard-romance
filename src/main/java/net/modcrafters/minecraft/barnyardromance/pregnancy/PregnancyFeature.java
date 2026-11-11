@@ -16,6 +16,7 @@ public final class PregnancyFeature implements Feature {
 
     @Override
     public void register(FeatureRegistrar registrar) {
+        registrar.slice(PregnancySlices.BREEDING);
         registrar.attachment(PREGNANCY);
     }
 }

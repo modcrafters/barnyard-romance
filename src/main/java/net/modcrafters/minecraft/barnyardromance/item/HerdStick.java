@@ -21,6 +21,8 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -110,15 +112,17 @@ public class HerdStick extends Item {
             }
             double next = tool.sets()
                     ? DebugSteps.familiarityAt(tool.percent())
-                    : DebugSteps.familiarity(traits.familiarity(), tool.direction());
+                    : DebugSteps.familiarity(traits.get(FamiliaritySlices.CARE).familiarity(), tool.direction());
+            FamiliarityState care = traits.get(FamiliaritySlices.CARE);
             // Going up obeys the wild-caught cap, as feeding would.
-            AnimalTraits updated = next > traits.familiarity()
-                    ? FamiliarityCare.raise(animal, traits, next, traits.lastFedTick())
-                    : traits.fed(next, traits.lastFedTick());
+            AnimalTraits updated = next > care.familiarity()
+                    ? FamiliarityCare.raise(animal, traits, next, care.lastFedTick())
+                    : traits.with(FamiliaritySlices.CARE, care.withFamiliarity(next));
             Services.DATA.set(animal, updated);
-            FamiliarityActions.tameIfFamiliar(animal, player, updated.familiarity());
-            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(traits.familiarity()),
-                    Familiarity.percent(updated.familiarity())));
+            double familiarity = updated.get(FamiliaritySlices.CARE).familiarity();
+            FamiliarityActions.tameIfFamiliar(animal, player, familiarity);
+            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(care.familiarity()),
+                    Familiarity.percent(familiarity)));
         }
         Pregnancy current = Services.DATA.get(animal, PregnancyFeature.PREGNANCY).orElse(null);
         if (current == null) {

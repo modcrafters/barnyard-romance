@@ -25,6 +25,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -113,7 +114,8 @@ public final class EggLaying {
     private static Laying plan(Animal hen, long today, int sinceMidnight) {
         AnimalTraits traits = Services.DATA.get(hen).orElseThrow();
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(hen)));
-        int count = EggRules.perDay(size, traits.hunger().hungryYesterday(today), Familiarity.ready(traits.familiarity()), settings(hen));
+        int count = EggRules.perDay(size, traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(today),
+                Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()), settings(hen));
         return new Laying(today, EggSchedule.plan(sinceMidnight, count, hen.getRandom().nextDouble()), 0);
     }
 
@@ -176,7 +178,7 @@ public final class EggLaying {
             if (stage != AgeStage.ADULT && stage != AgeStage.OLD) {
                 continue;
             }
-            if (traits.get().hunger().lastAteDay() == today) {
+            if (traits.get().get(FamiliaritySlices.CARE).hunger().lastAteDay() == today) {
                 return RoosterNear.FED;
             }
             best = RoosterNear.HUNGRY;
@@ -246,7 +248,7 @@ public final class EggLaying {
                 motherTraits.scale(),
                 motherTraits.growthTicks(),
                 motherTraits.weight(),
-                motherTraits.familiarity(),
+                motherTraits.get(FamiliaritySlices.CARE).familiarity(),
                 fatherTraits.scale(),
                 fatherTraits.growthTicks(),
                 fatherTraits.weight(),

@@ -30,7 +30,8 @@ public final class Fertility {
     }
 
     public static double current(AnimalTraits traits, AgeSettings age, long now) {
-        return current(traits.fertility(), traits.fertilityTick(), now, Aging.oldFrom(traits.bornTick(), age));
+        BreedingState breeding = traits.get(PregnancySlices.BREEDING);
+        return current(breeding.fertility(), breeding.fertilityTick(), now, Aging.oldFrom(traits.bornTick(), age));
     }
 
     public static double afterBirth(double current) {

@@ -16,15 +16,15 @@ class TraitAssignmentTest {
         Optional<AnimalTraits> assigned = TraitAssignment.ensure(
                 Optional.empty(),
                 true,
-                () -> new AnimalTraits(Sex.FEMALE, 0.93)
+                () -> AnimalTraits.of(Sex.FEMALE, 0.93)
         );
 
-        assertEquals(Optional.of(new AnimalTraits(Sex.FEMALE, 0.93)), assigned);
+        assertEquals(Optional.of(AnimalTraits.of(Sex.FEMALE, 0.93)), assigned);
     }
 
     @Test
     void existingTraitsAreKeptAndTheRollIsNotConsumed() {
-        AnimalTraits existing = new AnimalTraits(Sex.MALE, 1.2);
+        AnimalTraits existing = AnimalTraits.of(Sex.MALE, 1.2);
         AtomicInteger rolls = new AtomicInteger();
 
         Optional<AnimalTraits> assigned = TraitAssignment.ensure(
@@ -32,7 +32,7 @@ class TraitAssignmentTest {
                 true,
                 () -> {
                     rolls.incrementAndGet();
-                    return new AnimalTraits(Sex.FEMALE, 0.5);
+                    return AnimalTraits.of(Sex.FEMALE, 0.5);
                 }
         );
 
@@ -49,7 +49,7 @@ class TraitAssignmentTest {
                 false,
                 () -> {
                     rolls.incrementAndGet();
-                    return new AnimalTraits(Sex.FEMALE, 0.9);
+                    return AnimalTraits.of(Sex.FEMALE, 0.9);
                 }
         );
 
@@ -59,7 +59,7 @@ class TraitAssignmentTest {
 
     @Test
     void babiesUseVanillaScaleUntilTheyGrow() {
-        AnimalTraits traits = new AnimalTraits(Sex.FEMALE, 0.93);
+        AnimalTraits traits = AnimalTraits.of(Sex.FEMALE, 0.93);
         assertEquals(Optional.of(1.0), TraitAssignment.scaleToApply(traits, true));
         assertEquals(Optional.of(0.93), TraitAssignment.scaleToApply(traits, false));
     }

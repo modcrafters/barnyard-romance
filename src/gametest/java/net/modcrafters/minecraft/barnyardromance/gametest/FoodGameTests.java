@@ -64,6 +64,10 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
+
 // In-game checks for diets, food files and superfoods, run by each loader's game test server.
 public final class FoodGameTests {
     private static final TagKey<Item> CONTAINS_MEAT = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "contains_meat"));
@@ -163,7 +167,7 @@ public final class FoodGameTests {
     public static void hurtAnimalsHealFromFoodAnyTime(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
         long fedAt = helper.getLevel().getOverworldClockTime();
-        Services.DATA.set(cow, BreedingGameTests.traits(helper, cow).fed(0.4, fedAt));
+        Services.DATA.set(cow, BreedingGameTests.traits(helper, cow).with(CARE, BreedingGameTests.traits(helper, cow).get(CARE).fed(0.4, fedAt)));
         cow.setHealth(cow.getMaxHealth() - 4.0F);
         Player player = holding(helper, Items.CARROT);
 
@@ -173,7 +177,7 @@ public final class FoodGameTests {
         helper.assertTrue(Math.abs(cow.getHealth() - expected) < 1.0e-4F, "the cow has " + cow.getHealth() + " health, not " + expected);
         helper.assertTrue(player.getMainHandItem().isEmpty(), "the hurt cow did not eat");
         assertFamiliarity(helper, cow, 0.4);
-        helper.assertTrue(BreedingGameTests.traits(helper, cow).lastFedTick() == fedAt, "healing reset the feed clock");
+        helper.assertTrue(BreedingGameTests.traits(helper, cow).get(CARE).lastFedTick() == fedAt, "healing reset the feed clock");
         helper.succeed();
     }
 
@@ -196,12 +200,12 @@ public final class FoodGameTests {
 
     static Animal withFamiliarity(GameTestHelper helper, Animal animal, double familiarity) {
         // Farm-raised, so feeding it on isn't held at the wild-caught cap.
-        Services.DATA.set(animal, BreedingGameTests.traits(helper, animal).fed(familiarity, -1L).withOrigin(Origin.FARM));
+        Services.DATA.set(animal, BreedingGameTests.traits(helper, animal).with(CARE, BreedingGameTests.traits(helper, animal).get(CARE).fed(familiarity, -1L).withOrigin(Origin.FARM)));
         return animal;
     }
 
     static void assertFamiliarity(GameTestHelper helper, Animal animal, double expected) {
-        double familiarity = BreedingGameTests.traits(helper, animal).familiarity();
+        double familiarity = BreedingGameTests.traits(helper, animal).get(CARE).familiarity();
         helper.assertTrue(Math.abs(familiarity - expected) < 1.0e-6, animal.getType() + " familiarity is " + familiarity + ", not " + expected);
     }
 
@@ -280,9 +284,9 @@ public final class FoodGameTests {
         helper.assertTrue(player.getMainHandItem().is(Items.BOWL), "feeding the dairy mash left " + player.getMainHandItem() + " in hand, not its bowl");
         AnimalTraits traits = BreedingGameTests.traits(helper, cow);
         long now = helper.getLevel().getGameTime();
-        helper.assertTrue(traits.lactation().milkUntil() == now + BarnyardConfig.current().tuning().milkKeepsFlowingTicks(),
-                "the dairy mash gave milk until " + traits.lactation().milkUntil());
-        helper.assertTrue(traits.hunger().lastAteDay() == GameDay.of(helper.getLevel().getOverworldClockTime()), "the dairy mash didn't count as eating");
+        helper.assertTrue(traits.get(LACTATION).milkUntil() == now + BarnyardConfig.current().tuning().milkKeepsFlowingTicks(),
+                "the dairy mash gave milk until " + traits.get(LACTATION).milkUntil());
+        helper.assertTrue(traits.get(CARE).hunger().lastAteDay() == GameDay.of(helper.getLevel().getOverworldClockTime()), "the dairy mash didn't count as eating");
         ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
         helper.succeed();
     }
@@ -302,7 +306,7 @@ public final class FoodGameTests {
         }
 
         AnimalTraits traits = BreedingGameTests.traits(helper, cow);
-        helper.assertTrue(traits.lactation().hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()),
+        helper.assertTrue(traits.get(LACTATION).hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()),
                 "a carrot with startsMilk didn't start the cow's milk");
         helper.succeed();
     }
@@ -360,8 +364,8 @@ public final class FoodGameTests {
 
         CourtshipGameTests.assertVigour(helper, bull, 0.6);
         AnimalTraits after = BreedingGameTests.traits(helper, bull);
-        helper.assertTrue(after.hunger().lastAteDay() == before.hunger().lastAteDay(), "the stud mash counted as a meal");
-        helper.assertTrue(after.familiarity() == before.familiarity(), "the stud mash changed his familiarity to " + after.familiarity());
+        helper.assertTrue(after.get(CARE).hunger().lastAteDay() == before.get(CARE).hunger().lastAteDay(), "the stud mash counted as a meal");
+        helper.assertTrue(after.get(CARE).familiarity() == before.get(CARE).familiarity(), "the stud mash changed his familiarity to " + after.get(CARE).familiarity());
         helper.assertTrue(player.getMainHandItem().isEmpty(), "the stud mash wasn't eaten");
         helper.succeed();
     }
@@ -369,8 +373,8 @@ public final class FoodGameTests {
     public static void studMashDoesNotCountAsAMeal(GameTestHelper helper) {
         Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).withHunger(new Hunger(today, today - 2L, today - 1L))
-                .withVigour(new Vigour(0.2, today, -1L)));
+        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).with(CARE, BreedingGameTests.traits(helper, bull).get(CARE).withHunger(new Hunger(today, today - 2L, today - 1L)))
+                .with(VIGOUR, new Vigour(0.2, today, -1L)));
 
         FamiliarityActions.interact(bull, holding(helper, BarnyardItems.STUD_MASH), InteractionHand.MAIN_HAND);
 
@@ -383,7 +387,7 @@ public final class FoodGameTests {
         Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
         FamiliarityActions.interact(bull, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).withVigour(new Vigour(0.4, today, -1L)));
+        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).with(VIGOUR, new Vigour(0.4, today, -1L)));
         Player player = holding(helper, BarnyardItems.STUD_MASH);
 
         FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
@@ -421,7 +425,7 @@ public final class FoodGameTests {
     // Fed yesterday and today, so his Vigour stays where it's put.
     private static Animal withVigourToday(GameTestHelper helper, Animal male, double vigour) {
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        Services.DATA.set(male, BreedingGameTests.traits(helper, male).withHunger(new Hunger(today, today, -1L)).withVigour(new Vigour(vigour, today, -1L)));
+        Services.DATA.set(male, BreedingGameTests.traits(helper, male).with(CARE, BreedingGameTests.traits(helper, male).get(CARE).withHunger(new Hunger(today, today, -1L))).with(VIGOUR, new Vigour(vigour, today, -1L)));
         return male;
     }
 
@@ -432,7 +436,7 @@ public final class FoodGameTests {
         FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
 
         helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "a bull ate the dairy mash");
-        helper.assertTrue(!BreedingGameTests.traits(helper, bull).lactation().hasMilk(helper.getLevel().getGameTime(), 72_000L), "a bull has milk");
+        helper.assertTrue(!BreedingGameTests.traits(helper, bull).get(LACTATION).hasMilk(helper.getLevel().getGameTime(), 72_000L), "a bull has milk");
         helper.succeed();
     }
 

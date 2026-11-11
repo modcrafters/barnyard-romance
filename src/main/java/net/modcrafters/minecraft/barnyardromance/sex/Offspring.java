@@ -7,6 +7,8 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.util.RandomSource;
 
 // A newborn's traits from its parents, by the one inheritance rule (Inheritance.child): a calf from a pregnancy and a
@@ -35,8 +37,9 @@ public final class Offspring {
         double weight = inherit(random, mother.weight(), father.weight(), nutrition);
         double familiarity = Familiarity.inherited(nutrition);
         // Born into your care: farm-raised as soon as it has any familiarity at all.
-        return new AnimalTraits(sex, scale, familiarity, -1L, growth)
-                .withOrigin(familiarity > 0.0 ? Origin.FARM : Origin.UNKNOWN)
+        return AnimalTraits.of(sex, scale)
+                .withGrowthTicks(growth)
+                .with(FamiliaritySlices.CARE, FamiliarityState.NONE.fed(familiarity, -1L).withOrigin(familiarity > 0.0 ? Origin.FARM : Origin.UNKNOWN))
                 .withWeight(weight)
                 .withBornTick(bornTick)
                 .withLineage(lineage);

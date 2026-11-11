@@ -11,7 +11,8 @@ public final class ShearRule {
     }
 
     public static boolean shearedToday(AnimalTraits traits, long clock) {
-        return traits.lastShearedClock() >= 0L && GameDay.sameDay(traits.lastShearedClock(), clock);
+        long lastSheared = traits.get(ShearSlices.LAST_SHEARED);
+        return lastSheared >= 0L && GameDay.sameDay(lastSheared, clock);
     }
 
     // woolly is false once a sheep is sheared, until it eats grass.

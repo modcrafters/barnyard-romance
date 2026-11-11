@@ -31,6 +31,10 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearRule;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourRules;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices;
 
 import java.util.Optional;
 
@@ -52,36 +56,37 @@ public final class LiveFacts {
         AgeStage stage = AgeController.stage(animal, traits);
         boolean female = traits.sex() == Sex.FEMALE;
         boolean grown = stage == AgeStage.ADULT || stage == AgeStage.OLD;
-        boolean ready = Familiarity.ready(traits.familiarity());
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
+        boolean ready = Familiarity.ready(care.familiarity());
         Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         double fertility = Fertility.current(traits, age, now);
         Text breeding = StatText.breeding(
                 needsTaming(animal),
                 FamiliarityCare.tamed(animal),
-                traits.familiarity(),
+                care.familiarity(),
                 stage == AgeStage.YOUNG,
                 female && Fertility.wornOut(traits, age, now),
-                traits.loveUntil(),
-                traits.cooldownUntil(),
+                traits.get(PregnancySlices.BREEDING).loveUntil(),
+                traits.get(PregnancySlices.BREEDING).cooldownUntil(),
                 now
         );
-        boolean hungryMale = traits.sex() == Sex.MALE && VigourRules.hungry(traits.hunger().lastAteDay(), GameDay.of(clock));
+        boolean hungryMale = traits.sex() == Sex.MALE && VigourRules.hungry(care.hunger().lastAteDay(), GameDay.of(clock));
         return Optional.of(AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(species)).name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, now - traits.bornTick()))
                 .fedToday(fedToday(traits, clock))
-                .fedBy(StatText.feeder(traits.upkeep(), GameDay.of(clock)))
-                .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
+                .fedBy(StatText.feeder(care.upkeep(), GameDay.of(clock)))
+                .ticksSinceFed(care.lastFedTick() < 0L ? -1L : Math.max(0L, clock - care.lastFedTick()))
                 .pregnant(pregnancy.isPresent())
                 .pregnancy(pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0))
                 .dueTicks(pregnancy.map(current -> PregnancyClock.remainingTicks(now, current)).orElse(0L))
                 .milk(MilkActions.status(animal, traits, now, clock).map(StatText::milkText).orElse(Text.EMPTY))
-                .familiarity(traits.familiarity())
+                .familiarity(care.familiarity())
                 .fertility(female ? fertility : -1.0)
                 .familiar(ready ? Familiar.FAMILIAR : Familiar.NOT_YET)
                 .shear(ShearRule.state(animal instanceof Sheep, !(animal instanceof Sheep sheep && sheep.isSheared()), animal.isBaby(), traits, clock))
                 .grumpy(FamiliarityCare.tamed(animal) && !ready)
                 .cap(FamiliarityCare.cap(animal, traits))
-                .ranAway(traits.upkeep().ranAway())
+                .ranAway(care.upkeep().ranAway())
                 .growthTicks(traits.growthTicks())
                 .weight(traits.weight())
                 .health(animal.getHealth())
@@ -93,13 +98,14 @@ public final class LiveFacts {
                 .father(pregnancy.map(current -> StatText.father(
                         SizeClass.of(Sex.MALE, current.fatherScale(), config.sizeFor(current.fatherSpecies())).name(),
                         current.fatherSpecies())).orElse(Text.EMPTY))
-                .lastBirth(StatText.lastBirth(offspring(traits), traits.lastBirthTick(), now))
+                .lastBirth(StatText.lastBirth(offspring(traits), traits.get(PregnancySlices.BREEDING).lastBirthTick(), now))
                 .build());
     }
 
     // The FED row's "fed today": by hand, or by a feeding block, which never writes lastFedTick.
     public static boolean fedToday(AnimalTraits traits, long clock) {
-        return traits.upkeep().fedByFeederOn(GameDay.of(clock)) || Familiarity.fedToday(traits.lastFedTick(), clock);
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
+        return care.upkeep().fedByFeederOn(GameDay.of(clock)) || Familiarity.fedToday(care.lastFedTick(), clock);
     }
 
     // These only breed when tamed; ocelots trust instead, which never blocks breeding.
@@ -109,8 +115,9 @@ public final class LiveFacts {
 
     // The name of what the animal last bore, or empty.
     public static String offspring(AnimalTraits traits) {
-        Identifier id = Identifier.tryParse(traits.lastBirthSpecies());
-        if (id == null || traits.lastBirthSpecies().isBlank()) {
+        String species = traits.get(PregnancySlices.BREEDING).lastBirthSpecies();
+        Identifier id = Identifier.tryParse(species);
+        if (id == null || species.isBlank()) {
             return "";
         }
         return BuiltInRegistries.ENTITY_TYPE.getOptional(id)
@@ -127,10 +134,10 @@ public final class LiveFacts {
         Text value;
         if (traits.sex() == Sex.MALE) {
             value = StatText.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, vigour(traits, clock),
-                    VigourRules.hungry(traits.hunger().lastAteDay(), today), BarnyardConfig.current().tuning().vigourPerEgg());
+                    VigourRules.hungry(traits.get(FamiliaritySlices.CARE).hunger().lastAteDay(), today), BarnyardConfig.current().tuning().vigourPerEgg());
         } else if (EggLaying.isLayingHen(animal)) {
             Laying laying = Services.DATA.get(animal, EggsFeature.LAYING).filter(current -> current.day() == today).orElse(Laying.NONE);
-            value = StatText.eggsText(laying.laid(), laying.planned(), traits.hunger().hungryYesterday(today));
+            value = StatText.eggsText(laying.laid(), laying.planned(), traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(today));
         } else {
             return Text.EMPTY;
         }
@@ -139,6 +146,6 @@ public final class LiveFacts {
 
     // The traits are as last synced, so Vigour is settled here the way the server would.
     private static double vigour(AnimalTraits traits, long clock) {
-        return VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), GameDay.of(clock)).value();
+        return VigourRules.settle(traits.get(VigourSlices.VIGOUR), traits.get(FamiliaritySlices.CARE).hunger().lastAteDay(), GameDay.of(clock)).value();
     }
 }

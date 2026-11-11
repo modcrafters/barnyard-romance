@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+
 // A neglected animal running off. Penned in, it walks up to the fence or wall in the way and leaps it; free, it just
 // wanders away. Where "outside" is takes a few dozen path searches, made once when it sets off (at most once a day);
 // after that only the leap is looked after tick by tick. A neglected pen catching up, or midnight on a big one, can
@@ -82,7 +84,10 @@ public final class Escapes {
         if (held(animal)) {
             return;
         }
-        Services.DATA.get(animal).ifPresent(traits -> Services.DATA.set(animal, traits.withUpkeep(traits.upkeep().runAway())));
+        Services.DATA.get(animal).ifPresent(traits -> {
+            FamiliarityState care = traits.get(CARE);
+            Services.DATA.set(animal, traits.with(CARE, care.withUpkeep(care.upkeep().runAway())));
+        });
         long now = level.getGameTime();
         // Escapes cut short by an unload or a death are never ticked again.
         RUNNING.values().removeIf(escape -> now > escape.until());
@@ -115,7 +120,10 @@ public final class Escapes {
                 // tick's starts to the others.
                 if (held(animal)) {
                     RUNNING.remove(animal.getUUID());
-                    Services.DATA.get(animal).ifPresent(traits -> Services.DATA.set(animal, traits.withUpkeep(traits.upkeep().caredFor())));
+                    Services.DATA.get(animal).ifPresent(traits -> {
+                        FamiliarityState care = traits.get(CARE);
+                        Services.DATA.set(animal, traits.with(CARE, care.withUpkeep(care.upkeep().caredFor())));
+                    });
                 } else if (canSearch(animal) && takeStart(level)) {
                     RUNNING.remove(animal.getUUID());
                     setOff(animal, level, escape.catchingUp());

@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
 import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -35,8 +36,8 @@ public final class FeederMeal {
             return false;
         }
         Optional<AnimalTraits> traits = FamiliarityCare.tracked(animal);
-        return traits.isPresent() && traits.get().hunger().lastAteDay() < GameDay.of(clock)
-                && Familiarity.ready(traits.get().familiarity());
+        return traits.isPresent() && traits.get().get(FamiliaritySlices.CARE).hunger().lastAteDay() < GameDay.of(clock)
+                && Familiarity.ready(traits.get().get(FamiliaritySlices.CARE).familiarity());
     }
 
     // Today's meal: one item from the block, if it has one. Returns what it ate, or an empty stack.

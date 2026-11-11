@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSlice;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ class FeatureSetTest {
         }));
         assertThrows(IllegalStateException.class, () -> kept.get().tabEntry("late", List::of));
         assertThrows(IllegalStateException.class, () -> kept.get().ignoredByDefault(species -> true));
+        assertThrows(IllegalStateException.class, () -> kept.get().slice(slice("late", "late")));
     }
 
     @Test
@@ -92,6 +94,50 @@ class FeatureSetTest {
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
         assertTrue(thrown.getMessage().contains("laying"), thrown.getMessage());
+    }
+
+    @Test
+    void slicesAreKeptInRegistrationOrder() {
+        AnimalSlice<Integer> care = slice("care", "familiarity");
+        AnimalSlice<Integer> lactation = slice("lactation", "lactation");
+        FeatureSet features = FeatureSet.of(List.of(
+                feature("familiarity", registrar -> registrar.slice(care)),
+                feature("milk", registrar -> registrar.slice(lactation))));
+
+        assertEquals(List.of(care, lactation), features.slices());
+    }
+
+    @Test
+    void twoSlicesWithTheSameNameAreRejected() {
+        List<Feature> features = List.of(
+                feature("first", registrar -> registrar.slice(slice("care", "familiarity"))),
+                feature("second", registrar -> registrar.slice(slice("care", "lastFedTick"))));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        assertTrue(thrown.getMessage().contains("care"), thrown.getMessage());
+    }
+
+    // Two slices saving the same field would quietly overwrite each other in every save.
+    @Test
+    void twoSlicesWithTheSameFieldAreRejected() {
+        List<Feature> features = List.of(
+                feature("first", registrar -> registrar.slice(slice("care", "hunger"))),
+                feature("second", registrar -> registrar.slice(slice("appetite", "hunger"))));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        assertTrue(thrown.getMessage().contains("hunger"), thrown.getMessage());
+    }
+
+    @Test
+    void aSliceWithACoreFieldIsRejected() {
+        List<Feature> features = List.of(feature("first", registrar -> registrar.slice(slice("care", "scale"))));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> FeatureSet.of(features));
+        assertTrue(thrown.getMessage().contains("scale"), thrown.getMessage());
+    }
+
+    private static AnimalSlice<Integer> slice(String name, String field) {
+        return new AnimalSlice<>(name, 0, Codec.INT.optionalFieldOf(field, 0), ByteBufCodecs.VAR_INT);
     }
 
     private static AttachmentKey<Integer> key(String id) {

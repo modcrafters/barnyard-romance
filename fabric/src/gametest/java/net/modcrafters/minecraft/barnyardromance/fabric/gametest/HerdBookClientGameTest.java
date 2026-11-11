@@ -15,6 +15,8 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,6 +32,11 @@ import net.minecraft.world.level.storage.ServerLevelData;
 import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
+
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
+import static net.modcrafters.minecraft.barnyardromance.shear.ShearSlices.LAST_SHEARED;
+import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices.BREEDING;
 
 // Opens a herd book with a small cow family in a real client, clicks through it and screenshots its pages.
 public class HerdBookClientGameTest implements FabricClientGameTest {
@@ -59,21 +66,21 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                 long clock = level.getOverworldClockTime();
                 ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
                 player.setItemInHand(InteractionHand.MAIN_HAND, book);
-                Animal bess = cow(level, player, "Old Bess", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 0.9, 1.0, -1L).withBornTick(now - 900_000L));
-                Animal tom = cow(level, player, "Big Tom", Sex.MALE, false, new AnimalTraits(Sex.MALE, 1.3, 1.0, clock).withBornTick(now - 400_000L));
+                Animal bess = cow(level, player, "Old Bess", Sex.FEMALE, false, AnimalTraits.of(Sex.FEMALE, 0.9).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)).withBornTick(now - 900_000L));
+                Animal tom = cow(level, player, "Big Tom", Sex.MALE, false, AnimalTraits.of(Sex.MALE, 1.3).with(CARE, FamiliarityState.NONE.fed(1.0, clock)).withBornTick(now - 400_000L));
                 // Daisy was caught wild as an adult, so her page notes her cap.
-                Animal daisyCow = cow(level, player, "Daisy", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 1.0, 0.4, clock)
-                        .withOrigin(Origin.WILD)
+                Animal daisyCow = cow(level, player, "Daisy", Sex.FEMALE, false, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.4, clock)
+                        .withOrigin(Origin.WILD))
                         .withBornTick(now - 430_000L)
-                        .withFertility(0.9, now)
+                        .with(BREEDING, BreedingState.NONE.withFertility(0.9, now))
                         // Her milk adds a page row: the notes that explain her rows live in tooltips, so they don't fill the page.
-                        .withLactation(Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L))
+                        .with(LACTATION, Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L))
                         .withLineage(new Lineage(bess.getUUID(), null)));
                 Services.DATA.set(daisyCow, PregnancyFeature.PREGNANCY, new Pregnancy(now - 40_000L, 66_000L, "minecraft:cow", 1.3, 1, 0.8));
-                Animal bluebell = cow(level, player, "Bluebell", Sex.FEMALE, false, new AnimalTraits(Sex.FEMALE, 0.85, 0.9, -1L)
+                Animal bluebell = cow(level, player, "Bluebell", Sex.FEMALE, false, AnimalTraits.of(Sex.FEMALE, 0.85).with(CARE, FamiliarityState.NONE.fed(0.9, -1L))
                         .withBornTick(now - 300_000L)
-                        .withLactation(Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L)));
-                Animal calf = cow(level, player, "", Sex.FEMALE, true, new AnimalTraits(Sex.FEMALE, 0.8, 1.0, clock)
+                        .with(LACTATION, Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L)));
+                Animal calf = cow(level, player, "", Sex.FEMALE, true, AnimalTraits.of(Sex.FEMALE, 0.8).with(CARE, FamiliarityState.NONE.fed(1.0, clock))
                         .withBornTick(now - 5_000L)
                         .withLineage(new Lineage(daisyCow.getUUID(), tom.getUUID())));
                 for (Animal animal : new Animal[] {bess, tom, daisyCow, bluebell, calf}) {
@@ -81,15 +88,16 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                 }
                 // More of Daisy's young than her page has room for.
                 for (int i = 0; i < 5; i++) {
-                    HerdBooks.register(book, cow(level, player, "Calf " + (i + 2), Sex.MALE, true, new AnimalTraits(Sex.MALE, 0.8, 1.0, clock)
+                    HerdBooks.register(book, cow(level, player, "Calf " + (i + 2), Sex.MALE, true, AnimalTraits.of(Sex.MALE, 0.8).with(CARE, FamiliarityState.NONE.fed(1.0, clock))
                             .withBornTick(now - 90_000L)
                             .withLineage(new Lineage(daisyCow.getUUID(), tom.getUUID()))));
                 }
                 // Two ewes for the shears icon: one with her wool, one sheared today.
-                HerdBooks.register(book, sheep(level, player, "Dolly", new AnimalTraits(Sex.FEMALE, 1.0, 1.0, clock), false));
-                HerdBooks.register(book, sheep(level, player, "Shaun", new AnimalTraits(Sex.FEMALE, 1.0, 1.0, clock).sheared(clock), true));
+                HerdBooks.register(book, sheep(level, player, "Dolly", AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, clock)), false));
+                HerdBooks.register(book, sheep(level, player, "Shaun", AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, clock)).with(LAST_SHEARED, clock), true));
                 // The calf drops below the threshold, and Old Bess dies but stays as Daisy's mother.
-                Services.DATA.set(calf, Services.DATA.get(calf).orElseThrow().fed(0.1, clock));
+                AnimalTraits calfTraits = Services.DATA.get(calf).orElseThrow();
+                Services.DATA.set(calf, calfTraits.with(CARE, calfTraits.get(CARE).fed(0.1, clock)));
                 bess.discard();
                 HerdBooks.show(player, player.getItemInHand(InteractionHand.MAIN_HAND));
                 return daisyCow.getUUID();

@@ -27,8 +27,9 @@ public final class WildCaught {
     // Every familiarity gain goes through here: the first one decides the origin, and a wild animal is held at its
     // cap, even one that was above it before its origin was known.
     public static AnimalTraits raise(AnimalTraits traits, double familiarity, long lastFedTick, boolean grown, boolean pet, Tuning tuning) {
-        Origin origin = familiarity > 0.0 ? decide(traits.origin(), grown) : traits.origin();
-        return traits.fed(Math.min(familiarity, cap(origin, pet, tuning)), lastFedTick).withOrigin(origin);
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
+        Origin origin = familiarity > 0.0 ? decide(care.origin(), grown) : care.origin();
+        return traits.with(FamiliaritySlices.CARE, care.fed(Math.min(familiarity, cap(origin, pet, tuning)), lastFedTick).withOrigin(origin));
     }
 
     public static double tamingGrace(double grace, Origin origin, boolean grown, Tuning tuning) {

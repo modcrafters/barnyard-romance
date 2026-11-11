@@ -6,12 +6,14 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices.BREEDING;
 
 class AnimalInfoTextTest {
     private final SizeSettings size = new SizeSettings(0.8, 1.2, 0.1);
@@ -21,7 +23,7 @@ class AnimalInfoTextTest {
         String text = English.of(AnimalInfoText.format(
                 "Cow",
                 "minecraft:cow",
-                Optional.of(new AnimalTraits(Sex.FEMALE, 0.90)),
+                Optional.of(AnimalTraits.of(Sex.FEMALE, 0.90)),
                 0.90,
                 AgeStage.ADULT,
                 size
@@ -32,7 +34,7 @@ class AnimalInfoTextTest {
 
     @Test
     void milkIsListedWhileItFlows() {
-        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.FEMALE, 0.90));
+        Optional<AnimalTraits> traits = Optional.of(AnimalTraits.of(Sex.FEMALE, 0.90));
 
         String text = English.of(AnimalInfoText.format("Cow", "minecraft:cow", traits, 0.90, AgeStage.ADULT, Optional.empty(), size, 0L, Text.plain("2d left, 1/2 today")));
 
@@ -55,7 +57,7 @@ class AnimalInfoTextTest {
 
     @Test
     void pregnancyIsAddedToTheCommandAndTheTooltip() {
-        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.FEMALE, 0.72));
+        Optional<AnimalTraits> traits = Optional.of(AnimalTraits.of(Sex.FEMALE, 0.72));
         Optional<Text> pregnancy = Optional.of(Text.plain("Pregnant 50% · 10m 0s"));
 
         assertEquals(
@@ -70,7 +72,7 @@ class AnimalInfoTextTest {
 
     @Test
     void showsWeightAndFertilityRecoveredByNow() {
-        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.FEMALE, 0.72).withWeight(0.8).withFertility(0.1, 0L));
+        Optional<AnimalTraits> traits = Optional.of(AnimalTraits.of(Sex.FEMALE, 0.72).withWeight(0.8).with(BREEDING, BreedingState.NONE.withFertility(0.1, 0L)));
 
         assertEquals(
                 "Cow (minecraft:cow): S female, scale 0.7200 (attribute 0.7200), adult, familiar 0%, growth 20m 0s, weight 80%, fertility 30%",
@@ -80,7 +82,7 @@ class AnimalInfoTextTest {
 
     @Test
     void malesShowWeightButNoFertility() {
-        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.MALE, 1.12).withWeight(0.3));
+        Optional<AnimalTraits> traits = Optional.of(AnimalTraits.of(Sex.MALE, 1.12).withWeight(0.3));
 
         assertEquals(
                 "Bull (minecraft:cow): S male, scale 1.1200 (attribute 1.1200), adult, familiar 0%, growth 20m 0s, weight 30%",
@@ -90,7 +92,7 @@ class AnimalInfoTextTest {
 
     @Test
     void namesTheAgeStage() {
-        Optional<AnimalTraits> traits = Optional.of(new AnimalTraits(Sex.MALE, 1.12));
+        Optional<AnimalTraits> traits = Optional.of(AnimalTraits.of(Sex.MALE, 1.12));
 
         assertEquals(
                 List.of("Bull", "S male, old, growth 20m 0s"),

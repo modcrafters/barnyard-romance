@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSlice;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -15,6 +16,9 @@ import java.util.function.Supplier;
 public interface FeatureRegistrar {
     // The interface other features call this one through, and its implementation. One provider per interface.
     <T> void provide(Class<T> api, T implementation);
+
+    // The feature's own fields in the animal record, saved and synced with it. Each slice has its own name and fields.
+    void slice(AnimalSlice<?> slice);
 
     // Data the feature keeps on an animal, saved and synced to clients. Each id is used once.
     void attachment(AttachmentKey<?> key);

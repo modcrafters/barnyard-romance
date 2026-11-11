@@ -64,6 +64,7 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.forceBirth;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.male;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // In-game checks for the herd book: registering, births, deaths and the server's records.
 public final class HerdBookGameTests {
@@ -109,7 +110,7 @@ public final class HerdBookGameTests {
 
     public static void wildAnimalsCannotJoinABook(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.1, -1L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.1, -1L)));
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
 
         HerdBooks.RegisterResult result = HerdBooks.register(book, cow);
@@ -166,14 +167,14 @@ public final class HerdBookGameTests {
     public static void newbornsJoinFrozen(GameTestHelper helper) {
         Animal mother = female(helper, EntityTypes.COW);
         Animal father = male(helper, EntityTypes.COW);
-        Services.DATA.set(mother, traits(helper, mother).fed(0.4, -1L));
+        Services.DATA.set(mother, traits(helper, mother).with(CARE, traits(helper, mother).get(CARE).fed(0.4, -1L)));
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
         HerdBooks.register(book, mother);
 
         Animal calf = breed(helper, mother, father).getFirst();
 
         HerdLedger.Node node = data(helper).ledger().node(calf.getUUID());
-        helper.assertTrue(node != null && !node.everFamiliar(), "a calf at " + traits(helper, calf).familiarity() + " joined as familiar");
+        helper.assertTrue(node != null && !node.everFamiliar(), "a calf at " + traits(helper, calf).get(CARE).familiarity() + " joined as familiar");
         helper.succeed();
     }
 
@@ -209,12 +210,12 @@ public final class HerdBookGameTests {
     public static void unloadingRefreshesTheRecord(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
-        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 500L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(1.0, 500L)));
 
         HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
 
         HerdRecord record = data(helper).record(cow.getUUID());
-        helper.assertTrue(record.traits().lastFedTick() == 500L, "the record was fed at " + record.traits().lastFedTick());
+        helper.assertTrue(record.traits().get(CARE).lastFedTick() == 500L, "the record was fed at " + record.traits().get(CARE).lastFedTick());
         helper.assertTrue(record.diedAt() < 0L, "an unloaded cow was marked dead");
         helper.succeed();
     }
@@ -224,12 +225,12 @@ public final class HerdBookGameTests {
     public static void unloadEventRefreshesTheRecord(GameTestHelper helper, Consumer<Animal> fireUnload) {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
-        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 600L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(1.0, 600L)));
 
         fireUnload.accept(cow);
 
         HerdRecord record = data(helper).record(cow.getUUID());
-        helper.assertTrue(record.traits().lastFedTick() == 600L, "the unload event left the record fed at " + record.traits().lastFedTick());
+        helper.assertTrue(record.traits().get(CARE).lastFedTick() == 600L, "the unload event left the record fed at " + record.traits().get(CARE).lastFedTick());
         helper.assertTrue(record.diedAt() < 0L, "an unloaded cow was marked dead");
         helper.succeed();
     }
@@ -237,15 +238,15 @@ public final class HerdBookGameTests {
     public static void recordsRefreshWhileLoaded(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
-        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 700L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(1.0, 700L)));
         // Each member has its own tick in the minute, so a big herd isn't all refreshed in one tick.
         int slot = HerdBooks.refreshSlot(cow.getUUID());
 
         HerdBooks.tick(server(helper), HerdBooks.REFRESH_TICKS + slot + 1);
-        helper.assertTrue(data(helper).record(cow.getUUID()).traits().lastFedTick() != 700L, "the timer refreshed a cow outside her tick");
+        helper.assertTrue(data(helper).record(cow.getUUID()).traits().get(CARE).lastFedTick() != 700L, "the timer refreshed a cow outside her tick");
         HerdBooks.tick(server(helper), HerdBooks.REFRESH_TICKS + slot);
 
-        helper.assertTrue(data(helper).record(cow.getUUID()).traits().lastFedTick() == 700L, "the timer did not refresh a loaded cow");
+        helper.assertTrue(data(helper).record(cow.getUUID()).traits().get(CARE).lastFedTick() == 700L, "the timer did not refresh a loaded cow");
         helper.succeed();
     }
 
@@ -253,13 +254,13 @@ public final class HerdBookGameTests {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
         AnimalTraits before = data(helper).record(cow.getUUID()).traits();
-        Services.DATA.set(cow, traits(helper, cow).fed(0.1, 900L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.1, 900L)));
 
         HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
 
         AnimalTraits frozen = data(helper).record(cow.getUUID()).traits();
-        helper.assertTrue(frozen.lastFedTick() == before.lastFedTick(), "a frozen record took the new feeding time " + frozen.lastFedTick());
-        helper.assertTrue(frozen.familiarity() == 0.1, "a frozen record has familiarity " + frozen.familiarity());
+        helper.assertTrue(frozen.get(CARE).lastFedTick() == before.get(CARE).lastFedTick(), "a frozen record took the new feeding time " + frozen.get(CARE).lastFedTick());
+        helper.assertTrue(frozen.get(CARE).familiarity() == 0.1, "a frozen record has familiarity " + frozen.get(CARE).familiarity());
         helper.succeed();
     }
 
@@ -450,11 +451,11 @@ public final class HerdBookGameTests {
     public static void saveRefreshesLoadedMembers(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
-        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 800L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(1.0, 800L)));
 
         HerdBooks.refreshLoaded(server(helper));
 
-        helper.assertTrue(data(helper).record(cow.getUUID()).traits().lastFedTick() == 800L, "refreshing on save left the record behind");
+        helper.assertTrue(data(helper).record(cow.getUUID()).traits().get(CARE).lastFedTick() == 800L, "refreshing on save left the record behind");
         helper.succeed();
     }
 
@@ -489,16 +490,16 @@ public final class HerdBookGameTests {
     // A record frozen below the threshold keeps its old values, but the origin comes from the animal as it is now.
     public static void herdBookRecordKeepsTheFreshOrigin(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.5, -1L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.5, -1L)));
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
         HerdRecord record = data(helper).record(cow.getUUID());
-        HerdRecord old = withTraits(record, record.traits().fed(0.5, 100L).withOrigin(Origin.UNKNOWN));
-        HerdRecord fresh = withTraits(record, record.traits().fed(0.2, 200L).withOrigin(Origin.WILD));
+        HerdRecord old = withTraits(record, record.traits().with(CARE, record.traits().get(CARE).fed(0.5, 100L).withOrigin(Origin.UNKNOWN)));
+        HerdRecord fresh = withTraits(record, record.traits().with(CARE, record.traits().get(CARE).fed(0.2, 200L).withOrigin(Origin.WILD)));
 
         HerdRecord kept = HerdRecords.refreshed(old, fresh);
 
-        helper.assertTrue(kept.traits().lastFedTick() == 100L, "the frozen record took the fresh feeding time");
-        helper.assertTrue(kept.traits().origin() == Origin.WILD, "the frozen record kept origin " + kept.traits().origin());
+        helper.assertTrue(kept.traits().get(CARE).lastFedTick() == 100L, "the frozen record took the fresh feeding time");
+        helper.assertTrue(kept.traits().get(CARE).origin() == Origin.WILD, "the frozen record kept origin " + kept.traits().get(CARE).origin());
         helper.succeed();
     }
 
@@ -516,7 +517,7 @@ public final class HerdBookGameTests {
         HerdBooks.register(book, cow);
         // A wild-caught horse that was never tamed: its cap is the pet one, on the card and in the book alike.
         Animal horse = female(helper, EntityTypes.HORSE);
-        Services.DATA.set(horse, traits(helper, horse).fed(0.5, -1L).withOrigin(Origin.WILD));
+        Services.DATA.set(horse, traits(helper, horse).with(CARE, traits(helper, horse).get(CARE).fed(0.5, -1L).withOrigin(Origin.WILD)));
         HerdBooks.register(book, horse);
         long now = helper.getLevel().getGameTime();
 
@@ -593,7 +594,7 @@ public final class HerdBookGameTests {
         Animal cow = female(helper, EntityTypes.COW);
         ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
         HerdBooks.register(book, cow);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.1, -1L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.1, -1L)));
 
         HerdBooks.Use use = HerdBooks.use(book, cow);
 
@@ -614,7 +615,7 @@ public final class HerdBookGameTests {
 
     public static void anUnfamiliarStrangerGetsNoFocus(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.1, -1L));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.1, -1L)));
 
         HerdBooks.Use use = HerdBooks.use(new ItemStack(BarnyardItems.HERD_BOOK), cow);
 

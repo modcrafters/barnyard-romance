@@ -19,6 +19,8 @@ import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkSlices;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
@@ -123,7 +125,7 @@ public final class PregnancyController {
                     AnimalSex.speciesId(father),
                     fatherTraits.scale(),
                     litterSize,
-                    motherTraits.familiarity(),
+                    motherTraits.get(FamiliaritySlices.CARE).familiarity(),
                     fatherTraits.growthTicks(),
                     fatherTraits.weight(),
                     litter.get()
@@ -186,9 +188,9 @@ public final class PregnancyController {
             // A birth starts the milk, and it keeps flowing while the young are babies.
             Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
                     mother,
-                    traits.gaveBirth(now, species)
-                            .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)
-                            .withLactation(traits.lactation().afterBirth(now, youngUntil, config.tuning().lactationTicks()))
+                    traits.with(PregnancySlices.BREEDING, traits.get(PregnancySlices.BREEDING).gaveBirth(now, species)
+                                    .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now))
+                            .with(MilkSlices.LACTATION, traits.get(MilkSlices.LACTATION).afterBirth(now, youngUntil, config.tuning().lactationTicks()))
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);

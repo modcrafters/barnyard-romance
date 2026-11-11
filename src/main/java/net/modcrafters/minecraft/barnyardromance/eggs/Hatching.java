@@ -82,7 +82,7 @@ public final class Hatching {
             BarnyardConfig config = BarnyardConfig.current();
             Sex sex = SexRoll.roll(chick.getRandom().nextDouble(), config.femaleRatio());
             double scale = ScaleRoll.rollWild(sex, config.sizeFor(egg.species()), chick.getRandom().nextDouble());
-            AnimalTraits traits = new AnimalTraits(sex, scale).withBornTick(bornTick);
+            AnimalTraits traits = AnimalTraits.of(sex, scale).withBornTick(bornTick);
             Services.DATA.set(chick, traits);
             place(chick, egg.variant(), (int) Math.max(0L, traits.growthTicks() - (level.getGameTime() - bornTick)), position);
             if (!level.tryAddFreshEntityWithPassengers(chick)) {

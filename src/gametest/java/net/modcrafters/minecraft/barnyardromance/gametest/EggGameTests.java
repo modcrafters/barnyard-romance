@@ -40,6 +40,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -88,6 +89,8 @@ import java.util.function.BooleanSupplier;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.holding;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
 
 // In-game checks for egg layers. Days are driven by setting the overworld clock and ticking the hen by hand,
 // then setting the clock back, all within one tick.
@@ -228,7 +231,7 @@ public final class EggGameTests {
 
     public static void hungryHenPlansNone(GameTestHelper helper) {
         Animal hen = hen(helper, LARGE_HEN, 0.5);
-        Services.DATA.set(hen, traits(helper, hen).withHunger(new Hunger(10L, -1L, 9L)));
+        Services.DATA.set(hen, traits(helper, hen).with(CARE, traits(helper, hen).get(CARE).withHunger(new Hunger(10L, -1L, 9L))));
 
         Laying planned = tickAt(helper, hen, afterMidnight(10L));
 
@@ -285,7 +288,7 @@ public final class EggGameTests {
         hen.setInLove(null);
 
         helper.assertTrue(!hen.isInLove() && !rooster.isInLove(), "seeds put chickens in love");
-        helper.assertTrue(traits(helper, hen).lastFedTick() >= 0L, "seeds didn't feed the hen");
+        helper.assertTrue(traits(helper, hen).get(CARE).lastFedTick() >= 0L, "seeds didn't feed the hen");
         helper.succeed();
     }
 
@@ -706,7 +709,7 @@ public final class EggGameTests {
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
         helper.assertTrue(traits.lineage().equals(new Lineage(data.mother(), data.father())), "the chick's parents are " + traits.lineage());
         helper.assertTrue(traits.bornTick() == helper.getLevel().getGameTime(), "the chick was born at " + traits.bornTick());
-        helper.assertTrue(traits.familiarity() == Familiarity.inherited(0.5), "the chick starts at familiarity " + traits.familiarity());
+        helper.assertTrue(traits.get(CARE).familiarity() == Familiarity.inherited(0.5), "the chick starts at familiarity " + traits.get(CARE).familiarity());
         helper.assertTrue(size != SizeClass.S, "two XL parents hatched an S chick");
         helper.succeed();
     }
@@ -1102,7 +1105,7 @@ public final class EggGameTests {
         helper.assertTrue(aliveInside, "the herd book thinks the hen in the box died");
         helper.assertTrue(back instanceof Animal, "the hen didn't come back out");
         helper.assertTrue(back.getCustomName() != null && back.getCustomName().getString().equals("Henrietta"), "the hen lost her name");
-        helper.assertTrue(traits(helper, (Animal) back).familiarity() == 0.6, "the hen lost her familiarity");
+        helper.assertTrue(traits(helper, (Animal) back).get(CARE).familiarity() == 0.6, "the hen lost her familiarity");
         helper.succeed();
     }
 
@@ -1389,7 +1392,7 @@ public final class EggGameTests {
     static Animal rooster(GameTestHelper helper, double vigour, int x) {
         Animal rooster = chicken(helper, Sex.MALE, 1.2, 0.5, x);
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        Services.DATA.set(rooster, traits(helper, rooster).withHunger(new Hunger(today, today, -1L)).withVigour(new Vigour(vigour, today, -1L)));
+        Services.DATA.set(rooster, traits(helper, rooster).with(CARE, traits(helper, rooster).get(CARE).withHunger(new Hunger(today, today, -1L))).with(VIGOUR, new Vigour(vigour, today, -1L)));
         return rooster;
     }
 
@@ -1480,7 +1483,7 @@ public final class EggGameTests {
     // A test chicken has no eggs of her own due today, so only what a test does makes her lay.
     static Animal chicken(GameTestHelper helper, Sex sex, double scale, double familiarity, int x) {
         Animal chicken = GameTestCompat.spawn(helper, EntityTypes.CHICKEN, x, 1, 4);
-        Services.DATA.set(chicken, new AnimalTraits(sex, scale, familiarity, -1L));
+        Services.DATA.set(chicken, AnimalTraits.of(sex, scale).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L)));
         Services.DATA.set(chicken, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
         return chicken;
     }

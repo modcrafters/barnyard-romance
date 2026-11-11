@@ -94,7 +94,7 @@ public final class AnimalSex {
         double scale = ScaleRoll.rollWild(sex, config.sizeFor(speciesId), animal.getRandom().nextDouble());
         // A baby met for the first time was just born (vanilla breeding, spawn eggs); a wild adult's age is unknown.
         long bornTick = animal.isBaby() ? animal.level().getGameTime() : -1L;
-        return new AnimalTraits(sex, scale).withBornTick(bornTick);
+        return AnimalTraits.of(sex, scale).withBornTick(bornTick);
     }
 
     // Asked several times a tick for every animal, so each type's id is made into a string once.

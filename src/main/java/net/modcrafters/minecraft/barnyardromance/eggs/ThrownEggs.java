@@ -88,7 +88,8 @@ public final class ThrownEggs {
         SizeClass chickSize = EggRules.thrownChickSize(mother, father, random.nextDouble());
         double scale = ScaleRoll.fromPercent(sex, size, chickSize == SizeClass.M ? MEDIUM : SMALL);
         int growth = Growth.wild();
-        Services.DATA.set(chick, new AnimalTraits(sex, scale, 0.0, -1L, growth)
+        Services.DATA.set(chick, AnimalTraits.of(sex, scale)
+                .withGrowthTicks(growth)
                 .withWeight(TAINTED_WEIGHT)
                 .withBornTick(level.getGameTime()));
         Hatching.place(chick, variant, growth, position);

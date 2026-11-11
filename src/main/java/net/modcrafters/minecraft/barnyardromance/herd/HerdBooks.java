@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,7 +56,7 @@ public final class HerdBooks {
         if (traits.isEmpty() || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
             return RegisterResult.NOT_TRACKED;
         }
-        if (!Familiarity.ready(traits.get().familiarity())) {
+        if (!Familiarity.ready(traits.get().get(FamiliaritySlices.CARE).familiarity())) {
             return RegisterResult.NOT_FAMILIAR;
         }
         HerdBookData data = HerdBookData.get(level.getServer());
@@ -99,7 +100,7 @@ public final class HerdBooks {
         }
         List<HerdLedger.Node> nodes = new ArrayList<>();
         for (Animal child : young) {
-            Services.DATA.get(child).ifPresent(traits -> nodes.add(node(child, traits, Familiarity.ready(traits.familiarity()))));
+            Services.DATA.get(child).ifPresent(traits -> nodes.add(node(child, traits, Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()))));
         }
         if (data.ledger().born(mother, nodes).isEmpty()) {
             return;
@@ -271,7 +272,7 @@ public final class HerdBooks {
         try {
             HerdRecords.capture(animal, now).ifPresent(fresh -> {
                 data.put(animal.getUUID(), HerdRecords.refreshed(data.record(animal.getUUID()), fresh));
-                data.ledger().familiar(animal.getUUID(), Familiarity.ready(fresh.traits().familiarity()));
+                data.ledger().familiar(animal.getUUID(), Familiarity.ready(fresh.traits().get(FamiliaritySlices.CARE).familiarity()));
             });
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to record {} for the herd book", AnimalSex.speciesId(animal), exception);

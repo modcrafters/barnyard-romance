@@ -15,6 +15,8 @@ import java.util.List;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.male;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // In-game checks for a male's Vigour: how meals and midnights fill it, and what a hungry male pays.
 // Days are passed as overworld clock times, so a test can live through several days in one tick.
@@ -74,12 +76,12 @@ public final class VigourGameTests {
     // Settled on DAY with the given Vigour, last fed on lastAteDay.
     public static Animal withVigour(GameTestHelper helper, Animal animal, double vigour, long lastAteDay) {
         AnimalTraits current = traits(helper, animal);
-        Services.DATA.set(animal, current.withHunger(new Hunger(DAY, lastAteDay, -1L)).withVigour(new Vigour(vigour, DAY, -1L)));
+        Services.DATA.set(animal, current.with(CARE, current.get(CARE).withHunger(new Hunger(DAY, lastAteDay, -1L))).with(VIGOUR, new Vigour(vigour, DAY, -1L)));
         return animal;
     }
 
     public static void assertVigour(GameTestHelper helper, Animal animal, double expected, long clock) {
-        double actual = VigourActions.current(animal, clock).map(traits -> traits.vigour().value()).orElse(-1.0);
+        double actual = VigourActions.current(animal, clock).map(traits -> traits.get(VIGOUR).value()).orElse(-1.0);
         helper.assertTrue(Math.abs(actual - expected) < 1.0e-6, "Vigour is " + actual + ", expected " + expected);
     }
 }

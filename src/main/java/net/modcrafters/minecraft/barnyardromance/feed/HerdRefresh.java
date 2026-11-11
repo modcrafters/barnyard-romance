@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -64,7 +65,7 @@ final class HerdRefresh {
                 || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
             return false;
         }
-        return Services.DATA.get(animal).map(traits -> Familiarity.ready(traits.familiarity())).orElse(false);
+        return Services.DATA.get(animal).map(traits -> Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())).orElse(false);
     }
 
     private static void mark(ServerLevel level, UUID id, boolean inHerd) {
@@ -73,14 +74,14 @@ final class HerdRefresh {
             return;
         }
         Services.DATA.get(animal).ifPresent(traits -> {
-            Upkeep upkeep = traits.upkeep();
+            Upkeep upkeep = traits.get(FamiliaritySlices.CARE).upkeep();
             if (upkeep.inHerd() == inHerd) {
                 return;
             }
             // An old save's upkeep is worked out on its next settled day. A member is familiar, so it would count as
             // cared for then; it does now, rather than lose the mark that tells it's from an old save.
             Upkeep known = upkeep.equals(Upkeep.UNKNOWN) ? Upkeep.NONE.caredFor() : upkeep;
-            Services.DATA.set(animal, traits.withUpkeep(known.withInHerd(inHerd)));
+            Services.DATA.set(animal, traits.with(FamiliaritySlices.CARE, traits.get(FamiliaritySlices.CARE).withUpkeep(known.withInHerd(inHerd))));
         });
     }
 }

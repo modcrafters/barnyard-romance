@@ -49,6 +49,8 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+
 public final class FamiliarityActions {
     public static final Text TOO_SHY = Text.of("message.barnyard_romance.too_shy");
     public static final Text WONT_EAT = Text.of("message.barnyard_romance.wont_eat");
@@ -97,9 +99,9 @@ public final class FamiliarityActions {
         // Hungry days are taken off first, so the animal is fed as it is today.
         AnimalTraits current = FamiliarityCare.settle(animal).orElse(traits.get());
         long now = animal.level().getOverworldClockTime();
-        boolean familiar = Familiarity.ready(current.familiarity());
+        boolean familiar = Familiarity.ready(current.get(CARE).familiarity());
         boolean hurt = animal.getHealth() < animal.getMaxHealth();
-        Familiarity.Response response = Familiarity.respond(true, current.lastFedTick(), now);
+        Familiarity.Response response = Familiarity.respond(true, current.get(CARE).lastFedTick(), now);
         Familiarity.Click click = Familiarity.click(player.isShiftKeyDown(), familiar, response, hurt);
         if (click == Familiarity.Click.SCARE) {
             if (!animal.level().isClientSide()) {
@@ -110,7 +112,7 @@ public final class FamiliarityActions {
         }
         if (click == Familiarity.Click.WAIT) {
             if (!animal.level().isClientSide()) {
-                long remaining = Familiarity.ticksUntilFeed(current.lastFedTick(), now);
+                long remaining = Familiarity.ticksUntilFeed(current.get(CARE).lastFedTick(), now);
                 player.sendSystemMessage(TextComponents.of(Familiarity.nextFeed(remaining)));
             }
             return InteractionResult.CONSUME;
@@ -136,8 +138,8 @@ public final class FamiliarityActions {
         }
         PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
-        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.familiarity(), amount), now);
-        double gained = fed.familiarity();
+        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.get(CARE).familiarity(), amount), now);
+        double gained = fed.get(CARE).familiarity();
         Services.DATA.set(animal, fed);
         FamiliarityCare.markEaten(animal);
         if (eaten.effects().startsMilk()) {
@@ -171,7 +173,7 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return true;
         }
-        return !Familiarity.ready(traits.get().familiarity()) && !sneakingWithFood(animal, player);
+        return !Familiarity.ready(traits.get().get(CARE).familiarity()) && !sneakingWithFood(animal, player);
     }
 
     private static boolean sneakingWithFood(Animal animal, Player player) {
@@ -238,9 +240,9 @@ public final class FamiliarityActions {
         AnimalTraits current = traits.get();
         return !Familiarity.interested(
                 true,
-                current.lastFedTick(),
+                current.get(CARE).lastFedTick(),
                 animal.level().getOverworldClockTime(),
-                Familiarity.ready(current.familiarity()),
+                Familiarity.ready(current.get(CARE).familiarity()),
                 animal.getHealth() < animal.getMaxHealth()
         );
     }
@@ -258,7 +260,7 @@ public final class FamiliarityActions {
         if (traits.get().sex() == Sex.MALE) {
             return false;
         }
-        return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent())
+        return Familiarity.allowsLove(traits.get().get(CARE).familiarity(), Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent())
                 && AgeController.allowsLove(animal);
     }
 
@@ -294,7 +296,7 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return false;
         }
-        return ProductGate.blocked(true, true, traits.get().familiarity());
+        return ProductGate.blocked(true, true, traits.get().get(CARE).familiarity());
     }
 
     private static boolean isProduct(Animal animal, ItemStack stack) {

@@ -20,6 +20,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -31,6 +32,9 @@ import net.minecraft.world.entity.animal.Animal;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices.BREEDING;
 
 // In-game checks for breeding, run headless by each loader's game test server. Only registered when game tests are on.
 public final class BreedingGameTests {
@@ -69,7 +73,7 @@ public final class BreedingGameTests {
         long now = helper.getLevel().getGameTime();
         mother.setInLove(null);
         father.setInLove(null);
-        helper.assertTrue(traits(helper, mother).loveUntil() == now + mother.getInLoveTime(), "love mode was not recorded on the mother");
+        helper.assertTrue(traits(helper, mother).get(BREEDING).loveUntil() == now + mother.getInLoveTime(), "love mode was not recorded on the mother");
 
         mother.spawnChildFromBreeding(helper.getLevel(), father);
 
@@ -120,33 +124,33 @@ public final class BreedingGameTests {
 
         helper.assertTrue(Services.DATA.get(first, PregnancyFeature.PREGNANCY).isEmpty() && Services.DATA.get(second, PregnancyFeature.PREGNANCY).isEmpty(), "a same-sex pair conceived");
         helper.assertTrue(!first.isInLove() && !second.isInLove(), "a same-sex pair stayed in love");
-        helper.assertTrue(traits(helper, first).loveUntil() < 0L && traits(helper, second).loveUntil() < 0L, "love was not cleared on a same-sex pair");
+        helper.assertTrue(traits(helper, first).get(BREEDING).loveUntil() < 0L && traits(helper, second).get(BREEDING).loveUntil() < 0L, "love was not cleared on a same-sex pair");
         helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a same-sex pair gave XP");
         helper.succeed();
     }
 
     public static void unfamiliarAnimalsDoNotFallInLove(GameTestHelper helper) {
         Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 4, 1, 4);
-        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 0.0, -1L));
+        Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.0, -1L)));
 
         cow.setInLove(null);
 
         helper.assertTrue(!cow.isInLove(), "an unfamiliar cow fell in love");
-        helper.assertTrue(traits(helper, cow).loveUntil() < 0L, "love was recorded on an unfamiliar cow");
+        helper.assertTrue(traits(helper, cow).get(BREEDING).loveUntil() < 0L, "love was recorded on an unfamiliar cow");
         helper.succeed();
     }
 
     public static void hurtingAnAnimalEndsItsLove(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         cow.setInLove(null);
-        helper.assertTrue(traits(helper, cow).loveUntil() > helper.getLevel().getGameTime(), "love mode was not recorded");
+        helper.assertTrue(traits(helper, cow).get(BREEDING).loveUntil() > helper.getLevel().getGameTime(), "love mode was not recorded");
 
         //? if >=1.21.2 {
         cow.hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1.0F);
         //?} else
         //cow.hurt(helper.getLevel().damageSources().generic(), 1.0F);
 
-        helper.assertTrue(traits(helper, cow).loveUntil() < 0L, "love was not cleared after the cow was hurt");
+        helper.assertTrue(traits(helper, cow).get(BREEDING).loveUntil() < 0L, "love was not cleared after the cow was hurt");
         helper.succeed();
     }
 
@@ -157,7 +161,7 @@ public final class BreedingGameTests {
         father.setInLove(null);
         helper.succeedWhen(() -> {
             helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "the pigs have not bred yet");
-            helper.assertTrue(traits(helper, mother).cooldownUntil() > helper.getLevel().getGameTime(), "the mother is not resting");
+            helper.assertTrue(traits(helper, mother).get(BREEDING).cooldownUntil() > helper.getLevel().getGameTime(), "the mother is not resting");
         });
     }
 
@@ -166,7 +170,7 @@ public final class BreedingGameTests {
         Animal mother = female(helper, EntityTypes.PIG);
         Animal father = male(helper, EntityTypes.PIG);
         long now = helper.getLevel().getGameTime();
-        Services.DATA.set(mother, traits(helper, mother).withFertility(0.1, now));
+        Services.DATA.set(mother, traits(helper, mother).with(BREEDING, traits(helper, mother).get(BREEDING).withFertility(0.1, now)));
         mother.setInLove(null);
         father.setInLove(null);
 
@@ -192,13 +196,13 @@ public final class BreedingGameTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother is still pregnant");
             AnimalTraits traits = traits(helper, mother);
-            helper.assertTrue(Math.abs(traits.fertility() - 0.75) < 1.0e-6, "the mother's fertility is " + traits.fertility() + ", not 0.75");
-            helper.assertTrue(traits.fertilityTick() >= now, "the birth was not dated");
+            helper.assertTrue(Math.abs(traits.get(BREEDING).fertility() - 0.75) < 1.0e-6, "the mother's fertility is " + traits.get(BREEDING).fertility() + ", not 0.75");
+            helper.assertTrue(traits.get(BREEDING).fertilityTick() >= now, "the birth was not dated");
             List<? extends Animal> babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
             helper.assertTrue(!babies.isEmpty(), "no piglets were born");
             for (Animal baby : babies) {
                 AnimalTraits child = traits(helper, baby);
-                helper.assertTrue(child.fertility() == 1.0, "a piglet was born with fertility " + child.fertility());
+                helper.assertTrue(child.get(BREEDING).fertility() == 1.0, "a piglet was born with fertility " + child.get(BREEDING).fertility());
                 helper.assertTrue(child.weight() >= 0.0 && child.weight() <= 1.0, "a piglet was born with weight " + child.weight());
                 helper.assertTrue(child.bornTick() >= now, "a piglet was born with birth tick " + child.bornTick());
             }
@@ -214,7 +218,7 @@ public final class BreedingGameTests {
         cow.setInLove(null);
 
         helper.assertTrue(!cow.isInLove(), "a young cow fell in love");
-        helper.assertTrue(traits(helper, cow).loveUntil() < 0L, "love was recorded on a young cow");
+        helper.assertTrue(traits(helper, cow).get(BREEDING).loveUntil() < 0L, "love was recorded on a young cow");
         helper.succeed();
     }
 
@@ -248,7 +252,7 @@ public final class BreedingGameTests {
     public static void traitsSurviveSaveAndLoad(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         Lineage lineage = new Lineage(UUID.randomUUID(), UUID.randomUUID());
-        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.2, 0.75, 42L).withLineage(lineage));
+        Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 1.2).with(CARE, FamiliarityState.NONE.fed(0.75, 42L)).withLineage(lineage));
         Pregnancy pregnancy = new Pregnancy(100L, 72_000L, "minecraft:cow", 1.1, 2, 0.75, 24_000, 0.6, List.of(), PregnancyCare.NONE);
         Services.DATA.set(cow, PregnancyFeature.PREGNANCY, pregnancy);
 
@@ -256,7 +260,7 @@ public final class BreedingGameTests {
 
         AnimalTraits traits = traits(helper, loaded);
         helper.assertTrue(traits.sex() == Sex.FEMALE && traits.scale() == 1.2, "the loaded cow is " + traits);
-        helper.assertTrue(traits.familiarity() == 0.75 && traits.lastFedTick() == 42L, "the loaded cow forgot its feeding: " + traits);
+        helper.assertTrue(traits.get(CARE).familiarity() == 0.75 && traits.get(CARE).lastFedTick() == 42L, "the loaded cow forgot its feeding: " + traits);
         helper.assertTrue(traits.lineage().equals(lineage), "the loaded cow forgot its parents: " + traits.lineage());
         Pregnancy carried = pregnancy(helper, loaded);
         helper.assertTrue(carried.conceivedAt() == 100L && carried.durationTicks() == 72_000L && carried.litterSize() == 2,
@@ -318,7 +322,7 @@ public final class BreedingGameTests {
     // Excluding a species makes it vanilla without wiping what the mod saved; switching it back on brings it all back.
     public static void excludedSpeciesKeepTheirTraits(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        AnimalTraits before = traits(helper, cow).fed(0.7, -1L);
+        AnimalTraits before = traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.7, -1L));
         Services.DATA.set(cow, before);
         BarnyardConfig config = BarnyardConfig.current();
         try {
@@ -354,8 +358,8 @@ public final class BreedingGameTests {
         Animal cow = female(helper, EntityTypes.COW);
         HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
         HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
-        long recorded = data.record(cow.getUUID()).traits().lastFedTick();
-        Services.DATA.set(cow, traits(helper, cow).fed(1.0, 900L));
+        long recorded = data.record(cow.getUUID()).traits().get(CARE).lastFedTick();
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(1.0, 900L)));
         BarnyardConfig config = BarnyardConfig.current();
         try {
             BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:cow\"]}"));
@@ -364,19 +368,19 @@ public final class BreedingGameTests {
             BarnyardConfig.set(config);
         }
 
-        helper.assertTrue(data.record(cow.getUUID()).traits().lastFedTick() == recorded, "an excluded cow's record was refreshed");
+        helper.assertTrue(data.record(cow.getUUID()).traits().get(CARE).lastFedTick() == recorded, "an excluded cow's record was refreshed");
         helper.succeed();
     }
 
     public static Animal female(GameTestHelper helper, EntityType<? extends Animal> type) {
         Animal animal = GameTestCompat.spawn(helper, type, 3, 1, 4);
-        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         return animal;
     }
 
     public static Animal male(GameTestHelper helper, EntityType<? extends Animal> type) {
         Animal animal = GameTestCompat.spawn(helper, type, 5, 1, 4);
-        Services.DATA.set(animal, new AnimalTraits(Sex.MALE, 1.0, 1.0, -1L));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.MALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         return animal;
     }
 
@@ -395,8 +399,8 @@ public final class BreedingGameTests {
         int rest = traits.sex() == Sex.MALE ? 0 : VANILLA_REST;
         helper.assertTrue(parent.getAge() == rest, "a parent's age is " + parent.getAge() + ", not " + rest);
         helper.assertTrue(!parent.isInLove(), "a parent is still in love");
-        helper.assertTrue(traits(helper, parent).loveUntil() < 0L, "a parent still shows love");
-        helper.assertTrue(traits(helper, parent).cooldownUntil() == now + rest,
-                "a parent rests until " + traits(helper, parent).cooldownUntil() + ", not " + (now + rest));
+        helper.assertTrue(traits(helper, parent).get(BREEDING).loveUntil() < 0L, "a parent still shows love");
+        helper.assertTrue(traits(helper, parent).get(BREEDING).cooldownUntil() == now + rest,
+                "a parent rests until " + traits(helper, parent).get(BREEDING).cooldownUntil() + ", not " + (now + rest));
     }
 }

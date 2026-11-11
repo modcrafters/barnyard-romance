@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -73,7 +74,7 @@ public final class FeederCatchUp {
             if (traits == null || animal.isBaby()) {
                 continue;
             }
-            Hunger hunger = traits.hunger();
+            Hunger hunger = traits.get(FamiliaritySlices.CARE).hunger();
             long first = hunger.settledDay();
             // Never settled yet, so its own first settle starts it counting; or settled already, perhaps by another
             // block it's in the herd of too.
@@ -83,7 +84,8 @@ public final class FeederCatchUp {
             long counted = DailyUpkeep.daysToSettle(today - first, mode);
             if (counted < today - first) {
                 first = today - counted;
-                Services.DATA.set(animal, traits.withHunger(new Hunger(first, hunger.lastAteDay(), hunger.lastHungryDay())));
+                Services.DATA.set(animal, traits.with(FamiliaritySlices.CARE,
+                        traits.get(FamiliaritySlices.CARE).withHunger(new Hunger(first, hunger.lastAteDay(), hunger.lastHungryDay()))));
                 if (counted == 0L) {
                     continue;
                 }
@@ -127,14 +129,14 @@ public final class FeederCatchUp {
         AnimalTraits traits = animal == null ? null : FamiliarityCare.tracked(animal).orElse(null);
         // Dead, unloaded, out of the herd, or settled by something else since: it settles alone later, from the day
         // it has reached.
-        if (traits == null || animal.isBaby() || !feeder.herdHolds(id) || traits.hunger().settledDay() != day) {
+        if (traits == null || animal.isBaby() || !feeder.herdHolds(id) || traits.get(FamiliaritySlices.CARE).hunger().settledDay() != day) {
             leave(member);
             return;
         }
         // A meal it had that day before the pen unloaded counts. Otherwise a member still familiar enough eats from
         // the block, on days the pen wasn't loaded to feed itself.
-        boolean ate = traits.hunger().lastAteDay() == day;
-        boolean eats = !ate && unfedDay(feeder, animal) && Familiarity.ready(traits.familiarity()) && feeder.food() > 0;
+        boolean ate = traits.get(FamiliaritySlices.CARE).hunger().lastAteDay() == day;
+        boolean eats = !ate && unfedDay(feeder, animal) && Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()) && feeder.food() > 0;
         float owing = owed.getOrDefault(id, 0f);
         // The hungry days before a meal (only when food came in partway through) hurt before it heals.
         if (eats && owing > 0f) {

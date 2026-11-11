@@ -23,6 +23,7 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
 import static net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests.withVigour;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // In-game checks that the stat sheet reads a loaded animal correctly.
 public final class StatGameTests {
@@ -67,7 +68,7 @@ public final class StatGameTests {
 
     public static void aWildCaughtCowNotesHerCap(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).withOrigin(Origin.WILD));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).withOrigin(Origin.WILD)));
 
         List<StatLine> lines = lines(helper, cow, clock(DAY));
 

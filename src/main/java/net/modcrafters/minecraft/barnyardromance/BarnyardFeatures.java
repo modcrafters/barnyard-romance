@@ -6,6 +6,10 @@ import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityFeature;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkFeature;
+import net.modcrafters.minecraft.barnyardromance.shear.ShearFeature;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourFeature;
 
 import java.util.List;
 
@@ -18,8 +22,12 @@ public final class BarnyardFeatures {
     // naturalist, as each gets its registration.
     public static List<Feature> all() {
         return List.of(
+                new FamiliarityFeature(),
                 new PregnancyFeature(),
                 new EggsFeature(),
+                new MilkFeature(),
+                new ShearFeature(),
+                new VigourFeature(),
                 // Before advancement, so a birth reaches the herd book before advancements grant on it.
                 new HerdFeature(),
                 new AdvancementFeature()

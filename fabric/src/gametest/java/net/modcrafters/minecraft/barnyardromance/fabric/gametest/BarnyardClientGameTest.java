@@ -17,6 +17,8 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -36,6 +38,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
+import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices.BREEDING;
+
 // Opens the herd book at a few prepared animals in a real client and screenshots each page,
 // then checks the sneak card, the superfoods in the hotbar and the creative tab.
 public class BarnyardClientGameTest implements FabricClientGameTest {
@@ -54,11 +60,11 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             long now = world.getServer().computeOnServer(server -> server.overworld().getGameTime());
 
             bookPage(context, world, "herd_page_worn_out_heavy_cow", Sex.FEMALE, false,
-                    traits -> traits.withWeight(0.8).withFertility(0.1, now), false);
+                    traits -> traits.withWeight(0.8).with(BREEDING, BreedingState.NONE.withFertility(0.1, now)), false);
             bookPage(context, world, "herd_page_light_bull", Sex.MALE, false,
                     traits -> traits.withWeight(0.3), false);
             bookPage(context, world, "herd_page_pregnant_cow", Sex.FEMALE, false,
-                    traits -> traits.withWeight(0.55).withFertility(0.75, now), true);
+                    traits -> traits.withWeight(0.55).with(BREEDING, BreedingState.NONE.withFertility(0.75, now)), true);
             bookPage(context, world, "herd_page_calf", Sex.FEMALE, true,
                     traits -> traits.withWeight(0.62), false);
             bookPage(context, world, "herd_page_strong_stallion", EntityTypes.HORSE, Sex.MALE, false,
@@ -66,11 +72,11 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             bookPage(context, world, "herd_page_young_bull", Sex.MALE, false,
                     traits -> traits.withBornTick(now - 30_000L), false);
             bookPage(context, world, "herd_page_old_cow", Sex.FEMALE, false,
-                    traits -> traits.withBornTick(now - 800_000L).withFertility(0.3, now), false);
+                    traits -> traits.withBornTick(now - 800_000L).with(BREEDING, BreedingState.NONE.withFertility(0.3, now)), false);
             bookPage(context, world, "herd_page_milking_cow", Sex.FEMALE, false,
-                    traits -> traits.withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)), false);
+                    traits -> traits.with(LACTATION, Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)), false);
             bookPage(context, world, "herd_page_wild_caught_cow", Sex.FEMALE, false,
-                    traits -> traits.fed(0.4, -1L).withOrigin(Origin.WILD), false);
+                    traits -> traits.with(CARE, traits.get(CARE).fed(0.4, -1L).withOrigin(Origin.WILD)), false);
             sneakCard(context, world, now);
             oldHearts(context, world, now);
             superfoods(context, world);
@@ -118,7 +124,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             cow.snapTo(player.getX() + 3.0, player.getY(), player.getZ(), 90.0F, 0.0F);
             cow.setNoAi(true);
             player.level().addFreshEntity(cow);
-            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 0.9, 1.0, -1L).withWeight(0.6).withFertility(0.8, now));
+            Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 0.9).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)).withWeight(0.6).with(BREEDING, BreedingState.NONE.withFertility(0.8, now)));
             return cow.getUUID();
         });
         world.getConnection().waitForClientboundPackets();
@@ -147,7 +153,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             cow.snapTo(player.getX() + 5.0, player.getY(), player.getZ(), 90.0F, 0.0F);
             cow.setNoAi(true);
             player.level().addFreshEntity(cow);
-            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 0.85, 1.0, -1L).withBornTick(now - 800_000L));
+            Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 0.85).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)).withBornTick(now - 800_000L));
             return cow.getUUID();
         });
         world.getConnection().waitForClientboundPackets();
@@ -203,7 +209,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             cow.setNoAi(true);
             cow.setBaby(baby);
             level.addFreshEntity(cow);
-            Services.DATA.set(cow, change.apply(new AnimalTraits(sex, sex == Sex.FEMALE ? 0.85 : 1.2, 1.0, -1L)));
+            Services.DATA.set(cow, change.apply(AnimalTraits.of(sex, sex == Sex.FEMALE ? 0.85 : 1.2).with(CARE, FamiliarityState.NONE.fed(1.0, -1L))));
             if (pregnant) {
                 Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25, 1, 1.0));
             }

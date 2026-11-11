@@ -27,6 +27,9 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
+
 // Looking after an animal day by day: hungry days cost familiarity and health (see DailyUpkeep), and a tamed animal
 // that has lost too much is grumpy rather than wild. Settling runs every server tick but only changes anything after
 // midnight.
@@ -64,22 +67,23 @@ public final class FamiliarityCare {
         AnimalTraits traits = tracked.get();
         long today = GameDay.of(clock);
         // This runs every tick for every tracked animal; on a day already settled there's nothing to do or make.
-        if (traits.hunger().settledDay() >= today && traits.vigour().day() >= today) {
+        if (traits.get(CARE).hunger().settledDay() >= today && traits.get(VIGOUR).day() >= today) {
             return tracked;
         }
         // An animal in a herd leaves its missed days to its feeding block, which shares its food over them (see
         // FeederCatchUp). If no block holding it is loaded, it gives one a moment to load, then settles alone.
-        if (traits.hunger().settledDay() < today && waitsForHerd(animal, traits, today)) {
+        if (traits.get(CARE).hunger().settledDay() < today && waitsForHerd(animal, traits, today)) {
             return tracked;
         }
-        Hunger.Settled settled = Hunger.settle(traits.hunger(), today, animal.isBaby());
+        FamiliarityState care = traits.get(CARE);
+        Hunger.Settled settled = Hunger.settle(care.hunger(), today, animal.isBaby());
         // Hunger settling never moves the last meal, so Vigour is settled against the same one.
-        Vigour vigour = VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), today);
-        if (settled.hunger().equals(traits.hunger())) {
-            if (vigour.equals(traits.vigour())) {
+        Vigour vigour = VigourRules.settle(traits.get(VIGOUR), care.hunger().lastAteDay(), today);
+        if (settled.hunger().equals(care.hunger())) {
+            if (vigour.equals(traits.get(VIGOUR))) {
                 return tracked;
             }
-            AnimalTraits refilled = traits.withVigour(vigour);
+            AnimalTraits refilled = traits.with(VIGOUR, vigour);
             Services.DATA.set(animal, refilled);
             return Optional.of(refilled);
         }
@@ -87,17 +91,17 @@ public final class FamiliarityCare {
         HungerSettings hunger = config.hunger();
         Tuning tuning = config.tuning();
         // Nothing is counted the first time, as in Hunger, and the config may count fewer days than were missed.
-        long days = settled.first() ? 0L : DailyUpkeep.daysToSettle(today - traits.hunger().settledDay(), hunger.catchUp());
+        long days = settled.first() ? 0L : DailyUpkeep.daysToSettle(today - care.hunger().settledDay(), hunger.catchUp());
         long hungryDays = Math.min(settled.hungryDays(), days);
         // Days the config doesn't count leave no hungry day behind for Vigour, eggs or milk to see.
         Hunger hungerNow = hungryDays > 0L ? settled.hunger()
-                : new Hunger(today, traits.hunger().lastAteDay(), traits.hunger().lastHungryDay());
+                : new Hunger(today, care.hunger().lastAteDay(), care.hunger().lastHungryDay());
 
         Upkeep upkeep = upkeep(traits);
         boolean cared = caredFor(animal, level, traits, upkeep);
         boolean grown = grown(animal);
         boolean neverRuns = neverRunsAway(animal);
-        double familiarity = traits.familiarity();
+        double familiarity = care.familiarity();
         float damage = 0f;
         boolean escaped = false;
         // A meal is always on the first unsettled day (settling runs before every meal), so fed days come first.
@@ -112,14 +116,14 @@ public final class FamiliarityCare {
             cared = outcome.cared();
         }
 
-        AnimalTraits updated = traits.fed(familiarity, traits.lastFedTick()).withHunger(hungerNow).withVigour(vigour);
+        AnimalTraits updated = traits.with(CARE, care.withFamiliarity(familiarity).withHunger(hungerNow)).with(VIGOUR, vigour);
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && tamed(animal)) {
             updated = toTamingGrace(animal, updated);
         }
         updated = withCare(updated, upkeep, cared);
         Services.DATA.set(animal, updated);
-        Events.post(new AnimalEvent.FamiliarityFell(animal, traits.familiarity(), updated.familiarity()));
+        Events.post(new AnimalEvent.FamiliarityFell(animal, care.familiarity(), updated.get(CARE).familiarity()));
         toll(animal, level, damage, escaped, days > 1L);
         return escaped ? Services.DATA.get(animal) : Optional.of(updated);
     }
@@ -133,19 +137,20 @@ public final class FamiliarityCare {
         Upkeep upkeep = upkeep(traits);
         boolean cared = caredFor(animal, level, traits, upkeep);
         double roll = ate ? 1.0 : animal.getRandom().nextDouble();
+        FamiliarityState care = traits.get(CARE);
         DailyUpkeep.Outcome outcome = DailyUpkeep.day(
-                new DailyUpkeep.State(traits.familiarity(), animal.getHealth() - owed, cared, grown(animal), neverRunsAway(animal)),
+                new DailyUpkeep.State(care.familiarity(), animal.getHealth() - owed, cared, grown(animal), neverRunsAway(animal)),
                 ate, roll, config.hunger(), config.tuning());
-        Hunger hunger = traits.hunger();
+        Hunger hunger = care.hunger();
         // A meal or a hungry day marked later, such as a hand meal today while it waited, stays the latest.
         Hunger next = ate ? new Hunger(day + 1L, Math.max(hunger.lastAteDay(), day), hunger.lastHungryDay())
                 : new Hunger(day + 1L, hunger.lastAteDay(), Math.max(hunger.lastHungryDay(), day));
         if (feeder != null && upkeep.feederDay() < day) {
             upkeep = upkeep.fedBy(feeder, day);
         }
-        AnimalTraits updated = withCare(traits.fed(outcome.familiarity(), traits.lastFedTick()).withHunger(next), upkeep, outcome.cared());
+        AnimalTraits updated = withCare(traits.with(CARE, care.withFamiliarity(outcome.familiarity()).withHunger(next)), upkeep, outcome.cared());
         Services.DATA.set(animal, updated);
-        Events.post(new AnimalEvent.FamiliarityFell(animal, traits.familiarity(), updated.familiarity()));
+        Events.post(new AnimalEvent.FamiliarityFell(animal, care.familiarity(), updated.get(CARE).familiarity()));
         return outcome;
     }
 
@@ -165,7 +170,7 @@ public final class FamiliarityCare {
     // It waits while a loaded block holding it has yet to settle the days before today. With no block holding it
     // loaded, it waits HERD_WAIT_TICKS after it loaded, since the block's chunk may load just after its own.
     private static boolean waitsForHerd(Animal animal, AnimalTraits traits, long today) {
-        if (!traits.upkeep().inHerd()) {
+        if (!traits.get(CARE).upkeep().inHerd()) {
             return false;
         }
         if (FeederIndex.waiting(animal, today)) {
@@ -177,27 +182,29 @@ public final class FamiliarityCare {
 
     // Saves from before upkeep was kept start from none.
     private static Upkeep upkeep(AnimalTraits traits) {
-        return traits.upkeep().equals(Upkeep.UNKNOWN) ? Upkeep.NONE : traits.upkeep();
+        Upkeep upkeep = traits.get(CARE).upkeep();
+        return upkeep.equals(Upkeep.UNKNOWN) ? Upkeep.NONE : upkeep;
     }
 
     // Looked after so far: marked so, familiar now, or, in a save from before upkeep was kept, listed in a herd
     // book, however low it is now.
     private static boolean caredFor(Animal animal, ServerLevel level, AnimalTraits traits, Upkeep upkeep) {
-        boolean oldSave = traits.upkeep().equals(Upkeep.UNKNOWN);
-        return upkeep.cared() || Familiarity.ready(traits.familiarity())
+        boolean oldSave = traits.get(CARE).upkeep().equals(Upkeep.UNKNOWN);
+        return upkeep.cared() || Familiarity.ready(traits.get(CARE).familiarity())
                 || oldSave && FeaturesRepository.get(HerdApi.class).listed(level.getServer(), animal.getUUID());
     }
 
     // Marked cared for the first time it is, and otherwise left as it was.
     private static AnimalTraits withCare(AnimalTraits updated, Upkeep upkeep, boolean cared) {
-        boolean caredNow = cared || Familiarity.ready(updated.familiarity());
-        return updated.withUpkeep(caredNow && !upkeep.cared() ? upkeep.caredFor() : upkeep);
+        FamiliarityState care = updated.get(CARE);
+        boolean caredNow = cared || Familiarity.ready(care.familiarity());
+        return updated.with(CARE, care.withUpkeep(caredNow && !upkeep.cared() ? upkeep.caredFor() : upkeep));
     }
 
     // True while the animal still has days before today to settle, which happens while it waits for its herd's block
     // (see settle). Whatever is worked out once a day from yesterday's hunger (eggs, milk, Vigour) waits for it.
     public static boolean unsettled(Animal animal, long clock) {
-        return settle(animal, clock).map(traits -> traits.hunger().settledDay() < GameDay.of(clock)).orElse(false);
+        return settle(animal, clock).map(traits -> traits.get(CARE).hunger().settledDay() < GameDay.of(clock)).orElse(false);
     }
 
     // Any food counts: a normal feed, a hurt animal's heal-only meal, and a superfood.
@@ -210,8 +217,9 @@ public final class FamiliarityCare {
             if (!animal.level().isClientSide()) {
                 long today = GameDay.of(clock);
                 // A male who missed yesterday is filled by his first meal today.
-                Vigour vigour = VigourRules.onMeal(traits.vigour(), traits.hunger().lastAteDay(), today);
-                Services.DATA.set(animal, traits.withHunger(traits.hunger().ate(today)).withVigour(vigour));
+                FamiliarityState care = traits.get(CARE);
+                Vigour vigour = VigourRules.onMeal(traits.get(VIGOUR), care.hunger().lastAteDay(), today);
+                Services.DATA.set(animal, traits.with(CARE, care.withHunger(care.hunger().ate(today))).with(VIGOUR, vigour));
             }
         });
     }
@@ -231,7 +239,8 @@ public final class FamiliarityCare {
     public static void spend(Animal animal, double cost) {
         settle(animal).ifPresent(traits -> {
             if (!animal.level().isClientSide() && cost > 0.0) {
-                Services.DATA.set(animal, traits.fed(Math.max(0.0, traits.familiarity() - cost), traits.lastFedTick()));
+                FamiliarityState care = traits.get(CARE);
+                Services.DATA.set(animal, traits.with(CARE, care.withFamiliarity(Math.max(0.0, care.familiarity() - cost))));
             }
         });
     }
@@ -244,8 +253,9 @@ public final class FamiliarityCare {
 
     // The grace never takes a wild-caught pet past its cap, and never lowers a pet already above it.
     private static AnimalTraits toTamingGrace(Animal animal, AnimalTraits traits) {
-        double grace = WildCaught.tamingGrace(tamingGrace(), traits.origin(), grown(animal), BarnyardConfig.current().tuning());
-        return traits.familiarity() < grace ? raise(animal, traits, grace, traits.lastFedTick()) : traits;
+        FamiliarityState care = traits.get(CARE);
+        double grace = WildCaught.tamingGrace(tamingGrace(), care.origin(), grown(animal), BarnyardConfig.current().tuning());
+        return care.familiarity() < grace ? raise(animal, traits, grace, care.lastFedTick()) : traits;
     }
 
     // Every familiarity gain goes through here, so an animal won over as an adult stays a little wild (see WildCaught).
@@ -254,7 +264,7 @@ public final class FamiliarityCare {
     }
 
     public static double cap(Animal animal, AnimalTraits traits) {
-        return WildCaught.cap(traits.origin(), pet(animal), BarnyardConfig.current().tuning());
+        return WildCaught.cap(traits.get(CARE).origin(), pet(animal), BarnyardConfig.current().tuning());
     }
 
     // The animals familiarity tames, tamed yet or not: they live close to you, so they get the higher wild cap.
@@ -288,7 +298,7 @@ public final class FamiliarityCare {
 
     // Tamed animals never go wild again; below the threshold they are grumpy instead and won't take orders.
     public static boolean grumpy(Animal animal) {
-        return tamed(animal) && tracked(animal).map(traits -> !Familiarity.ready(traits.familiarity())).orElse(false);
+        return tamed(animal) && tracked(animal).map(traits -> !Familiarity.ready(traits.get(CARE).familiarity())).orElse(false);
     }
 
     // The animal's traits, if its species is enabled.

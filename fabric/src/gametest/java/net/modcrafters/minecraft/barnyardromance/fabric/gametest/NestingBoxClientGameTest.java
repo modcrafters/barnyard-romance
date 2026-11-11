@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -34,6 +35,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.List;
 import java.util.UUID;
+
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // The nesting box in a real client: the block with a hen sitting in it, its window with eggs in the nests and her
 // nest marked, the new items, and a rooster beside a hen.
@@ -106,7 +109,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
                 player.setItemInHand(InteractionHand.MAIN_HAND, book);
                 level.getEntities(EntityTypes.CHICKEN, chicken -> true).forEach(chicken -> {
                     AnimalTraits traits = Services.DATA.get(chicken).orElseThrow();
-                    Services.DATA.set(chicken, traits.fed(traits.familiarity(), level.getOverworldClockTime()));
+                    Services.DATA.set(chicken, traits.with(CARE, traits.get(CARE).fed(traits.get(CARE).familiarity(), level.getOverworldClockTime())));
                     FamiliarityCare.markEaten(chicken);
                     chicken.setCustomName(Component.literal(traits.sex() == Sex.MALE ? "Big Red" : "Henrietta"));
                     HerdBooks.register(book, chicken);
@@ -130,7 +133,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
         chicken.setYBodyRot(90.0F);
         chicken.setNoAi(true);
         level.addFreshEntity(chicken);
-        Services.DATA.set(chicken, new AnimalTraits(sex, scale, 0.5, -1L));
+        Services.DATA.set(chicken, AnimalTraits.of(sex, scale).with(CARE, FamiliarityState.NONE.fed(0.5, -1L)));
         AttributeInstance size = chicken.getAttribute(Attributes.SCALE);
         if (size != null) {
             size.setBaseValue(scale);

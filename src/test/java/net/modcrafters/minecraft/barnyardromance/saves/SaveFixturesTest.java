@@ -23,9 +23,18 @@ import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkSlices;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
+import net.modcrafters.minecraft.barnyardromance.shear.ShearSlices;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -36,6 +45,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 // Pins how 0.0.3 writes animal traits, pregnancies, layings, eggs and herd books to disk. The fixtures under
 // src/test/resources/saves are never edited: a change that can't read or write them would break players' worlds.
 class SaveFixturesTest {
+    // The animal record's codecs take every feature's slice.
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
+
     private static final UUID MOTHER = UUID.fromString("0a1b2c3d-0000-4000-8000-000000000001");
     private static final UUID FATHER = UUID.fromString("0a1b2c3d-0000-4000-8000-000000000002");
     private static final UUID BREEDER = UUID.fromString("0a1b2c3d-0000-4000-8000-000000000003");
@@ -49,33 +64,21 @@ class SaveFixturesTest {
 
     // Every field away from its default.
     static AnimalTraits fullTraits() {
-        return new AnimalTraits(
-                Sex.MALE,
-                1.125,
-                0.75,
-                12000L,
-                30000,
-                13000L,
-                "minecraft:cow",
-                14000L,
-                15000L,
-                0.625,
-                0.875,
-                16000L,
-                1000L,
-                new Lactation(17000L, 18000L, 3L, 2, true),
-                new Lineage(MOTHER, FATHER),
-                19000L,
-                new Hunger(5L, 4L, 3L),
-                Origin.FARM,
-                new Refusals(6L, 7L),
-                new Vigour(0.375, 8L, 9L),
-                new Upkeep(true, true, 10L, "trough", true)
-        );
+        return AnimalTraits.of(Sex.MALE, 1.125)
+                .withGrowthTicks(30000)
+                .withWeight(0.625)
+                .withBornTick(1000L)
+                .withLineage(new Lineage(MOTHER, FATHER))
+                .with(FamiliaritySlices.CARE, new FamiliarityState(0.75, 12000L, new Hunger(5L, 4L, 3L), Origin.FARM, new Refusals(6L, 7L),
+                        new Upkeep(true, true, 10L, "trough", true)))
+                .with(PregnancySlices.BREEDING, new BreedingState(13000L, "minecraft:cow", 14000L, 15000L, 0.875, 16000L))
+                .with(MilkSlices.LACTATION, new Lactation(17000L, 18000L, 3L, 2, true))
+                .with(ShearSlices.LAST_SHEARED, 19000L)
+                .with(VigourSlices.VIGOUR, new Vigour(0.375, 8L, 9L));
     }
 
     static AnimalTraits defaultTraits() {
-        return new AnimalTraits(Sex.FEMALE, 1.0);
+        return AnimalTraits.of(Sex.FEMALE, 1.0);
     }
 
     static Pregnancy fullPregnancy() {
@@ -148,12 +151,12 @@ class SaveFixturesTest {
     void animalTraits001Decodes() {
         AnimalTraits traits = decode(AnimalTraitCodecs.CODEC, "animal_traits_0_0_1");
 
-        assertEquals(Upkeep.UNKNOWN, traits.upkeep());
-        assertEquals(Vigour.NONE, traits.vigour());
+        assertEquals(Upkeep.UNKNOWN, traits.get(FamiliaritySlices.CARE).upkeep());
+        assertEquals(Vigour.NONE, traits.get(VigourSlices.VIGOUR));
         assertEquals(Growth.wild(), traits.growthTicks());
-        assertEquals(Hunger.NONE, traits.hunger());
-        assertEquals(Origin.UNKNOWN, traits.origin());
-        assertEquals(new AnimalTraits(Sex.FEMALE, 0.875, 0.5, 1200L).withUpkeep(Upkeep.UNKNOWN), traits);
+        assertEquals(Hunger.NONE, traits.get(FamiliaritySlices.CARE).hunger());
+        assertEquals(Origin.UNKNOWN, traits.get(FamiliaritySlices.CARE).origin());
+        assertEquals(AnimalTraits.of(Sex.FEMALE, 0.875).with(FamiliaritySlices.CARE, FamiliarityState.NONE.fed(0.5, 1200L).withUpkeep(Upkeep.UNKNOWN)), traits);
     }
 
     // The stream layout may change, but what goes in must come back out.

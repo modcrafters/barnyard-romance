@@ -6,6 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -101,11 +103,12 @@ public final class HerdCard {
         graphics.text(font, letter, letterX, textY, NAME);
         graphics.text(font, name, letterX + font.width(letter) + 4, textY, WHITE);
         int rowY = textY + 12;
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
         mark(graphics, textX, rowY + 1, TRUST_HEART, FAMILIAR);
-        bar(graphics, textX + 11, rowY + 2, HerdCardLayout.BAR_WIDTH, 6, traits.familiarity(), FAMILIAR);
+        bar(graphics, textX + 11, rowY + 2, HerdCardLayout.BAR_WIDTH, 6, care.familiarity(), FAMILIAR);
         rowY += 12;
         mark(graphics, textX, rowY, FEED_MARK, FEED);
-        bar(graphics, textX + 11, rowY + 1, HerdCardLayout.BAR_WIDTH, 6, Familiarity.feedReady(traits.lastFedTick(), animal.level().getOverworldClockTime()), FEED);
+        bar(graphics, textX + 11, rowY + 1, HerdCardLayout.BAR_WIDTH, 6, Familiarity.feedReady(care.lastFedTick(), animal.level().getOverworldClockTime()), FEED);
         int heartsY = y + height - HerdCardLayout.PAD - HerdCardLayout.heartRows(HerdCardLayout.hearts(animal.getMaxHealth())) * 10;
         hearts(graphics, x + HerdCardLayout.PAD, heartsY, animal.getHealth(), animal.getMaxHealth());
     }

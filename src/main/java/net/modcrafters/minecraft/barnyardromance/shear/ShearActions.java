@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
@@ -43,7 +44,7 @@ public final class ShearActions {
     }
 
     public static boolean refusedToday(Animal animal) {
-        return tracked(animal).map(traits -> traits.refusals().shearRefused(GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
+        return tracked(animal).map(traits -> traits.get(FamiliaritySlices.CARE).refusals().shearRefused(GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
     }
 
     // Sheared or refused today: no more shearing until midnight. Rolls nothing.
@@ -98,7 +99,8 @@ public final class ShearActions {
     // A refused shearing keeps the wool and costs no familiarity, but the sheep can't be sheared again until midnight.
     public static void refuseShearing(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, traits.withRefusals(traits.refusals().withShear(today))));
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal,
+                traits.with(FamiliaritySlices.CARE, traits.get(FamiliaritySlices.CARE).withRefusals(traits.get(FamiliaritySlices.CARE).refusals().withShear(today)))));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(REFUSED));
         }
@@ -107,7 +109,7 @@ public final class ShearActions {
 
     private static boolean rollsRefusal(Animal animal) {
         return FamiliarityCare.settle(animal)
-                .map(traits -> Refusal.refuses(traits.familiarity(), animal.getRandom().nextDouble(), BarnyardConfig.current().tuning()))
+                .map(traits -> Refusal.refuses(traits.get(FamiliaritySlices.CARE).familiarity(), animal.getRandom().nextDouble(), BarnyardConfig.current().tuning()))
                 .orElse(false);
     }
 
@@ -116,9 +118,9 @@ public final class ShearActions {
         Shearer shearer = SHEARERS.remove(animal.getUUID());
         UUID player = shearer != null && shearer.tick() == animal.level().getGameTime() ? shearer.player() : null;
         tracked(animal).ifPresent(traits -> {
-            Services.DATA.set(animal, traits.sheared(animal.level().getOverworldClockTime()));
+            Services.DATA.set(animal, traits.with(ShearSlices.LAST_SHEARED, animal.level().getOverworldClockTime()));
             FamiliarityCare.spend(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
-            if (Familiarity.ready(traits.familiarity())) {
+            if (Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())) {
                 Events.post(new AnimalEvent.Sheared(animal, player));
             }
         });

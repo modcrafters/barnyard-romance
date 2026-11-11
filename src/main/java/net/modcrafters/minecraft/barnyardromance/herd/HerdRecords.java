@@ -12,6 +12,8 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sheep.Sheep;
@@ -43,12 +45,13 @@ public final class HerdRecords {
     // Below the familiarity threshold the book stops updating an animal: it keeps the old values and only
     // takes the new familiarity, so it can tell when the animal is familiar again.
     public static HerdRecord refreshed(@Nullable HerdRecord old, HerdRecord fresh) {
-        if (old == null || Familiarity.ready(fresh.traits().familiarity())) {
+        if (old == null || Familiarity.ready(fresh.traits().get(FamiliaritySlices.CARE).familiarity())) {
             return fresh;
         }
         // The hunger goes with the familiarity it was settled into, so the book doesn't count those days twice.
-        AnimalTraits kept = old.traits().fed(fresh.traits().familiarity(), old.traits().lastFedTick()).withHunger(fresh.traits().hunger())
-                .withOrigin(fresh.traits().origin());
+        FamiliarityState freshCare = fresh.traits().get(FamiliaritySlices.CARE);
+        AnimalTraits kept = old.traits().with(FamiliaritySlices.CARE, old.traits().get(FamiliaritySlices.CARE).withFamiliarity(freshCare.familiarity())
+                .withHunger(freshCare.hunger()).withOrigin(freshCare.origin()));
         return new HerdRecord(old.species(), old.name(), kept, old.pregnancy(), old.baby(), old.milkable(), old.shearable(), old.woolly(), old.refreshedAt(),
                 old.diedAt(), old.diedClock(), fresh.tamed(), old.nest(), old.cause(), old.sheet());
     }

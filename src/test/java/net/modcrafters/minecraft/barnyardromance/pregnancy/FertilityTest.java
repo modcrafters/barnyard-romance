@@ -37,7 +37,7 @@ class FertilityTest {
 
     @Test
     void aWornOutMotherRecoversInADay() {
-        AnimalTraits traits = new AnimalTraits(Sex.FEMALE, 1.0).withFertility(0.2, 0L);
+        AnimalTraits traits = AnimalTraits.of(Sex.FEMALE, 1.0).with(PregnancySlices.BREEDING, BreedingState.NONE.withFertility(0.2, 0L));
 
         assertTrue(Fertility.wornOut(traits, AgeSettings.DEFAULTS, 0L));
         assertFalse(Fertility.wornOut(traits, AgeSettings.DEFAULTS, 24_000L));
@@ -54,7 +54,7 @@ class FertilityTest {
     @Test
     void anOldMotherTakesTwoDaysToRecoverWhatAYoungOneDoesInOne() {
         AgeSettings age = AgeSettings.DEFAULTS;
-        AnimalTraits old = new AnimalTraits(Sex.FEMALE, 1.0).withBornTick(0L).withFertility(0.2, 800_000L);
+        AnimalTraits old = AnimalTraits.of(Sex.FEMALE, 1.0).withBornTick(0L).with(PregnancySlices.BREEDING, BreedingState.NONE.withFertility(0.2, 800_000L));
 
         assertEquals(0.25, Fertility.current(old, age, 824_000L), 1.0e-9);
         assertEquals(0.3, Fertility.current(old, age, 848_000L), 1.0e-9);

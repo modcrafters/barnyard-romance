@@ -1,46 +1,32 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
+import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
-import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
-import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+// The animal record is saved as one compound: the core fields, then each feature's slice inline beside them, under the
+// names they have always had. It is synced as the core fields, then each slice in registration order.
 public final class AnimalTraitCodecs {
     public static final Codec<Sex> SEX_CODEC = Codec.STRING.xmap(Sex::valueOf, Sex::name);
-    // Lactation's codecs live here, so the record stays free of DFU classes for unit tests.
-    public static final Codec<Lactation> LACTATION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.LONG.optionalFieldOf("milkUntil", -1L).forGetter(Lactation::milkUntil),
-            Codec.LONG.optionalFieldOf("youngUntil", -1L).forGetter(Lactation::youngUntil),
-            Codec.LONG.optionalFieldOf("milkedDay", -1L).forGetter(Lactation::milkedDay),
-            Codec.INT.optionalFieldOf("milkedToday", 0).forGetter(Lactation::milkedToday),
-            Codec.BOOL.optionalFieldOf("graceGiven", false).forGetter(Lactation::graceGiven)
-    ).apply(instance, Lactation::new));
-    public static final StreamCodec<ByteBuf, Lactation> LACTATION_STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_LONG,
-            Lactation::milkUntil,
-            ByteBufCodecs.VAR_LONG,
-            Lactation::youngUntil,
-            ByteBufCodecs.VAR_LONG,
-            Lactation::milkedDay,
-            ByteBufCodecs.VAR_INT,
-            Lactation::milkedToday,
-            ByteBufCodecs.BOOL,
-            Lactation::graceGiven,
-            Lactation::new
-    );
     // Saved inline as motherId and fatherId, each left out when unknown.
     public static final MapCodec<Lineage> LINEAGE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             UUIDUtil.CODEC.optionalFieldOf("motherId").forGetter(lineage -> Optional.ofNullable(lineage.mother())),
@@ -54,137 +40,142 @@ public final class AnimalTraitCodecs {
             lineage -> Optional.ofNullable(lineage.father()),
             (mother, father) -> new Lineage(mother.orElse(null), father.orElse(null))
     );
-    public static final Codec<Hunger> HUNGER_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.LONG.optionalFieldOf("settledDay", -1L).forGetter(Hunger::settledDay),
-            Codec.LONG.optionalFieldOf("lastAteDay", -1L).forGetter(Hunger::lastAteDay),
-            Codec.LONG.optionalFieldOf("lastHungryDay", -1L).forGetter(Hunger::lastHungryDay)
-    ).apply(instance, Hunger::new));
-    public static final StreamCodec<ByteBuf, Hunger> HUNGER_STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_LONG,
-            Hunger::settledDay,
-            ByteBufCodecs.VAR_LONG,
-            Hunger::lastAteDay,
-            ByteBufCodecs.VAR_LONG,
-            Hunger::lastHungryDay,
-            Hunger::new
-    );
-    // An origin saved by a later version, or mistyped, reads as unknown.
-    public static final Codec<Origin> ORIGIN_CODEC = Codec.STRING.xmap(
-            name -> {
-                try {
-                    return Origin.valueOf(name);
-                } catch (IllegalArgumentException exception) {
-                    return Origin.UNKNOWN;
-                }
-            },
-            Origin::name);
-    public static final Codec<Vigour> VIGOUR_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.DOUBLE.optionalFieldOf("value", 1.0).forGetter(Vigour::value),
-            Codec.LONG.optionalFieldOf("day", -1L).forGetter(Vigour::day),
-            Codec.LONG.optionalFieldOf("rollDay", -1L).forGetter(Vigour::rollDay)
-    ).apply(instance, Vigour::new));
-    public static final Codec<Upkeep> UPKEEP_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.BOOL.optionalFieldOf("cared", false).forGetter(Upkeep::cared),
-            Codec.BOOL.optionalFieldOf("ranAway", false).forGetter(Upkeep::ranAway),
-            Codec.LONG.optionalFieldOf("feederDay", -1L).forGetter(Upkeep::feederDay),
-            Codec.STRING.optionalFieldOf("feeder", "").forGetter(Upkeep::feeder),
-            Codec.BOOL.optionalFieldOf("inHerd", false).forGetter(Upkeep::inHerd)
-    ).apply(instance, Upkeep::new));
-    // A codec group takes at most 16 fields, so the newest ones are saved inline as a group of their own.
-    private record Care(long lastShearedClock, Hunger hunger, Origin origin, long milkRefusedDay, long shearRefusedDay, Vigour vigour, Upkeep upkeep) {
-    }
-    private static final MapCodec<Care> CARE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.LONG.optionalFieldOf("lastShearedClock", -1L).forGetter(Care::lastShearedClock),
-            HUNGER_CODEC.optionalFieldOf("hunger", Hunger.NONE).forGetter(Care::hunger),
-            ORIGIN_CODEC.optionalFieldOf("origin", Origin.UNKNOWN).forGetter(Care::origin),
-            Codec.LONG.optionalFieldOf("milkRefusedDay", -1L).forGetter(Care::milkRefusedDay),
-            Codec.LONG.optionalFieldOf("shearRefusedDay", -1L).forGetter(Care::shearRefusedDay),
-            VIGOUR_CODEC.optionalFieldOf("vigour", Vigour.NONE).forGetter(Care::vigour),
-            // Always written, so a missing key means a save from before upkeep was kept.
-            UPKEEP_CODEC.optionalFieldOf("upkeep").xmap(upkeep -> upkeep.orElse(Upkeep.UNKNOWN), Optional::of).forGetter(Care::upkeep)
-    ).apply(instance, Care::new));
-    public static final MapCodec<AnimalTraits> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+    private static final MapCodec<AnimalTraits> CORE_MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             SEX_CODEC.fieldOf("sex").forGetter(AnimalTraits::sex),
             Codec.DOUBLE.fieldOf("scale").forGetter(AnimalTraits::scale),
-            Codec.DOUBLE.optionalFieldOf("familiarity", 0.0).forGetter(AnimalTraits::familiarity),
-            Codec.LONG.optionalFieldOf("lastFedTick", -1L).forGetter(AnimalTraits::lastFedTick),
+            // Read when decoding, not when the codec is built: the config isn't loaded yet then.
             Codec.INT.optionalFieldOf("growthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(AnimalTraits::growthTicks),
-            Codec.LONG.optionalFieldOf("lastBirthTick", -1L).forGetter(AnimalTraits::lastBirthTick),
-            Codec.STRING.optionalFieldOf("lastBirthSpecies", "").forGetter(AnimalTraits::lastBirthSpecies),
-            Codec.LONG.optionalFieldOf("loveUntil", -1L).forGetter(AnimalTraits::loveUntil),
-            Codec.LONG.optionalFieldOf("cooldownUntil", -1L).forGetter(AnimalTraits::cooldownUntil),
             Codec.DOUBLE.optionalFieldOf("weight", 0.5).forGetter(AnimalTraits::weight),
-            Codec.DOUBLE.optionalFieldOf("fertility", 1.0).forGetter(AnimalTraits::fertility),
-            Codec.LONG.optionalFieldOf("fertilityTick", -1L).forGetter(AnimalTraits::fertilityTick),
             Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
-            LACTATION_CODEC.optionalFieldOf("lactation", Lactation.NONE).forGetter(AnimalTraits::lactation),
-            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage),
-            CARE_MAP_CODEC.forGetter(traits -> new Care(traits.lastShearedClock(), traits.hunger(), traits.origin(), traits.refusals().milkDay(),
-                    traits.refusals().shearDay(), traits.vigour(), traits.upkeep()))
-    ).apply(instance, (sex, scale, familiarity, lastFedTick, growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight,
-                       fertility, fertilityTick, bornTick, lactation, lineage, care) -> new AnimalTraits(sex, scale, familiarity, lastFedTick,
-            growthTicks, lastBirthTick, lastBirthSpecies, loveUntil, cooldownUntil, weight, fertility, fertilityTick, bornTick, lactation, lineage,
-            care.lastShearedClock(), care.hunger(), care.origin(), new Refusals(care.milkRefusedDay(), care.shearRefusedDay()), care.vigour(), care.upkeep())));
-    public static final Codec<AnimalTraits> CODEC = MAP_CODEC.codec();
+            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage)
+    ).apply(instance, (sex, scale, growthTicks, weight, bornTick, lineage) ->
+            new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, Map.of())));
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
-    // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
-    public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.of(
-            (buf, traits) -> {
-                SEX_STREAM_CODEC.encode(buf, traits.sex());
-                ByteBufCodecs.DOUBLE.encode(buf, traits.scale());
-                ByteBufCodecs.DOUBLE.encode(buf, traits.familiarity());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.lastFedTick());
-                ByteBufCodecs.VAR_INT.encode(buf, traits.growthTicks());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.lastBirthTick());
-                ByteBufCodecs.STRING_UTF8.encode(buf, traits.lastBirthSpecies());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.loveUntil());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.cooldownUntil());
-                ByteBufCodecs.DOUBLE.encode(buf, traits.weight());
-                ByteBufCodecs.DOUBLE.encode(buf, traits.fertility());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.fertilityTick());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.bornTick());
-                LACTATION_STREAM_CODEC.encode(buf, traits.lactation());
-                LINEAGE_STREAM_CODEC.encode(buf, traits.lineage());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.lastShearedClock());
-                HUNGER_STREAM_CODEC.encode(buf, traits.hunger());
-                ByteBufCodecs.VAR_INT.encode(buf, traits.origin().ordinal());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.refusals().milkDay());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.refusals().shearDay());
-                ByteBufCodecs.DOUBLE.encode(buf, traits.vigour().value());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.vigour().day());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.vigour().rollDay());
-                ByteBufCodecs.BOOL.encode(buf, traits.upkeep().cared());
-                ByteBufCodecs.BOOL.encode(buf, traits.upkeep().ranAway());
-                ByteBufCodecs.VAR_LONG.encode(buf, traits.upkeep().feederDay());
-                ByteBufCodecs.STRING_UTF8.encode(buf, traits.upkeep().feeder());
-                ByteBufCodecs.BOOL.encode(buf, traits.upkeep().inHerd());
-            },
-            // Arguments are evaluated left to right, so this reads the fields in the order they were written.
-            buf -> new AnimalTraits(
-                    SEX_STREAM_CODEC.decode(buf),
-                    ByteBufCodecs.DOUBLE.decode(buf),
-                    ByteBufCodecs.DOUBLE.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    ByteBufCodecs.VAR_INT.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    ByteBufCodecs.STRING_UTF8.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    ByteBufCodecs.DOUBLE.decode(buf),
-                    ByteBufCodecs.DOUBLE.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    LACTATION_STREAM_CODEC.decode(buf),
-                    LINEAGE_STREAM_CODEC.decode(buf),
-                    ByteBufCodecs.VAR_LONG.decode(buf),
-                    HUNGER_STREAM_CODEC.decode(buf),
-                    Origin.values()[ByteBufCodecs.VAR_INT.decode(buf)],
-                    new Refusals(ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf)),
-                    new Vigour(ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf)),
-                    new Upkeep(ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.BOOL.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.STRING_UTF8.decode(buf), ByteBufCodecs.BOOL.decode(buf))
-            )
+    private static final StreamCodec<ByteBuf, AnimalTraits> CORE_STREAM_CODEC = StreamCodec.composite(
+            SEX_STREAM_CODEC,
+            AnimalTraits::sex,
+            ByteBufCodecs.DOUBLE,
+            AnimalTraits::scale,
+            ByteBufCodecs.VAR_INT,
+            AnimalTraits::growthTicks,
+            ByteBufCodecs.DOUBLE,
+            AnimalTraits::weight,
+            ByteBufCodecs.VAR_LONG,
+            AnimalTraits::bornTick,
+            LINEAGE_STREAM_CODEC,
+            AnimalTraits::lineage,
+            (sex, scale, growthTicks, weight, bornTick, lineage) -> new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, Map.of())
     );
+    // Built once, on first use: every feature must have registered its slice by then.
+    private static final Supplier<MapCodec<AnimalTraits>> BUILT_MAP_CODEC = Suppliers.memoize(
+            () -> mapCodecOf(FeaturesRepository.features().slices()));
+    private static final Supplier<StreamCodec<ByteBuf, AnimalTraits>> BUILT_STREAM_CODEC = Suppliers.memoize(
+            () -> streamCodecOf(FeaturesRepository.features().slices()));
+    // For holders made before the features are installed, such as the attachment key: each use goes to mapCodec().
+    public static final Codec<AnimalTraits> CODEC = new MapCodec<AnimalTraits>() {
+        @Override
+        public <T> Stream<T> keys(DynamicOps<T> ops) {
+            return mapCodec().keys(ops);
+        }
+
+        @Override
+        public <T> DataResult<AnimalTraits> decode(DynamicOps<T> ops, MapLike<T> input) {
+            return mapCodec().decode(ops, input);
+        }
+
+        @Override
+        public <T> RecordBuilder<T> encode(AnimalTraits input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+            return mapCodec().encode(input, ops, prefix);
+        }
+
+        @Override
+        public String toString() {
+            return "AnimalTraits";
+        }
+    }.codec();
+    // As CODEC, for syncing: each use goes to streamCodec().
+    public static final StreamCodec<ByteBuf, AnimalTraits> STREAM_CODEC = StreamCodec.of(
+            (buf, traits) -> streamCodec().encode(buf, traits),
+            buf -> streamCodec().decode(buf));
 
     private AnimalTraitCodecs() {
+    }
+
+    public static MapCodec<AnimalTraits> mapCodec() {
+        return BUILT_MAP_CODEC.get();
+    }
+
+    public static StreamCodec<ByteBuf, AnimalTraits> streamCodec() {
+        return BUILT_STREAM_CODEC.get();
+    }
+
+    // The names the core fields are saved under; no slice may use them.
+    public static Set<String> coreFields() {
+        return AnimalSlice.fieldsOf(CORE_MAP_CODEC);
+    }
+
+    static MapCodec<AnimalTraits> mapCodecOf(List<AnimalSlice<?>> slices) {
+        return new MapCodec<>() {
+            @Override
+            public <T> Stream<T> keys(DynamicOps<T> ops) {
+                return Stream.concat(CORE_MAP_CODEC.keys(ops), slices.stream().flatMap(slice -> slice.codec().keys(ops)));
+            }
+
+            @Override
+            public <T> DataResult<AnimalTraits> decode(DynamicOps<T> ops, MapLike<T> input) {
+                DataResult<AnimalTraits> traits = CORE_MAP_CODEC.decode(ops, input);
+                for (AnimalSlice<?> slice : slices) {
+                    traits = decodeSlice(traits, slice, ops, input);
+                }
+                return traits;
+            }
+
+            @Override
+            public <T> RecordBuilder<T> encode(AnimalTraits input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
+                RecordBuilder<T> builder = CORE_MAP_CODEC.encode(input, ops, prefix);
+                for (AnimalSlice<?> slice : slices) {
+                    builder = encodeSlice(slice, input, ops, builder);
+                }
+                return builder;
+            }
+
+            @Override
+            public String toString() {
+                return "AnimalTraits";
+            }
+        };
+    }
+
+    static StreamCodec<ByteBuf, AnimalTraits> streamCodecOf(List<AnimalSlice<?>> slices) {
+        return StreamCodec.of(
+                (buf, traits) -> {
+                    CORE_STREAM_CODEC.encode(buf, traits);
+                    for (AnimalSlice<?> slice : slices) {
+                        writeSlice(buf, slice, traits);
+                    }
+                },
+                buf -> {
+                    AnimalTraits traits = CORE_STREAM_CODEC.decode(buf);
+                    for (AnimalSlice<?> slice : slices) {
+                        traits = readSlice(buf, slice, traits);
+                    }
+                    return traits;
+                });
+    }
+
+    private static <T, V> DataResult<AnimalTraits> decodeSlice(DataResult<AnimalTraits> traits, AnimalSlice<V> slice, DynamicOps<T> ops, MapLike<T> input) {
+        return traits.apply2((decoded, value) -> decoded.with(slice, value), slice.codec().decode(ops, input));
+    }
+
+    private static <T, V> RecordBuilder<T> encodeSlice(AnimalSlice<V> slice, AnimalTraits traits, DynamicOps<T> ops, RecordBuilder<T> builder) {
+        return slice.codec().encode(traits.get(slice), ops, builder);
+    }
+
+    private static <V> void writeSlice(ByteBuf buf, AnimalSlice<V> slice, AnimalTraits traits) {
+        slice.streamCodec().encode(buf, traits.get(slice));
+    }
+
+    private static <V> AnimalTraits readSlice(ByteBuf buf, AnimalSlice<V> slice, AnimalTraits traits) {
+        return traits.with(slice, slice.streamCodec().decode(buf));
     }
 }

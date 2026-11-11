@@ -21,7 +21,7 @@ class HoverTooltipTest {
     void hoverTextShowsTheSizeLetterInsteadOfADecimal() {
         List<String> lines = AnimalInfoText.hoverLines(
                 "Cow",
-                Optional.of(new AnimalTraits(Sex.FEMALE, 0.90)),
+                Optional.of(AnimalTraits.of(Sex.FEMALE, 0.90)),
                 AgeStage.ADULT,
                 size
         ).stream().map(English::of).toList();
@@ -33,7 +33,7 @@ class HoverTooltipTest {
     void babiesShowTheirLetterToo() {
         List<String> lines = AnimalInfoText.hoverLines(
                 "Pig",
-                Optional.of(new AnimalTraits(Sex.MALE, 1.12)),
+                Optional.of(AnimalTraits.of(Sex.MALE, 1.12)),
                 AgeStage.BABY,
                 size
         ).stream().map(English::of).toList();

@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.Donkey;
@@ -187,7 +188,8 @@ public final class Courtship {
 
     private static boolean available(Animal female, Animal male, Tuning tuning) {
         Optional<AnimalTraits> traits = trackedTraits(male);
-        if (traits.isEmpty() || traits.get().sex() != Sex.MALE || !FamiliarityCare.grown(male) || !Familiarity.ready(traits.get().familiarity())) {
+        if (traits.isEmpty() || traits.get().sex() != Sex.MALE || !FamiliarityCare.grown(male)
+                || !Familiarity.ready(traits.get().get(FamiliaritySlices.CARE).familiarity())) {
             return false;
         }
         UUID taken = CHOSEN_FOR.get(male.getUUID());

@@ -28,6 +28,10 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -81,20 +85,21 @@ public final class HerdStatus {
     private static View view(HerdRecord record, HerdLedger.Node node, long now, long clock, boolean loaded) {
         BarnyardConfig config = BarnyardConfig.current();
         AnimalTraits traits = loaded || !record.alive() ? record.traits() : hungry(record, clock, config);
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
         AgeSettings age = config.ageFor(record.species());
         // The dead are shown as they were when they died.
         long at = record.alive() ? now : record.diedAt();
         AgeStage stage = Aging.stage(record.baby(), traits.bornTick(), traits.growthTicks(), at, age);
         boolean female = traits.sex() == Sex.FEMALE;
         boolean grown = stage == AgeStage.ADULT || stage == AgeStage.OLD;
-        Familiar familiar = Familiarity.ready(traits.familiarity())
+        Familiar familiar = Familiarity.ready(care.familiarity())
                 ? Familiar.FAMILIAR
                 : node.everFamiliar() ? Familiar.NO_LONGER : Familiar.NOT_YET;
         // The contents page's icon is full for hand-feeding and half for a feeding block's meal.
-        HerdEntry.Fed fed = Familiarity.fedToday(traits.lastFedTick(), clock)
+        HerdEntry.Fed fed = Familiarity.fedToday(care.lastFedTick(), clock)
                 ? HerdEntry.Fed.HAND
-                : traits.upkeep().fedByFeederOn(GameDay.of(clock)) ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.NOT_FED;
-        String feeder = fed == HerdEntry.Fed.FEEDER ? traits.upkeep().feeder() : "";
+                : care.upkeep().fedByFeederOn(GameDay.of(clock)) ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.NOT_FED;
+        String feeder = fed == HerdEntry.Fed.FEEDER ? care.upkeep().feeder() : "";
         Pregnancy pregnancy = record.alive() ? record.pregnancy() : null;
         double progress = pregnancy == null ? 0.0 : PregnancyClock.progress(now, pregnancy);
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species()));
@@ -107,49 +112,49 @@ public final class HerdStatus {
         EggOutlook eggs = eggs(record, traits, stage, clock, config);
         RecordSheet sheet = record.sheet();
         long today = GameDay.of(clock);
-        double vigour = VigourRules.settle(traits.vigour(), traits.hunger().lastAteDay(), today).value();
+        double vigour = VigourRules.settle(traits.get(VigourSlices.VIGOUR), care.hunger().lastAteDay(), today).value();
         boolean showsVigour = traits.sex() == Sex.MALE && grown;
         Text breeding = StatText.breeding(
                 sheet.needsTaming(),
                 record.tamed(),
-                traits.familiarity(),
+                care.familiarity(),
                 stage == AgeStage.YOUNG,
                 female && Fertility.wornOut(traits, age, at),
-                traits.loveUntil(),
-                traits.cooldownUntil(),
+                traits.get(PregnancySlices.BREEDING).loveUntil(),
+                traits.get(PregnancySlices.BREEDING).cooldownUntil(),
                 now
         );
         AnimalFacts facts = AnimalFacts.builder(size.name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
                 .fedToday(LiveFacts.fedToday(traits, clock))
-                .fedBy(StatText.feeder(traits.upkeep(), today))
-                .ticksSinceFed(traits.lastFedTick() < 0L ? -1L : Math.max(0L, clock - traits.lastFedTick()))
+                .fedBy(StatText.feeder(care.upkeep(), today))
+                .ticksSinceFed(care.lastFedTick() < 0L ? -1L : Math.max(0L, clock - care.lastFedTick()))
                 .pregnant(pregnancy != null)
                 .pregnancy(progress)
                 .dueTicks(pregnancy == null ? 0L : PregnancyClock.remainingTicks(now, pregnancy))
                 .milk(milk.map(StatText::milkText).orElse(Text.EMPTY))
-                .familiarity(traits.familiarity())
+                .familiarity(care.familiarity())
                 .fertility(female ? Fertility.current(traits, age, at) : -1.0)
                 .seenTicksAgo(loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()))
                 .familiar(familiar)
                 .diedDay(record.alive() ? -1L : diedDay(record))
                 .shear(shear)
-                .grumpy(record.alive() && record.tamed() && !Familiarity.ready(traits.familiarity()))
+                .grumpy(record.alive() && record.tamed() && !Familiarity.ready(care.familiarity()))
                 .eggs(eggs)
-                .cap(WildCaught.cap(traits.origin(), sheet.needsTaming() || record.tamed(), config.tuning()))
+                .cap(WildCaught.cap(care.origin(), sheet.needsTaming() || record.tamed(), config.tuning()))
                 .killedByRival(!record.alive() && record.cause() == DeathCause.RIVAL)
-                .ranAway(traits.upkeep().ranAway())
+                .ranAway(care.upkeep().ranAway())
                 .growthTicks(traits.growthTicks())
                 .weight(traits.weight())
                 .health(sheet.health())
                 .maxHealth(sheet.maxHealth())
                 .vigour(showsVigour ? vigour : -1.0)
-                .vigourHungry(traits.sex() == Sex.MALE && VigourRules.hungry(traits.hunger().lastAteDay(), today))
+                .vigourHungry(traits.sex() == Sex.MALE && VigourRules.hungry(care.hunger().lastAteDay(), today))
                 .eggsToday(record.alive() ? eggsToday(record, traits, stage, vigour, today, config) : Text.EMPTY)
                 .breeding(breeding)
                 .father(pregnancy == null ? Text.EMPTY : StatText.father(
                         SizeClass.of(Sex.MALE, pregnancy.fatherScale(), config.sizeFor(pregnancy.fatherSpecies())).name(), pregnancy.fatherSpecies()))
-                .lastBirth(StatText.lastBirth(LiveFacts.offspring(traits), traits.lastBirthTick(), now))
+                .lastBirth(StatText.lastBirth(LiveFacts.offspring(traits), traits.get(PregnancySlices.BREEDING).lastBirthTick(), now))
                 .build();
         return new View(stage, female, familiar, fed, feeder, pregnancy, progress, milk, shear, eggs, facts);
     }
@@ -161,11 +166,11 @@ public final class HerdStatus {
         }
         Text value;
         if (traits.sex() == Sex.MALE) {
-            value = StatText.roosterText(stage == AgeStage.YOUNG, vigour, VigourRules.hungry(traits.hunger().lastAteDay(), today),
+            value = StatText.roosterText(stage == AgeStage.YOUNG, vigour, VigourRules.hungry(traits.get(FamiliaritySlices.CARE).hunger().lastAteDay(), today),
                     config.tuning().vigourPerEgg());
         } else if (traits.sex() == Sex.FEMALE && (stage == AgeStage.ADULT || stage == AgeStage.OLD)) {
             Laying laying = record.sheet().laying().day() == today ? record.sheet().laying() : Laying.NONE;
-            value = StatText.eggsText(laying.laid(), laying.planned(), traits.hunger().hungryYesterday(today));
+            value = StatText.eggsText(laying.laid(), laying.planned(), traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(today));
         } else {
             return Text.EMPTY;
         }
@@ -180,8 +185,8 @@ public final class HerdStatus {
         }
         return EggOutlook.tomorrow(
                 SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())),
-                traits.hunger().lastAteDay() == GameDay.of(clock),
-                Familiarity.ready(traits.familiarity()),
+                traits.get(FamiliaritySlices.CARE).hunger().lastAteDay() == GameDay.of(clock),
+                Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()),
                 record.nest().rooster(),
                 record.nest().boxWithRoom(),
                 settings,
@@ -192,9 +197,10 @@ public final class HerdStatus {
     // An animal far from home goes on missing meals; the book shows the familiarity it has lost since it was seen.
     private static AnimalTraits hungry(HerdRecord record, long clock, BarnyardConfig config) {
         AnimalTraits traits = record.traits();
-        Hunger.Settled settled = Hunger.settle(traits.hunger(), GameDay.of(clock), record.baby());
-        double familiarity = Hunger.afterHunger(traits.familiarity(), settled.hungryDays(), config.tuning().familiarityHungerLoss());
-        return traits.fed(familiarity, traits.lastFedTick()).withHunger(settled.hunger());
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
+        Hunger.Settled settled = Hunger.settle(care.hunger(), GameDay.of(clock), record.baby());
+        double familiarity = Hunger.afterHunger(care.familiarity(), settled.hungryDays(), config.tuning().familiarityHungerLoss());
+        return traits.with(FamiliaritySlices.CARE, care.withFamiliarity(familiarity).withHunger(settled.hunger()));
     }
 
     // Deaths from before the clock was recorded fall back to game time.

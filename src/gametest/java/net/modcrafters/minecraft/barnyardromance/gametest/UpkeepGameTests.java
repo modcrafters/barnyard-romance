@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,6 +34,7 @@ import java.util.Set;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // In-game checks for a lone animal's daily upkeep: what hunger does to its health, when it counts as cared for, and
 // how the config's catch-up mode treats days spent away. Days are passed as overworld clock times, as in
@@ -102,7 +104,7 @@ public final class UpkeepGameTests {
         FamiliarityCare.settle(cow, clock(DAY));
 
         assertHealth(helper, cow, 10.0F);
-        helper.assertTrue(!traits(helper, cow).upkeep().cared(), "a wild cow counts as cared for");
+        helper.assertTrue(!traits(helper, cow).get(CARE).upkeep().cared(), "a wild cow counts as cared for");
         helper.succeed();
     }
 
@@ -121,7 +123,7 @@ public final class UpkeepGameTests {
 
         assertHealth(helper, cow, 10.0F);
         assertFamiliarity(helper, cow, 0.8);
-        long settled = traits(helper, cow).hunger().settledDay();
+        long settled = traits(helper, cow).get(CARE).hunger().settledDay();
         helper.assertTrue(settled == DAY, "the cow is settled to day " + settled + ", not " + DAY);
         helper.succeed();
     }
@@ -129,12 +131,12 @@ public final class UpkeepGameTests {
     public static void reachingTheThresholdMarksHerCaredFor(GameTestHelper helper) {
         Animal cow = cow(helper, 0.25, 10.0F, DAY - 1L);
         FamiliarityCare.settle(cow, clock(DAY));
-        helper.assertTrue(!traits(helper, cow).upkeep().cared(), "a cow at 25% counts as cared for");
+        helper.assertTrue(!traits(helper, cow).get(CARE).upkeep().cared(), "a cow at 25% counts as cared for");
         Services.DATA.set(cow, FamiliarityCare.raise(cow, traits(helper, cow), 0.3, -1L));
 
         FamiliarityCare.settle(cow, clock(DAY + 1L));
 
-        helper.assertTrue(traits(helper, cow).upkeep().cared(), "a cow raised to 30% isn't cared for");
+        helper.assertTrue(traits(helper, cow).get(CARE).upkeep().cared(), "a cow raised to 30% isn't cared for");
         helper.succeed();
     }
 
@@ -147,7 +149,7 @@ public final class UpkeepGameTests {
 
         FamiliarityCare.settle(cow, clock(DAY));
 
-        Upkeep upkeep = traits(helper, cow).upkeep();
+        Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
         helper.assertTrue(upkeep.cared() && !upkeep.equals(Upkeep.UNKNOWN), "an old save's herd book cow settled to " + upkeep);
         helper.succeed();
     }
@@ -161,7 +163,7 @@ public final class UpkeepGameTests {
 
         FamiliarityCare.settle(calf, clock(DAY));
 
-        helper.assertTrue(!traits(helper, calf).upkeep().cared(), "a calf at 10% in a book counts as cared for");
+        helper.assertTrue(!traits(helper, calf).get(CARE).upkeep().cared(), "a calf at 10% in a book counts as cared for");
         helper.succeed();
     }
 
@@ -231,7 +233,7 @@ public final class UpkeepGameTests {
             assertHealth(helper, cow, 10.0F);
             helper.assertTrue(cow.position().equals(at) && cow.getDeltaMovement().equals(moving) && cow.getNavigation().getPath() == path,
                     "a runaway at 0% set off again");
-            Upkeep upkeep = traits(helper, cow).upkeep();
+            Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
             helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a runaway's upkeep is " + upkeep);
             helper.succeed();
         });
@@ -243,7 +245,7 @@ public final class UpkeepGameTests {
         List<Animal> cows = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 2 + i % 5, 1, 3 + 2 * (i / 5));
-            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+            Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
             cows.add(cow);
         }
         int[] queued = {-1};
@@ -256,7 +258,7 @@ public final class UpkeepGameTests {
                 for (Animal cow : cows) {
                     neglected(helper, cow);
                     Escapes.runAway(cow, helper.getLevel(), false);
-                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
                     helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a queued runaway's upkeep is " + upkeep);
                 }
                 queued[0] = cows.size();
@@ -289,14 +291,14 @@ public final class UpkeepGameTests {
 
             withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(cow, clock(DAY)));
 
-            Upkeep upkeep = traits(helper, cow).upkeep();
+            Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
             helper.assertTrue(upkeep.cared() && !upkeep.ranAway(), "a leashed runaway's upkeep is " + upkeep);
             helper.assertTrue(!Escapes.queued(cow) && cow.position().equals(at), "a leashed cow set off");
 
             cow.setLeashData(null);
             withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(cow, clock(DAY + 1L)));
 
-            upkeep = traits(helper, cow).upkeep();
+            upkeep = traits(helper, cow).get(CARE).upkeep();
             helper.assertTrue(upkeep.ranAway() && !upkeep.cared() && Escapes.queued(cow), "let off the lead, her upkeep is " + upkeep);
             helper.succeed();
         });
@@ -309,7 +311,7 @@ public final class UpkeepGameTests {
         List<Animal> cows = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             Animal cow = GameTestCompat.spawn(helper, EntityTypes.COW, 2 + 2 * (i % 2), 1, 3 + 2 * (i / 2));
-            Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+            Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
             cows.add(cow);
         }
         boolean[] queued = {false};
@@ -333,7 +335,7 @@ public final class UpkeepGameTests {
             }
             if (!checked[0]) {
                 for (Animal cow : cows.subList(0, 2)) {
-                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
                     helper.assertTrue(!Escapes.queued(cow), "a leashed cow is still queued a tick later");
                     helper.assertTrue(upkeep.cared() && !upkeep.ranAway(), "a cow leashed in the queue has upkeep " + upkeep);
                 }
@@ -341,7 +343,7 @@ public final class UpkeepGameTests {
             }
             if (cows.subList(2, 4).stream().noneMatch(Escapes::queued)) {
                 for (Animal cow : cows.subList(2, 4)) {
-                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
                     helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a free runaway has upkeep " + upkeep);
                 }
                 helper.succeed();
@@ -352,13 +354,13 @@ public final class UpkeepGameTests {
     // A parrot isn't one of the pets familiarity tames, but a tamed one is a pet all the same: it never runs off.
     public static void aTamedParrotNeverRunsAway(GameTestHelper helper) {
         TamableAnimal parrot = GameTestCompat.spawn(helper, EntityTypes.PARROT, 3, 1, 4);
-        Services.DATA.set(parrot, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L));
+        Services.DATA.set(parrot, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         parrot.tame(helper.makeMockPlayer(GameType.SURVIVAL));
         settledOn(parrot, traits(helper, parrot), 0.12, 6.0F, DAY - 5L, Upkeep.NONE.caredFor());
 
         withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(parrot, clock(DAY)));
 
-        Upkeep upkeep = traits(helper, parrot).upkeep();
+        Upkeep upkeep = traits(helper, parrot).get(CARE).upkeep();
         helper.assertTrue(!upkeep.ranAway() && !Escapes.queued(parrot), "a tamed parrot ran away: " + upkeep);
         helper.succeed();
     }
@@ -378,7 +380,7 @@ public final class UpkeepGameTests {
 
                     Escapes.runAway(cow, helper.getLevel(), catchingUp);
 
-                    Upkeep upkeep = traits(helper, cow).upkeep();
+                    Upkeep upkeep = traits(helper, cow).get(CARE).upkeep();
                     helper.assertTrue(upkeep.ranAway() && !upkeep.cared(), "a runaway's upkeep is " + upkeep);
                 }
             } else if (cow.onGround() && outside(cow, middle[0])) {
@@ -412,7 +414,7 @@ public final class UpkeepGameTests {
 
     // Cared for once, now down to 8%.
     private static void neglected(GameTestHelper helper, Animal animal) {
-        Services.DATA.set(animal, traits(helper, animal).fed(0.08, -1L).withOrigin(Origin.FARM).withUpkeep(Upkeep.NONE.caredFor()));
+        Services.DATA.set(animal, traits(helper, animal).with(CARE, traits(helper, animal).get(CARE).fed(0.08, -1L).withOrigin(Origin.FARM).withUpkeep(Upkeep.NONE.caredFor())));
     }
 
     private static boolean outside(Animal animal, BlockPos middle) {
@@ -431,8 +433,8 @@ public final class UpkeepGameTests {
     }
 
     private static Animal settledOn(Animal animal, AnimalTraits traits, double familiarity, float health, long settledDay, Upkeep upkeep) {
-        Services.DATA.set(animal, traits.fed(familiarity, -1L).withOrigin(Origin.FARM)
-                .withHunger(new Hunger(settledDay, -1L, -1L)).withUpkeep(upkeep));
+        Services.DATA.set(animal, traits.with(CARE, traits.get(CARE).fed(familiarity, -1L).withOrigin(Origin.FARM)
+                .withHunger(new Hunger(settledDay, -1L, -1L)).withUpkeep(upkeep)));
         animal.setHealth(health);
         return animal;
     }
@@ -453,7 +455,7 @@ public final class UpkeepGameTests {
     }
 
     private static void assertFamiliarity(GameTestHelper helper, Animal animal, double expected) {
-        double actual = traits(helper, animal).familiarity();
+        double actual = traits(helper, animal).get(CARE).familiarity();
         helper.assertTrue(Math.abs(actual - expected) < 1.0e-6, "familiarity is " + actual + ", expected " + expected);
     }
 }

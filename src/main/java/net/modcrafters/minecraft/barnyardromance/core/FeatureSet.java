@@ -4,6 +4,8 @@ import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSlice;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +20,9 @@ import java.util.function.Supplier;
 public final class FeatureSet {
     private final Map<Class<?>, Object> apis = new LinkedHashMap<>();
     private final Map<Class<?>, String> providers = new LinkedHashMap<>();
+    private final Map<String, AnimalSlice<?>> slices = new LinkedHashMap<>();
+    // Each field of the animal record to the slice that saves it.
+    private final Map<String, String> sliceFields = new LinkedHashMap<>();
     private final Map<String, AttachmentKey<?>> attachments = new LinkedHashMap<>();
     private final Map<Class<?>, List<Consumer<?>>> listeners = new LinkedHashMap<>();
     private final List<Consumer<BarnyardRegistrations.Sink>> content = new ArrayList<>();
@@ -25,6 +30,7 @@ public final class FeatureSet {
     private final List<Predicate<String>> ignoredByDefault = new ArrayList<>();
 
     private FeatureSet() {
+        AnimalTraitCodecs.coreFields().forEach(field -> sliceFields.put(field, "the core record"));
     }
 
     // Runs every feature's register in order; each feature's registrar closes when its register returns.
@@ -47,6 +53,10 @@ public final class FeatureSet {
             throw new IllegalStateException("No feature provides " + api.getName());
         }
         return api.cast(implementation);
+    }
+
+    public List<AnimalSlice<?>> slices() {
+        return List.copyOf(slices.values());
     }
 
     public List<AttachmentKey<?>> attachments() {
@@ -87,6 +97,22 @@ public final class FeatureSet {
                 throw new IllegalStateException(api.getName() + " is provided by both " + earlier + " and " + feature);
             }
             apis.put(api, api.cast(implementation));
+        }
+
+        // Two slices saving the same field would quietly overwrite each other in every save.
+        @Override
+        public void slice(AnimalSlice<?> slice) {
+            open();
+            if (slices.putIfAbsent(slice.name(), slice) != null) {
+                throw new IllegalStateException("Two animal record slices are named " + slice.name() + "; the second is from " + feature);
+            }
+            for (String field : slice.fields()) {
+                String earlier = sliceFields.putIfAbsent(field, slice.name());
+                if (earlier != null) {
+                    throw new IllegalStateException("The animal record field " + field + " is saved by both " + earlier + " and "
+                            + slice.name() + " from " + feature);
+                }
+            }
         }
 
         @Override

@@ -10,6 +10,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,7 @@ public final class AnimalInfoText {
             parts.add(label(value, size));
             parts.add(Text.of("gui.barnyard_romance.info.scale", formatScale(value.scale()), attribute));
             parts.add(life(stage));
-            parts.add(Text.of("gui.barnyard_romance.info.familiar", Familiarity.percent(value.familiarity())));
+            parts.add(Text.of("gui.barnyard_romance.info.familiar", Familiarity.percent(value.get(FamiliaritySlices.CARE).familiarity())));
             parts.add(Text.of("gui.barnyard_romance.info.growth", Growth.clock(value.growthTicks())));
             parts.add(Text.of("gui.barnyard_romance.info.weight", Familiarity.percent(value.weight())));
             if (value.sex() == Sex.FEMALE) {
