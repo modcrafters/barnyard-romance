@@ -2,12 +2,14 @@ package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +29,7 @@ public final class HerdRecords {
         if (traits.isEmpty()) {
             return Optional.empty();
         }
-        Pregnancy pregnancy = Services.DATA.getPregnancy(animal).map(HerdRecords::withoutLitter).orElse(null);
+        Pregnancy pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY).map(HerdRecords::withoutLitter).orElse(null);
         String name = animal.hasCustomName() && animal.getCustomName() != null ? animal.getCustomName().getString() : "";
         NestCheck nest = EggLaying.isLayingHen(animal) && animal.level() instanceof ServerLevel level
                 ? new NestCheck(EggLaying.roosterNear(animal, level), EggLaying.boxWithRoomNear(animal, level))
@@ -35,7 +37,7 @@ public final class HerdRecords {
         return Optional.of(new HerdRecord(AnimalSex.speciesId(animal), name, traits.get(), pregnancy, animal.isBaby(),
                 MilkActions.milkFor(animal).isPresent(), animal instanceof Sheep, animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
                 FamiliarityCare.tamed(animal), nest, DeathCause.NONE,
-                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), LiveFacts.needsTaming(animal), Services.DATA.getLaying(animal).orElse(Laying.NONE))));
+                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), LiveFacts.needsTaming(animal), Services.DATA.get(animal, EggsFeature.LAYING).orElse(Laying.NONE))));
     }
 
     // Below the familiarity threshold the book stops updating an animal: it keeps the old values and only

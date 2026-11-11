@@ -27,8 +27,8 @@ public final class MatingGate {
             return MatingRules.canMate(
                     selfTraits.map(AnimalTraits::sex),
                     partnerTraits.map(AnimalTraits::sex),
-                    Services.DATA.getPregnancy(self).isPresent(),
-                    Services.DATA.getPregnancy(partner).isPresent(),
+                    Services.DATA.get(self, PregnancyFeature.PREGNANCY).isPresent(),
+                    Services.DATA.get(partner, PregnancyFeature.PREGNANCY).isPresent(),
                     selfTraits.map(traits -> Familiarity.ready(traits.familiarity())).orElse(true),
                     partnerTraits.map(traits -> Familiarity.ready(traits.familiarity())).orElse(true)
             );

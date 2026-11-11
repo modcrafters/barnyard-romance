@@ -22,6 +22,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -212,7 +213,7 @@ public final class NeoForgeBreedingGameTests {
         mother.spawnChildFromBreeding(helper.getLevel(), father);
 
         helper.assertTrue(!ANSWERS.containsKey(mother.getUUID()), "BabyEntitySpawnEvent did not fire");
-        helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother became pregnant anyway");
+        helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother became pregnant anyway");
         helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a refused breeding gave XP");
         BreedingGameTests.assertResting(helper, mother, now);
         BreedingGameTests.assertResting(helper, father, now);

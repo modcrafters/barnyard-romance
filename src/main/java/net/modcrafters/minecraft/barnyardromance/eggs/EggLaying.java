@@ -20,6 +20,7 @@ import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -73,15 +74,15 @@ public final class EggLaying {
                 return;
             }
             // Birds from older saves may still be carrying a pregnancy from before they laid eggs.
-            if (Services.DATA.getPregnancy(animal).isPresent()) {
-                Services.DATA.clearPregnancy(animal);
+            if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent()) {
+                Services.DATA.remove(animal, PregnancyFeature.PREGNANCY);
             }
             if (!isLayingHen(animal)) {
                 return;
             }
             long clock = level.getOverworldClockTime();
             int sinceMidnight = EggSchedule.sinceMidnight(clock);
-            Laying laying = Services.DATA.getLaying(animal).orElse(Laying.NONE);
+            Laying laying = Services.DATA.get(animal, EggsFeature.LAYING).orElse(Laying.NONE);
             if (laying.day() != GameDay.of(clock)) {
                 // The day is planned from yesterday's hunger, so it waits until her days are settled. A hen in a
                 // feeding block's herd may wait a few ticks for the block to settle them.
@@ -89,7 +90,7 @@ public final class EggLaying {
                     return;
                 }
                 laying = plan(animal, GameDay.of(clock), sinceMidnight);
-                Services.DATA.setLaying(animal, laying);
+                Services.DATA.set(animal, EggsFeature.LAYING, laying);
             }
             // While she's on her way to a box, the next egg waits for her.
             if (LayInNestGoal.target(animal).isPresent()) {
@@ -100,7 +101,7 @@ public final class EggLaying {
                 return;
             }
             int eggs = due.layNow() ? laying.planned() - laying.next() - due.skip() : 0;
-            Services.DATA.setLaying(animal, laying.advance(due.skip(), eggs));
+            Services.DATA.set(animal, EggsFeature.LAYING, laying.advance(due.skip(), eggs));
             if (eggs > 0) {
                 layDue(animal, level, eggs);
             }
@@ -155,7 +156,7 @@ public final class EggLaying {
     // Back from a box or a trip to one: eggs that came due while she was busy are laid now, not skipped.
     public static void resume(Animal hen, ServerLevel level) {
         long clock = level.getOverworldClockTime();
-        Services.DATA.getLaying(hen).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.setLaying(hen,
+        Services.DATA.get(hen, EggsFeature.LAYING).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.set(hen, EggsFeature.LAYING,
                 laying.withTimes(EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)))));
     }
 

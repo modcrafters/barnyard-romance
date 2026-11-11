@@ -37,14 +37,13 @@ import java.util.function.Supplier;
 public class BarnyardRomanceFabric implements ModInitializer {
     @Override
     public void onInitialize() {
-        FabricAnimalData.ANIMAL_TRAITS.identifier();
-        FabricAnimalData.PREGNANCY.identifier();
-        FabricAnimalData.LAYING.identifier();
+        // Installs the features first: the attachments and registry content below come from them.
+        BarnyardRomance.init();
+        FabricAnimalData.register();
         BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
         CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
-        BarnyardRomance.init();
         BarnyardRomance.setup();
         ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
         data.registerReloadListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());

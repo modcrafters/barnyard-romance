@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
@@ -30,7 +31,7 @@ public final class PregnancyCareActions {
             return InteractionResult.SUCCESS;
         }
         long now = animal.level().getGameTime();
-        Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(animal);
+        Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         Text refusal = refusal(pregnancy.orElse(null), eaten.effects(), now);
         if (refusal != null) {
             player.sendSystemMessage(TextComponents.of(refusal));
@@ -40,7 +41,7 @@ public final class PregnancyCareActions {
         if (!player.hasInfiniteMaterials()) {
             stack.consume(1, player);
         }
-        Services.DATA.setPregnancy(animal, pregnancy.get().withCare(apply(pregnancy.get(), eaten.effects(), eaten.factor(), now)));
+        Services.DATA.set(animal, PregnancyFeature.PREGNANCY, pregnancy.get().withCare(apply(pregnancy.get(), eaten.effects(), eaten.factor(), now)));
         if (animal.getHealth() < animal.getMaxHealth() && heal > 0.0F) {
             animal.heal(heal);
         }
@@ -55,8 +56,8 @@ public final class PregnancyCareActions {
             return;
         }
         long now = animal.level().getGameTime();
-        Services.DATA.getPregnancy(animal).ifPresent(pregnancy ->
-                Services.DATA.setPregnancy(animal, pregnancy.withCare(apply(pregnancy, effects, factor, now))));
+        Services.DATA.get(animal, PregnancyFeature.PREGNANCY).ifPresent(pregnancy ->
+                Services.DATA.set(animal, PregnancyFeature.PREGNANCY, pregnancy.withCare(apply(pregnancy, effects, factor, now))));
     }
 
     static Text refusal(Pregnancy pregnancy, FoodEffects effects, long now) {

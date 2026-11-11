@@ -16,6 +16,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
@@ -92,7 +93,7 @@ public class HerdStick extends Item {
                     Services.DATA.get(animal),
                     AnimalSex.currentScale(animal),
                     AgeController.stage(animal),
-                    Services.DATA.getPregnancy(animal).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
+                    Services.DATA.get(animal, PregnancyFeature.PREGNANCY).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
                     BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
                     animal.level().getGameTime(),
                     Services.DATA.get(animal)
@@ -119,7 +120,7 @@ public class HerdStick extends Item {
             return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(traits.familiarity()),
                     Familiarity.percent(updated.familiarity())));
         }
-        Pregnancy current = Services.DATA.getPregnancy(animal).orElse(null);
+        Pregnancy current = Services.DATA.get(animal, PregnancyFeature.PREGNANCY).orElse(null);
         if (current == null) {
             return new Outcome(false, Text.of("message.barnyard_romance.herd_stick.not_pregnant"));
         }
@@ -127,7 +128,7 @@ public class HerdStick extends Item {
         Pregnancy next = tool.sets()
                 ? DebugSteps.pregnancyAt(current, now, tool.percent())
                 : DebugSteps.pregnancy(current, now, tool.direction());
-        Services.DATA.setPregnancy(animal, next);
+        Services.DATA.set(animal, PregnancyFeature.PREGNANCY, next);
         return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.pregnancy", progress(current, now), progress(next, now)));
     }
 

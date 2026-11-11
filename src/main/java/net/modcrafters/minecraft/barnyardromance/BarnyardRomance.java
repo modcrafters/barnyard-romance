@@ -24,6 +24,7 @@ public final class BarnyardRomance {
     }
 
     public static void init() {
+        BarnyardFeatures.ensureInstalled();
         BarnyardConfig.load(Services.PLATFORM.configDirectory().resolve("barnyard_romance.json"));
         ExcludedTag.install();
         Constants.LOG.info(

@@ -1,24 +1,22 @@
 package net.modcrafters.minecraft.barnyardromance.core.data;
 
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
 
 public interface EntityDataService {
-    Optional<AnimalTraits> get(Animal animal);
+    <T> Optional<T> get(Animal animal, AttachmentKey<T> key);
 
-    void set(Animal animal, AnimalTraits traits);
+    <T> void set(Animal animal, AttachmentKey<T> key, T value);
 
-    Optional<Pregnancy> getPregnancy(Animal animal);
+    void remove(Animal animal, AttachmentKey<?> key);
 
-    void setPregnancy(Animal animal, Pregnancy pregnancy);
+    default Optional<AnimalTraits> get(Animal animal) {
+        return get(animal, CoreAttachments.ANIMAL_TRAITS);
+    }
 
-    void clearPregnancy(Animal animal);
-
-    Optional<Laying> getLaying(Animal animal);
-
-    void setLaying(Animal animal, Laying laying);
+    default void set(Animal animal, AnimalTraits traits) {
+        set(animal, CoreAttachments.ANIMAL_TRAITS, traits);
+    }
 }

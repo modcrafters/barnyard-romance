@@ -45,7 +45,7 @@ public final class PregnancyController {
     }
 
     public static void catchUp(Animal animal, ServerLevel level) {
-        Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(animal);
+        Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         if (pregnancy.isEmpty() || !animal.isAlive()) {
             return;
         }
@@ -58,7 +58,7 @@ public final class PregnancyController {
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to birth {}", AnimalSex.speciesId(animal), exception);
         }
-        Services.DATA.clearPregnancy(animal);
+        Services.DATA.remove(animal, PregnancyFeature.PREGNANCY);
     }
 
     // Time skipped by sleeping or /time add counts towards the pregnancy, including any skipped while she was unloaded.
@@ -72,7 +72,7 @@ public final class PregnancyController {
             return pregnancy;
         }
         Pregnancy moved = pregnancy.skipped(Math.max(0L, drift), new SkippedTime(game, clock));
-        Services.DATA.setPregnancy(mother, moved);
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, moved);
         return moved;
     }
 
@@ -98,7 +98,7 @@ public final class PregnancyController {
         Animal father = mother == self ? partner : self;
         AnimalTraits motherTraits = mother == self ? selfTraits.get() : partnerTraits.get();
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
-        if (Services.DATA.getPregnancy(mother).isEmpty()) {
+        if (Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty()) {
             if (Fertility.wornOut(motherTraits, config.ageFor(AnimalSex.speciesId(mother)), level.getGameTime())) {
                 // Worn out: they mate, show hearts and rest, but nothing is conceived.
                 restWithoutPregnancy(self, partner);
@@ -115,7 +115,7 @@ public final class PregnancyController {
                 return true;
             }
             UUID breeder = BarnyardAdvancements.breeder(mother, father);
-            Services.DATA.setPregnancy(mother, new Pregnancy(
+            Services.DATA.set(mother, PregnancyFeature.PREGNANCY, new Pregnancy(
                     level.getGameTime(),
                     durationTicks,
                     AnimalSex.speciesId(father),

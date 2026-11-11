@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
@@ -77,15 +78,15 @@ public final class BreedingGameTests {
         helper.assertTrue(pregnancy.durationTicks() >= 30_000 && pregnancy.durationTicks() <= 36_000,
                 "pig pregnancy " + pregnancy.durationTicks() + " is outside 30000-36000");
         helper.assertTrue(pregnancy.litter().size() == pregnancy.litterSize(), "the stored litter does not match the litter size");
-        helper.assertTrue(Services.DATA.getPregnancy(father).isEmpty(), "the father became pregnant");
+        helper.assertTrue(Services.DATA.get(father, PregnancyFeature.PREGNANCY).isEmpty(), "the father became pregnant");
         assertResting(helper, mother, now);
         assertResting(helper, father, now);
         helper.assertTrue(!helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "breeding gave no XP");
 
         int litterSize = pregnancy.litterSize();
-        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother is still pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother is still pregnant");
             List<? extends Animal> babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
             helper.assertTrue(babies.size() == litterSize, "expected " + litterSize + " piglets, found " + babies.size());
             for (Animal baby : babies) {
@@ -117,7 +118,7 @@ public final class BreedingGameTests {
 
         first.spawnChildFromBreeding(helper.getLevel(), second);
 
-        helper.assertTrue(Services.DATA.getPregnancy(first).isEmpty() && Services.DATA.getPregnancy(second).isEmpty(), "a same-sex pair conceived");
+        helper.assertTrue(Services.DATA.get(first, PregnancyFeature.PREGNANCY).isEmpty() && Services.DATA.get(second, PregnancyFeature.PREGNANCY).isEmpty(), "a same-sex pair conceived");
         helper.assertTrue(!first.isInLove() && !second.isInLove(), "a same-sex pair stayed in love");
         helper.assertTrue(traits(helper, first).loveUntil() < 0L && traits(helper, second).loveUntil() < 0L, "love was not cleared on a same-sex pair");
         helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a same-sex pair gave XP");
@@ -155,7 +156,7 @@ public final class BreedingGameTests {
         mother.setInLove(null);
         father.setInLove(null);
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isPresent(), "the pigs have not bred yet");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "the pigs have not bred yet");
             helper.assertTrue(traits(helper, mother).cooldownUntil() > helper.getLevel().getGameTime(), "the mother is not resting");
         });
     }
@@ -171,7 +172,7 @@ public final class BreedingGameTests {
 
         father.spawnChildFromBreeding(helper.getLevel(), mother);
 
-        helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "a worn-out mother conceived");
+        helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "a worn-out mother conceived");
         helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a worn-out mating gave XP");
         assertResting(helper, mother, now);
         assertResting(helper, father, now);
@@ -187,9 +188,9 @@ public final class BreedingGameTests {
         mother.spawnChildFromBreeding(helper.getLevel(), father);
         Pregnancy pregnancy = pregnancy(helper, mother);
 
-        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother is still pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother is still pregnant");
             AnimalTraits traits = traits(helper, mother);
             helper.assertTrue(Math.abs(traits.fertility() - 0.75) < 1.0e-6, "the mother's fertility is " + traits.fertility() + ", not 0.75");
             helper.assertTrue(traits.fertilityTick() >= now, "the birth was not dated");
@@ -249,7 +250,7 @@ public final class BreedingGameTests {
         Lineage lineage = new Lineage(UUID.randomUUID(), UUID.randomUUID());
         Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 1.2, 0.75, 42L).withLineage(lineage));
         Pregnancy pregnancy = new Pregnancy(100L, 72_000L, "minecraft:cow", 1.1, 2, 0.75, 24_000, 0.6, List.of(), PregnancyCare.NONE);
-        Services.DATA.setPregnancy(cow, pregnancy);
+        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, pregnancy);
 
         Animal loaded = GameTestCompat.reloaded(helper, cow);
 
@@ -284,7 +285,7 @@ public final class BreedingGameTests {
     public static void timeSkipMovesPregnanciesOn(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         long now = helper.getLevel().getGameTime();
-        Services.DATA.setPregnancy(cow, new Pregnancy(now, 66_000L, "minecraft:cow", 1.0, 1, 0.5));
+        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(now, 66_000L, "minecraft:cow", 1.0, 1, 0.5));
         PregnancyController.catchUp(cow, helper.getLevel());
         long before = helper.getLevel().getOverworldClockTime();
         try {
@@ -303,7 +304,7 @@ public final class BreedingGameTests {
     // Ends the mother's pregnancy now and returns the young that were born.
     public static List<Animal> forceBirth(GameTestHelper helper, Animal mother) {
         Pregnancy pregnancy = pregnancy(helper, mother);
-        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
         List<Animal> before = List.copyOf(helper.getEntities(mother.getType()).stream().map(Animal.class::cast).toList());
         PregnancyController.catchUp(mother, helper.getLevel());
         List<Animal> young = helper.getEntities(mother.getType()).stream()
@@ -384,7 +385,7 @@ public final class BreedingGameTests {
     }
 
     public static Pregnancy pregnancy(GameTestHelper helper, Animal mother) {
-        return Services.DATA.getPregnancy(mother).orElseThrow(() -> GameTestCompat.failure(helper, "the mother did not become pregnant"));
+        return Services.DATA.get(mother, PregnancyFeature.PREGNANCY).orElseThrow(() -> GameTestCompat.failure(helper, "the mother did not become pregnant"));
     }
 
     // Vanilla's rest after breeding: the age cooldown, love cleared, and both mirrored into the synced traits.

@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -139,7 +140,7 @@ public final class AdvancementGameTests {
 
         due(helper, mother);
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the cow is still pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the cow is still pregnant");
             helper.assertTrue(criterionDone(breeder, TWO_BY_TWO, "minecraft:cow"), "Two by Two didn't count the calf");
         });
     }
@@ -169,7 +170,7 @@ public final class AdvancementGameTests {
     public static void offlineBreederIsCreditedAtLogin(GameTestHelper helper) {
         UUID offline = UUID.randomUUID();
         Animal mother = bredCow(helper, null);
-        Services.DATA.setPregnancy(mother, BreedingGameTests.pregnancy(helper, mother).withBreederId(offline));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, BreedingGameTests.pregnancy(helper, mother).withBreederId(offline));
         int litter = BreedingGameTests.pregnancy(helper, mother).litterSize();
 
         due(helper, mother);
@@ -210,7 +211,7 @@ public final class AdvancementGameTests {
 
         due(helper, mother);
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the cow is still pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the cow is still pregnant");
             helper.assertTrue(!earned(bystander, BarnyardAdvancements.SPECIAL_DELIVERY), "a bystander earned Special Delivery");
         });
     }
@@ -485,7 +486,7 @@ public final class AdvancementGameTests {
     // The pregnancy is moved back so the birth comes on the next tick.
     static void due(GameTestHelper helper, Animal mother) {
         Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
-        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
     }
 
     // A player sneaking up with wheat, as one wins over a wild animal.

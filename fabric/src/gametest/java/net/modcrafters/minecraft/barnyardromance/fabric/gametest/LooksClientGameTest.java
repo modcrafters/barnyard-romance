@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornRoll;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.minecraft.core.registries.Registries;
@@ -160,7 +161,7 @@ public class LooksClientGameTest implements FabricClientGameTest {
                 }
                 if (spec.pregnancy() >= 0.0) {
                     long duration = 66_000L;
-                    Services.DATA.setPregnancy(animal, new Pregnancy(level.getGameTime() - Math.round(duration * spec.pregnancy()), duration, "minecraft:cow", 1.0, 1, 1.0));
+                    Services.DATA.set(animal, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - Math.round(duration * spec.pregnancy()), duration, "minecraft:cow", 1.0, 1, 1.0));
                 }
                 spec.extra().accept(animal);
                 spawned.add(animal.getUUID());

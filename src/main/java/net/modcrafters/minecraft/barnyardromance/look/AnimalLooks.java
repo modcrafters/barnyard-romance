@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -37,7 +38,7 @@ public final class AnimalLooks {
         if (!config.speciesEnabled(speciesId)) {
             return 1.0f;
         }
-        Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(animal);
+        Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         if (pregnancy.isEmpty()) {
             return 1.0f;
         }

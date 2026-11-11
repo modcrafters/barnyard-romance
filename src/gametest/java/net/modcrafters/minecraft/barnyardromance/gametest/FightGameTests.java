@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
 import net.modcrafters.minecraft.barnyardromance.rivalry.RivalRolls;
@@ -70,7 +71,7 @@ public final class FightGameTests {
         Animal first = bull(helper, 5, 4, 1.0);
         Animal second = bull(helper, 5, 6, 1.0);
         courtWithAFight(helper, cow, first, second);
-        helper.runAfterDelay(700, () -> helper.assertTrue(cow.isInLove() || Services.DATA.getPregnancy(cow).isPresent(),
+        helper.runAfterDelay(700, () -> helper.assertTrue(cow.isInLove() || Services.DATA.get(cow, PregnancyFeature.PREGNANCY).isPresent(),
                 "the cow's love ran out while the bulls fought"));
 
         helper.succeedWhen(() -> {
@@ -203,7 +204,7 @@ public final class FightGameTests {
             helper.assertTrue(!Fights.fighting(first), "the bull still fights a rival who is gone");
             int love = cow.getInLoveTime();
             helper.runAfterDelay(5, () -> {
-                helper.assertTrue(cow.getInLoveTime() < love || Services.DATA.getPregnancy(cow).isPresent(), "the cow's love is still held");
+                helper.assertTrue(cow.getInLoveTime() < love || Services.DATA.get(cow, PregnancyFeature.PREGNANCY).isPresent(), "the cow's love is still held");
                 helper.succeed();
             });
         });

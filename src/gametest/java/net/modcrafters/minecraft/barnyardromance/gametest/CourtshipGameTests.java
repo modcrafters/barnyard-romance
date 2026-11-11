@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -87,7 +88,7 @@ public final class CourtshipGameTests {
         });
 
         helper.runAfterDelay(BREED_TICKS - 20, () -> {
-            helper.assertTrue(Services.DATA.getPregnancy(cow).isEmpty(), "a bull behind a fence made the cow pregnant: the bull at "
+            helper.assertTrue(Services.DATA.get(cow, PregnancyFeature.PREGNANCY).isEmpty(), "a bull behind a fence made the cow pregnant: the bull at "
                     + helper.relativePos(bull.blockPosition()) + ", the cow at " + helper.relativePos(cow.blockPosition()));
             assertVigour(helper, bull, 1.0);
             helper.succeed();
@@ -128,7 +129,7 @@ public final class CourtshipGameTests {
         cow.setInLove(null);
 
         helper.runAfterDelay(BREED_TICKS - 20, () -> {
-            helper.assertTrue(Services.DATA.getPregnancy(cow).isEmpty(), "a bull mated for his last health");
+            helper.assertTrue(Services.DATA.get(cow, PregnancyFeature.PREGNANCY).isEmpty(), "a bull mated for his last health");
             helper.assertTrue(Math.abs(bull.getHealth() - 2.0F) < 1.0e-4F, "the bull's health is " + bull.getHealth());
             helper.succeed();
         });
@@ -291,7 +292,7 @@ public final class CourtshipGameTests {
     }
 
     public static void assertFather(GameTestHelper helper, Animal mother, Animal father) {
-        Pregnancy pregnancy = Services.DATA.getPregnancy(mother).orElse(null);
+        Pregnancy pregnancy = Services.DATA.get(mother, PregnancyFeature.PREGNANCY).orElse(null);
         helper.assertTrue(pregnancy != null, "the " + mother.getType().getDescription().getString() + " isn't pregnant");
         UUID fatherId = pregnancy.fatherId();
         helper.assertTrue(father.getUUID().equals(fatherId), "the father is " + fatherId + ", not " + father.getUUID());

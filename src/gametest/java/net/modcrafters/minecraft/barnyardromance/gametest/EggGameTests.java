@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
@@ -32,6 +33,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
@@ -196,7 +198,7 @@ public final class EggGameTests {
     public static void skippedEggsAreNotLaid(GameTestHelper helper) {
         Animal hen = hen(helper, MEDIUM_HEN, 0.0);
         long day = 10L;
-        Services.DATA.setLaying(hen, new Laying(day, List.of(7_000, 9_000), 0, 0));
+        Services.DATA.set(hen, EggsFeature.LAYING, new Laying(day, List.of(7_000, 9_000), 0, 0));
 
         Laying after = tickAt(helper, hen, at(day, 9_000));
 
@@ -289,11 +291,11 @@ public final class EggGameTests {
 
     public static void oldChickenPregnancyIsCleared(GameTestHelper helper) {
         Animal hen = hen(helper, MEDIUM_HEN, 0.5);
-        Services.DATA.setPregnancy(hen, new Pregnancy(0L, 1L, "minecraft:chicken", 1.2, 1, 0.5));
+        Services.DATA.set(hen, PregnancyFeature.PREGNANCY, new Pregnancy(0L, 1L, "minecraft:chicken", 1.2, 1, 0.5));
 
         EggLaying.serverTick(hen, helper.getLevel());
 
-        helper.assertTrue(Services.DATA.getPregnancy(hen).isEmpty(), "a hen kept her pregnancy");
+        helper.assertTrue(Services.DATA.get(hen, PregnancyFeature.PREGNANCY).isEmpty(), "a hen kept her pregnancy");
         helper.succeed();
     }
 
@@ -1197,10 +1199,10 @@ public final class EggGameTests {
         Laying after;
         try {
             GameTestCompat.setOverworldClock(helper, at(day, 10_000));
-            Services.DATA.setLaying(hen, new Laying(day, List.of(10_000, 12_000, 15_000), 0));
+            Services.DATA.set(hen, EggsFeature.LAYING, new Laying(day, List.of(10_000, 12_000, 15_000), 0));
             BarnyardConfig.set(BarnyardConfig.parse("{\"species\": {\"minecraft:chicken\": {\"eggs\": {\"boxRange\": 0, \"roosterRange\": 0}}}}"));
             EggLaying.serverTick(hen, helper.getLevel());
-            after = Services.DATA.getLaying(hen).orElseThrow();
+            after = Services.DATA.get(hen, EggsFeature.LAYING).orElseThrow();
         } finally {
             BarnyardConfig.set(config);
             GameTestCompat.setOverworldClock(helper, before);
@@ -1235,7 +1237,7 @@ public final class EggGameTests {
         Animal back;
         try {
             GameTestCompat.setOverworldClock(helper, clock);
-            Services.DATA.setLaying(hen, new Laying(day, List.of(9_500, 15_000), 0));
+            Services.DATA.set(hen, EggsFeature.LAYING, new Laying(day, List.of(9_500, 15_000), 0));
             box.enter(hen, List.of(new ItemStack(Items.EGG)), helper.getLevel().getGameTime());
             box.finishSitting();
             back = (Animal) helper.getLevel().getEntity(id);
@@ -1262,9 +1264,9 @@ public final class EggGameTests {
             Laying after;
             try {
                 GameTestCompat.setOverworldClock(helper, at(day, 10_000));
-                Services.DATA.setLaying(hen, new Laying(day, List.of(10_000, 15_000), 0));
+                Services.DATA.set(hen, EggsFeature.LAYING, new Laying(day, List.of(10_000, 15_000), 0));
                 inPen(() -> EggLaying.serverTick(hen, helper.getLevel()));
-                after = Services.DATA.getLaying(hen).orElseThrow();
+                after = Services.DATA.get(hen, EggsFeature.LAYING).orElseThrow();
             } finally {
                 GameTestCompat.setOverworldClock(helper, before);
             }
@@ -1479,7 +1481,7 @@ public final class EggGameTests {
     static Animal chicken(GameTestHelper helper, Sex sex, double scale, double familiarity, int x) {
         Animal chicken = GameTestCompat.spawn(helper, EntityTypes.CHICKEN, x, 1, 4);
         Services.DATA.set(chicken, new AnimalTraits(sex, scale, familiarity, -1L));
-        Services.DATA.setLaying(chicken, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
+        Services.DATA.set(chicken, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
         return chicken;
     }
 
@@ -1497,7 +1499,7 @@ public final class EggGameTests {
             BarnyardConfig.set(config);
             GameTestCompat.setOverworldClock(helper, before);
         }
-        return Services.DATA.getLaying(hen).orElse(Laying.NONE);
+        return Services.DATA.get(hen, EggsFeature.LAYING).orElse(Laying.NONE);
     }
 
     static long afterMidnight(long day) {

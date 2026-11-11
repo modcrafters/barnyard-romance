@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import com.mojang.serialization.Dynamic;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.RecordSheet;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -26,6 +27,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdLedger;
@@ -308,7 +310,7 @@ public final class HerdBookGameTests {
         father.setInLove(null);
         mother.spawnChildFromBreeding(helper.getLevel(), father);
         long now = helper.getLevel().getGameTime();
-        Services.DATA.setPregnancy(mother, BreedingGameTests.pregnancy(helper, mother).withConceivedAt(now - 10_000L));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, BreedingGameTests.pregnancy(helper, mother).withConceivedAt(now - 10_000L));
         HerdBooks.leftLevel(mother, Entity.RemovalReason.UNLOADED_TO_CHUNK);
         // The cow is still in the level, so this checks the projection from the record by moving time on instead.
         Pregnancy recorded = data(helper).record(mother.getUUID()).pregnancy();
@@ -565,7 +567,7 @@ public final class HerdBookGameTests {
     public static void theEggTipSaysWhatSheLaidToday(GameTestHelper helper) {
         Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.MEDIUM_HEN, 0.5, 3);
         FamiliarityCare.markEaten(hen);
-        Services.DATA.setLaying(hen, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(5_000, 9_000), 1, 1));
+        Services.DATA.set(hen, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(5_000, 9_000), 1, 1));
 
         HerdEntry entry = EggGameTests.bookEntry(helper, hen);
 

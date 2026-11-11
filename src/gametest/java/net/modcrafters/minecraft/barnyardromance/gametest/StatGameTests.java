@@ -5,6 +5,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -78,7 +79,7 @@ public final class StatGameTests {
     public static void aLayingHenCountsTodaysEggs(GameTestHelper helper) {
         Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.MEDIUM_HEN, 0.5, 3);
         long clock = clock(DAY) + 2_000L;
-        Services.DATA.setLaying(hen, new Laying(GameDay.of(clock), List.of(5_000, 9_000), 1, 1));
+        Services.DATA.set(hen, EggsFeature.LAYING, new Laying(GameDay.of(clock), List.of(5_000, 9_000), 1, 1));
 
         List<StatLine> lines = lines(helper, hen, clock);
 

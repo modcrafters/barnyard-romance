@@ -7,17 +7,19 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.item.HerdBookCopyRecipe;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 // Everything the mod adds to Minecraft's registries, for both loaders: Fabric walks it once at start-up, NeoForge
 // from each RegisterEvent, keeping the entries for the registry being filled. The values are suppliers, so nothing
-// is built before its registry is open. A new block, item or component goes here and nowhere else.
+// is built before its registry is open. Each feature's own content follows, in feature registration order.
 public final class BarnyardRegistrations {
     // Where each loader puts an entry.
     public interface Sink {
@@ -58,6 +60,9 @@ public final class BarnyardRegistrations {
         sink.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), tab);
         sink.register(Registries.PARTICLE_TYPE, id("pregnancy_heart"), () -> BarnyardParticles.PREGNANCY_HEART);
         sink.register(Registries.PARTICLE_TYPE, id("old_heart"), () -> BarnyardParticles.OLD_HEART);
+        for (Consumer<Sink> content : FeaturesRepository.features().content()) {
+            content.accept(sink);
+        }
     }
 
     private static void item(Sink sink, ResourceKey<Item> key, Supplier<Item> item) {

@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -204,7 +205,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             level.addFreshEntity(cow);
             Services.DATA.set(cow, change.apply(new AnimalTraits(sex, sex == Sex.FEMALE ? 0.85 : 1.2, 1.0, -1L)));
             if (pregnant) {
-                Services.DATA.setPregnancy(cow, new Pregnancy(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25, 1, 1.0));
+                Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25, 1, 1.0));
             }
             // A fresh book for each animal, opened at its page the way using the book on it does.
             ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);

@@ -19,6 +19,7 @@ import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -492,7 +493,7 @@ public final class FoodGameTests {
 
     static Animal pregnantCow(GameTestHelper helper, double motherFamiliarity) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        Services.DATA.setPregnancy(cow, new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:cow", 1.0, 1, motherFamiliarity));
+        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:cow", 1.0, 1, motherFamiliarity));
         return cow;
     }
 

@@ -8,11 +8,13 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
@@ -132,7 +134,7 @@ public final class NaturalistGameTests {
 
             mother.spawnChildFromBreeding(helper.getLevel(), father);
 
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isPresent(), "a " + id + " isn't pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "a " + id + " isn't pregnant");
         }
         helper.succeed();
     }
@@ -396,7 +398,7 @@ public final class NaturalistGameTests {
     private static Animal bird(GameTestHelper helper, String id, Sex sex, double familiarity, int x) {
         Animal bird = GameTestCompat.spawn(helper, type(helper, id), x, 1, 4);
         Services.DATA.set(bird, new AnimalTraits(sex, sex == Sex.MALE ? 1.2 : EggGameTests.MEDIUM_HEN, familiarity, -1L));
-        Services.DATA.setLaying(bird, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
+        Services.DATA.set(bird, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
         return bird;
     }
 

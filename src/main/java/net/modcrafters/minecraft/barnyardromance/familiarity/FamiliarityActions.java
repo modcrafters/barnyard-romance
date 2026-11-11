@@ -18,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -145,7 +146,7 @@ public final class FamiliarityActions {
             BarnyardAdvancements.befriended(animal, player);
         }
         tameIfFamiliar(animal, player, gained);
-        if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
+        if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent())) {
             animal.setInLove(player);
         }
         return VersionCompat.SUCCESS_SERVER;
@@ -256,7 +257,7 @@ public final class FamiliarityActions {
         if (traits.get().sex() == Sex.MALE) {
             return false;
         }
-        return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent())
+        return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent())
                 && AgeController.allowsLove(animal);
     }
 

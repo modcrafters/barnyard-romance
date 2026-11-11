@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,7 @@ public final class AnimalHearts {
     }
 
     public static void serverTick(Animal animal, ServerLevel level) {
-        if (Services.DATA.getPregnancy(animal).isPresent()) {
+        if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent()) {
             animal.resetLove();
             return;
         }
@@ -56,7 +57,7 @@ public final class AnimalHearts {
         if (animal.level() == null || !animal.level().isClientSide()) {
             return;
         }
-        if (Services.DATA.getPregnancy(animal).isEmpty()) {
+        if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isEmpty()) {
             oldHeart(animal);
             return;
         }

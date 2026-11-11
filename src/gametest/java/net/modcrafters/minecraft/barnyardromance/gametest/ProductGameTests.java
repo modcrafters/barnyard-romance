@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -276,9 +277,9 @@ public final class ProductGameTests {
         father.setInLove(null);
         mother.spawnChildFromBreeding(helper.getLevel(), father);
         Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
-        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother is still pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother is still pregnant");
             Lactation lactation = BreedingGameTests.traits(helper, mother).lactation();
             long later = helper.getLevel().getGameTime();
             helper.assertTrue(lactation.hasMilk(later, BarnyardConfig.current().tuning().milkKeepsFlowingTicks()), "the mother has no milk after a birth");

@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
@@ -21,6 +22,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -51,7 +53,7 @@ public final class LiveFacts {
         boolean female = traits.sex() == Sex.FEMALE;
         boolean grown = stage == AgeStage.ADULT || stage == AgeStage.OLD;
         boolean ready = Familiarity.ready(traits.familiarity());
-        Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(animal);
+        Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         double fertility = Fertility.current(traits, age, now);
         Text breeding = StatText.breeding(
                 needsTaming(animal),
@@ -127,7 +129,7 @@ public final class LiveFacts {
             value = StatText.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, vigour(traits, clock),
                     VigourRules.hungry(traits.hunger().lastAteDay(), today), BarnyardConfig.current().tuning().vigourPerEgg());
         } else if (EggLaying.isLayingHen(animal)) {
-            Laying laying = Services.DATA.getLaying(animal).filter(current -> current.day() == today).orElse(Laying.NONE);
+            Laying laying = Services.DATA.get(animal, EggsFeature.LAYING).filter(current -> current.day() == today).orElse(Laying.NONE);
             value = StatText.eggsText(laying.laid(), laying.planned(), traits.hunger().hungryYesterday(today));
         } else {
             return Text.EMPTY;

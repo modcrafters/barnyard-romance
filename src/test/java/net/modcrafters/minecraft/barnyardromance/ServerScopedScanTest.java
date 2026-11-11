@@ -26,7 +26,9 @@ class ServerScopedScanTest {
             Map.entry("food/MinecraftItemFacts.MATCHERS", "item id or tag to matcher; tag contents are read fresh"),
             Map.entry("core/animal/AnimalSex.SPECIES_IDS", "entity type to species id, from the built-in registry"),
             Map.entry("food/FoodData.WARNED", "log messages already shown, cleared on reload"),
-            Map.entry("look/AnimalLooks.WARNED", "log messages already shown")
+            Map.entry("look/AnimalLooks.WARNED", "log messages already shown"),
+            Map.entry("fabric/data/FabricAnimalData.TYPES", "startup state: attachment types are registered once per game"),
+            Map.entry("neoforge/data/NeoForgeAnimalData.TYPES", "startup state: attachment types are registered once per game")
     );
     // A static final field set to a new mutable collection, on one line.
     private static final Pattern FIELD = Pattern.compile(

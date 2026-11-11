@@ -56,7 +56,9 @@ import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 @Mod(Constants.MOD_ID)
 public class BarnyardRomanceNeoForge {
     public BarnyardRomanceNeoForge(IEventBus modBus) {
-        NeoForgeAnimalData.ATTACHMENT_TYPES.register(modBus);
+        // Installs the features first: the attachments and registry content come from them.
+        BarnyardRomance.init();
+        NeoForgeAnimalData.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
@@ -68,7 +70,6 @@ public class BarnyardRomanceNeoForge {
         //if (FMLEnvironment.dist == Dist.CLIENT) {
             BarnyardRomanceNeoForgeClient.register(modBus);
         }
-        BarnyardRomance.init();
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
