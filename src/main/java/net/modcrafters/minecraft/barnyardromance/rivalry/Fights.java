@@ -6,7 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
@@ -154,12 +155,13 @@ public final class Fights {
     private static Set<UUID> foodNear(ServerLevel level, Animal a, Animal b) {
         double range = BarnyardConfig.current().tuning().fightStopRange();
         Set<UUID> near = new HashSet<>();
+        FoodApi food = FeaturesRepository.get(FoodApi.class);
         for (ServerPlayer player : level.players()) {
             if (player.isSpectator() || (player.distanceToSqr(a) > range * range && player.distanceToSqr(b) > range * range)) {
                 continue;
             }
-            if (FoodData.eats(a, player.getMainHandItem()) || FoodData.eats(a, player.getOffhandItem())
-                    || FoodData.eats(b, player.getMainHandItem()) || FoodData.eats(b, player.getOffhandItem())) {
+            if (food.eats(a, player.getMainHandItem()) || food.eats(a, player.getOffhandItem())
+                    || food.eats(b, player.getMainHandItem()) || food.eats(b, player.getOffhandItem())) {
                 near.add(player.getUUID());
             }
         }

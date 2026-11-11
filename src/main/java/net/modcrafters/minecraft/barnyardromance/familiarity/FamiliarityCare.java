@@ -15,8 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.api.HerdApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourRules;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -28,7 +27,6 @@ import org.jspecify.annotations.Nullable;
 import java.util.Optional;
 
 import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
-import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
 
 // Looking after an animal day by day: hungry days cost familiarity and health (see DailyUpkeep), and a tamed animal
 // that has lost too much is grumpy rather than wild. Settling runs every server tick but only changes anything after
@@ -66,8 +64,9 @@ public final class FamiliarityCare {
         }
         AnimalTraits traits = tracked.get();
         long today = GameDay.of(clock);
+        VigourApi vigour = FeaturesRepository.get(VigourApi.class);
         // This runs every tick for every tracked animal; on a day already settled there's nothing to do or make.
-        if (traits.get(CARE).hunger().settledDay() >= today && traits.get(VIGOUR).day() >= today) {
+        if (traits.get(CARE).hunger().settledDay() >= today && vigour.settled(traits, today)) {
             return tracked;
         }
         // An animal in a herd leaves its missed days to its feeding block, which shares its food over them (see
@@ -78,12 +77,12 @@ public final class FamiliarityCare {
         FamiliarityState care = traits.get(CARE);
         Hunger.Settled settled = Hunger.settle(care.hunger(), today, animal.isBaby());
         // Hunger settling never moves the last meal, so Vigour is settled against the same one.
-        Vigour vigour = VigourRules.settle(traits.get(VIGOUR), care.hunger().lastAteDay(), today);
+        AnimalTraits refilled = vigour.settle(traits, care.hunger().lastAteDay(), today);
         if (settled.hunger().equals(care.hunger())) {
-            if (vigour.equals(traits.get(VIGOUR))) {
+            // settle hands back the same traits when his Vigour hasn't changed.
+            if (refilled == traits) {
                 return tracked;
             }
-            AnimalTraits refilled = traits.with(VIGOUR, vigour);
             Services.DATA.set(animal, refilled);
             return Optional.of(refilled);
         }
@@ -116,7 +115,7 @@ public final class FamiliarityCare {
             cared = outcome.cared();
         }
 
-        AnimalTraits updated = traits.with(CARE, care.withFamiliarity(familiarity).withHunger(hungerNow)).with(VIGOUR, vigour);
+        AnimalTraits updated = refilled.with(CARE, care.withFamiliarity(familiarity).withHunger(hungerNow));
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && tamed(animal)) {
             updated = toTamingGrace(animal, updated);
@@ -218,8 +217,8 @@ public final class FamiliarityCare {
                 long today = GameDay.of(clock);
                 // A male who missed yesterday is filled by his first meal today.
                 FamiliarityState care = traits.get(CARE);
-                Vigour vigour = VigourRules.onMeal(traits.get(VIGOUR), care.hunger().lastAteDay(), today);
-                Services.DATA.set(animal, traits.with(CARE, care.withHunger(care.hunger().ate(today))).with(VIGOUR, vigour));
+                AnimalTraits refilled = FeaturesRepository.get(VigourApi.class).afterMeal(traits, care.hunger().lastAteDay(), today);
+                Services.DATA.set(animal, refilled.with(CARE, care.withHunger(care.hunger().ate(today))));
             }
         });
     }

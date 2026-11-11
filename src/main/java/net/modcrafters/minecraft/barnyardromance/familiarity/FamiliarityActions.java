@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
@@ -11,12 +11,11 @@ import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.food.Feed;
-import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
-import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
@@ -78,7 +77,7 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return null;
         }
-        Feed feed = FoodData.resolve(animal, stack);
+        Feed feed = FeaturesRepository.get(FoodApi.class).offered(animal, stack);
         if (feed instanceof Feed.Refused) {
             if (!animal.level().isClientSide()) {
                 player.sendSystemMessage(TextComponents.of(WONT_EAT));
@@ -90,10 +89,10 @@ public final class FamiliarityActions {
         }
         if (eaten.superfood()) {
             if (eaten.effects().startsMilk()) {
-                return MilkActions.startMilk(animal, player, hand, eaten);
+                return FeaturesRepository.get(MilkApi.class).startMilk(animal, player, hand, eaten);
             }
             return eaten.effects().vigour() > 0.0
-                    ? VigourActions.feedMash(animal, player, stack, eaten)
+                    ? FeaturesRepository.get(VigourApi.class).feedMash(animal, player, stack, eaten)
                     : PregnancyCareActions.feed(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.
@@ -120,7 +119,7 @@ public final class FamiliarityActions {
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), BarnyardConfig.current().tuning());
+        float heal = FeaturesRepository.get(FoodApi.class).heals(animal, stack, eaten);
         if (!player.hasInfiniteMaterials()) {
             stack.consume(1, player);
         }
@@ -143,7 +142,7 @@ public final class FamiliarityActions {
         Services.DATA.set(animal, fed);
         FamiliarityCare.markEaten(animal);
         if (eaten.effects().startsMilk()) {
-            MilkActions.startMilkWithMeal(animal);
+            FeaturesRepository.get(MilkApi.class).startMilkWithMeal(animal);
         }
         if (!familiar && Familiarity.ready(gained)) {
             Events.post(new AnimalEvent.Befriended(animal, player));
@@ -159,7 +158,7 @@ public final class FamiliarityActions {
     public static boolean tempts(Animal animal, ItemStack stack) {
         try {
             // The food check is a cached lookup and most held items aren't food, so it goes first.
-            return FoodData.eats(animal, stack) && !ignoresFood(animal);
+            return FeaturesRepository.get(FoodApi.class).eats(animal, stack) && !ignoresFood(animal);
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
             return false;
@@ -178,8 +177,8 @@ public final class FamiliarityActions {
 
     private static boolean sneakingWithFood(Animal animal, Player player) {
         try {
-            return player.isShiftKeyDown()
-                    && (FoodData.eats(animal, player.getMainHandItem()) || FoodData.eats(animal, player.getOffhandItem()));
+            FoodApi food = FeaturesRepository.get(FoodApi.class);
+            return player.isShiftKeyDown() && (food.eats(animal, player.getMainHandItem()) || food.eats(animal, player.getOffhandItem()));
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
             return false;

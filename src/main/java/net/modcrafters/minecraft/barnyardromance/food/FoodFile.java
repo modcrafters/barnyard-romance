@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
+
 import java.util.List;
 
 // One food file: which animals it is for (by species or diet), which items, and what they do.

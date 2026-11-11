@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 //? if >=1.21.2
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarShearing;
+import net.modcrafters.minecraft.barnyardromance.shear.FamiliarShearing;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
@@ -22,6 +22,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
@@ -721,7 +722,7 @@ public final class CareGameTests {
 
         ShearActions.refuseShearing(ewe, null);
 
-        ProductGameTests.assertMilks(helper, ewe, BarnyardItems.SHEEP_MILK_BUCKET);
+        ProductGameTests.assertMilks(helper, ewe, MilkItems.SHEEP_MILK_BUCKET);
         helper.succeed();
     }
 

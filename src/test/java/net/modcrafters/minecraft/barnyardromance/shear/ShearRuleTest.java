@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
-import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;

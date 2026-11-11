@@ -8,13 +8,15 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.food.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.FoodFile;
 import net.modcrafters.minecraft.barnyardromance.food.FoodJson;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourItems;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -277,7 +279,7 @@ public final class FoodGameTests {
     // A dry, familiar cow given Dairy Mash has milk for the short window, and it counts as her meal.
     public static void dairyMashStartsMilk(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+        Player player = holding(helper, MilkItems.DAIRY_MASH);
 
         FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
 
@@ -346,11 +348,11 @@ public final class FoodGameTests {
 
     public static void dairyMashIsRefusedByAMilkingCow(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
-        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+        Player player = holding(helper, MilkItems.DAIRY_MASH);
 
         FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "a cow that has milk ate the dairy mash");
+        helper.assertTrue(player.getMainHandItem().is(MilkItems.DAIRY_MASH), "a cow that has milk ate the dairy mash");
         helper.succeed();
     }
 
@@ -358,7 +360,7 @@ public final class FoodGameTests {
     public static void studMashRestoresHalfTheVigour(GameTestHelper helper) {
         Animal bull = withVigourToday(helper, BreedingGameTests.male(helper, EntityTypes.COW), 0.1);
         AnimalTraits before = BreedingGameTests.traits(helper, bull);
-        Player player = holding(helper, BarnyardItems.STUD_MASH);
+        Player player = holding(helper, VigourItems.STUD_MASH);
 
         FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
 
@@ -376,7 +378,7 @@ public final class FoodGameTests {
         Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).with(CARE, BreedingGameTests.traits(helper, bull).get(CARE).withHunger(new Hunger(today, today - 2L, today - 1L)))
                 .with(VIGOUR, new Vigour(0.2, today, -1L)));
 
-        FamiliarityActions.interact(bull, holding(helper, BarnyardItems.STUD_MASH), InteractionHand.MAIN_HAND);
+        FamiliarityActions.interact(bull, holding(helper, VigourItems.STUD_MASH), InteractionHand.MAIN_HAND);
 
         helper.assertTrue(VigourActions.hungry(bull), "a stud mash saved the bull from a hungry day");
         CourtshipGameTests.assertVigour(helper, bull, 0.7);
@@ -388,7 +390,7 @@ public final class FoodGameTests {
         FamiliarityActions.interact(bull, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
         Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).with(VIGOUR, new Vigour(0.4, today, -1L)));
-        Player player = holding(helper, BarnyardItems.STUD_MASH);
+        Player player = holding(helper, VigourItems.STUD_MASH);
 
         FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
 
@@ -399,25 +401,25 @@ public final class FoodGameTests {
 
     public static void studMashIsRefusedByFemalesAndYoung(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        Player forCow = holding(helper, BarnyardItems.STUD_MASH);
+        Player forCow = holding(helper, VigourItems.STUD_MASH);
         FamiliarityActions.interact(cow, forCow, InteractionHand.MAIN_HAND);
-        helper.assertTrue(forCow.getMainHandItem().is(BarnyardItems.STUD_MASH), "a cow ate the stud mash");
+        helper.assertTrue(forCow.getMainHandItem().is(VigourItems.STUD_MASH), "a cow ate the stud mash");
 
         Animal calf = BreedingGameTests.male(helper, EntityTypes.COW);
         calf.setBaby(true);
-        Player forCalf = holding(helper, BarnyardItems.STUD_MASH);
+        Player forCalf = holding(helper, VigourItems.STUD_MASH);
         FamiliarityActions.interact(calf, forCalf, InteractionHand.MAIN_HAND);
-        helper.assertTrue(forCalf.getMainHandItem().is(BarnyardItems.STUD_MASH), "a calf ate the stud mash");
+        helper.assertTrue(forCalf.getMainHandItem().is(VigourItems.STUD_MASH), "a calf ate the stud mash");
         helper.succeed();
     }
 
     public static void studMashTopsOutAtFull(GameTestHelper helper) {
         Animal bull = withVigourToday(helper, BreedingGameTests.male(helper, EntityTypes.COW), 1.0);
-        Player player = holding(helper, BarnyardItems.STUD_MASH);
+        Player player = holding(helper, VigourItems.STUD_MASH);
 
         FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.STUD_MASH), "a bull at full Vigour ate the stud mash");
+        helper.assertTrue(player.getMainHandItem().is(VigourItems.STUD_MASH), "a bull at full Vigour ate the stud mash");
         CourtshipGameTests.assertVigour(helper, bull, 1.0);
         helper.succeed();
     }
@@ -431,23 +433,23 @@ public final class FoodGameTests {
 
     public static void dairyMashIsRefusedByABull(GameTestHelper helper) {
         Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
-        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+        Player player = holding(helper, MilkItems.DAIRY_MASH);
 
         FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "a bull ate the dairy mash");
+        helper.assertTrue(player.getMainHandItem().is(MilkItems.DAIRY_MASH), "a bull ate the dairy mash");
         helper.assertTrue(!BreedingGameTests.traits(helper, bull).get(LACTATION).hasMilk(helper.getLevel().getGameTime(), 72_000L), "a bull has milk");
         helper.succeed();
     }
 
     public static void dairyMashNeedsFamiliarity(GameTestHelper helper) {
         Animal cow = withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.COW), 0.1);
-        Player player = holding(helper, BarnyardItems.DAIRY_MASH);
+        Player player = holding(helper, MilkItems.DAIRY_MASH);
         player.setShiftKeyDown(true);
 
         FamiliarityActions.interact(cow, player, InteractionHand.MAIN_HAND);
 
-        helper.assertTrue(player.getMainHandItem().is(BarnyardItems.DAIRY_MASH), "an unfamiliar cow ate the dairy mash");
+        helper.assertTrue(player.getMainHandItem().is(MilkItems.DAIRY_MASH), "an unfamiliar cow ate the dairy mash");
         helper.succeed();
     }
 
@@ -461,9 +463,9 @@ public final class FoodGameTests {
         }
         // Crafted stacks carry the tooltip too, because it is the item's default lore. Dairy Mash writes its effect
         // line itself, from the config.
-        for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, BarnyardItems.DAIRY_MASH)) {
+        for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, MilkItems.DAIRY_MASH)) {
             ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
-            int lines = item == BarnyardItems.DAIRY_MASH ? 1 : 2;
+            int lines = item == MilkItems.DAIRY_MASH ? 1 : 2;
             helper.assertTrue(lore != null && lore.lines().size() == lines, item + " has no tooltip");
         }
         helper.succeed();

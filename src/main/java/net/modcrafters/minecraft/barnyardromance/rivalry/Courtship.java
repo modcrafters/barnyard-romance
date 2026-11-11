@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.rivalry;
 
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
@@ -10,7 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
@@ -135,7 +136,7 @@ public final class Courtship {
             }
             end(female.getUUID());
             Tuning tuning = BarnyardConfig.current().tuning();
-            VigourActions.pay(male, tuning.vigourPerMating(), tuning.hungryMatingHealth());
+            FeaturesRepository.get(VigourApi.class).pay(male, tuning.vigourPerMating(), tuning.hungryMatingHealth());
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to charge a {} for mating", AnimalSex.speciesId(self), exception);
         }
@@ -196,7 +197,7 @@ public final class Courtship {
         if (taken != null && !taken.equals(female.getUUID())) {
             return false;
         }
-        return !Fights.fighting(male) && VigourActions.canPay(male, tuning.vigourPerMating(), tuning.hungryMatingHealth());
+        return !Fights.fighting(male) && FeaturesRepository.get(VigourApi.class).canPay(male, tuning.vigourPerMating(), tuning.hungryMatingHealth());
     }
 
     private static void choose(Animal female, State state, Animal male) {

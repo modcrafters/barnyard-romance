@@ -7,10 +7,8 @@ import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.food.Feed;
-import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
-import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -69,10 +67,8 @@ public final class FeederMeal {
         if (animal.getHealth() >= animal.getMaxHealth()) {
             return;
         }
-        Feed feed = FoodData.resolve(animal, food);
-        float heal = feed instanceof Feed.Eaten eaten
-                ? FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, food).nutrition(), eaten.factor(), BarnyardConfig.current().tuning())
-                : FoodHeal.amount(Optional.empty(), new MinecraftItemFacts(animal, food).nutrition(), 1.0, BarnyardConfig.current().tuning());
+        FoodApi foods = FeaturesRepository.get(FoodApi.class);
+        float heal = foods.heals(animal, food, foods.offered(animal, food));
         if (heal > 0.0F) {
             animal.heal(heal);
         }

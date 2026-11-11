@@ -1,7 +1,6 @@
-package net.modcrafters.minecraft.barnyardromance.item;
+package net.modcrafters.minecraft.barnyardromance.milk;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkRules;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

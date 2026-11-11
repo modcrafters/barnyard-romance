@@ -9,6 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -90,8 +91,8 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
             player.getInventory().setItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH, 2));
             player.getInventory().setItem(1, new ItemStack(BarnyardItems.GOLDEN_BRAN, 2));
-            player.getInventory().setItem(2, new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET));
-            player.getInventory().setItem(3, new ItemStack(BarnyardItems.GOAT_MILK_BUCKET));
+            player.getInventory().setItem(2, new ItemStack(MilkItems.SHEEP_MILK_BUCKET));
+            player.getInventory().setItem(3, new ItemStack(MilkItems.GOAT_MILK_BUCKET));
         });
         world.getConnection().waitForClientboundPackets();
         context.waitTicks(5);

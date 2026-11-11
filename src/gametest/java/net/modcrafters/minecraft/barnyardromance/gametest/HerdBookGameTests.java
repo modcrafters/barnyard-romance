@@ -23,7 +23,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
-import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;

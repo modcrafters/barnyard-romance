@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.food;
+package net.modcrafters.minecraft.barnyardromance.food.api;
 
 import java.util.Optional;
 

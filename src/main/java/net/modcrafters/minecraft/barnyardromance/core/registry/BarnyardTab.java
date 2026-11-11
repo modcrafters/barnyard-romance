@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -19,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 // The mod's own creative tab. Each loader brings its builder and fills it from contents(),
-// because CreativeModeTab.Output is only widened in the loaders.
+// because CreativeModeTab.Output is only widened in the loaders. An item a feature registers is named by its id, and
+// looked up when the tab is filled, after registration.
 public final class BarnyardTab {
     public static final ResourceKey<CreativeModeTab> ID = ResourceKey.create(
             Registries.CREATIVE_MODE_TAB,
@@ -37,7 +39,7 @@ public final class BarnyardTab {
 
     // The superfoods the loaders add to vanilla's Food & Drinks tab, as well as to ours.
     public static List<Item> foodAndDrinks() {
-        return List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, BarnyardItems.DAIRY_MASH, BarnyardItems.STUD_MASH);
+        return List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, item("dairy_mash"), item("stud_mash"));
     }
 
     // The Herd Sticks are there only while the config's herdSticks is on. The loaders call this each time the tab is
@@ -62,10 +64,15 @@ public final class BarnyardTab {
         }
         contents.add(new ItemStack(BarnyardItems.BREEDERS_MASH));
         contents.add(new ItemStack(BarnyardItems.GOLDEN_BRAN));
-        contents.add(new ItemStack(BarnyardItems.DAIRY_MASH));
-        contents.add(new ItemStack(BarnyardItems.STUD_MASH));
-        contents.add(new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET));
-        contents.add(new ItemStack(BarnyardItems.GOAT_MILK_BUCKET));
+        contents.add(new ItemStack(item("dairy_mash")));
+        contents.add(new ItemStack(item("stud_mash")));
+        contents.add(new ItemStack(item("sheep_milk_bucket")));
+        contents.add(new ItemStack(item("goat_milk_bucket")));
         return contents;
+    }
+
+    private static Item item(String path) {
+        Identifier id = Identifier.fromNamespaceAndPath(Constants.MOD_ID, path);
+        return BuiltInRegistries.ITEM.getOptional(id).orElseThrow(() -> new IllegalStateException("No item " + id + " is registered"));
     }
 }

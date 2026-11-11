@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

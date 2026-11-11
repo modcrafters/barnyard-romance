@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.Walk;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
@@ -11,15 +12,6 @@ import org.jspecify.annotations.Nullable;
 // Whether one animal can walk to another: within range, and with a path that really gets there, so a fence or a wall
 // between pens keeps them apart. It's a path search, so it's only asked now and then, never every tick.
 public final class Reach {
-    // What a path search says about walking somewhere: it can, it can't (the path goes some way and stops short), or
-    // nothing, when the search never left the block it started in. That happens to an animal standing in some spots
-    // of a pen's corner, between two fence lines, though it can walk out of it.
-    public enum Walk {
-        YES,
-        NO,
-        UNKNOWN
-    }
-
     private Reach() {
     }
 

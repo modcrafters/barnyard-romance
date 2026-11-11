@@ -4,7 +4,9 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.Walk;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.BlockPos;
@@ -41,7 +43,7 @@ final class HerdRefresh {
 
     // The animals that eat here now, nearest first: of this block's kind and an enabled species, past nursing,
     // familiar, within reach, and able to walk here, so a fence keeps the next pen's animals out. When the search says
-    // nothing (see Reach.Walk), a member stays, and a newcomer joins only if it's close to the block already: a fence
+    // nothing (see Walk), a member stays, and a newcomer joins only if it's close to the block already: a fence
     // between pens stops a search partway, which says no.
     static List<UUID> find(ServerLevel level, BlockPos pos, FeederKind kind, Set<UUID> members) {
         int range = BarnyardConfig.current().tuning().feederRange();
@@ -49,9 +51,10 @@ final class HerdRefresh {
         List<Animal> near = new ArrayList<>(level.getEntitiesOfClass(Animal.class, new AABB(pos).inflate(range), animal -> eats(animal, kind)));
         near.sort(Comparator.comparingDouble(animal -> animal.distanceToSqr(middle)));
         List<UUID> found = new ArrayList<>();
+        RivalryApi rivalry = FeaturesRepository.get(RivalryApi.class);
         for (Animal animal : near) {
-            Reach.Walk walk = Reach.walkTo(animal, pos, range);
-            if (walk == Reach.Walk.YES || walk == Reach.Walk.UNKNOWN
+            Walk walk = rivalry.walkTo(animal, pos, range);
+            if (walk == Walk.YES || walk == Walk.UNKNOWN
                     && (members.contains(animal.getUUID()) || EatAtFeederGoal.within(animal, pos, EatAtFeederGoal.CLOSE_ENOUGH))) {
                 found.add(animal.getUUID());
             }

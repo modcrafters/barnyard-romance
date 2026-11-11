@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 
 // A sheep can be sheared once a day, like milking, and still needs to eat grass to grow its wool back as in

@@ -40,10 +40,6 @@ public final class BarnyardRegistrations {
         item(sink, BarnyardItems.HERD_BOOK_ID, () -> BarnyardItems.HERD_BOOK);
         item(sink, BarnyardItems.BREEDERS_MASH_ID, () -> BarnyardItems.BREEDERS_MASH);
         item(sink, BarnyardItems.GOLDEN_BRAN_ID, () -> BarnyardItems.GOLDEN_BRAN);
-        item(sink, BarnyardItems.DAIRY_MASH_ID, () -> BarnyardItems.DAIRY_MASH);
-        item(sink, BarnyardItems.STUD_MASH_ID, () -> BarnyardItems.STUD_MASH);
-        item(sink, BarnyardItems.SHEEP_MILK_BUCKET_ID, () -> BarnyardItems.SHEEP_MILK_BUCKET);
-        item(sink, BarnyardItems.GOAT_MILK_BUCKET_ID, () -> BarnyardItems.GOAT_MILK_BUCKET);
         item(sink, BarnyardItems.FERTILIZED_EGG_ID, () -> BarnyardItems.FERTILIZED_EGG);
         sink.register(Registries.BLOCK, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX);
         sink.register(Registries.ITEM, BarnyardBlocks.NESTING_BOX_ID, () -> BarnyardBlocks.NESTING_BOX_ITEM);

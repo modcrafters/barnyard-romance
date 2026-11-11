@@ -1,8 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -134,7 +135,7 @@ public final class EggLaying {
             Tuning tuning = BarnyardConfig.current().tuning();
             fathered.forEach((father, eggCount) -> {
                 if (level.getEntity(father) instanceof Animal rooster) {
-                    VigourActions.pay(rooster, tuning.vigourPerEgg() * eggCount, tuning.hungryEggHealth() * eggCount);
+                    FeaturesRepository.get(VigourApi.class).pay(rooster, tuning.vigourPerEgg() * eggCount, tuning.hungryEggHealth() * eggCount);
                 }
             });
             return;
@@ -188,8 +189,8 @@ public final class EggLaying {
 
     private static boolean canFather(Animal rooster, Animal hen, int eggs, EggSettings settings) {
         Tuning tuning = BarnyardConfig.current().tuning();
-        return VigourActions.canPay(rooster, tuning.vigourPerEgg() * eggs, tuning.hungryEggHealth() * eggs)
-                && !Reach.blocked(rooster, hen, settings.roosterRange());
+        return FeaturesRepository.get(VigourApi.class).canPay(rooster, tuning.vigourPerEgg() * eggs, tuning.hungryEggHealth() * eggs)
+                && !FeaturesRepository.get(RivalryApi.class).walkBlocked(rooster, hen, settings.roosterRange());
     }
 
     public static boolean boxWithRoomNear(Animal hen, ServerLevel level) {

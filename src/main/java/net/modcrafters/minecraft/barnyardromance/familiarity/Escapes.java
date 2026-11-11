@@ -2,7 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
@@ -230,9 +231,10 @@ public final class Escapes {
         }
         List<BlockPos> far = rings.getLast();
         int start = far.isEmpty() ? 0 : animal.getRandom().nextInt(far.size());
+        RivalryApi rivalry = FeaturesRepository.get(RivalryApi.class);
         for (int i = 0; i < far.size(); i++) {
             BlockPos spot = far.get((start + i) % far.size());
-            if (Reach.canWalkTo(animal, spot, RANGE)) {
+            if (rivalry.canWalkTo(animal, spot, RANGE)) {
                 return new Way(spot, false);
             }
         }
@@ -242,7 +244,7 @@ public final class Escapes {
             List<BlockPos> outside = new ArrayList<>();
             for (BlockPos spot : rings.get(ring)) {
                 // Nothing on the far ring could be reached, or it would have been taken above.
-                if (last || !Reach.canWalkTo(animal, spot, RANGE)) {
+                if (last || !rivalry.canWalkTo(animal, spot, RANGE)) {
                     outside.add(spot);
                 } else if (farthest == null || distance(animal, spot) > distance(animal, farthest)) {
                     farthest = spot;

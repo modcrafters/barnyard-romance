@@ -1,8 +1,8 @@
 // Only the shared ShearsDispenseMixin uses this; the 1.21.1 copy asks NeoForge's IShearable instead.
 //? if >=1.21.2 {
-package net.modcrafters.minecraft.barnyardromance.familiarity;
+package net.modcrafters.minecraft.barnyardromance.shear;
 
-import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;

@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import org.junit.jupiter.api.Test;
 

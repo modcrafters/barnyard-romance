@@ -6,7 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.world.entity.animal.Animal;
 
@@ -22,7 +23,9 @@ public final class MatingGate {
             Optional<AnimalTraits> partnerTraits = Services.DATA.get(partner);
             // A tracked couple mates only as Courtship paired them.
             if (selfTraits.isPresent() && partnerTraits.isPresent() && selfTraits.get().sex() != partnerTraits.get().sex()
-                    && !(selfTraits.get().sex() == Sex.FEMALE ? Courtship.chosen(self, partner) : Courtship.chosen(partner, self))) {
+                    && !(selfTraits.get().sex() == Sex.FEMALE
+                    ? FeaturesRepository.get(RivalryApi.class).chosen(self, partner)
+                    : FeaturesRepository.get(RivalryApi.class).chosen(partner, self))) {
                 return false;
             }
             return MatingRules.canMate(

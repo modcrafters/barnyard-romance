@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
@@ -195,7 +195,7 @@ public final class ProductGameTests {
 
     // The mod's cake recipe takes any bucket in barnyard_romance:milk_buckets, and hands every bucket back.
     public static void cakeTakesEveryMilk(GameTestHelper helper) {
-        for (Item milk : List.of(Items.MILK_BUCKET, BarnyardItems.SHEEP_MILK_BUCKET, BarnyardItems.GOAT_MILK_BUCKET)) {
+        for (Item milk : List.of(Items.MILK_BUCKET, MilkItems.SHEEP_MILK_BUCKET, MilkItems.GOAT_MILK_BUCKET)) {
             CraftingInput input = CraftingInput.of(3, 3, List.of(
                     new ItemStack(milk), new ItemStack(milk), new ItemStack(milk),
                     new ItemStack(Items.SUGAR), new ItemStack(Items.EGG), new ItemStack(Items.SUGAR),
@@ -217,7 +217,7 @@ public final class ProductGameTests {
     }
 
     public static void milkBucketsAreInTheCommonTag(GameTestHelper helper) {
-        for (Item milk : List.of(BarnyardItems.SHEEP_MILK_BUCKET, BarnyardItems.GOAT_MILK_BUCKET)) {
+        for (Item milk : List.of(MilkItems.SHEEP_MILK_BUCKET, MilkItems.GOAT_MILK_BUCKET)) {
             helper.assertTrue(new ItemStack(milk).is(COMMON_MILK), milk + " is not in c:buckets/milk");
         }
         helper.succeed();
@@ -226,7 +226,7 @@ public final class ProductGameTests {
     public static void goatMilkClearsEffects(GameTestHelper helper) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
-        ItemStack left = new ItemStack(BarnyardItems.GOAT_MILK_BUCKET).finishUsingItem(helper.getLevel(), player);
+        ItemStack left = new ItemStack(MilkItems.GOAT_MILK_BUCKET).finishUsingItem(helper.getLevel(), player);
 
         helper.assertTrue(player.getActiveEffects().isEmpty(), "goat milk left " + player.getActiveEffects());
         helper.assertTrue(left.is(Items.BUCKET), "goat milk left " + left + " behind");
@@ -239,12 +239,12 @@ public final class ProductGameTests {
     }
 
     public static void goatGivesGoatMilk(GameTestHelper helper) {
-        assertMilks(helper, mother(helper, EntityTypes.GOAT, 0.5), BarnyardItems.GOAT_MILK_BUCKET);
+        assertMilks(helper, mother(helper, EntityTypes.GOAT, 0.5), MilkItems.GOAT_MILK_BUCKET);
         helper.succeed();
     }
 
     public static void sheepGivesSheepMilk(GameTestHelper helper) {
-        assertMilks(helper, mother(helper, EntityTypes.SHEEP, 0.5), BarnyardItems.SHEEP_MILK_BUCKET);
+        assertMilks(helper, mother(helper, EntityTypes.SHEEP, 0.5), MilkItems.SHEEP_MILK_BUCKET);
         helper.succeed();
     }
 

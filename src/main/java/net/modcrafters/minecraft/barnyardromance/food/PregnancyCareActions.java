@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.Aging;
@@ -10,8 +11,9 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.WildCaught;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
@@ -19,11 +21,11 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.shear.ShearRule;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearApi;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.stats.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourRules;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
@@ -31,7 +33,6 @@ import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -104,15 +105,16 @@ public final class HerdStatus {
         double progress = pregnancy == null ? 0.0 : PregnancyClock.progress(now, pregnancy);
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species()));
         Optional<MilkStatus> milk = female && record.milkable() && record.alive()
-                ? MilkActions.status(traits, size, now, clock)
+                ? FeaturesRepository.get(MilkApi.class).status(traits, size, now, clock)
                 : Optional.empty();
         ShearState shear = record.alive()
-                ? ShearRule.state(record.shearable(), record.woolly(), record.baby(), traits, clock)
+                ? FeaturesRepository.get(ShearApi.class).shearState(record.shearable(), record.woolly(), record.baby(), traits, clock)
                 : ShearState.NONE;
         EggOutlook eggs = eggs(record, traits, stage, clock, config);
         RecordSheet sheet = record.sheet();
         long today = GameDay.of(clock);
-        double vigour = VigourRules.settle(traits.get(VigourSlices.VIGOUR), care.hunger().lastAteDay(), today).value();
+        VigourApi vigourApi = FeaturesRepository.get(VigourApi.class);
+        double vigour = vigourApi.vigour(traits, care.hunger().lastAteDay(), today);
         boolean showsVigour = traits.sex() == Sex.MALE && grown;
         Text breeding = StatText.breeding(
                 sheet.needsTaming(),
@@ -149,7 +151,7 @@ public final class HerdStatus {
                 .health(sheet.health())
                 .maxHealth(sheet.maxHealth())
                 .vigour(showsVigour ? vigour : -1.0)
-                .vigourHungry(traits.sex() == Sex.MALE && VigourRules.hungry(care.hunger().lastAteDay(), today))
+                .vigourHungry(traits.sex() == Sex.MALE && vigourApi.hungry(care.hunger().lastAteDay(), today))
                 .eggsToday(record.alive() ? eggsToday(record, traits, stage, vigour, today, config) : Text.EMPTY)
                 .breeding(breeding)
                 .father(pregnancy == null ? Text.EMPTY : StatText.father(
@@ -166,7 +168,8 @@ public final class HerdStatus {
         }
         Text value;
         if (traits.sex() == Sex.MALE) {
-            value = StatText.roosterText(stage == AgeStage.YOUNG, vigour, VigourRules.hungry(traits.get(FamiliaritySlices.CARE).hunger().lastAteDay(), today),
+            value = StatText.roosterText(stage == AgeStage.YOUNG, vigour,
+                    FeaturesRepository.get(VigourApi.class).hungry(traits.get(FamiliaritySlices.CARE).hunger().lastAteDay(), today),
                     config.tuning().vigourPerEgg());
         } else if (traits.sex() == Sex.FEMALE && (stage == AgeStage.ADULT || stage == AgeStage.OLD)) {
             Laying laying = record.sheet().laying().day() == today ? record.sheet().laying() : Laying.NONE;

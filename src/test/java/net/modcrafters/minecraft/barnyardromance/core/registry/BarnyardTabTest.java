@@ -36,10 +36,10 @@ class BarnyardTabTest {
                 "if (herdSticks) | HerdStick.create(HerdTool.pregnancy(-1))",
                 "new ItemStack(BarnyardItems.BREEDERS_MASH)",
                 "new ItemStack(BarnyardItems.GOLDEN_BRAN)",
-                "new ItemStack(BarnyardItems.DAIRY_MASH)",
-                "new ItemStack(BarnyardItems.STUD_MASH)",
-                "new ItemStack(BarnyardItems.SHEEP_MILK_BUCKET)",
-                "new ItemStack(BarnyardItems.GOAT_MILK_BUCKET)"
+                "new ItemStack(item(\"dairy_mash\"))",
+                "new ItemStack(item(\"stud_mash\"))",
+                "new ItemStack(item(\"sheep_milk_bucket\"))",
+                "new ItemStack(item(\"goat_milk_bucket\"))"
         ), declaredContents());
         // The feeders' place in the tab is FeederKind's order.
         assertEquals(List.of("bird_feeder", "trough", "feeder", "manger", "pet_bowl"),

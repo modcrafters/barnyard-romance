@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.food;
+package net.modcrafters.minecraft.barnyardromance.food.api;
 
 // What happens when an animal is offered an item.
 public sealed interface Feed {

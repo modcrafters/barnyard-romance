@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
-import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import org.jspecify.annotations.Nullable;
 

@@ -5,7 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
-import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;

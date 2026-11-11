@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
 import net.modcrafters.minecraft.barnyardromance.advancement.api.AdvancementsApi;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
@@ -20,7 +20,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkSlices;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
@@ -138,8 +138,9 @@ public final class PregnancyController {
 
     // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
     private static void restWithoutPregnancy(Animal self, Animal partner) {
-        self.setAge(Courtship.restAfterMating(self, 6000));
-        partner.setAge(Courtship.restAfterMating(partner, 6000));
+        RivalryApi rivalry = FeaturesRepository.get(RivalryApi.class);
+        self.setAge(rivalry.restAfterMating(self, 6000));
+        partner.setAge(rivalry.restAfterMating(partner, 6000));
         self.resetLove();
         partner.resetLove();
         BreedingStatus.resting(self);
@@ -188,9 +189,10 @@ public final class PregnancyController {
             // A birth starts the milk, and it keeps flowing while the young are babies.
             Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
                     mother,
-                    traits.with(PregnancySlices.BREEDING, traits.get(PregnancySlices.BREEDING).gaveBirth(now, species)
-                                    .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now))
-                            .with(MilkSlices.LACTATION, traits.get(MilkSlices.LACTATION).afterBirth(now, youngUntil, config.tuning().lactationTicks()))
+                    FeaturesRepository.get(MilkApi.class).inMilkAfterBirth(
+                            traits.with(PregnancySlices.BREEDING, traits.get(PregnancySlices.BREEDING).gaveBirth(now, species)
+                                    .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)),
+                            now, youngUntil)
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);

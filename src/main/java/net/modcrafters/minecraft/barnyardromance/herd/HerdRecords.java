@@ -6,7 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
@@ -37,7 +38,8 @@ public final class HerdRecords {
                 ? new NestCheck(EggLaying.roosterNear(animal, level), EggLaying.boxWithRoomNear(animal, level))
                 : NestCheck.NONE;
         return Optional.of(new HerdRecord(AnimalSex.speciesId(animal), name, traits.get(), pregnancy, animal.isBaby(),
-                MilkActions.milkFor(animal).isPresent(), animal instanceof Sheep, animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
+                FeaturesRepository.get(MilkApi.class).givesMilk(animal), animal instanceof Sheep,
+                animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
                 FamiliarityCare.tamed(animal), nest, DeathCause.NONE,
                 new RecordSheet(animal.getHealth(), animal.getMaxHealth(), LiveFacts.needsTaming(animal), Services.DATA.get(animal, EggsFeature.LAYING).orElse(Laying.NONE))));
     }

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
@@ -12,10 +13,9 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusal;
-import net.modcrafters.minecraft.barnyardromance.food.Feed;
-import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
-import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -61,10 +61,10 @@ public final class MilkActions {
             return Optional.of(Items.MILK_BUCKET);
         }
         if (animal instanceof Goat) {
-            return Optional.of(BarnyardItems.GOAT_MILK_BUCKET);
+            return Optional.of(MilkItems.GOAT_MILK_BUCKET);
         }
         if (animal instanceof Sheep) {
-            return Optional.of(BarnyardItems.SHEEP_MILK_BUCKET);
+            return Optional.of(MilkItems.SHEEP_MILK_BUCKET);
         }
         return Optional.empty();
     }
@@ -151,7 +151,7 @@ public final class MilkActions {
             VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(start)));
             return InteractionResult.CONSUME;
         }
-        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), tuning);
+        float heal = FeaturesRepository.get(FoodApi.class).heals(animal, stack, eaten);
         // Dairy Mash comes in a bowl, and the player gets it back, as with a stew.
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(Items.BOWL)));
         Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).started(now, tuning.milkKeepsFlowingTicks())));

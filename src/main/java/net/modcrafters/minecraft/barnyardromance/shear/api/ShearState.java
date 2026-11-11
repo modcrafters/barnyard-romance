@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.herd;
+package net.modcrafters.minecraft.barnyardromance.shear.api;
 
 // Whether the herd book shows a sheep as ready to shear. NONE is for animals that aren't sheared at all, and lambs.
 public enum ShearState {

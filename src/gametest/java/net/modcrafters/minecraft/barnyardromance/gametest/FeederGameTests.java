@@ -27,6 +27,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.vigour.VigourItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
@@ -303,7 +304,7 @@ public final class FeederGameTests {
     public static void feederRefusesSuperfoods(GameTestHelper helper) {
         FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
 
-        helper.assertTrue(!manger.canPlaceItem(0, new ItemStack(BarnyardItems.STUD_MASH)), "the Manger takes Stud Mash");
+        helper.assertTrue(!manger.canPlaceItem(0, new ItemStack(VigourItems.STUD_MASH)), "the Manger takes Stud Mash");
         helper.assertTrue(!manger.canPlaceItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH)), "the Manger takes Breeder's Mash");
         helper.succeed();
     }
