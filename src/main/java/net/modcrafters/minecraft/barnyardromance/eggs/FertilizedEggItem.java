@@ -1,14 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.EggItem;

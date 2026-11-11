@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Animal;
 import org.spongepowered.asm.mixin.Mixin;

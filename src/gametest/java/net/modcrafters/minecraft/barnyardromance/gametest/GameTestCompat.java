@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

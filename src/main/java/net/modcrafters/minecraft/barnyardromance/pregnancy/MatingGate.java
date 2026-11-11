@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.minecraft.world.entity.animal.Animal;
 

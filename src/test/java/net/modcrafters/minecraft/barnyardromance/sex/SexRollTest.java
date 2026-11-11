@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

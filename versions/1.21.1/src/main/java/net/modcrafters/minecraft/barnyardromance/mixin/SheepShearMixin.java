@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.minecraft.world.entity.animal.Sheep;

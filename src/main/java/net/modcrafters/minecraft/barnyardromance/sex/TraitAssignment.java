@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import java.util.Optional;
 import java.util.function.Supplier;
 

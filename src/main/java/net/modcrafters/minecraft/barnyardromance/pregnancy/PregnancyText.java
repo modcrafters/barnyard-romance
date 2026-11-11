@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 public final class PregnancyText {
     private PregnancyText() {

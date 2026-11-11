@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.text.English;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.text.English;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

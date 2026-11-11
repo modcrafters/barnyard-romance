@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.modcrafters.minecraft.barnyardromance.platform.services.IPlatformHelper;
+import net.modcrafters.minecraft.barnyardromance.core.platform.IPlatformHelper;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.animal.Animal;
 import net.neoforged.fml.ModList;

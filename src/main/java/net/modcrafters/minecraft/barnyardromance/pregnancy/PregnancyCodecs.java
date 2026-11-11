@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

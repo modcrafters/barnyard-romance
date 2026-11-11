@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
 import net.minecraft.network.chat.Component;

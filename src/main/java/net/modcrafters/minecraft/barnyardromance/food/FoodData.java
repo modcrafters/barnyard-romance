@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederFoods;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

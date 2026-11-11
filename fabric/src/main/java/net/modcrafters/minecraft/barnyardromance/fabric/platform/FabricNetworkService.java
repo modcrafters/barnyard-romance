@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.platform;
 
-import net.modcrafters.minecraft.barnyardromance.platform.services.NetworkService;
+import net.modcrafters.minecraft.barnyardromance.core.platform.NetworkService;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

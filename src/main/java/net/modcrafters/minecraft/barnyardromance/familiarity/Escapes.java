@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

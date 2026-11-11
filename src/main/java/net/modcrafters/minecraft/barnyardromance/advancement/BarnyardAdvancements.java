@@ -1,13 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.advancement;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 //? if >=26.1 {
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 //?} else

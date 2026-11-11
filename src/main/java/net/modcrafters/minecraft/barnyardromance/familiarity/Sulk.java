@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 
 import java.util.Map;
 import java.util.WeakHashMap;

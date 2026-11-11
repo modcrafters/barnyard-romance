@@ -2,8 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
 import net.minecraft.gametest.framework.GameTestHelper;

@@ -1,15 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;

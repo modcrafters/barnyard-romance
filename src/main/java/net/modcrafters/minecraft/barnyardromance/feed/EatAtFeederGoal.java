@@ -1,8 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.core.BlockPos;

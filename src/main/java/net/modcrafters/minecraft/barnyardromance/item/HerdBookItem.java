@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;

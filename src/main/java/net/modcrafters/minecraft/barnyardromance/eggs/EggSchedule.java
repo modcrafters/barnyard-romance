@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 
 import java.util.ArrayList;
 import java.util.Collections;

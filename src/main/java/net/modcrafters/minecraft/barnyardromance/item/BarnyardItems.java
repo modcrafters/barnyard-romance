@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.item;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;

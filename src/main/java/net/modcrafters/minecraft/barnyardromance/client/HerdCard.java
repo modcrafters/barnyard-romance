@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;

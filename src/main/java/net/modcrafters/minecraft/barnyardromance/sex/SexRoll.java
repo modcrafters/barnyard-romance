@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+
 public final class SexRoll {
     private SexRoll() {
     }

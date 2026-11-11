@@ -2,9 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.herd;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;

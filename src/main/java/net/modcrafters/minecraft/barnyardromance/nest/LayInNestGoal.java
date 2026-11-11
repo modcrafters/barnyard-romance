@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.TamableAnimal;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;

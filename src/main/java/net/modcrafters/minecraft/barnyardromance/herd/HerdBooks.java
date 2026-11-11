@@ -1,15 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;

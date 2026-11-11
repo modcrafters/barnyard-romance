@@ -1,20 +1,20 @@
 package net.modcrafters.minecraft.barnyardromance.vigour;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
 
-import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.food.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

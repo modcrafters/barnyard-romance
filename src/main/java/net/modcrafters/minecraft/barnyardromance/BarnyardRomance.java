@@ -1,10 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.ExcludedTag;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.ExcludedTag;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 
 public final class BarnyardRomance {
     private BarnyardRomance() {

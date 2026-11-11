@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;

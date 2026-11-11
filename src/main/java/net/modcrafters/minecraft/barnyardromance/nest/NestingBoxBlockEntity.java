@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;

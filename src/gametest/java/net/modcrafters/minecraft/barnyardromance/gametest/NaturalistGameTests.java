@@ -1,8 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
@@ -12,9 +12,9 @@ import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.Block;

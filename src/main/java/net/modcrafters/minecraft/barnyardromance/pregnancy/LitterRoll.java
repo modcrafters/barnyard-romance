@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.config.Range;
+import net.modcrafters.minecraft.barnyardromance.core.config.Range;
 
 // Picks a value in a range. A weight of 0.5 is neutral; a heavier mother picks a bigger litter and a shorter pregnancy.
 public final class LitterRoll {

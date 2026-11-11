@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 
 import java.util.Locale;
 

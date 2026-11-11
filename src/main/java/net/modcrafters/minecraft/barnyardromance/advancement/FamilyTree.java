@@ -2,9 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.advancement;
 
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdLedger;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;

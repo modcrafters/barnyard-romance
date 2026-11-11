@@ -1,10 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;

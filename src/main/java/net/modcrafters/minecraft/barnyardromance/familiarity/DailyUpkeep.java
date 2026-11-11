@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.config.HungerSettings;
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 
 // One day of an animal's upkeep, worked out from plain numbers so the same rule serves a single day and a long catch-up.
 public final class DailyUpkeep {

@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+
 // How hard a wolf bites and how much health it has, as multipliers of vanilla's, from where its size sits between
 // the smallest female and the largest male the config allows. Halfway is a vanilla wolf; the smallest female bites
 // like a stick (1 damage) with half the health, the largest male like a netherite sword (8) with half again as much.

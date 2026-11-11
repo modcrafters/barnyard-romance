@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 public record HerdTool(Kind kind, Change change, int percent) {
     public enum Kind {

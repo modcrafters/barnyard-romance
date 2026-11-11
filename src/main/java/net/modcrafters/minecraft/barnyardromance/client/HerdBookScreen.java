@@ -1,15 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;

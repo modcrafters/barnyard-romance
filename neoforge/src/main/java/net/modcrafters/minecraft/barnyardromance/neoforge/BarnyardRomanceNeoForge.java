@@ -2,9 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.neoforge;
 
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.BarnyardRegistrations;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
@@ -13,11 +13,11 @@ import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 //? if <1.21.6
 //import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceKey;

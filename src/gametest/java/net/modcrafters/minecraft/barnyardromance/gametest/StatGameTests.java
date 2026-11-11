@@ -3,17 +3,17 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 
 import java.util.List;
 

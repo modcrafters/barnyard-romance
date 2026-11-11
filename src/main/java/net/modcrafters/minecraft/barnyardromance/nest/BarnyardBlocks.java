@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.nest;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlock;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.feed.MangerBlock;
 import net.modcrafters.minecraft.barnyardromance.feed.GrainFeederBlock;
 import net.modcrafters.minecraft.barnyardromance.feed.BirdFeederBlock;
 import net.modcrafters.minecraft.barnyardromance.feed.PetBowlBlock;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;

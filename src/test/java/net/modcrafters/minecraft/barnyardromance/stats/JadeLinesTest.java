@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import org.junit.jupiter.api.Test;
 

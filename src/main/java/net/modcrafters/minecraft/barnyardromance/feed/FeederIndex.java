@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.animal.Animal;
 

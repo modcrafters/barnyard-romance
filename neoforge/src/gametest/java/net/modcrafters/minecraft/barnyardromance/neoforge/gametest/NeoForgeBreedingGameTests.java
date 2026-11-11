@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.gametest.AdvancementGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
@@ -20,7 +20,7 @@ import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

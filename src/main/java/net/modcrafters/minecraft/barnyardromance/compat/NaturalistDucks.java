@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.compat;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.lang.reflect.Field;

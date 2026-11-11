@@ -1,13 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.HungerSettings;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.DailyUpkeep;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;

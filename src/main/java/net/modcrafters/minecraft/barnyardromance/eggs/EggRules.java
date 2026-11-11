@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 
 public final class EggRules {
     // A thrown egg was out in the weather: its chick is small, and only big parents give it a chance of medium.

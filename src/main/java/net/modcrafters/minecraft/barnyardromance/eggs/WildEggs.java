@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.Range;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.Range;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;

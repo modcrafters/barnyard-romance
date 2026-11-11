@@ -3,8 +3,8 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkStatus;
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 // The words the stat sheet is built from, shared by the herd book, the sneak card and Jade.
 public final class StatText {

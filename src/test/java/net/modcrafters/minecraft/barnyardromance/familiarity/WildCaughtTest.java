@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

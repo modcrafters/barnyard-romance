@@ -1,14 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.text.English;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.text.English;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

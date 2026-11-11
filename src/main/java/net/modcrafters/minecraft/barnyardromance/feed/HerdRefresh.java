@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;

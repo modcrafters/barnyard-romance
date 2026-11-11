@@ -1,8 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;

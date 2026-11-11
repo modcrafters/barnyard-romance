@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;

@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 
 // A female's milk, saved with her traits. milkUntil and youngUntil are game ticks, milkedDay a GameDay, -1 when unset.
 // Milk flows until milkUntil, and while her youngest baby is still a baby plus the keep-flowing time after that.

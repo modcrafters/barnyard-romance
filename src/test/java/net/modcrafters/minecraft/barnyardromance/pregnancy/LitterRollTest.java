@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.config.Range;
+import net.modcrafters.minecraft.barnyardromance.core.config.Range;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

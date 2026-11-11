@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Escapes;

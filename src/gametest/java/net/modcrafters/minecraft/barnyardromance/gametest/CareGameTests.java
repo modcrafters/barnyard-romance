@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
@@ -22,12 +22,12 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
 import net.minecraft.util.RandomSource;

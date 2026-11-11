@@ -1,12 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatLine;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >=1.21.6

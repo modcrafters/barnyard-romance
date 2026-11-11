@@ -1,8 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.text.English;
+import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.data;
 
-import net.modcrafters.minecraft.barnyardromance.data.EntityDataService;
+import net.modcrafters.minecraft.barnyardromance.core.data.EntityDataService;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;

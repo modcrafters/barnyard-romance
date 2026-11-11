@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+
 public final class ScaleRoll {
     public static final double MIN_SCALE = 0.0625;
     public static final double MAX_SCALE = 16.0;

@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.minecraft.nbt.CompoundTag;
 import org.jspecify.annotations.Nullable;
 

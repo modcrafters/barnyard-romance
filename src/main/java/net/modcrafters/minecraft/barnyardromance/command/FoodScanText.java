@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;

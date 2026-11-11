@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxLayout;

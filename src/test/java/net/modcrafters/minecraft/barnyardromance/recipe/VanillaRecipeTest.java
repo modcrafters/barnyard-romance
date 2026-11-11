@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.recipe;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 
 // An animal first won over as an adult never becomes fully familiar: livestock top out at wildFamiliarityCap, and
 // pets (wolves, cats, the horse family), who live closer to you, at wildPetFamiliarityCap. Animals raised from

@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.text.English;
+import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

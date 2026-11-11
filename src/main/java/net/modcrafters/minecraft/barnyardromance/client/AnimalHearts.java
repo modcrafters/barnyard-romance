@@ -1,9 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;

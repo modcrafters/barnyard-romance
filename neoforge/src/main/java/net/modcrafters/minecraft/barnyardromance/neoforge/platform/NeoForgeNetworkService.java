@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.platform;
 
-import net.modcrafters.minecraft.barnyardromance.platform.services.NetworkService;
+import net.modcrafters.minecraft.barnyardromance.core.platform.NetworkService;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;

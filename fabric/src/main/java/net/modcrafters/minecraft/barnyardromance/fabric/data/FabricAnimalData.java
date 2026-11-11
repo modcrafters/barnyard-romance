@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.fabric.data;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;

@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.food.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.minecraft.core.Holder;

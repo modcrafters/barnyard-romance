@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.Set;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.modcrafters.minecraft.barnyardromance.platform.services.IPlatformHelper;
+import net.modcrafters.minecraft.barnyardromance.core.platform.IPlatformHelper;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;

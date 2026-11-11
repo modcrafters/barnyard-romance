@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.minecraft.world.InteractionHand;

@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
 public final class HerdToolRules {
     public static final Text CREATIVE_ONLY = Text.of("message.barnyard_romance.herd_stick.creative_only");

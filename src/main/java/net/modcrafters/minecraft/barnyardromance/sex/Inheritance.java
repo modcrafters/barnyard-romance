@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.sex;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 
 // Every inherited trait, as a 0-1 percentage: the parents' average, a chance to improve, and a small spread.
 public final class Inheritance {
