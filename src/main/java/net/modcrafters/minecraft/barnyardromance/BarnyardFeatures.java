@@ -1,8 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.AdvancementFeature;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 
 import java.util.List;
@@ -17,7 +19,10 @@ public final class BarnyardFeatures {
     public static List<Feature> all() {
         return List.of(
                 new PregnancyFeature(),
-                new EggsFeature()
+                new EggsFeature(),
+                // Before advancement, so a birth reaches the herd book before advancements grant on it.
+                new HerdFeature(),
+                new AdvancementFeature()
         );
     }
 

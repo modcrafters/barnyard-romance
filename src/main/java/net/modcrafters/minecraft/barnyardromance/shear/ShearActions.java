@@ -1,7 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
@@ -118,7 +119,7 @@ public final class ShearActions {
             Services.DATA.set(animal, traits.sheared(animal.level().getOverworldClockTime()));
             FamiliarityCare.spend(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
             if (Familiarity.ready(traits.familiarity())) {
-                BarnyardAdvancements.sheared(animal, player);
+                Events.post(new AnimalEvent.Sheared(animal, player));
             }
         });
     }

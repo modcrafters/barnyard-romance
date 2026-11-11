@@ -1,13 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.advancement.api.AdvancementsApi;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -114,7 +116,7 @@ public final class PregnancyController {
                 restWithoutPregnancy(self, partner);
                 return true;
             }
-            UUID breeder = BarnyardAdvancements.breeder(mother, father);
+            UUID breeder = FeaturesRepository.get(AdvancementsApi.class).breeder(mother, father);
             Services.DATA.set(mother, PregnancyFeature.PREGNANCY, new Pregnancy(
                     level.getGameTime(),
                     durationTicks,
@@ -126,7 +128,7 @@ public final class PregnancyController {
                     fatherTraits.weight(),
                     litter.get()
             ).withFatherId(father.getUUID()).withBreederId(breeder));
-            BarnyardAdvancements.conceived(mother, breeder);
+            Events.post(new AnimalEvent.Conceived(mother, breeder));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
@@ -190,15 +192,7 @@ public final class PregnancyController {
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
-        try {
-            HerdBooks.born(mother, born);
-        } catch (RuntimeException exception) {
-            Constants.LOG.warn("Failed to add {} young to herd books", AnimalSex.speciesId(mother), exception);
-        }
-        BarnyardAdvancements.born(mother, born, pregnancy.breederId());
-        for (Animal baby : born) {
-            BarnyardAdvancements.twoByTwo(level, pregnancy.breederId(), mother, baby);
-        }
+        Events.post(new AnimalEvent.Born(mother, born, pregnancy.breederId(), AnimalEvent.Birth.LIVE));
     }
 
     private static int rememberParents(Animal mother, Animal child, Pregnancy pregnancy) {

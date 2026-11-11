@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
@@ -17,7 +18,7 @@ public class AnimalDeathMixin {
     @Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getKillCredit()Lnet/minecraft/world/entity/LivingEntity;", ordinal = 0))
     private void barnyardromance$died(DamageSource source, CallbackInfo callback) {
         if ((Object) this instanceof Animal animal && !animal.level().isClientSide()) {
-            BarnyardAdvancements.died(animal, source);
+            Events.post(new AnimalEvent.Died(animal, source));
         }
     }
 }

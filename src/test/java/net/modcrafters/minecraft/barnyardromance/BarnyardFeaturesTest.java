@@ -11,7 +11,8 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardFeaturesTest {
-    private static final Pattern INTERFACE = Pattern.compile("^public\\s+(?:sealed\\s+)?interface\\s+\\w+");
+    // A top-level interface, public or not, sealed or not.
+    private static final Pattern INTERFACE = Pattern.compile("^(?:public\\s+)?(?:(?:sealed|non-sealed)\\s+)?interface\\s+\\w+");
 
     // Every interface in a feature's api package is provided by a feature that BarnyardFeatures lists, so a forgotten
     // registration fails here rather than in a world.

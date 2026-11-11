@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
@@ -121,7 +122,7 @@ public final class MilkActions {
         Services.DATA.set(animal, traits.withLactation(traits.lactation().milked(now, clock, tuning.milkKeepsFlowingTicks())));
         FamiliarityCare.spend(animal, tuning.familiarityMilkingCost());
         if (Familiarity.ready(traits.familiarity())) {
-            BarnyardAdvancements.milked(animal, player);
+            Events.post(new AnimalEvent.Milked(animal, player));
         }
         return VersionCompat.SUCCESS_SERVER;
     }

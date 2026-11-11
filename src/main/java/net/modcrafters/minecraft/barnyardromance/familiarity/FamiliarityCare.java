@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
@@ -8,8 +8,10 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederIndex;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.herd.api.HerdApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -117,7 +119,7 @@ public final class FamiliarityCare {
         }
         updated = withCare(updated, upkeep, cared);
         Services.DATA.set(animal, updated);
-        BarnyardAdvancements.familiarityFell(animal, traits.familiarity(), updated.familiarity());
+        Events.post(new AnimalEvent.FamiliarityFell(animal, traits.familiarity(), updated.familiarity()));
         toll(animal, level, damage, escaped, days > 1L);
         return escaped ? Services.DATA.get(animal) : Optional.of(updated);
     }
@@ -143,7 +145,7 @@ public final class FamiliarityCare {
         }
         AnimalTraits updated = withCare(traits.fed(outcome.familiarity(), traits.lastFedTick()).withHunger(next), upkeep, outcome.cared());
         Services.DATA.set(animal, updated);
-        BarnyardAdvancements.familiarityFell(animal, traits.familiarity(), updated.familiarity());
+        Events.post(new AnimalEvent.FamiliarityFell(animal, traits.familiarity(), updated.familiarity()));
         return outcome;
     }
 
@@ -183,7 +185,7 @@ public final class FamiliarityCare {
     private static boolean caredFor(Animal animal, ServerLevel level, AnimalTraits traits, Upkeep upkeep) {
         boolean oldSave = traits.upkeep().equals(Upkeep.UNKNOWN);
         return upkeep.cared() || Familiarity.ready(traits.familiarity())
-                || oldSave && HerdBooks.listed(level.getServer(), animal.getUUID());
+                || oldSave && FeaturesRepository.get(HerdApi.class).listed(level.getServer(), animal.getUUID());
     }
 
     // Marked cared for the first time it is, and otherwise left as it was.

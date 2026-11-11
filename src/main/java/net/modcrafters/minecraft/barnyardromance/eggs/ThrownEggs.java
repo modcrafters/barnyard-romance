@@ -1,8 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -62,14 +63,15 @@ public final class ThrownEggs {
         SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
         Optional<Animal> chick = hatchTainted(level, position, data.species(), data.variant(),
                 SizeClass.of(Sex.FEMALE, data.motherScale(), size), SizeClass.of(Sex.MALE, data.fatherScale(), size), random);
-        chick.ifPresent(hatched -> BarnyardAdvancements.hatched(level, hatched, new Lineage(data.mother(), data.father())));
+        chick.ifPresent(hatched -> Events.post(
+                new AnimalEvent.Hatched(level, hatched, new Lineage(data.mother(), data.father()), AnimalEvent.Hatch.THROWN)));
         return chick;
     }
 
     // A wild egg's parents are unknown, so its chick is sized as if both were average.
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, WildEgg egg, RandomSource random) {
         Optional<Animal> chick = hatchTainted(level, position, egg.species(), egg.variant(), SizeClass.M, SizeClass.M, random);
-        chick.ifPresent(hatched -> BarnyardAdvancements.hatched(level, hatched, null));
+        chick.ifPresent(hatched -> Events.post(new AnimalEvent.Hatched(level, hatched, null, AnimalEvent.Hatch.THROWN)));
         return chick;
     }
 

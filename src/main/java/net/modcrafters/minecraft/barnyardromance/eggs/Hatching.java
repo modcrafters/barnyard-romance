@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
@@ -25,7 +25,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 //?}
 
-import java.util.List;
 import java.util.Optional;
 
 // Chicks from eggs. One hatched in a nesting box inherits from both parents like a calf (Offspring) and joins its
@@ -66,13 +65,7 @@ public final class Hatching {
             Constants.LOG.error("Failed to hatch a {} egg", data.species(), exception);
             return Optional.empty();
         }
-        // The chick is out by now, so a herd book problem mustn't count as a failed hatch.
-        try {
-            HerdBooks.born(level, data.mother(), List.of(chick));
-        } catch (RuntimeException exception) {
-            Constants.LOG.warn("Failed to add a hatched {} to herd books", data.species(), exception);
-        }
-        BarnyardAdvancements.hatched(level, chick, new Lineage(data.mother(), data.father()));
+        Events.post(new AnimalEvent.Hatched(level, chick, new Lineage(data.mother(), data.father()), AnimalEvent.Hatch.NEST));
         return Optional.of(chick);
     }
 
@@ -96,7 +89,7 @@ public final class Hatching {
                 Constants.LOG.warn("Couldn't hatch a wild {} egg: the level refused the chick", egg.species());
                 return Optional.empty();
             }
-            BarnyardAdvancements.hatched(level, chick, null);
+            Events.post(new AnimalEvent.Hatched(level, chick, null, AnimalEvent.Hatch.WILD));
             return Optional.of(chick);
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to hatch a wild {} egg", egg.species(), exception);

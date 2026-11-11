@@ -2,7 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
@@ -24,7 +25,7 @@ public class NaturalistOstrichHatchMixin {
     private boolean barnyardromance$hatched(ServerLevel level, Entity entity, Operation<Boolean> original) {
         boolean added = original.call(level, entity);
         if (added && entity instanceof Animal chick) {
-            BarnyardAdvancements.hatchedFromNaturalistEgg(level, chick);
+            Events.post(new AnimalEvent.Hatched(level, chick, null, AnimalEvent.Hatch.NATURALIST_EGG));
         }
         return added;
     }
