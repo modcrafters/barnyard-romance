@@ -1,8 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.core.config;
 
-import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
+import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
+import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

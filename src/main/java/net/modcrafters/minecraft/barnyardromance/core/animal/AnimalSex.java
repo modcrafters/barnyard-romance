@@ -1,10 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.TraitAssignment;
-import net.modcrafters.minecraft.barnyardromance.sex.WolfStrength;
+import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
+import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
+import net.modcrafters.minecraft.barnyardromance.breeding.TraitAssignment;
+import net.modcrafters.minecraft.barnyardromance.breeding.WolfStrength;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;

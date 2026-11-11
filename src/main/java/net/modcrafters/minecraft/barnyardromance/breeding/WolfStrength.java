@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.sex;
+package net.modcrafters.minecraft.barnyardromance.breeding;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 

@@ -29,7 +29,6 @@ class FeatureBoundaryScanTest {
             "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor");
     // An old package, or package/Class, to the zone it will belong to. Class entries win over package entries.
     private static final Map<String, String> MIGRATING = Map.ofEntries(
-            Map.entry("sex", "breeding"),
             Map.entry("compat/JadeBridge", "hook"),
             Map.entry("compat", "naturalist"),
             Map.entry("item/BarnyardItems", "core"),
@@ -52,11 +51,15 @@ class FeatureBoundaryScanTest {
             Map.entry("advancement/BarnyardAdvancements -> familiarity/FamiliaritySlices", "migration: exposed by the Task 6 move"),
             Map.entry("advancement/FamilyTree -> herd/HerdBookData", "migration: advancement uses herd's internals until herd has an api"),
             Map.entry("advancement/FamilyTree -> herd/HerdLedger", "migration: advancement uses herd's internals until herd has an api"),
+            Map.entry("breeding/Offspring -> familiarity/Familiarity", "migration: breeding uses familiarity's internals until familiarity has an api"),
+            Map.entry("breeding/Offspring -> familiarity/FamiliaritySlices", "migration: exposed by the Task 6 move"),
+            Map.entry("breeding/Offspring -> familiarity/FamiliarityState", "migration: exposed by the Task 6 move"),
+            Map.entry("breeding/Offspring -> familiarity/Origin", "migration: breeding uses familiarity's internals until familiarity has an api"),
             Map.entry("core/animal/AnimalSex -> milk/MilkActions", "migration: milk's join step becomes an animal-joined hook"),
-            Map.entry("core/animal/AnimalSex -> sex/ScaleRoll", "migration: exposed by the Task 3 move"),
-            Map.entry("core/animal/AnimalSex -> sex/SexRoll", "migration: exposed by the Task 3 move"),
-            Map.entry("core/animal/AnimalSex -> sex/TraitAssignment", "migration: exposed by the Task 3 move"),
-            Map.entry("core/animal/AnimalSex -> sex/WolfStrength", "migration: exposed by the Task 3 move"),
+            Map.entry("core/animal/AnimalSex -> breeding/ScaleRoll", "migration: exposed by the Task 3 move"),
+            Map.entry("core/animal/AnimalSex -> breeding/SexRoll", "migration: exposed by the Task 3 move"),
+            Map.entry("core/animal/AnimalSex -> breeding/TraitAssignment", "migration: exposed by the Task 3 move"),
+            Map.entry("core/animal/AnimalSex -> breeding/WolfStrength", "migration: exposed by the Task 3 move"),
             Map.entry("core/config/BarnyardConfig -> compat/NaturalistCompat", "migration: naturalist hands its default ignore list to config instead"),
             Map.entry("core/registry/BarnyardRegistrations -> feed/FeederKind", "migration: registers feed's content until feed registers its own"),
             Map.entry("core/registry/BarnyardRegistrations -> item/HerdBookCopyRecipe", "migration: registers herd's content until herd registers its own"),
@@ -70,11 +73,11 @@ class FeatureBoundaryScanTest {
             Map.entry("eggs/EggLaying -> pregnancy/PregnancyFeature", "migration: exposed by the Task 4 move"),
             Map.entry("eggs/EggLaying -> rivalry/Reach", "migration: eggs uses rivalry's internals until rivalry has an api"),
             Map.entry("eggs/EggLaying -> vigour/VigourActions", "migration: eggs uses vigour's internals until vigour has an api"),
-            Map.entry("eggs/Hatching -> sex/Offspring", "migration: eggs uses breeding's internals until breeding has an api"),
-            Map.entry("eggs/Hatching -> sex/ScaleRoll", "migration: eggs uses breeding's internals until breeding has an api"),
-            Map.entry("eggs/Hatching -> sex/SexRoll", "migration: eggs uses breeding's internals until breeding has an api"),
-            Map.entry("eggs/ThrownEggs -> sex/ScaleRoll", "migration: eggs uses breeding's internals until breeding has an api"),
-            Map.entry("eggs/ThrownEggs -> sex/SexRoll", "migration: eggs uses breeding's internals until breeding has an api"),
+            Map.entry("eggs/Hatching -> breeding/Offspring", "migration: eggs uses breeding's internals until breeding has an api"),
+            Map.entry("eggs/Hatching -> breeding/ScaleRoll", "migration: eggs uses breeding's internals until breeding has an api"),
+            Map.entry("eggs/Hatching -> breeding/SexRoll", "migration: eggs uses breeding's internals until breeding has an api"),
+            Map.entry("eggs/ThrownEggs -> breeding/ScaleRoll", "migration: eggs uses breeding's internals until breeding has an api"),
+            Map.entry("eggs/ThrownEggs -> breeding/SexRoll", "migration: eggs uses breeding's internals until breeding has an api"),
             Map.entry("eggs/WildEggs -> pregnancy/LitterRoll", "migration: eggs uses pregnancy's internals until pregnancy has an api"),
             Map.entry("familiarity/Escapes -> rivalry/Reach", "migration: familiarity uses rivalry's internals until rivalry has an api"),
             Map.entry("familiarity/FamiliarityActions -> compat/NaturalistCompat", "migration: familiarity uses naturalist's internals until naturalist has an api"),
@@ -194,9 +197,9 @@ class FeatureBoundaryScanTest {
             Map.entry("pregnancy/PregnancyController -> familiarity/FamiliaritySlices", "migration: exposed by the Task 6 move"),
             Map.entry("pregnancy/PregnancyController -> milk/MilkSlices", "migration: exposed by the Task 6 move"),
             Map.entry("pregnancy/PregnancyController -> rivalry/Courtship", "migration: pregnancy uses rivalry's internals until rivalry has an api"),
-            Map.entry("pregnancy/PregnancyController -> sex/Offspring", "migration: pregnancy uses breeding's internals until breeding has an api"),
-            Map.entry("pregnancy/PregnancyController -> sex/ScaleRoll", "migration: pregnancy uses breeding's internals until breeding has an api"),
-            Map.entry("pregnancy/PregnancyController -> sex/SexRoll", "migration: pregnancy uses breeding's internals until breeding has an api"),
+            Map.entry("pregnancy/PregnancyController -> breeding/Offspring", "migration: pregnancy uses breeding's internals until breeding has an api"),
+            Map.entry("pregnancy/PregnancyController -> breeding/ScaleRoll", "migration: pregnancy uses breeding's internals until breeding has an api"),
+            Map.entry("pregnancy/PregnancyController -> breeding/SexRoll", "migration: pregnancy uses breeding's internals until breeding has an api"),
             Map.entry("rivalry/Courtship -> familiarity/Familiarity", "migration: rivalry uses familiarity's internals until familiarity has an api"),
             Map.entry("rivalry/Courtship -> familiarity/FamiliarityCare", "migration: rivalry uses familiarity's internals until familiarity has an api"),
             Map.entry("rivalry/Courtship -> familiarity/FamiliaritySlices", "migration: exposed by the Task 6 move"),
@@ -209,10 +212,6 @@ class FeatureBoundaryScanTest {
             Map.entry("rivalry/RivalRolls -> familiarity/FamiliarityCare", "migration: rivalry uses familiarity's internals until familiarity has an api"),
             Map.entry("rivalry/RivalRolls -> familiarity/FamiliaritySlices", "migration: exposed by the Task 6 move"),
             Map.entry("rivalry/RivalRolls -> vigour/VigourSlices", "migration: exposed by the Task 6 move"),
-            Map.entry("sex/Offspring -> familiarity/Familiarity", "migration: breeding uses familiarity's internals until familiarity has an api"),
-            Map.entry("sex/Offspring -> familiarity/FamiliaritySlices", "migration: exposed by the Task 6 move"),
-            Map.entry("sex/Offspring -> familiarity/FamiliarityState", "migration: exposed by the Task 6 move"),
-            Map.entry("sex/Offspring -> familiarity/Origin", "migration: breeding uses familiarity's internals until familiarity has an api"),
             Map.entry("shear/ShearActions -> familiarity/Familiarity", "migration: shear uses familiarity's internals until familiarity has an api"),
             Map.entry("shear/ShearActions -> familiarity/FamiliarityActions", "migration: shear uses familiarity's internals until familiarity has an api"),
             Map.entry("shear/ShearActions -> familiarity/FamiliarityCare", "migration: shear uses familiarity's internals until familiarity has an api"),
@@ -392,8 +391,8 @@ class FeatureBoundaryScanTest {
         return new Scan(violations, unclassified);
     }
 
-    // The imported top-level class as a path, e.g. sex/AnimalTraits for sex.AnimalTraits.Inner or a static import
-    // from it; a package wildcard keeps its *, e.g. sex/*.
+    // The imported top-level class as a path, e.g. core/animal/AnimalTraits for core.animal.AnimalTraits.Inner or a
+    // static import from it; a package wildcard keeps its *, e.g. breeding/*.
     private static String importedPath(String dotted) {
         StringBuilder path = new StringBuilder();
         for (String segment : dotted.split("\\.")) {
