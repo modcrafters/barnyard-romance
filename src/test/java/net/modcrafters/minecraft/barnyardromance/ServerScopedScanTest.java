@@ -2,16 +2,12 @@ package net.modcrafters.minecraft.barnyardromance;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,15 +37,13 @@ class ServerScopedScanTest {
 
     @Test
     void everyStaticCollectionIsServerScopedOrListed() {
-        Path root = repoRoot();
+        Path root = SourceScan.repoRoot();
         List<String> unscoped = new ArrayList<>();
         List<String> seen = new ArrayList<>();
         for (Path sources : mainSources(root)) {
-            for (Path file : javaFiles(sources)) {
-                String name = sources.relativize(file).toString().replace('\\', '/');
-                // Paths under the mod's package, e.g. rivalry/Courtship.
-                name = name.substring(name.indexOf("barnyardromance/") + "barnyardromance/".length(), name.length() - ".java".length());
-                List<String> lines = lines(file);
+            for (Path file : SourceScan.javaFiles(sources)) {
+                String name = SourceScan.modPath(sources, file);
+                List<String> lines = SourceScan.lines(file);
                 // A class that clears its own state, e.g. under its own lock, registers that with ServerScoped.onStop.
                 boolean clearsItself = lines.stream().anyMatch(line -> line.contains("ServerScoped.onStop("));
                 for (String line : lines) {
@@ -71,40 +65,9 @@ class ServerScopedScanTest {
         }
     }
 
-    private static Path repoRoot() {
-        Path dir = Path.of("").toAbsolutePath();
-        while (!Files.exists(dir.resolve("settings.gradle.kts"))) {
-            dir = dir.getParent();
-        }
-        return dir;
-    }
-
     private static List<Path> mainSources(Path root) {
         List<Path> dirs = new ArrayList<>(List.of(root.resolve("src/main/java"), root.resolve("fabric/src/main/java"), root.resolve("neoforge/src/main/java")));
-        try (Stream<Path> versions = Files.list(root.resolve("versions"))) {
-            versions.map(version -> version.resolve("src/main/java")).filter(Files::isDirectory).forEach(dirs::add);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        dirs.addAll(SourceScan.versionSources(root));
         return dirs;
-    }
-
-    private static List<Path> javaFiles(Path dir) {
-        if (!Files.isDirectory(dir)) {
-            return List.of();
-        }
-        try (Stream<Path> files = Files.walk(dir)) {
-            return files.filter(file -> file.toString().endsWith(".java")).toList();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static List<String> lines(Path file) {
-        try {
-            return Files.readAllLines(file);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 }
