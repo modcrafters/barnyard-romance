@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.pregnancy;
+package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
 
 import org.junit.jupiter.api.Test;
 

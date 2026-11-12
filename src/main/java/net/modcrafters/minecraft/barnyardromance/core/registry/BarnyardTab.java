@@ -37,7 +37,7 @@ public final class BarnyardTab {
 
     // The superfoods the loaders add to vanilla's Food & Drinks tab, as well as to ours.
     public static List<Item> foodAndDrinks() {
-        return List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, item("dairy_mash"), item("stud_mash"));
+        return List.of(item("breeders_mash"), item("golden_bran"), item("dairy_mash"), item("stud_mash"));
     }
 
     // The Herd Sticks are there only while the config's herdSticks is on. The loaders call this each time the tab is
@@ -62,8 +62,8 @@ public final class BarnyardTab {
             contents.add(HerdStick.create(HerdTool.pregnancy(1)));
             contents.add(HerdStick.create(HerdTool.pregnancy(-1)));
         }
-        contents.add(new ItemStack(BarnyardItems.BREEDERS_MASH));
-        contents.add(new ItemStack(BarnyardItems.GOLDEN_BRAN));
+        contents.add(new ItemStack(item("breeders_mash")));
+        contents.add(new ItemStack(item("golden_bran")));
         contents.add(new ItemStack(item("dairy_mash")));
         contents.add(new ItemStack(item("stud_mash")));
         contents.add(new ItemStack(item("sheep_milk_bucket")));

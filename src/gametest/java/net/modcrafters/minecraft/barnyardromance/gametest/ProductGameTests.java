@@ -14,7 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;

@@ -34,8 +34,6 @@ public final class BarnyardRegistrations {
         sink.register(Registries.RECIPE_SERIALIZER, HerdBookCopyRecipe.ID, () -> HerdBookCopyRecipe.SERIALIZER);
         item(sink, BarnyardItems.HERD_STICK_ID, () -> BarnyardItems.HERD_STICK);
         item(sink, BarnyardItems.HERD_BOOK_ID, () -> BarnyardItems.HERD_BOOK);
-        item(sink, BarnyardItems.BREEDERS_MASH_ID, () -> BarnyardItems.BREEDERS_MASH);
-        item(sink, BarnyardItems.GOLDEN_BRAN_ID, () -> BarnyardItems.GOLDEN_BRAN);
         sink.register(Registries.CREATIVE_MODE_TAB, BarnyardTab.ID.identifier(), tab);
         sink.register(Registries.PARTICLE_TYPE, id("pregnancy_heart"), () -> BarnyardParticles.PREGNANCY_HEART);
         sink.register(Registries.PARTICLE_TYPE, id("old_heart"), () -> BarnyardParticles.OLD_HEART);

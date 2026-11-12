@@ -11,7 +11,6 @@ import java.util.Optional;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
-import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
@@ -26,6 +25,8 @@ import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGO
 // overworld clock time; the overloads without one use the animal's level.
 public final class VigourActions {
     public static final Text NEEDS_MALE = Text.of("message.barnyard_romance.superfood.needs_male");
+    // The same words pregnancy has for a mother who can't eat any more.
+    public static final Text CANT_EAT_MORE = Text.of("message.barnyard_romance.superfood.cant_eat_more");
     private static final double EPSILON = 1.0e-9;
 
     private VigourActions() {
@@ -44,7 +45,7 @@ public final class VigourActions {
             return InteractionResult.CONSUME;
         }
         if (traits.get().get(VIGOUR).value() >= 1.0 - EPSILON) {
-            player.sendSystemMessage(TextComponents.of(PregnancyCareActions.CANT_EAT_MORE));
+            player.sendSystemMessage(TextComponents.of(CANT_EAT_MORE));
             return InteractionResult.CONSUME;
         }
         if (!player.hasInfiniteMaterials()) {

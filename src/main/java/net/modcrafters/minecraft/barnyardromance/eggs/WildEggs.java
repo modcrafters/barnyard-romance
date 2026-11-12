@@ -2,7 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Range;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -54,7 +55,7 @@ public final class WildEggs {
             return false;
         }
         Range range = BarnyardConfig.current().eggsFor(wild.species()).hatchTicks();
-        stack.set(EggsComponents.WILD_EGG, wild.withTicks(Math.max(1L, LitterRoll.pickTicks(range, AVERAGE_WEIGHT, random.nextDouble()))));
+        stack.set(EggsComponents.WILD_EGG, wild.withTicks(Math.max(1L, FeaturesRepository.get(PregnancyApi.class).pickDuration(range, AVERAGE_WEIGHT, random.nextDouble()))));
         return true;
     }
 

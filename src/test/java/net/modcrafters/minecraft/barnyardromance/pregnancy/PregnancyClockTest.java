@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

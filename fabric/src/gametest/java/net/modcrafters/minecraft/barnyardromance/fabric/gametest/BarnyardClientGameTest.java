@@ -9,11 +9,12 @@ import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
@@ -89,8 +90,8 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
     private static void superfoods(ClientGameTestContext context, TestSingleplayerContext world) {
         world.getServer().runOnServer(server -> {
             ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
-            player.getInventory().setItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH, 2));
-            player.getInventory().setItem(1, new ItemStack(BarnyardItems.GOLDEN_BRAN, 2));
+            player.getInventory().setItem(0, new ItemStack(PregnancyItems.BREEDERS_MASH, 2));
+            player.getInventory().setItem(1, new ItemStack(PregnancyItems.GOLDEN_BRAN, 2));
             player.getInventory().setItem(2, new ItemStack(MilkItems.SHEEP_MILK_BUCKET));
             player.getInventory().setItem(3, new ItemStack(MilkItems.GOAT_MILK_BUCKET));
         });

@@ -10,6 +10,8 @@ import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -18,6 +20,11 @@ import static net.modcrafters.minecraft.barnyardromance.stats.StatKind.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatSheetTest {
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
+
     private static final long DAY = 24_000L;
 
     private static AnimalFacts.Builder cow() {

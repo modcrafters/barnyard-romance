@@ -14,10 +14,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
@@ -32,7 +30,6 @@ import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
@@ -61,7 +58,7 @@ public final class HerdStatus {
                 view.familiar(),
                 view.fed(),
                 view.feeder(),
-                view.pregnancy() == null ? -1 : PregnancyText.percent(view.progress()),
+                view.pregnancy() == null ? -1 : FeaturesRepository.get(PregnancyApi.class).percentShown(view.progress()),
                 view.milk().map(status -> status.left() > 0).orElse(false),
                 view.shear(),
                 Optional.ofNullable(view.eggs()).map(EggOutlook::kind),
@@ -102,8 +99,9 @@ public final class HerdStatus {
                 ? HerdEntry.Fed.HAND
                 : care.upkeep().fedByFeederOn(GameDay.of(clock)) ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.NOT_FED;
         String feeder = fed == HerdEntry.Fed.FEEDER ? care.upkeep().feeder() : "";
+        PregnancyApi pregnancies = FeaturesRepository.get(PregnancyApi.class);
         Pregnancy pregnancy = record.alive() ? record.pregnancy() : null;
-        double progress = pregnancy == null ? 0.0 : PregnancyClock.progress(now, pregnancy);
+        double progress = pregnancy == null ? 0.0 : pregnancies.progress(pregnancy, now);
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species()));
         Optional<MilkStatus> milk = female && record.milkable() && record.alive()
                 ? FeaturesRepository.get(MilkApi.class).status(traits, size, now, clock)
@@ -122,9 +120,9 @@ public final class HerdStatus {
                 record.tamed(),
                 care.familiarity(),
                 stage == AgeStage.YOUNG,
-                female && Fertility.wornOut(traits, age, at),
-                traits.get(PregnancySlices.BREEDING).loveUntil(),
-                traits.get(PregnancySlices.BREEDING).cooldownUntil(),
+                female && pregnancies.isWornOut(traits, age, at),
+                pregnancies.inLoveUntil(traits),
+                pregnancies.restingUntil(traits),
                 now
         );
         AnimalFacts facts = AnimalFacts.builder(size.name(), stage)
@@ -134,10 +132,10 @@ public final class HerdStatus {
                 .ticksSinceFed(care.lastFedTick() < 0L ? -1L : Math.max(0L, clock - care.lastFedTick()))
                 .pregnant(pregnancy != null)
                 .pregnancy(progress)
-                .dueTicks(pregnancy == null ? 0L : PregnancyClock.remainingTicks(now, pregnancy))
+                .dueTicks(pregnancy == null ? 0L : pregnancies.ticksUntilDue(pregnancy, now))
                 .milk(milk.map(StatText::milkText).orElse(Text.EMPTY))
                 .familiarity(care.familiarity())
-                .fertility(female ? Fertility.current(traits, age, at) : -1.0)
+                .fertility(female ? pregnancies.fertility(traits, age, at) : -1.0)
                 .seenTicksAgo(loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()))
                 .familiar(familiar)
                 .diedDay(record.alive() ? -1L : diedDay(record))
@@ -157,7 +155,7 @@ public final class HerdStatus {
                 .breeding(breeding)
                 .father(pregnancy == null ? Text.EMPTY : StatText.father(
                         SizeClass.of(Sex.MALE, pregnancy.fatherScale(), config.sizeFor(pregnancy.fatherSpecies())).name(), pregnancy.fatherSpecies()))
-                .lastBirth(StatText.lastBirth(LiveFacts.offspring(traits), traits.get(PregnancySlices.BREEDING).lastBirthTick(), now))
+                .lastBirth(StatText.lastBirth(LiveFacts.offspring(traits), pregnancies.lastBirthTick(traits), now))
                 .build();
         return new View(stage, female, familiar, fed, feeder, pregnancy, progress, milk, shear, eggs, facts);
     }

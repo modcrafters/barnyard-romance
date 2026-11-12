@@ -2,6 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,6 +12,11 @@ import static net.modcrafters.minecraft.barnyardromance.stats.StatKind.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JadeLinesTest {
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
+
     private static final long DAY = 24_000L;
 
     // A bull who isn't familiar yet, so the sheet has notes and a health line as well as the short ones.

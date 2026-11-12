@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.pregnancy;
+package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
 
 // The game time and overworld clock time a pregnancy was last looked at. Sleeping or /time add moves the clock
 // without the game time a pregnancy counts in, so the clock getting ahead of the game time is time skipped.

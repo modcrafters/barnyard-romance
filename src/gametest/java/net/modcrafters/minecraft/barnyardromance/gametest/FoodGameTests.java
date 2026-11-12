@@ -15,15 +15,16 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourItems;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -240,7 +241,7 @@ public final class FoodGameTests {
 
     public static void breedersMashSpeedsAPregnancy(GameTestHelper helper) {
         Animal cow = pregnantCow(helper, 0.5);
-        Player player = holding(helper, BarnyardItems.BREEDERS_MASH);
+        Player player = holding(helper, PregnancyItems.BREEDERS_MASH);
         player.getMainHandItem().setCount(2);
         long now = helper.getLevel().getGameTime();
 
@@ -258,7 +259,7 @@ public final class FoodGameTests {
     public static void goldenBranFeedsTheLitter(GameTestHelper helper) {
         Animal cow = pregnantCow(helper, 0.5);
 
-        FamiliarityActions.interact(cow, holding(helper, BarnyardItems.GOLDEN_BRAN), InteractionHand.MAIN_HAND);
+        FamiliarityActions.interact(cow, holding(helper, PregnancyItems.GOLDEN_BRAN), InteractionHand.MAIN_HAND);
 
         double bonus = BreedingGameTests.pregnancy(helper, cow).care().nutritionBonus();
         helper.assertTrue(Math.abs(bonus - 0.25) < 1.0e-9, "golden bran gave a nutrition bonus of " + bonus);
@@ -267,7 +268,7 @@ public final class FoodGameTests {
 
     public static void superfoodsNeedAPregnantMother(GameTestHelper helper) {
         Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
-        Player player = holding(helper, BarnyardItems.BREEDERS_MASH);
+        Player player = holding(helper, PregnancyItems.BREEDERS_MASH);
 
         InteractionResult result = FamiliarityActions.interact(bull, player, InteractionHand.MAIN_HAND);
 
@@ -463,7 +464,7 @@ public final class FoodGameTests {
         }
         // Crafted stacks carry the tooltip too, because it is the item's default lore. Dairy Mash writes its effect
         // line itself, from the config.
-        for (Item item : List.of(BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN, MilkItems.DAIRY_MASH)) {
+        for (Item item : List.of(PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN, MilkItems.DAIRY_MASH)) {
             ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
             int lines = item == MilkItems.DAIRY_MASH ? 1 : 2;
             helper.assertTrue(lore != null && lore.lines().size() == lines, item + " has no tooltip");
@@ -539,7 +540,7 @@ public final class FoodGameTests {
         //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
-        for (Item item : List.of(BarnyardItems.HERD_BOOK, BarnyardItems.BREEDERS_MASH, BarnyardItems.GOLDEN_BRAN)) {
+        for (Item item : List.of(BarnyardItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
             helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
         // The sticks follow the herdSticks option. Both settings are given here, so the global config stays alone.

@@ -26,7 +26,7 @@ import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;

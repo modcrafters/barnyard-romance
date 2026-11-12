@@ -7,8 +7,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
@@ -31,7 +31,7 @@ public final class HerdRecords {
         if (traits.isEmpty()) {
             return Optional.empty();
         }
-        Pregnancy pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY).map(HerdRecords::withoutLitter).orElse(null);
+        Pregnancy pregnancy = FeaturesRepository.get(PregnancyApi.class).pregnancy(animal).map(HerdRecords::withoutLitter).orElse(null);
         String name = animal.hasCustomName() && animal.getCustomName() != null ? animal.getCustomName().getString() : "";
         EggsApi eggs = FeaturesRepository.get(EggsApi.class);
         NestCheck nest = eggs.isLayingHen(animal) && animal.level() instanceof ServerLevel level

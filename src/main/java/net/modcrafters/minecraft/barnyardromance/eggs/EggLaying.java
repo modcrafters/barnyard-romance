@@ -15,9 +15,8 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -74,8 +73,9 @@ public final class EggLaying {
                 return;
             }
             // Birds from older saves may still be carrying a pregnancy from before they laid eggs.
-            if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent()) {
-                Services.DATA.remove(animal, PregnancyFeature.PREGNANCY);
+            PregnancyApi pregnancy = FeaturesRepository.get(PregnancyApi.class);
+            if (pregnancy.isPregnant(animal)) {
+                pregnancy.endPregnancy(animal);
             }
             if (!isLayingHen(animal)) {
                 return;
@@ -239,7 +239,7 @@ public final class EggLaying {
         }
         fathered.merge(father.getUUID(), 1, Integer::sum);
         AnimalTraits motherTraits = mother.get();
-        long hatchTicks = LitterRoll.pickTicks(settings.hatchTicks(), motherTraits.weight(), hen.getRandom().nextDouble());
+        long hatchTicks = FeaturesRepository.get(PregnancyApi.class).pickDuration(settings.hatchTicks(), motherTraits.weight(), hen.getRandom().nextDouble());
         return Optional.of(FertilizedEggItem.create(new EggData(
                 AnimalSex.speciesId(hen),
                 hen.getUUID(),

@@ -21,7 +21,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

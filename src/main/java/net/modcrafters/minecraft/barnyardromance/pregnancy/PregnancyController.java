@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.SkippedTime;
 import net.modcrafters.minecraft.barnyardromance.advancement.api.AdvancementsApi;
 import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;

@@ -19,10 +19,8 @@ import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -32,7 +30,6 @@ import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 
 import java.util.Optional;
@@ -57,16 +54,17 @@ public final class LiveFacts {
         boolean grown = stage == AgeStage.ADULT || stage == AgeStage.OLD;
         FamiliarityState care = traits.get(FamiliaritySlices.CARE);
         boolean ready = Familiarity.ready(care.familiarity());
-        Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
-        double fertility = Fertility.current(traits, age, now);
+        PregnancyApi pregnancies = FeaturesRepository.get(PregnancyApi.class);
+        Optional<Pregnancy> pregnancy = pregnancies.pregnancy(animal);
+        double fertility = pregnancies.fertility(traits, age, now);
         Text breeding = StatText.breeding(
                 needsTaming(animal),
                 FamiliarityCare.tamed(animal),
                 care.familiarity(),
                 stage == AgeStage.YOUNG,
-                female && Fertility.wornOut(traits, age, now),
-                traits.get(PregnancySlices.BREEDING).loveUntil(),
-                traits.get(PregnancySlices.BREEDING).cooldownUntil(),
+                female && pregnancies.isWornOut(traits, age, now),
+                pregnancies.inLoveUntil(traits),
+                pregnancies.restingUntil(traits),
                 now
         );
         boolean hungryMale = traits.sex() == Sex.MALE && FeaturesRepository.get(VigourApi.class).hungry(care.hunger().lastAteDay(), GameDay.of(clock));
@@ -76,8 +74,8 @@ public final class LiveFacts {
                 .fedBy(StatText.feeder(care.upkeep(), GameDay.of(clock)))
                 .ticksSinceFed(care.lastFedTick() < 0L ? -1L : Math.max(0L, clock - care.lastFedTick()))
                 .pregnant(pregnancy.isPresent())
-                .pregnancy(pregnancy.map(current -> PregnancyClock.progress(now, current)).orElse(0.0))
-                .dueTicks(pregnancy.map(current -> PregnancyClock.remainingTicks(now, current)).orElse(0L))
+                .pregnancy(pregnancy.map(current -> pregnancies.progress(current, now)).orElse(0.0))
+                .dueTicks(pregnancy.map(current -> pregnancies.ticksUntilDue(current, now)).orElse(0L))
                 .milk(FeaturesRepository.get(MilkApi.class).status(animal, traits, now, clock).map(StatText::milkText).orElse(Text.EMPTY))
                 .familiarity(care.familiarity())
                 .fertility(female ? fertility : -1.0)
@@ -98,7 +96,7 @@ public final class LiveFacts {
                 .father(pregnancy.map(current -> StatText.father(
                         SizeClass.of(Sex.MALE, current.fatherScale(), config.sizeFor(current.fatherSpecies())).name(),
                         current.fatherSpecies())).orElse(Text.EMPTY))
-                .lastBirth(StatText.lastBirth(offspring(traits), traits.get(PregnancySlices.BREEDING).lastBirthTick(), now))
+                .lastBirth(StatText.lastBirth(offspring(traits), pregnancies.lastBirthTick(traits), now))
                 .build());
     }
 
@@ -115,7 +113,7 @@ public final class LiveFacts {
 
     // The name of what the animal last bore, or empty.
     public static String offspring(AnimalTraits traits) {
-        String species = traits.get(PregnancySlices.BREEDING).lastBirthSpecies();
+        String species = FeaturesRepository.get(PregnancyApi.class).lastBirthSpecies(traits);
         Identifier id = Identifier.tryParse(species);
         if (id == null || species.isBlank()) {
             return "";

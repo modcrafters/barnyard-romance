@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
 public final class PregnancyClock {
     private PregnancyClock() {
     }

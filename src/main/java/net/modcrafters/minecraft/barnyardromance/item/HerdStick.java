@@ -16,10 +16,8 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
@@ -89,6 +87,7 @@ public class HerdStick extends Item {
     }
 
     private static Outcome apply(Animal animal, HerdTool tool, Player player) {
+        PregnancyApi pregnancies = FeaturesRepository.get(PregnancyApi.class);
         if (tool.kind() == HerdTool.Kind.INFO) {
             Text text = AnimalInfoText.format(
                     animal.getName().getString(),
@@ -96,7 +95,7 @@ public class HerdStick extends Item {
                     Services.DATA.get(animal),
                     AnimalSex.currentScale(animal),
                     AgeController.stage(animal),
-                    Services.DATA.get(animal, PregnancyFeature.PREGNANCY).map(pregnancy -> PregnancyText.line(pregnancy, animal.level().getGameTime(), true)),
+                    pregnancies.pregnancy(animal).map(pregnancy -> pregnancies.progressLine(pregnancy, animal.level().getGameTime(), true)),
                     BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
                     animal.level().getGameTime(),
                     Services.DATA.get(animal)
@@ -126,7 +125,7 @@ public class HerdStick extends Item {
             return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(care.familiarity()),
                     Familiarity.percent(familiarity)));
         }
-        Pregnancy current = Services.DATA.get(animal, PregnancyFeature.PREGNANCY).orElse(null);
+        Pregnancy current = pregnancies.pregnancy(animal).orElse(null);
         if (current == null) {
             return new Outcome(false, Text.of("message.barnyard_romance.herd_stick.not_pregnant"));
         }
@@ -134,16 +133,17 @@ public class HerdStick extends Item {
         Pregnancy next = tool.sets()
                 ? DebugSteps.pregnancyAt(current, now, tool.percent())
                 : DebugSteps.pregnancy(current, now, tool.direction());
-        Services.DATA.set(animal, PregnancyFeature.PREGNANCY, next);
+        pregnancies.setPregnancy(animal, next);
         return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.pregnancy", progress(current, now), progress(next, now)));
     }
 
     private static Text progress(Pregnancy pregnancy, long now) {
-        int percent = (int) Math.round(PregnancyClock.progress(now, pregnancy) * 100.0);
-        long remaining = PregnancyClock.remainingTicks(now, pregnancy);
+        PregnancyApi pregnancies = FeaturesRepository.get(PregnancyApi.class);
+        int percent = (int) Math.round(pregnancies.progress(pregnancy, now) * 100.0);
+        long remaining = pregnancies.ticksUntilDue(pregnancy, now);
         if (remaining <= 0L) {
             return Text.of("message.barnyard_romance.herd_stick.progress_due", percent);
         }
-        return Text.of("message.barnyard_romance.herd_stick.progress", percent, PregnancyText.clock(remaining));
+        return Text.of("message.barnyard_romance.herd_stick.progress", percent, pregnancies.dueClock(remaining));
     }
 }

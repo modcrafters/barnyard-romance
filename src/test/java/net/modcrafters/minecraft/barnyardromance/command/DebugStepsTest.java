@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import org.junit.jupiter.api.Test;
 

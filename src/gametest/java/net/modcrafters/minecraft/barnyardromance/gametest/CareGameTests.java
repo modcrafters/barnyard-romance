@@ -22,6 +22,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -169,7 +170,7 @@ public final class CareGameTests {
     public static void superfoodCountsAsEating(GameTestHelper helper) {
         Animal cow = FoodGameTests.pregnantCow(helper, 0.5);
 
-        FamiliarityActions.interact(cow, holding(helper, BarnyardItems.BREEDERS_MASH), InteractionHand.MAIN_HAND);
+        FamiliarityActions.interact(cow, holding(helper, PregnancyItems.BREEDERS_MASH), InteractionHand.MAIN_HAND);
 
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
         helper.assertTrue(traits(helper, cow).get(CARE).hunger().lastAteDay() == today, "the mash left the last meal on day " + traits(helper, cow).get(CARE).hunger().lastAteDay());

@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.pregnancy;
+package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import com.mojang.serialization.Codec;

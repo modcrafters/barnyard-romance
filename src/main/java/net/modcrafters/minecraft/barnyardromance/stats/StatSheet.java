@@ -2,7 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyText;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 
@@ -75,7 +76,7 @@ public final class StatSheet {
         }
         eggs(lines, facts);
         if (facts.pregnant()) {
-            lines.add(new StatLine(StatKind.PREGNANT, PregnancyText.describe(facts.pregnancy(), facts.dueTicks()), facts.pregnancy()));
+            lines.add(new StatLine(StatKind.PREGNANT, FeaturesRepository.get(PregnancyApi.class).progressLine(facts.pregnancy(), facts.dueTicks()), facts.pregnancy()));
             if (!facts.father().isEmpty()) {
                 lines.add(StatLine.of(StatKind.DETAIL, facts.father()));
             }

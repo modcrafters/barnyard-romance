@@ -12,11 +12,10 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
-import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -93,7 +92,7 @@ public final class FamiliarityActions {
             }
             return eaten.effects().vigour() > 0.0
                     ? FeaturesRepository.get(VigourApi.class).feedMash(animal, player, stack, eaten)
-                    : PregnancyCareActions.feed(animal, player, stack, eaten);
+                    : FeaturesRepository.get(PregnancyApi.class).feedMother(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.
         AnimalTraits current = FamiliarityCare.settle(animal).orElse(traits.get());
@@ -135,7 +134,7 @@ public final class FamiliarityActions {
             FamiliarityCare.markEaten(animal);
             return VersionCompat.SUCCESS_SERVER;
         }
-        PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
+        FeaturesRepository.get(PregnancyApi.class).feedPregnancy(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
         AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.get(CARE).familiarity(), amount), now);
         double gained = fed.get(CARE).familiarity();
@@ -148,7 +147,7 @@ public final class FamiliarityActions {
             Events.post(new AnimalEvent.Befriended(animal, player));
         }
         tameIfFamiliar(animal, player, gained);
-        if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent())) {
+        if (!animal.isBaby() && Familiarity.allowsLove(gained, FeaturesRepository.get(PregnancyApi.class).isPregnant(animal))) {
             animal.setInLove(player);
         }
         return VersionCompat.SUCCESS_SERVER;
@@ -259,7 +258,7 @@ public final class FamiliarityActions {
         if (traits.get().sex() == Sex.MALE) {
             return false;
         }
-        return Familiarity.allowsLove(traits.get().get(CARE).familiarity(), Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent())
+        return Familiarity.allowsLove(traits.get().get(CARE).familiarity(), FeaturesRepository.get(PregnancyApi.class).isPregnant(animal))
                 && AgeController.allowsLove(animal);
     }
 

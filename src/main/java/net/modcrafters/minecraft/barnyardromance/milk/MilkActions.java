@@ -22,7 +22,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -190,7 +190,7 @@ public final class MilkActions {
         Lactation lactation = MilkRules.firstJoin(
                 traits.sex(),
                 animal.isBaby(),
-                traits.get(PregnancySlices.BREEDING).lastBirthTick(),
+                FeaturesRepository.get(PregnancyApi.class).lastBirthTick(traits),
                 traits.get(LACTATION),
                 animal.level().getGameTime(),
                 BarnyardConfig.current().tuning()

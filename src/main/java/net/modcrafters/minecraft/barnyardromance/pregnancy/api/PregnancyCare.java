@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.pregnancy;
+package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
 
 // What food did for a pregnancy: ticks gained or lost, one speed boost, and a better-fed litter.
 // The boost is read from the clock, so nothing ticks.

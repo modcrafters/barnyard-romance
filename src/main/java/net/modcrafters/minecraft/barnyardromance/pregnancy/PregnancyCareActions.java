@@ -1,16 +1,16 @@
-package net.modcrafters.minecraft.barnyardromance.food;
+package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCare;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
@@ -39,7 +39,7 @@ public final class PregnancyCareActions {
             player.sendSystemMessage(TextComponents.of(refusal));
             return InteractionResult.CONSUME;
         }
-        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), BarnyardConfig.current().tuning());
+        float heal = FeaturesRepository.get(FoodApi.class).heals(animal, stack, eaten);
         if (!player.hasInfiniteMaterials()) {
             stack.consume(1, player);
         }
