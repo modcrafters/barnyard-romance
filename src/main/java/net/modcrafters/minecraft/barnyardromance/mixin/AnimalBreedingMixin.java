@@ -1,9 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.advancement.api.AdvancementsApi;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHearts;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.MatingGate;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
@@ -53,7 +54,7 @@ public class AnimalBreedingMixin {
 
     @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("HEAD"))
     private void barnyardromance$breeder(ServerLevel level, Animal partner, @Nullable AgeableMob baby, CallbackInfo callback) {
-        barnyardromance$breeder = BarnyardAdvancements.breeder((Animal) (Object) this, partner);
+        barnyardromance$breeder = FeaturesRepository.get(AdvancementsApi.class).breeder((Animal) (Object) this, partner);
     }
 
     @Inject(method = "finalizeSpawnChildFromBreeding", at = @At("TAIL"))

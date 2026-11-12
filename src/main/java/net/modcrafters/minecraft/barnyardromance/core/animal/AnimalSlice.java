@@ -16,6 +16,17 @@ public record AnimalSlice<T>(String name, T defaultValue, MapCodec<T> codec, Str
         return fieldsOf(codec);
     }
 
+    // Slices are singleton keys (FeatureSet rejects duplicate names): identity, so get/with never deep-hash defaultValue.
+    @Override
+    public boolean equals(Object o) {
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
     static Set<String> fieldsOf(MapCodec<?> codec) {
         return codec.keys(NbtOps.INSTANCE)
                 .map(key -> NbtOps.INSTANCE.getStringValue(key).getOrThrow())

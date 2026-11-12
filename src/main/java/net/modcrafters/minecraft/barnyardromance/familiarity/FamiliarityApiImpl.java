@@ -47,11 +47,6 @@ final class FamiliarityApiImpl implements FamiliarityApi {
     }
 
     @Override
-    public boolean isTamed(Animal animal) {
-        return FamiliarityCare.tamed(animal);
-    }
-
-    @Override
     public void tameIfFamiliar(Animal animal, Player player, double familiarity) {
         FamiliarityActions.tameIfFamiliar(animal, player, familiarity);
     }

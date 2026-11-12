@@ -1,6 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance;
 
+import net.modcrafters.minecraft.barnyardromance.advancement.AdvancementFeature;
+import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureSet;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdFeature;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -35,5 +38,17 @@ class BarnyardFeaturesTest {
             }
         }
         assertTrue(missing.isEmpty(), () -> "no feature in BarnyardFeatures provides " + missing);
+    }
+
+    // Listeners run in registration order, so herd must come before advancement.
+    @Test
+    void herdIsListedBeforeAdvancement() {
+        List<Class<?>> order = BarnyardFeatures.all().stream().<Class<?>>map(Feature::getClass).toList();
+
+        int herd = order.indexOf(HerdFeature.class);
+        int advancement = order.indexOf(AdvancementFeature.class);
+
+        assertTrue(herd >= 0 && herd < advancement,
+                "the herd book records a birth before advancements grant on it, so HerdFeature must be listed before AdvancementFeature");
     }
 }

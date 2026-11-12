@@ -22,6 +22,14 @@ class GameDayTest {
         assertEquals(24_000L, GameDay.ticksUntilMidnight(18_000L));
     }
 
+    @Test
+    void ticksSinceMidnight() {
+        assertEquals(0, GameDay.ticksSinceMidnight(18_000L));
+        assertEquals(6_000, GameDay.ticksSinceMidnight(0L));
+        assertEquals(18_000, GameDay.ticksSinceMidnight(12_000L));
+        assertEquals(0, GameDay.ticksSinceMidnight(42_000L));
+    }
+
     // Day 1 runs from midnight at 18,000 to the next at 42,000, with sunrise at 24,000.
     @Test
     void afterSunriseRunsFromSunriseToMidnight() {

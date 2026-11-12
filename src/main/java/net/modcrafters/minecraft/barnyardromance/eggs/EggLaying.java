@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
+import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import java.util.HashMap;
@@ -79,7 +79,7 @@ public final class EggLaying {
                 return;
             }
             long clock = level.getOverworldClockTime();
-            int sinceMidnight = EggSchedule.sinceMidnight(clock);
+            int sinceMidnight = GameDay.ticksSinceMidnight(clock);
             Laying laying = Services.DATA.get(animal, EggsFeature.LAYING).orElse(Laying.NONE);
             if (laying.day() != GameDay.of(clock)) {
                 // The day is planned from yesterday's hunger, so it waits until her days are settled. A hen in a
@@ -156,7 +156,7 @@ public final class EggLaying {
     public static void resume(Animal hen, ServerLevel level) {
         long clock = level.getOverworldClockTime();
         Services.DATA.get(hen, EggsFeature.LAYING).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.set(hen, EggsFeature.LAYING,
-                laying.withTimes(EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)))));
+                laying.withTimes(EggSchedule.resume(laying.times(), laying.next(), GameDay.ticksSinceMidnight(clock)))));
     }
 
     // For the herd book: the best adult rooster in range, by whether he ate today (so he's fertile tomorrow).
@@ -186,7 +186,7 @@ public final class EggLaying {
     private static boolean canFather(Animal rooster, Animal hen, int eggs, EggSettings settings) {
         Tuning tuning = BarnyardConfig.current().tuning();
         return FeaturesRepository.get(VigourApi.class).canPay(rooster, tuning.vigourPerEgg() * eggs, tuning.hungryEggHealth() * eggs)
-                && !FeaturesRepository.get(RivalryApi.class).walkBlocked(rooster, hen, settings.roosterRange());
+                && !Reach.blocked(rooster, hen, settings.roosterRange());
     }
 
     public static boolean boxWithRoomNear(Animal hen, ServerLevel level) {

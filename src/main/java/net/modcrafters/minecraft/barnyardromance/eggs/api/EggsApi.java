@@ -31,7 +31,4 @@ public interface EggsApi {
     // What a hen will lay tomorrow, and why it isn't better, for the herd book.
     EggOutlook eggsTomorrow(SizeClass size, boolean ateToday, boolean familiar, RoosterNear rooster, boolean boxWithRoom,
                             EggSettings settings, String speciesId);
-
-    // How far past midnight the day is, in ticks, on the overworld clock: the time of day hens lay by.
-    int ticksSinceMidnight(long clock);
 }

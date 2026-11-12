@@ -118,7 +118,7 @@ public final class FamiliarityCare {
 
         AnimalTraits updated = refilled.with(CARE, care.withFamiliarity(familiarity).withHunger(hungerNow));
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
-        if (settled.first() && tamed(animal)) {
+        if (settled.first() && AnimalSex.tamed(animal)) {
             updated = toTamingGrace(animal, updated);
         }
         updated = withCare(updated, upkeep, cared);
@@ -286,18 +286,9 @@ public final class FamiliarityCare {
         return Math.min(1.0, Familiarity.threshold() + TAMING_GRACE_DAYS * BarnyardConfig.current().tuning().familiarityHungerLoss());
     }
 
-    // Only the animals familiarity tames (wolves, cats, horses and the rest of the horse family) count: a parrot tamed
-    // with seeds, or another mod's pet, can't be fed back up, so it never turns grumpy.
-    public static boolean tamed(Animal animal) {
-        if (animal instanceof Wolf || animal instanceof Cat) {
-            return ((TamableAnimal) animal).isTame();
-        }
-        return animal instanceof AbstractHorse horse && horse.isTamed();
-    }
-
     // Tamed animals never go wild again; below the threshold they are grumpy instead and won't take orders.
     public static boolean grumpy(Animal animal) {
-        return tamed(animal) && tracked(animal).map(traits -> !Familiarity.ready(traits.get(CARE).familiarity())).orElse(false);
+        return AnimalSex.tamed(animal) && tracked(animal).map(traits -> !Familiarity.ready(traits.get(CARE).familiarity())).orElse(false);
     }
 
     // The animal's traits, if its species is enabled.

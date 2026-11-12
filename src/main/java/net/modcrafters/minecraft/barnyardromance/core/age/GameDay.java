@@ -17,6 +17,11 @@ public final class GameDay {
         return (of(clock) + 1L) * TICKS - (TICKS - MIDNIGHT) - clock;
     }
 
+    // How far past midnight the day is: the time of day hens lay by and males roll for fights.
+    public static int ticksSinceMidnight(long clock) {
+        return (int) Math.floorMod(clock + (TICKS - MIDNIGHT), TICKS);
+    }
+
     // Sunrise is clock 0 of each 24,000, 6,000 ticks into the day; the day runs on from there to midnight.
     public static boolean afterSunrise(long clock) {
         return Math.floorMod(clock, TICKS) < MIDNIGHT;

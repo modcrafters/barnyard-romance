@@ -208,7 +208,7 @@ public final class BarnyardAdvancements {
             // The kill credit covers a death the player only started, such as burning after Fire Aspect.
             Entity cause = source.getEntity() != null ? source.getEntity() : animal.getKillCredit();
             FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
-            if (!(cause instanceof ServerPlayer killer) || familiarityApi.isTamed(animal)
+            if (!(cause instanceof ServerPlayer killer) || AnimalSex.tamed(animal)
                     || Ladders.ladderFor(AnimalSex.speciesId(animal)).isEmpty()) {
                 return;
             }
@@ -247,7 +247,7 @@ public final class BarnyardAdvancements {
     public static void familiarityFell(Animal animal, double before, double after) {
         try {
             FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
-            if (!familiarityApi.isTamed(animal) || !familiarityApi.isFamiliarAt(before) || familiarityApi.isFamiliarAt(after)
+            if (!AnimalSex.tamed(animal) || !familiarityApi.isFamiliarAt(before) || familiarityApi.isFamiliarAt(after)
                     || !(animal.level() instanceof ServerLevel level)) {
                 return;
             }

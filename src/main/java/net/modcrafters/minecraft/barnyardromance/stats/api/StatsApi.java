@@ -1,6 +1,5 @@
 package net.modcrafters.minecraft.barnyardromance.stats.api;
 
-import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
@@ -19,9 +18,6 @@ public interface StatsApi {
 
     // The name of what the animal last bore, or empty.
     String lastOffspringName(AnimalTraits traits);
-
-    // Whether the animal breeds only once tamed (horses, wolves and cats).
-    boolean needsTaming(Animal animal);
 
     // The breeding row's value: ready, in love, resting, worn out, too young, not tamed or not familiar enough.
     Text breedingText(boolean needsTaming, boolean tamed, double familiarity, boolean young, boolean wornOut, long loveUntil,

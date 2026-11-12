@@ -56,6 +56,15 @@ class AnimalTraitsTest {
         assertEquals(traits, traits.with(COUNT, 3).with(COUNT, 7));
     }
 
+    // Slices are keyed by identity, so a look-up never deep-hashes the default value.
+    @Test
+    void twoSlicesWithEqualPartsAreNotEqual() {
+        AnimalSlice<Integer> twin = new AnimalSlice<>(COUNT.name(), COUNT.defaultValue(), COUNT.codec(), COUNT.streamCodec());
+
+        assertNotEquals(COUNT, twin);
+        assertEquals(7, AnimalTraits.of(Sex.FEMALE, 0.9).with(COUNT, 3).get(twin));
+    }
+
     @Test
     void oldTraitsDefaultToAverageWeightAndFullFertility() {
         AnimalTraits traits = AnimalTraits.of(Sex.FEMALE, 0.9);

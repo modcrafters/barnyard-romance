@@ -75,10 +75,6 @@ public final class AnimalTraits {
         return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, next);
     }
 
-    public AnimalTraits withScale(double scale) {
-        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, slices);
-    }
-
     public AnimalTraits withGrowthTicks(int growthTicks) {
         return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, slices);
     }

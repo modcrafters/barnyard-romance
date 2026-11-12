@@ -29,7 +29,8 @@ public interface FeatureRegistrar {
     // Runs when the event is posted, after the listeners of features registered earlier.
     <E extends AnimalEvent> void listen(Class<E> event, Consumer<? super E> listener);
 
-    // The feature's blocks, items, components and the like, put into Minecraft's registries at start-up.
+    // The feature's blocks, items, components and the like, put into Minecraft's registries at start-up. A content
+    // supplier may class-init the feature's block and item holders, so content is only ever walked from registration.
     void content(Consumer<BarnyardRegistrations.Sink> content);
 
     // Stacks the creative tab shows under a name its order list uses (see BarnyardTab).

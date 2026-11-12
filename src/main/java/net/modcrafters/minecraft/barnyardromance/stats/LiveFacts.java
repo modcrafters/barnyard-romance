@@ -4,10 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
-import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.sheep.Sheep;
-import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
@@ -57,8 +54,8 @@ public final class LiveFacts {
         Optional<Pregnancy> pregnancy = pregnancies.pregnancy(animal);
         double fertility = pregnancies.fertility(traits, age, now);
         Text breeding = StatText.breeding(
-                needsTaming(animal),
-                familiarityApi.isTamed(animal),
+                AnimalSex.needsTaming(animal),
+                AnimalSex.tamed(animal),
                 familiarityApi.familiarity(traits),
                 stage == AgeStage.YOUNG,
                 female && pregnancies.isWornOut(traits, age, now),
@@ -81,7 +78,7 @@ public final class LiveFacts {
                 .familiar(ready ? Familiar.FAMILIAR : Familiar.NOT_YET)
                 .shear(FeaturesRepository.get(ShearApi.class).shearState(
                         animal instanceof Sheep, !(animal instanceof Sheep sheep && sheep.isSheared()), animal.isBaby(), traits, clock))
-                .grumpy(familiarityApi.isTamed(animal) && !ready)
+                .grumpy(AnimalSex.tamed(animal) && !ready)
                 .cap(familiarityApi.wildCap(animal, traits))
                 .ranAway(familiarityApi.upkeep(traits).ranAway())
                 .growthTicks(traits.growthTicks())
@@ -103,11 +100,6 @@ public final class LiveFacts {
     public static boolean fedToday(AnimalTraits traits, long clock) {
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         return familiarityApi.upkeep(traits).fedByFeederOn(GameDay.of(clock)) || familiarityApi.handFedToday(traits, clock);
-    }
-
-    // These only breed when tamed; ocelots trust instead, which never blocks breeding.
-    public static boolean needsTaming(Animal animal) {
-        return animal instanceof AbstractHorse || animal instanceof Wolf || animal instanceof Cat;
     }
 
     // The name of what the animal last bore, or empty.

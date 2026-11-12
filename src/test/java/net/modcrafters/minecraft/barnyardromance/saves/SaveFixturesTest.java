@@ -167,6 +167,7 @@ class SaveFixturesTest {
         AnimalTraitCodecs.STREAM_CODEC.encode(buf, fullTraits());
 
         assertEquals(fullTraits(), AnimalTraitCodecs.STREAM_CODEC.decode(buf));
+        assertEquals(0, buf.readableBytes(), "decoding reads every byte encoding wrote");
     }
 
     @Test

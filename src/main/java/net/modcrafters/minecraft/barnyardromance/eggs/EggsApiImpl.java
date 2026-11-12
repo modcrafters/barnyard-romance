@@ -49,9 +49,4 @@ final class EggsApiImpl implements EggsApi {
                                    EggSettings settings, String speciesId) {
         return EggRules.tomorrow(size, ateToday, familiar, rooster, boxWithRoom, settings, speciesId);
     }
-
-    @Override
-    public int ticksSinceMidnight(long clock) {
-        return EggSchedule.sinceMidnight(clock);
-    }
 }

@@ -29,9 +29,6 @@ public interface FamiliarityApi {
     // The same from its traits alone; pet: a wolf, cat or one of the horse family, which have the higher cap.
     double wildCap(AnimalTraits traits, boolean pet);
 
-    // A wolf, cat or one of the horse family tamed (the animals familiarity tames, and that turn grumpy).
-    boolean isTamed(Animal animal);
-
     // Tames an animal that this much familiarity tames, if it isn't already.
     void tameIfFamiliar(Animal animal, Player player, double familiarity);
 

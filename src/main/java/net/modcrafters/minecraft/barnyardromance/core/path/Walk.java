@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.rivalry.api;
+package net.modcrafters.minecraft.barnyardromance.core.path;
 
 // What a path search says about walking somewhere: it can, it can't (the path goes some way and stops short), or
 // nothing, when the search never left the block it started in. That happens to an animal standing in some spots of a

@@ -1,7 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
-import net.modcrafters.minecraft.barnyardromance.stats.api.StatsApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
@@ -37,8 +36,8 @@ public final class HerdRecords {
         return Optional.of(new HerdRecord(AnimalSex.speciesId(animal), name, traits.get(), pregnancy, animal.isBaby(),
                 FeaturesRepository.get(MilkApi.class).givesMilk(animal), animal instanceof Sheep,
                 animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
-                FeaturesRepository.get(FamiliarityApi.class).isTamed(animal), nest, DeathCause.NONE,
-                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), FeaturesRepository.get(StatsApi.class).needsTaming(animal), eggs.laying(animal).orElse(Laying.NONE))));
+                AnimalSex.tamed(animal), nest, DeathCause.NONE,
+                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), AnimalSex.needsTaming(animal), eggs.laying(animal).orElse(Laying.NONE))));
     }
 
     // Below the familiarity threshold the book stops updating an animal: it keeps the old values and only

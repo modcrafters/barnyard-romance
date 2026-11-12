@@ -4,8 +4,8 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
-import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
-import net.modcrafters.minecraft.barnyardromance.rivalry.api.Walk;
+import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
+import net.modcrafters.minecraft.barnyardromance.core.path.Walk;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -49,9 +49,8 @@ final class HerdRefresh {
         List<Animal> near = new ArrayList<>(level.getEntitiesOfClass(Animal.class, new AABB(pos).inflate(range), animal -> eats(animal, kind)));
         near.sort(Comparator.comparingDouble(animal -> animal.distanceToSqr(middle)));
         List<UUID> found = new ArrayList<>();
-        RivalryApi rivalry = FeaturesRepository.get(RivalryApi.class);
         for (Animal animal : near) {
-            Walk walk = rivalry.walkTo(animal, pos, range);
+            Walk walk = Reach.walkTo(animal, pos, range);
             if (walk == Walk.YES || walk == Walk.UNKNOWN
                     && (members.contains(animal.getUUID()) || EatAtFeederGoal.within(animal, pos, EatAtFeederGoal.CLOSE_ENOUGH))) {
                 found.add(animal.getUUID());

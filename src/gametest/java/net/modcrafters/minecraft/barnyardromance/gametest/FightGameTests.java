@@ -11,7 +11,6 @@ import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
 import net.modcrafters.minecraft.barnyardromance.rivalry.RivalRolls;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggSchedule;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -309,7 +308,7 @@ public final class FightGameTests {
             RivalRolls.roll(roller, helper.getLevel(), 1.0);
             helper.assertTrue(!Fights.fighting(roller), "a roll of 1.0 started a fight");
             helper.assertTrue(traits(helper, roller).get(VIGOUR).rollDay() == GameDay.of(clock), "the roll wasn't recorded for today");
-            helper.assertTrue(!RivalRolls.due(roller, clock + 23_000L - EggSchedule.sinceMidnight(clock)), "the bull is due again the same day");
+            helper.assertTrue(!RivalRolls.due(roller, clock + 23_000L - GameDay.ticksSinceMidnight(clock)), "the bull is due again the same day");
             helper.succeed();
         });
     }

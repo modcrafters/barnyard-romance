@@ -1,6 +1,5 @@
-package net.modcrafters.minecraft.barnyardromance.rivalry;
+package net.modcrafters.minecraft.barnyardromance.core.path;
 
-import net.modcrafters.minecraft.barnyardromance.rivalry.api.Walk;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;

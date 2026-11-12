@@ -1,6 +1,5 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
@@ -25,11 +24,6 @@ final class StatsApiImpl implements StatsApi {
     @Override
     public String lastOffspringName(AnimalTraits traits) {
         return LiveFacts.offspring(traits);
-    }
-
-    @Override
-    public boolean needsTaming(Animal animal) {
-        return LiveFacts.needsTaming(animal);
     }
 
     @Override
