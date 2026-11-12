@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.minecraft.world.InteractionHand;
@@ -27,7 +27,7 @@ public class MobProductMixin {
     //?} else
     //private void barnyardromance$tools(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> callback) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!((Object) this instanceof Animal animal) || !BarnyardItems.isTool(stack)) {
+        if (!((Object) this instanceof Animal animal) || !HerdItems.isTool(stack)) {
             return;
         }
         InteractionResult result = stack.interactLivingEntity(player, animal, hand);

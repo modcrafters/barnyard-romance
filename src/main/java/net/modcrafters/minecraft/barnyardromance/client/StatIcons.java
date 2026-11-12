@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 

@@ -1,6 +1,5 @@
-package net.modcrafters.minecraft.barnyardromance.item;
+package net.modcrafters.minecraft.barnyardromance.herd;
 
-import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;

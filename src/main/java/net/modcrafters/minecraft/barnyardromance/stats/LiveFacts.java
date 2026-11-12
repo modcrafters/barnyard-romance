@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Animal;
@@ -14,7 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
-import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;

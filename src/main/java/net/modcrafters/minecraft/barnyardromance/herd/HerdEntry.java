@@ -1,7 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;

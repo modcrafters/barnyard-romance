@@ -4,7 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.DeathCause;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
@@ -246,7 +246,7 @@ public final class FightGameTests {
         Animal big = bull(helper, 3, 4, 1.3);
         Animal small = bull(helper, 5, 4, 0.7);
         // The book keeps a dead animal only while a living member descends from it.
-        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         Animal calf = GameTestCompat.spawn(helper, EntityTypes.COW, 2, 1, 2);
         calf.setBaby(true);
         Services.DATA.set(calf, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)).withLineage(new Lineage(null, small.getUUID())));

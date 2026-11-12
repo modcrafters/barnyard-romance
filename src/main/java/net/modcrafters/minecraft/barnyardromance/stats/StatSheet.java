@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;

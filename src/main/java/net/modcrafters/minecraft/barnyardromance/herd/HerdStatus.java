@@ -20,11 +20,10 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearApi;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
-import net.modcrafters.minecraft.barnyardromance.stats.AnimalFacts;
-import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatsApi;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
-import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
-import net.modcrafters.minecraft.barnyardromance.stats.StatText;
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
@@ -62,7 +61,7 @@ public final class HerdStatus {
                 eggTip,
                 Optional.ofNullable(node.mother()),
                 Optional.ofNullable(node.father()),
-                StatSheet.lines(view.facts()).stream()
+                FeaturesRepository.get(StatsApi.class).lines(view.facts()).stream()
                         .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
                         .toList()
         );
@@ -80,6 +79,7 @@ public final class HerdStatus {
 
     private static View view(HerdRecord record, HerdLedger.Node node, long now, long clock, boolean loaded) {
         BarnyardConfig config = BarnyardConfig.current();
+        StatsApi stats = FeaturesRepository.get(StatsApi.class);
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         // An animal far from home goes on missing meals; the book shows the familiarity it has lost since it was seen.
         AnimalTraits traits = loaded || !record.alive() ? record.traits() : familiarityApi.afterMissedDays(record.traits(), GameDay.of(clock), record.baby());
@@ -117,7 +117,7 @@ public final class HerdStatus {
         long lastAteDay = familiarityApi.lastAteDay(traits);
         double vigour = vigourApi.vigour(traits, lastAteDay, today);
         boolean showsVigour = traits.sex() == Sex.MALE && grown;
-        Text breeding = StatText.breeding(
+        Text breeding = stats.breedingText(
                 sheet.needsTaming(),
                 record.tamed(),
                 familiarity,
@@ -129,13 +129,13 @@ public final class HerdStatus {
         );
         AnimalFacts facts = AnimalFacts.builder(size.name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
-                .fedToday(LiveFacts.fedToday(traits, clock))
-                .fedBy(StatText.feeder(upkeep, today))
+                .fedToday(stats.fedToday(traits, clock))
+                .fedBy(stats.fedByText(upkeep, today))
                 .ticksSinceFed(lastHandFed < 0L ? -1L : Math.max(0L, clock - lastHandFed))
                 .pregnant(pregnancy != null)
                 .pregnancy(progress)
                 .dueTicks(pregnancy == null ? 0L : pregnancies.ticksUntilDue(pregnancy, now))
-                .milk(milk.map(StatText::milkText).orElse(Text.EMPTY))
+                .milk(milk.map(stats::milkText).orElse(Text.EMPTY))
                 .familiarity(familiarity)
                 .fertility(female ? pregnancies.fertility(traits, age, at) : -1.0)
                 .seenTicksAgo(loaded || !record.alive() ? -1L : Math.max(0L, now - record.refreshedAt()))
@@ -155,9 +155,9 @@ public final class HerdStatus {
                 .vigourHungry(traits.sex() == Sex.MALE && vigourApi.hungry(lastAteDay, today))
                 .eggsToday(record.alive() ? eggsToday(record, traits, stage, vigour, today, config) : Text.EMPTY)
                 .breeding(breeding)
-                .father(pregnancy == null ? Text.EMPTY : StatText.father(
+                .father(pregnancy == null ? Text.EMPTY : stats.fatherText(
                         SizeClass.of(Sex.MALE, pregnancy.fatherScale(), config.sizeFor(pregnancy.fatherSpecies())).name(), pregnancy.fatherSpecies()))
-                .lastBirth(StatText.lastBirth(LiveFacts.offspring(traits), pregnancies.lastBirthTick(traits), now))
+                .lastBirth(stats.lastBirthText(stats.lastOffspringName(traits), pregnancies.lastBirthTick(traits), now))
                 .build();
         return new View(stage, female, familiar, fed, feeder, pregnancy, progress, milk, shear, eggs, facts);
     }
@@ -167,18 +167,19 @@ public final class HerdStatus {
         if (record.baby() || !config.eggsFor(record.species()).enabled()) {
             return Text.EMPTY;
         }
+        StatsApi stats = FeaturesRepository.get(StatsApi.class);
         Text value;
         if (traits.sex() == Sex.MALE) {
-            value = StatText.roosterText(stage == AgeStage.YOUNG, vigour,
+            value = stats.roosterText(stage == AgeStage.YOUNG, vigour,
                     FeaturesRepository.get(VigourApi.class).hungry(FeaturesRepository.get(FamiliarityApi.class).lastAteDay(traits), today),
                     config.tuning().vigourPerEgg());
         } else if (traits.sex() == Sex.FEMALE && (stage == AgeStage.ADULT || stage == AgeStage.OLD)) {
             Laying laying = record.sheet().laying().day() == today ? record.sheet().laying() : Laying.NONE;
-            value = StatText.eggsText(laying.laid(), laying.planned(), FeaturesRepository.get(FamiliarityApi.class).wasHungryYesterday(traits, today));
+            value = stats.eggsText(laying.laid(), laying.planned(), FeaturesRepository.get(FamiliarityApi.class).wasHungryYesterday(traits, today));
         } else {
             return Text.EMPTY;
         }
-        return value.isEmpty() ? Text.EMPTY : StatText.labelled(StatText.eggRowLabel(traits.sex() == Sex.FEMALE, record.species()), value);
+        return value.isEmpty() ? Text.EMPTY : stats.labelled(stats.eggRowLabel(traits.sex() == Sex.FEMALE, record.species()), value);
     }
 
     // What a living adult hen lays tomorrow, from what was around her when the book last saw her; null for others.

@@ -17,46 +17,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // The import rule between core, features and hooks: core imports only core; a feature's api imports core and other
 // features' api; a feature's implementation imports core, itself and other features' api; hooks import anything.
-// MIGRATING says where today's packages are headed and ALLOWED lists today's exceptions; both only shrink, and end empty.
+// There are no exceptions, and new ones aren't allowed: an import that breaks the rule needs an api, an event or a
+// move, not an allowance here.
 class FeatureBoundaryScanTest {
     private static final Set<String> FEATURES = Set.of("familiarity", "breeding", "pregnancy", "eggs", "feed", "food",
             "milk", "shear", "vigour", "rivalry", "drops", "herd", "stats", "advancement", "naturalist");
     private static final Set<String> HOOK_PACKAGES = Set.of("mixin", "mixin/client", "client", "look", "command", "compat/jade");
-    // The composition root, in the mod's root package.
-    private static final Set<String> HOOK_CLASSES = Set.of("BarnyardRomance", "BarnyardFeatures");
+    // The composition root, in the mod's root package, and the flag the Jade plugin sets, which loads without Jade.
+    private static final Set<String> HOOK_CLASSES = Set.of("BarnyardRomance", "BarnyardFeatures", "compat/JadeBridge");
     // Mixin accessors stay where Mixin needs them but count as core.
     private static final Set<String> CORE_CLASSES_IN_HOOK_PACKAGES = Set.of("mixin/AnimalEating",
             "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor");
-    // An old package, or package/Class, to the zone it will belong to. Class entries win over package entries.
-    private static final Map<String, String> MIGRATING = Map.ofEntries(
-            Map.entry("compat/JadeBridge", "hook"),
-            Map.entry("item/BarnyardItems", "core"),
-            Map.entry("item/BarnyardComponents", "core"),
-            Map.entry("item", "herd"),
-            Map.entry("network", "herd"),
-            Map.entry("command/HerdTool", "herd"),
-            Map.entry("command/HerdToolRules", "herd")
-    );
-    // "<file> -> <imported class>" to the reason it's let through for now. Every reason starts with "migration:".
-    private static final Map<String, String> ALLOWED = Map.ofEntries(
-            Map.entry("advancement/FamilyTree -> herd/HerdBookData", "migration: advancement uses herd's internals until herd has an api"),
-            Map.entry("advancement/FamilyTree -> herd/HerdLedger", "migration: advancement uses herd's internals until herd has an api"),
-            Map.entry("core/registry/BarnyardRegistrations -> item/HerdBookCopyRecipe", "migration: registers herd's content until herd registers its own"),
-            Map.entry("core/registry/BarnyardTab -> command/HerdTool", "migration: tab order names herd's content until herd registers it"),
-            Map.entry("core/registry/BarnyardTab -> item/HerdStick", "migration: exposed by the Task 3 move"),
-            Map.entry("herd/HerdEntry -> stats/StatKind", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("herd/HerdRecords -> stats/LiveFacts", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("herd/HerdStatus -> stats/AnimalFacts", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("herd/HerdStatus -> stats/LiveFacts", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("herd/HerdStatus -> stats/StatSheet", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("herd/HerdStatus -> stats/StatText", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("item/BarnyardComponents -> command/HerdTool", "migration: registry content that moves to herd"),
-            Map.entry("item/HerdStick -> command/AnimalInfoText", "migration: herd calls a command helper until it moves out of the hook"),
-            Map.entry("item/HerdStick -> command/DebugSteps", "migration: herd calls a command helper until it moves out of the hook"),
-            Map.entry("item/HerdStick -> stats/StatText", "migration: herd uses stats' internals until stats has an api"),
-            Map.entry("stats/AnimalFacts -> herd/Familiar", "migration: stats uses herd's internals until herd has an api"),
-            Map.entry("stats/LiveFacts -> herd/Familiar", "migration: stats uses herd's internals until herd has an api")
-    );
     // Files one version adds rather than overrides, as <version>/<path>; anything else under versions/ needs a main file.
     private static final Set<String> VERSION_ONLY = Set.of(
             "1.21.1/mixin/client/ChickenModelAccessor",
@@ -71,30 +42,27 @@ class FeatureBoundaryScanTest {
     @Test
     void everyImportKeepsToTheRule() {
         Scan scan = scan();
-        assertTrue(scan.unclassified.isEmpty(), () -> "add these to FEATURES, HOOK_PACKAGES or MIGRATING:\n"
+        assertTrue(scan.unclassified.isEmpty(), () -> "add these to FEATURES or HOOK_PACKAGES:\n"
                 + String.join("\n", scan.unclassified));
-        List<String> unlisted = scan.violations.entrySet().stream().filter(violation -> !ALLOWED.containsKey(violation.getKey()))
+        List<String> broken = scan.violations.entrySet().stream()
                 .map(violation -> violation.getKey() + "   (" + violation.getValue() + ")").toList();
-        assertTrue(unlisted.isEmpty(), () -> unlisted.size() + " imports break the rule between core, features and hooks:\n"
-                + String.join("\n", unlisted));
+        assertTrue(broken.isEmpty(), () -> broken.size() + " imports break the rule between core, features and hooks:\n"
+                + String.join("\n", broken));
     }
 
+    // A class listed by name that moved or went away would leave its new home classified by its package instead.
     @Test
-    void everyAllowanceIsStillNeeded() {
-        Scan scan = scan();
+    void everyListedClassStillExists() {
         Path root = SourceScan.repoRoot();
         List<String> stale = new ArrayList<>();
-        ALLOWED.forEach((allowance, reason) -> {
-            if (!scan.violations.containsKey(allowance)) {
-                stale.add("ALLOWED " + allowance + " no longer breaks the rule");
+        for (String listed : HOOK_CLASSES) {
+            if (!existsInMain(root, listed)) {
+                stale.add("HOOK_CLASSES " + listed + " is no longer a class");
             }
-            if (!reason.startsWith("migration:")) {
-                stale.add("ALLOWED " + allowance + " needs a reason starting \"migration:\"");
-            }
-        });
-        for (String old : MIGRATING.keySet()) {
-            if (!existsInMain(root, old)) {
-                stale.add("MIGRATING " + old + " is no longer a package or class");
+        }
+        for (String listed : CORE_CLASSES_IN_HOOK_PACKAGES) {
+            if (!existsInMain(root, listed)) {
+                stale.add("CORE_CLASSES_IN_HOOK_PACKAGES " + listed + " is no longer a class");
             }
         }
         assertTrue(stale.isEmpty(), () -> String.join("\n", stale));
@@ -134,19 +102,6 @@ class FeatureBoundaryScanTest {
     private record Zone(String name, boolean api) {
         static final Zone CORE = new Zone("core", false);
         static final Zone HOOK = new Zone("hook", false);
-
-        static Zone named(String name) {
-            return switch (name) {
-                case "core" -> CORE;
-                case "hook" -> HOOK;
-                default -> {
-                    if (!FEATURES.contains(name)) {
-                        throw new IllegalStateException("MIGRATING names an unknown zone " + name);
-                    }
-                    yield new Zone(name, false);
-                }
-            };
-        }
 
         boolean mayImport(Zone imported) {
             if (this.equals(HOOK) || imported.equals(CORE)) {
@@ -222,14 +177,8 @@ class FeatureBoundaryScanTest {
         if (CORE_CLASSES_IN_HOOK_PACKAGES.contains(path)) {
             return Zone.CORE;
         }
-        if (pkg.isEmpty() && HOOK_CLASSES.contains(path)) {
+        if (HOOK_CLASSES.contains(path)) {
             return Zone.HOOK;
-        }
-        if (MIGRATING.containsKey(path)) {
-            return Zone.named(MIGRATING.get(path));
-        }
-        if (MIGRATING.containsKey(pkg)) {
-            return Zone.named(MIGRATING.get(pkg));
         }
         if (HOOK_PACKAGES.contains(pkg)) {
             return Zone.HOOK;

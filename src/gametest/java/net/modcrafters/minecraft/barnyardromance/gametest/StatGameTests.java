@@ -11,8 +11,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
-import net.modcrafters.minecraft.barnyardromance.stats.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 

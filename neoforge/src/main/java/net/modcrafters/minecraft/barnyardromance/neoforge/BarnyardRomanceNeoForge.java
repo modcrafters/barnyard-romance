@@ -10,10 +10,9 @@ import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancement
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 //? if <1.21.6
 //import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
@@ -121,7 +120,7 @@ public class BarnyardRomanceNeoForge {
     }
 
     private static void addToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == BarnyardItems.FOOD_AND_DRINKS) {
+        if (event.getTabKey() == BarnyardTab.FOOD_AND_DRINKS) {
             BarnyardTab.foodAndDrinks().forEach(event::accept);
         }
     }

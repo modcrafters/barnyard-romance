@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.command;
+package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 

@@ -6,7 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.stats.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.minecraft.client.Camera;

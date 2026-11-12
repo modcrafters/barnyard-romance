@@ -1,11 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureRegistrar;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.herd.api.HerdApi;
 
@@ -19,9 +21,17 @@ public final class HerdFeature implements Feature {
 
     @Override
     public void register(FeatureRegistrar registrar) {
-        registrar.provide(HerdApi.class, HerdBooks::listed);
+        registrar.provide(HerdApi.class, new HerdApiImpl());
         registrar.listen(AnimalEvent.Born.class, HerdFeature::born);
         registrar.listen(AnimalEvent.Hatched.class, HerdFeature::hatched);
+        // Lambdas, so the holders (and the items in them) load only once the registries are open, and the config is
+        // read each time the tab is filled.
+        registrar.content(sink -> {
+            HerdComponents.register(sink);
+            sink.register(Registries.RECIPE_SERIALIZER, HerdBookCopyRecipe.ID, () -> HerdBookCopyRecipe.SERIALIZER);
+            HerdItems.register(sink);
+        });
+        registrar.tabEntry("herd_sticks", () -> HerdStick.tabStacks(BarnyardConfig.current().herdSticks()));
     }
 
     // Young join their mother's books. A herd book problem mustn't count as a failed birth.

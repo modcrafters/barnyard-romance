@@ -20,9 +20,9 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdComponents;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsComponents;
@@ -718,9 +718,9 @@ public final class EggGameTests {
 
     public static void hatchedChickJoinsMothersBook(GameTestHelper helper) {
         Animal mother = hen(helper, LARGE_HEN, 0.5);
-        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, mother);
-        UUID bookId = book.get(BarnyardComponents.HERD_BOOK);
+        UUID bookId = book.get(HerdComponents.HERD_BOOK);
         UUID motherId = mother.getUUID();
         mother.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         NestingBoxBlockEntity box = box(helper, BOX);
@@ -1094,7 +1094,7 @@ public final class EggGameTests {
     public static void henInBoxStaysInHerdBook(GameTestHelper helper) {
         Animal hen = hen(helper, MEDIUM_HEN, 0.6);
         hen.setCustomName(net.minecraft.network.chat.Component.literal("Henrietta"));
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), hen);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), hen);
         UUID id = hen.getUUID();
         NestingBoxBlockEntity box = box(helper, BOX);
         HerdBookData herd = HerdBookData.get(helper.getLevel().getServer());
@@ -1380,11 +1380,11 @@ public final class EggGameTests {
 
     // The animal's entry in a new herd book, worked out with ranges that stay inside this test's pen.
     static HerdEntry bookEntry(GameTestHelper helper, Animal animal) {
-        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         List<HerdEntry>[] entries = new List[1];
         inPen(() -> {
             HerdBooks.register(book, animal);
-            entries[0] = HerdBooks.entries(helper.getLevel().getServer(), book.get(BarnyardComponents.HERD_BOOK), helper.getLevel().getGameTime());
+            entries[0] = HerdBooks.entries(helper.getLevel().getServer(), book.get(HerdComponents.HERD_BOOK), helper.getLevel().getGameTime());
         });
         return entries[0].stream().filter(entry -> entry.id().equals(animal.getUUID())).findFirst()
                 .orElseThrow(() -> GameTestCompat.failure(helper, "the animal isn't in the book"));

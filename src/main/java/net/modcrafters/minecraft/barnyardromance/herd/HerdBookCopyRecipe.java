@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.item;
+package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.minecraft.core.NonNullList;
@@ -48,7 +48,7 @@ public class HerdBookCopyRecipe extends CustomRecipe {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (stack.is(BarnyardItems.HERD_BOOK) && stack.has(BarnyardComponents.HERD_BOOK) && book < 0) {
+            if (stack.is(HerdItems.HERD_BOOK) && stack.has(HerdComponents.HERD_BOOK) && book < 0) {
                 book = slot;
             } else if (stack.is(Items.BOOK)) {
                 plain++;

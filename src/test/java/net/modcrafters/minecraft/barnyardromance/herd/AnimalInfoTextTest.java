@@ -1,5 +1,6 @@
-package net.modcrafters.minecraft.barnyardromance.command;
+package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -7,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,6 +19,12 @@ import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlice
 
 class AnimalInfoTextTest {
     private final SizeSettings size = new SizeSettings(0.8, 1.2, 0.1);
+
+    // The info line asks familiarity and pregnancy for the familiarity and fertility it shows.
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
 
     @Test
     void describesSexRolledScaleAndCurrentScale() {

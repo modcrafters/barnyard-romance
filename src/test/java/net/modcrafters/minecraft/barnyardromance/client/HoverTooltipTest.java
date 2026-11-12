@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
+import net.modcrafters.minecraft.barnyardromance.herd.AnimalInfoText;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;

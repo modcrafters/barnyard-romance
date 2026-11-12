@@ -1,14 +1,17 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static net.modcrafters.minecraft.barnyardromance.stats.StatKind.*;
+import static net.modcrafters.minecraft.barnyardromance.stats.api.StatKind.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JadeLinesTest {

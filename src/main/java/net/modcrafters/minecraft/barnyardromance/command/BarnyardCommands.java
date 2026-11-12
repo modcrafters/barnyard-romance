@@ -1,9 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.command;
 
+import net.modcrafters.minecraft.barnyardromance.herd.HerdToolRules;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
-import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;

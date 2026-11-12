@@ -7,7 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.client.NestingBoxHen;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
 import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
@@ -105,7 +105,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 ServerLevel level = player.level();
                 level.setBlockAndUpdate(player.blockPosition().north(3), EggsBlocks.NESTING_BOX.defaultBlockState());
-                ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+                ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
                 player.setItemInHand(InteractionHand.MAIN_HAND, book);
                 level.getEntities(EntityTypes.CHICKEN, chicken -> true).forEach(chicken -> {
                     AnimalTraits traits = Services.DATA.get(chicken).orElseThrow();

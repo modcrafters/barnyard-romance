@@ -14,7 +14,8 @@ import net.modcrafters.minecraft.barnyardromance.food.FoodJson;
 import net.modcrafters.minecraft.barnyardromance.food.FoodScanRunner;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourItems;
@@ -540,13 +541,16 @@ public final class FoodGameTests {
         //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
-        for (Item item : List.of(BarnyardItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
+        for (Item item : List.of(HerdItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
             helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
         // The sticks follow the herdSticks option. Both settings are given here, so the global config stays alone.
-        helper.assertTrue(BarnyardTab.contents(true).stream().anyMatch(stack -> stack.is(BarnyardItems.HERD_STICK)), "the tab has no sticks with herdSticks on");
-        helper.assertTrue(BarnyardTab.contents(false).stream().noneMatch(stack -> stack.is(BarnyardItems.HERD_STICK)), "the tab has sticks with herdSticks off");
-        helper.assertTrue(BarnyardTab.contents(false).stream().anyMatch(stack -> stack.is(BarnyardItems.HERD_BOOK)), "the tab lost the herd book with herdSticks off");
+        helper.assertTrue(HerdStick.tabStacks(true).stream().anyMatch(stack -> stack.is(HerdItems.HERD_STICK)), "the tab has no sticks with herdSticks on");
+        helper.assertTrue(HerdStick.tabStacks(false).stream().noneMatch(stack -> stack.is(HerdItems.HERD_STICK)), "the tab has sticks with herdSticks off");
+        helper.assertTrue(BarnyardTab.contents().stream().anyMatch(stack -> stack.is(HerdItems.HERD_BOOK)), "the tab lost the herd book");
+        // The tab asks herd for its sticks each time it is filled, so they follow the config loaded now.
+        helper.assertTrue(BarnyardTab.contents().stream().anyMatch(stack -> stack.is(HerdItems.HERD_STICK)) == BarnyardConfig.current().herdSticks(),
+                "the tab's sticks don't follow the loaded herdSticks");
         com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> on = new com.mojang.brigadier.CommandDispatcher<>();
         com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> off = new com.mojang.brigadier.CommandDispatcher<>();
         BarnyardCommands.register(on, true);

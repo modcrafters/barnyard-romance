@@ -11,7 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
 import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
@@ -425,7 +425,7 @@ public final class AdvancementGameTests {
     public static void writingAnAnimalIntoAHerdBookEarnsPaperTrail(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         ServerPlayer player = MockPlayers.inLevel(helper);
-        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BarnyardItems.HERD_BOOK));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(HerdItems.HERD_BOOK));
 
         try {
             GameTestCompat.useOn(cow, player);

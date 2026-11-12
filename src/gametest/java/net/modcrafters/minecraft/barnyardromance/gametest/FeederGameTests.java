@@ -26,7 +26,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
@@ -37,7 +37,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
@@ -1003,7 +1003,7 @@ public final class FeederGameTests {
                             .filter(line -> line.kind() == StatKind.FED).findFirst()
                             .map(line -> TextComponents.of(line.text()).getString()).orElse("missing");
                     helper.assertTrue(live.equals("Fed today (Manger)"), "her fed row reads " + live);
-                    HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+                    HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
                     HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
                     HerdRecord record = data.record(cow.getUUID());
                     for (boolean loaded : new boolean[]{true, false}) {

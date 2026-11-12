@@ -23,7 +23,7 @@ class LangFileTest {
     private static final Pattern ADVANCEMENT_KEY = Pattern.compile("\"(advancements\\.barnyard_romance\\.[a-z0-9_.]+)\"");
     private static final String ADVANCEMENTS = "src/main/resources/data/barnyard_romance/advancement";
     // Keys the code never names in full: the game looks up item and block names from the registry and tag names from the tag
-    // id, and BarnyardItems adds .use and .effect to a superfood's own key for its tooltip.
+    // id, and ItemProperties adds .use and .effect to a superfood's own key for its tooltip.
     // config.jade.plugin_<id>.<option> is the name Jade shows for a plugin option in its own settings screen.
     // item.minecraft.milk_bucket renames vanilla's milk bucket to cow milk, next to sheep and goat milk.
     private static final Pattern IMPLICIT = Pattern.compile("item\\.barnyard_romance\\.[a-z0-9_]+(?:\\.use|\\.effect)?|block\\.barnyard_romance\\.[a-z0-9_]+|item\\.minecraft\\.milk_bucket|itemGroup\\..*|death\\..*|tag\\..*|config\\.jade\\.plugin_barnyard_romance\\.[a-z_]+");

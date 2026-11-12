@@ -15,7 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;

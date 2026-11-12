@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
@@ -64,7 +64,7 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                 ServerLevel level = player.level();
                 long now = level.getGameTime();
                 long clock = level.getOverworldClockTime();
-                ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+                ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
                 player.setItemInHand(InteractionHand.MAIN_HAND, book);
                 Animal bess = cow(level, player, "Old Bess", Sex.FEMALE, false, AnimalTraits.of(Sex.FEMALE, 0.9).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)).withBornTick(now - 900_000L));
                 Animal tom = cow(level, player, "Big Tom", Sex.MALE, false, AnimalTraits.of(Sex.MALE, 1.3).with(CARE, FamiliarityState.NONE.fed(1.0, clock)).withBornTick(now - 400_000L));

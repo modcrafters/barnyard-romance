@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
@@ -216,7 +216,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
                 Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25, 1, 1.0));
             }
             // A fresh book for each animal, opened at its page the way using the book on it does.
-            ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+            ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
             player.setItemInHand(InteractionHand.MAIN_HAND, book);
             HerdBooks.register(book, cow);
             HerdBooks.show(player, book, true, Optional.of(cow.getUUID()));

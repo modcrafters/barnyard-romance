@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.saves;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
@@ -11,7 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdComponents;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
@@ -216,22 +216,22 @@ class SaveFixturesTest {
 
     @Test
     void herdBookDecodes() {
-        assertEquals(herdBook(), decode(BarnyardComponents.HERD_BOOK.codecOrThrow(), "herd_book"));
+        assertEquals(herdBook(), decode(HerdComponents.HERD_BOOK.codecOrThrow(), "herd_book"));
     }
 
     @Test
     void herdBookEncodes() {
-        assertEquals(Snbt.fixture("herd_book"), encode(BarnyardComponents.HERD_BOOK.codecOrThrow(), herdBook()));
+        assertEquals(Snbt.fixture("herd_book"), encode(HerdComponents.HERD_BOOK.codecOrThrow(), herdBook()));
     }
 
     @Test
     void herdToolDecodes() {
-        assertEquals(herdTool(), decode(BarnyardComponents.HERD_TOOL.codecOrThrow(), "herd_tool"));
+        assertEquals(herdTool(), decode(HerdComponents.HERD_TOOL.codecOrThrow(), "herd_tool"));
     }
 
     @Test
     void herdToolEncodes() {
-        assertEquals(Snbt.fixture("herd_tool"), encode(BarnyardComponents.HERD_TOOL.codecOrThrow(), herdTool()));
+        assertEquals(Snbt.fixture("herd_tool"), encode(HerdComponents.HERD_TOOL.codecOrThrow(), herdTool()));
     }
 
     static <T> Tag encode(Codec<T> codec, T value) {

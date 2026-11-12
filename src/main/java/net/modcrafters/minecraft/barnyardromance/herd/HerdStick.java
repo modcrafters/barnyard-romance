@@ -1,16 +1,12 @@
-package net.modcrafters.minecraft.barnyardromance.item;
+package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
-import net.modcrafters.minecraft.barnyardromance.command.DebugSteps;
-import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
-import net.modcrafters.minecraft.barnyardromance.command.HerdToolRules;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
-import net.modcrafters.minecraft.barnyardromance.stats.StatText;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatsApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -29,6 +25,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemLore;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HerdStick extends Item {
@@ -37,11 +34,24 @@ public class HerdStick extends Item {
     }
 
     public static ItemStack create(HerdTool tool) {
-        ItemStack stack = new ItemStack(BarnyardItems.HERD_STICK);
-        stack.set(BarnyardComponents.HERD_TOOL, tool);
+        ItemStack stack = new ItemStack(HerdItems.HERD_STICK);
+        stack.set(HerdComponents.HERD_TOOL, tool);
         stack.set(DataComponents.ITEM_NAME, TextComponents.of(tool.label()));
         stack.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable("item.barnyard_romance.lore.use_on_animal"))));
         return stack;
+    }
+
+    // The sticks the creative tab shows, in its order: there only while the config's herdSticks is on.
+    public static List<ItemStack> tabStacks(boolean herdSticks) {
+        List<ItemStack> sticks = new ArrayList<>();
+        if (herdSticks) {
+            sticks.add(create(HerdTool.info()));
+            sticks.add(create(HerdTool.familiarity(1)));
+            sticks.add(create(HerdTool.familiarity(-1)));
+            sticks.add(create(HerdTool.pregnancy(1)));
+            sticks.add(create(HerdTool.pregnancy(-1)));
+        }
+        return sticks;
     }
 
     @Override
@@ -49,7 +59,7 @@ public class HerdStick extends Item {
         if (!(target instanceof Animal animal)) {
             return InteractionResult.PASS;
         }
-        HerdTool tool = stack.get(BarnyardComponents.HERD_TOOL);
+        HerdTool tool = stack.get(HerdComponents.HERD_TOOL);
         if (tool == null) {
             return InteractionResult.PASS;
         }
@@ -97,7 +107,7 @@ public class HerdStick extends Item {
                     Services.DATA.get(animal)
                             .flatMap(traits -> FeaturesRepository.get(MilkApi.class)
                                     .status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
-                            .map(StatText::milkText)
+                            .map(status -> FeaturesRepository.get(StatsApi.class).milkText(status))
                             .orElse(Text.EMPTY)
             );
             return new Outcome(true, text);

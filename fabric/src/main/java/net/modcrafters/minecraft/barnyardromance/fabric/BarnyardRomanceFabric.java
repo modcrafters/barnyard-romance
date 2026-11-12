@@ -7,8 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.fabric.data.FabricAnimalData;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
@@ -43,7 +42,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
         BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
-        CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
+        CreativeModeTabEvents.modifyOutputEvent(BarnyardTab.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
         BarnyardRomance.setup();
         ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
         data.registerReloadListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());

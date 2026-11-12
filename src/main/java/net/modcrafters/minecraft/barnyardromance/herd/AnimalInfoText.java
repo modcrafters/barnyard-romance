@@ -1,16 +1,16 @@
-package net.modcrafters.minecraft.barnyardromance.command;
+package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Fertility;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,12 +70,12 @@ public final class AnimalInfoText {
             parts.add(label(value, size));
             parts.add(Text.of("gui.barnyard_romance.info.scale", formatScale(value.scale()), attribute));
             parts.add(life(stage));
-            parts.add(Text.of("gui.barnyard_romance.info.familiar", Familiarity.percent(value.get(FamiliaritySlices.CARE).familiarity())));
+            parts.add(Text.of("gui.barnyard_romance.info.familiar", Text.percent(FeaturesRepository.get(FamiliarityApi.class).familiarity(value))));
             parts.add(Text.of("gui.barnyard_romance.info.growth", Growth.clock(value.growthTicks())));
-            parts.add(Text.of("gui.barnyard_romance.info.weight", Familiarity.percent(value.weight())));
+            parts.add(Text.of("gui.barnyard_romance.info.weight", Text.percent(value.weight())));
             if (value.sex() == Sex.FEMALE) {
-                double fertility = Fertility.current(value, BarnyardConfig.current().ageFor(speciesId), now);
-                parts.add(Text.of("gui.barnyard_romance.info.fertility", Familiarity.percent(fertility)));
+                double fertility = FeaturesRepository.get(PregnancyApi.class).fertility(value, BarnyardConfig.current().ageFor(speciesId), now);
+                parts.add(Text.of("gui.barnyard_romance.info.fertility", Text.percent(fertility)));
             }
             if (!milkText.isEmpty()) {
                 parts.add(Text.of("gui.barnyard_romance.info.milk", milkText));

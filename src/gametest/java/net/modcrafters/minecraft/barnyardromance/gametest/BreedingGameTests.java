@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
@@ -344,7 +344,7 @@ public final class BreedingGameTests {
         HerdBooks.RegisterResult result;
         try {
             BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:*\"]}"));
-            result = HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+            result = HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         } finally {
             BarnyardConfig.set(config);
         }
@@ -356,7 +356,7 @@ public final class BreedingGameTests {
     // A member whose species is excluded later stays in the book as it was last recorded.
     public static void excludedMembersAreNotRefreshed(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
         long recorded = data.record(cow.getUUID()).traits().get(CARE).lastFedTick();
         Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(1.0, 900L)));

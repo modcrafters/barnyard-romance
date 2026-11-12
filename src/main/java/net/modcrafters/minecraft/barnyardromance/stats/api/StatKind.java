@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.stats;
+package net.modcrafters.minecraft.barnyardromance.stats.api;
 
 // What a line of the stat sheet is about, so a page can give it an icon or a bar. NOTE and DETAIL lines get neither.
 // A DETAIL explains the line above it: the herd book puts it in that line's tooltip, the card and Jade show it as a note.

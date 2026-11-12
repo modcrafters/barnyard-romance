@@ -14,14 +14,14 @@ import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Sulk;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -31,8 +31,8 @@ import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
-import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;
 import net.minecraft.util.RandomSource;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
@@ -234,7 +234,7 @@ public final class CareGameTests {
     public static void unloadedMemberShowsProjectedFamiliarity(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L))));
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
         HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
         HerdRecord record = data.record(cow.getUUID());
@@ -314,7 +314,7 @@ public final class CareGameTests {
     // Hungry on days 10 and 11, so on day 12 she has no milk, and the herd book agrees.
     public static void hungryCowGivesNoMilkNextDay(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         FamiliarityCare.settle(cow, clock(10L));
         long before = helper.getLevel().getOverworldClockTime();
         Player player = holding(helper, Items.BUCKET);
@@ -536,11 +536,11 @@ public final class CareGameTests {
     public static void grumpyPetShowsInTheBook(GameTestHelper helper) {
         ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.5);
-        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, wolf);
         Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.1, -1L)));
 
-        HerdEntry entry = HerdBooks.entries(helper.getLevel().getServer(), book.get(BarnyardComponents.HERD_BOOK), helper.getLevel().getGameTime()).getFirst();
+        HerdEntry entry = HerdBooks.entries(helper.getLevel().getServer(), book.get(HerdComponents.HERD_BOOK), helper.getLevel().getGameTime()).getFirst();
 
         helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().getContents().toString().contains("herd_book.grumpy")),
                 "the book doesn't say the wolf is grumpy: " + entry.lines());
@@ -563,7 +563,7 @@ public final class CareGameTests {
     public static void frozenMemberIsNotChargedTwice(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L))));
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.2, -1L).withHunger(new Hunger(14L, 10L, 13L))));
         HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
         HerdBookData data = HerdBookData.get(helper.getLevel().getServer());

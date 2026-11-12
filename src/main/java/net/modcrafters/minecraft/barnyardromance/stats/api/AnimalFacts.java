@@ -1,8 +1,8 @@
-package net.modcrafters.minecraft.barnyardromance.stats;
+package net.modcrafters.minecraft.barnyardromance.stats.api;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
-import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import org.jspecify.annotations.Nullable;

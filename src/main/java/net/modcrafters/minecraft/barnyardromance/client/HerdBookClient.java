@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 import net.minecraft.client.Minecraft;
 
 // Receives the herd book from the server: opens it, or refreshes the one already open (see BookArrival).

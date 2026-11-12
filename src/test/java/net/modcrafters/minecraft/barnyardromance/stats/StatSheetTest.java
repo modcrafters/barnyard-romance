@@ -1,11 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
-import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
@@ -16,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static net.modcrafters.minecraft.barnyardromance.stats.StatKind.*;
+import static net.modcrafters.minecraft.barnyardromance.stats.api.StatKind.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatSheetTest {

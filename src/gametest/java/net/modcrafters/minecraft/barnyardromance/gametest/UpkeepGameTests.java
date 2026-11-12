@@ -8,7 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.HungerDamage;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -144,7 +144,7 @@ public final class UpkeepGameTests {
     // day leaves her above the escape line, so she can't run off and lose it again.
     public static void anOldSaveHerdBookCowCountsAsCaredFor(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         settledOn(cow, traits(helper, cow), 0.2, 10.0F, DAY - 1L, Upkeep.UNKNOWN);
 
         FamiliarityCare.settle(cow, clock(DAY));
@@ -157,7 +157,7 @@ public final class UpkeepGameTests {
     // Only old saves get the herd book shortcut: a calf born into a book this version is cared for once she's familiar.
     public static void aFarmBornCalfInABookIsNotCaredFor(GameTestHelper helper) {
         Animal calf = female(helper, EntityTypes.COW);
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), calf);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), calf);
         calf.setBaby(true);
         settledOn(calf, traits(helper, calf), 0.1, 10.0F, DAY - 1L);
 
