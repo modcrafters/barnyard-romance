@@ -13,11 +13,10 @@ import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
@@ -208,12 +207,13 @@ public final class PregnancyController {
         double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
         // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
         double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
-        Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
-        AnimalTraits traits = Offspring.traits(
+        BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+        Sex sex = breeding.newbornSex(child.getRandom().nextDouble(), config.femaleRatio());
+        AnimalTraits traits = breeding.newbornTraits(
                 sex,
                 size,
-                new Offspring.Parent(motherScale, motherGrowth, motherWeight),
-                new Offspring.Parent(pregnancy.fatherScale(), pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
+                new Parent(motherScale, motherGrowth, motherWeight),
+                new Parent(pregnancy.fatherScale(), pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
                 nutrition,
                 child.getRandom(),
                 mother.level().getGameTime(),

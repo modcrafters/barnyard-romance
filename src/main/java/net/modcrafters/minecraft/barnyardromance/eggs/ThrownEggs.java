@@ -8,9 +8,9 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.minecraft.server.level.ServerLevel;
@@ -82,9 +82,10 @@ public final class ThrownEggs {
         Animal chick = created.get();
         BarnyardConfig config = BarnyardConfig.current();
         SizeSettings size = config.sizeFor(species);
-        Sex sex = SexRoll.roll(random.nextDouble(), config.femaleRatio());
+        BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+        Sex sex = breeding.newbornSex(random.nextDouble(), config.femaleRatio());
         SizeClass chickSize = EggRules.thrownChickSize(mother, father, random.nextDouble());
-        double scale = ScaleRoll.fromPercent(sex, size, chickSize == SizeClass.M ? MEDIUM : SMALL);
+        double scale = breeding.scaleAt(sex, size, chickSize == SizeClass.M ? MEDIUM : SMALL);
         int growth = Growth.wild();
         Services.DATA.set(chick, AnimalTraits.of(sex, scale)
                 .withGrowthTicks(growth)

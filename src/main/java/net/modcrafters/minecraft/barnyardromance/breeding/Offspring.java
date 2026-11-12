@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.breeding;
 
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
@@ -16,9 +17,6 @@ import net.minecraft.util.RandomSource;
 // superfood bonus; it shapes every trait and the young one's own familiarity.
 public final class Offspring {
     private Offspring() {
-    }
-
-    public record Parent(double scale, int growthTicks, double weight) {
     }
 
     public static AnimalTraits traits(

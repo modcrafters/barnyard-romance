@@ -27,6 +27,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
@@ -651,7 +652,7 @@ public final class CareGameTests {
 
     public static void newbornOfAFamiliarMotherIsFarmRaised(GameTestHelper helper) {
         SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
-        Offspring.Parent parent = new Offspring.Parent(1.0, 24_000, 0.5);
+        Parent parent = new Parent(1.0, 24_000, 0.5);
         RandomSource random = helper.getLevel().getRandom();
 
         AnimalTraits familiar = Offspring.traits(Sex.FEMALE, size, parent, parent, 0.6, random, 0L, Lineage.UNKNOWN);

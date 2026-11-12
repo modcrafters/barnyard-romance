@@ -7,10 +7,10 @@ import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
-import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -45,11 +45,12 @@ public final class Hatching {
             chick = created.get();
             long bornTick = Math.min(hatchedAt, level.getGameTime());
             BarnyardConfig config = BarnyardConfig.current();
-            AnimalTraits traits = Offspring.traits(
-                    SexRoll.roll(chick.getRandom().nextDouble(), config.femaleRatio()),
+            BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+            AnimalTraits traits = breeding.newbornTraits(
+                    breeding.newbornSex(chick.getRandom().nextDouble(), config.femaleRatio()),
                     config.sizeFor(data.species()),
-                    new Offspring.Parent(data.motherScale(), data.motherGrowth(), data.motherWeight()),
-                    new Offspring.Parent(data.fatherScale(), data.fatherGrowth(), data.fatherWeight()),
+                    new Parent(data.motherScale(), data.motherGrowth(), data.motherWeight()),
+                    new Parent(data.fatherScale(), data.fatherGrowth(), data.fatherWeight()),
                     Math.clamp(data.motherFamiliarity(), 0.0, 1.0),
                     chick.getRandom(),
                     bornTick,
@@ -80,8 +81,9 @@ public final class Hatching {
             Animal chick = created.get();
             long bornTick = Math.min(hatchedAt, level.getGameTime());
             BarnyardConfig config = BarnyardConfig.current();
-            Sex sex = SexRoll.roll(chick.getRandom().nextDouble(), config.femaleRatio());
-            double scale = ScaleRoll.rollWild(sex, config.sizeFor(egg.species()), chick.getRandom().nextDouble());
+            BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+            Sex sex = breeding.newbornSex(chick.getRandom().nextDouble(), config.femaleRatio());
+            double scale = breeding.wildScale(sex, config.sizeFor(egg.species()), chick.getRandom().nextDouble());
             AnimalTraits traits = AnimalTraits.of(sex, scale).withBornTick(bornTick);
             Services.DATA.set(chick, traits);
             place(chick, egg.variant(), (int) Math.max(0L, traits.growthTicks() - (level.getGameTime() - bornTick)), position);
