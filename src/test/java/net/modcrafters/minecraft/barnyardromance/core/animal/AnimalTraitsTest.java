@@ -5,7 +5,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;

@@ -3,16 +3,15 @@ package net.modcrafters.minecraft.barnyardromance.rivalry;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
@@ -50,7 +49,7 @@ public final class RivalRolls {
         }
         // The roll reads his familiarity, so his missed days are settled first. A male in a feeding block's herd may
         // be waiting for the block to settle them; he rolls once it has.
-        if (FamiliarityCare.unsettled(male, clock)) {
+        if (FeaturesRepository.get(FamiliarityApi.class).isUnsettled(male, clock)) {
             return false;
         }
         Optional<AnimalTraits> traits = rolling(male);
@@ -73,14 +72,15 @@ public final class RivalRolls {
         }
         Tuning tuning = BarnyardConfig.current().tuning();
         boolean rooster = BarnyardConfig.current().eggsFor(AnimalSex.speciesId(male)).enabled();
-        boolean wild = !Familiarity.ready(traits.get().get(FamiliaritySlices.CARE).familiarity());
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        boolean wild = !familiarityApi.isFamiliar(traits.get());
         long now = level.getGameTime();
         for (Animal rival : rivals(male, tuning.matingRange())) {
             Optional<AnimalTraits> theirs = Services.DATA.get(rival);
             if (theirs.isEmpty() || Fights.fighting(rival) || Fights.inTruce(male, rival, now)) {
                 continue;
             }
-            double chance = FightRules.randomChance(rooster, wild, !Familiarity.ready(theirs.get().get(FamiliaritySlices.CARE).familiarity()), tuning);
+            double chance = FightRules.randomChance(rooster, wild, !familiarityApi.isFamiliar(theirs.get()), tuning);
             if (roll < chance && Reach.canWalk(male, rival, tuning.matingRange())) {
                 Fights.start(male, rival, null);
                 return;
@@ -90,7 +90,7 @@ public final class RivalRolls {
 
     // A tracked, grown male of a species that fights.
     private static Optional<AnimalTraits> rolling(Animal male) {
-        if (male.isBaby() || !BarnyardConfig.current().fightsFor(AnimalSex.speciesId(male)) || !FamiliarityCare.grown(male)) {
+        if (male.isBaby() || !BarnyardConfig.current().fightsFor(AnimalSex.speciesId(male)) || !AgeController.grown(male)) {
             return Optional.empty();
         }
         return Services.DATA.get(male).filter(traits -> traits.sex() == Sex.MALE);

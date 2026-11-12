@@ -5,12 +5,11 @@ import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -148,7 +147,7 @@ public final class Fights {
     }
 
     private static boolean familiar(Animal animal) {
-        return Services.DATA.get(animal).map(traits -> traits.get(FamiliaritySlices.CARE).familiarity()).map(Familiarity::ready).orElse(false);
+        return Services.DATA.get(animal).map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(false);
     }
 
     // The players close to either fighter holding food one of them eats.

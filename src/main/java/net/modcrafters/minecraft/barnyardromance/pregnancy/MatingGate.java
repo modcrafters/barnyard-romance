@@ -1,14 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
@@ -33,8 +32,8 @@ public final class MatingGate {
                     partnerTraits.map(AnimalTraits::sex),
                     Services.DATA.get(self, PregnancyFeature.PREGNANCY).isPresent(),
                     Services.DATA.get(partner, PregnancyFeature.PREGNANCY).isPresent(),
-                    selfTraits.map(traits -> Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())).orElse(true),
-                    partnerTraits.map(traits -> Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())).orElse(true)
+                    selfTraits.map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(true),
+                    partnerTraits.map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(true)
             );
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to check mating for {}, leaving vanilla rules in place", AnimalSex.speciesId(self), exception);

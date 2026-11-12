@@ -1,7 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
@@ -50,7 +49,7 @@ public final class StatSheet {
                     Growth.percent((int) Math.min(Integer.MAX_VALUE, facts.growthTicks()))));
         }
         if (facts.weight() >= 0.0) {
-            lines.add(new StatLine(StatKind.WEIGHT, Text.of("gui.barnyard_romance.sheet.weight", Familiarity.percent(facts.weight())), facts.weight()));
+            lines.add(new StatLine(StatKind.WEIGHT, Text.of("gui.barnyard_romance.sheet.weight", Text.percent(facts.weight())), facts.weight()));
         }
         if (facts.maxHealth() > 0.0F) {
             lines.add(new StatLine(StatKind.HEALTH,
@@ -59,7 +58,7 @@ public final class StatSheet {
         }
         fertility(lines, facts);
         if (facts.vigour() >= 0.0) {
-            lines.add(new StatLine(StatKind.VIGOUR, Text.of("gui.barnyard_romance.sheet.vigour", Familiarity.percent(facts.vigour())), facts.vigour()));
+            lines.add(new StatLine(StatKind.VIGOUR, Text.of("gui.barnyard_romance.sheet.vigour", Text.percent(facts.vigour())), facts.vigour()));
             if (facts.vigourHungry()) {
                 lines.add(StatLine.of(StatKind.DETAIL, StatText.VIGOUR_HUNGRY_TEXT));
             }
@@ -97,7 +96,7 @@ public final class StatSheet {
 
     // The familiarity bar, with the notes that explain a low or capped one.
     private static void familiarity(List<StatLine> lines, AnimalFacts facts, boolean notes) {
-        lines.add(new StatLine(StatKind.FAMILIARITY, Text.of("gui.barnyard_romance.herd_book.familiarity", Familiarity.percent(facts.familiarity())),
+        lines.add(new StatLine(StatKind.FAMILIARITY, Text.of("gui.barnyard_romance.herd_book.familiarity", Text.percent(facts.familiarity())),
                 facts.familiarity()));
         if (!notes) {
             return;
@@ -112,7 +111,7 @@ public final class StatSheet {
             lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.grumpy")));
         }
         if (facts.cap() < 1.0) {
-            lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.wild_caught", Familiarity.percent(facts.cap()))));
+            lines.add(StatLine.of(StatKind.DETAIL, Text.of("gui.barnyard_romance.herd_book.wild_caught", Text.percent(facts.cap()))));
         }
     }
 
@@ -126,7 +125,7 @@ public final class StatSheet {
     // Fathers never wear out, and the young haven't bred yet, so only adult and old females show fertility.
     private static void fertility(List<StatLine> lines, AnimalFacts facts) {
         if (facts.fertility() >= 0.0 && (facts.stage() == AgeStage.ADULT || facts.stage() == AgeStage.OLD)) {
-            lines.add(new StatLine(StatKind.FERTILITY, Text.of("gui.barnyard_romance.herd_book.fertility", Familiarity.percent(facts.fertility())),
+            lines.add(new StatLine(StatKind.FERTILITY, Text.of("gui.barnyard_romance.herd_book.fertility", Text.percent(facts.fertility())),
                     facts.fertility()));
         }
     }

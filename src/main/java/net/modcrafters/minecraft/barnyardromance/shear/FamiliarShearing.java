@@ -2,7 +2,8 @@
 //? if >=1.21.2 {
 package net.modcrafters.minecraft.barnyardromance.shear;
 
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -26,7 +27,7 @@ public final class FamiliarShearing {
             if (!entity.isAlive() || !(entity instanceof Shearable shearable) || !shearable.readyForShearing()) {
                 continue;
             }
-            if (entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.withholds(animal))) {
+            if (entity instanceof Animal animal && (FeaturesRepository.get(FamiliarityApi.class).deniesProducts(animal) || ShearActions.withholds(animal))) {
                 continue;
             }
             shearable.shear(level, SoundSource.BLOCKS, tool);

@@ -2,6 +2,8 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,6 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StatTextTest {
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
+
     @Test
     void fatherUsesTheLedgerWords() {
         assertEquals("Father XL bull", English.of(StatText.father("XL", "minecraft:cow")));

@@ -3,16 +3,15 @@ package net.modcrafters.minecraft.barnyardromance.rivalry;
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.Donkey;
@@ -189,8 +188,8 @@ public final class Courtship {
 
     private static boolean available(Animal female, Animal male, Tuning tuning) {
         Optional<AnimalTraits> traits = trackedTraits(male);
-        if (traits.isEmpty() || traits.get().sex() != Sex.MALE || !FamiliarityCare.grown(male)
-                || !Familiarity.ready(traits.get().get(FamiliaritySlices.CARE).familiarity())) {
+        if (traits.isEmpty() || traits.get().sex() != Sex.MALE || !AgeController.grown(male)
+                || !FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits.get())) {
             return false;
         }
         UUID taken = CHOSEN_FOR.get(male.getUUID());

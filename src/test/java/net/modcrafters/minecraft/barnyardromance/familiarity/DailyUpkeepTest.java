@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings.CatchUp;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +20,7 @@ class DailyUpkeepTest {
 
     @Test
     void aFedDayChangesNothing() {
-        DailyUpkeep.Outcome outcome = DailyUpkeep.day(state(0.5, 10, true, true, false), true, 0.0, HUNGER, TUNING);
+        UpkeepOutcome outcome = DailyUpkeep.day(state(0.5, 10, true, true, false), true, 0.0, HUNGER, TUNING);
         assertEquals(0.5, outcome.familiarity(), 1e-9);
         assertEquals(0f, outcome.damage());
         assertFalse(outcome.escapes());
@@ -27,7 +28,7 @@ class DailyUpkeepTest {
 
     @Test
     void aHungryFamiliarDayCostsFamiliarityAndHalfAHeart() {
-        DailyUpkeep.Outcome outcome = DailyUpkeep.day(state(0.5, 10, true, true, true), false, 0.9, HUNGER, TUNING);
+        UpkeepOutcome outcome = DailyUpkeep.day(state(0.5, 10, true, true, true), false, 0.9, HUNGER, TUNING);
         assertEquals(0.45, outcome.familiarity(), 1e-9);
         assertEquals(1.0f, outcome.damage(), 1e-6);
     }
@@ -57,10 +58,10 @@ class DailyUpkeepTest {
 
     @Test
     void aNeglectedCaredAnimalEscapesOnALowRoll() {
-        DailyUpkeep.Outcome gone = DailyUpkeep.day(state(0.08, 10, true, true, false), false, 0.05, HUNGER, TUNING);
+        UpkeepOutcome gone = DailyUpkeep.day(state(0.08, 10, true, true, false), false, 0.05, HUNGER, TUNING);
         assertTrue(gone.escapes());
         assertFalse(gone.cared());
-        DailyUpkeep.Outcome stays = DailyUpkeep.day(state(0.08, 10, true, true, false), false, 0.5, HUNGER, TUNING);
+        UpkeepOutcome stays = DailyUpkeep.day(state(0.08, 10, true, true, false), false, 0.5, HUNGER, TUNING);
         assertFalse(stays.escapes());
         assertTrue(stays.cared());
     }

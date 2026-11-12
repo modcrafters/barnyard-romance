@@ -13,15 +13,13 @@ import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.minecraft.core.BlockPos;
@@ -86,7 +84,7 @@ public final class EggLaying {
             if (laying.day() != GameDay.of(clock)) {
                 // The day is planned from yesterday's hunger, so it waits until her days are settled. A hen in a
                 // feeding block's herd may wait a few ticks for the block to settle them.
-                if (FamiliarityCare.unsettled(animal, clock)) {
+                if (FeaturesRepository.get(FamiliarityApi.class).isUnsettled(animal, clock)) {
                     return;
                 }
                 laying = plan(animal, GameDay.of(clock), sinceMidnight);
@@ -113,8 +111,8 @@ public final class EggLaying {
     private static Laying plan(Animal hen, long today, int sinceMidnight) {
         AnimalTraits traits = Services.DATA.get(hen).orElseThrow();
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(hen)));
-        int count = EggRules.perDay(size, traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(today),
-                Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()), settings(hen));
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        int count = EggRules.perDay(size, familiarityApi.wasHungryYesterday(traits, today), familiarityApi.isFamiliar(traits), settings(hen));
         return new Laying(today, EggSchedule.plan(sinceMidnight, count, hen.getRandom().nextDouble()), 0);
     }
 
@@ -177,7 +175,7 @@ public final class EggLaying {
             if (stage != AgeStage.ADULT && stage != AgeStage.OLD) {
                 continue;
             }
-            if (traits.get().get(FamiliaritySlices.CARE).hunger().lastAteDay() == today) {
+            if (FeaturesRepository.get(FamiliarityApi.class).lastAteDay(traits.get()) == today) {
                 return RoosterNear.FED;
             }
             best = RoosterNear.HUNGRY;
@@ -224,7 +222,7 @@ public final class EggLaying {
             if (distance > rangeSqr || (father != null && distance >= father.distanceToSqr(hen))) {
                 continue;
             }
-            Optional<AnimalTraits> traits = FamiliarityCare.settle(other);
+            Optional<AnimalTraits> traits = FeaturesRepository.get(FamiliarityApi.class).settle(other);
             if (traits.isEmpty() || traits.get().sex() != Sex.MALE) {
                 continue;
             }
@@ -247,7 +245,7 @@ public final class EggLaying {
                 motherTraits.scale(),
                 motherTraits.growthTicks(),
                 motherTraits.weight(),
-                motherTraits.get(FamiliaritySlices.CARE).familiarity(),
+                FeaturesRepository.get(FamiliarityApi.class).familiarity(motherTraits),
                 fatherTraits.scale(),
                 fatherTraits.growthTicks(),
                 fatherTraits.weight(),

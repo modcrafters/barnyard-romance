@@ -1,14 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
 import net.modcrafters.minecraft.barnyardromance.rivalry.api.Walk;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -68,7 +66,7 @@ final class HerdRefresh {
                 || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
             return false;
         }
-        return Services.DATA.get(animal).map(traits -> Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())).orElse(false);
+        return Services.DATA.get(animal).map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(false);
     }
 
     private static void mark(ServerLevel level, UUID id, boolean inHerd) {
@@ -77,14 +75,11 @@ final class HerdRefresh {
             return;
         }
         Services.DATA.get(animal).ifPresent(traits -> {
-            Upkeep upkeep = traits.get(FamiliaritySlices.CARE).upkeep();
-            if (upkeep.inHerd() == inHerd) {
+            FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+            if (familiarityApi.upkeep(traits).inHerd() == inHerd) {
                 return;
             }
-            // An old save's upkeep is worked out on its next settled day. A member is familiar, so it would count as
-            // cared for then; it does now, rather than lose the mark that tells it's from an old save.
-            Upkeep known = upkeep.equals(Upkeep.UNKNOWN) ? Upkeep.NONE.caredFor() : upkeep;
-            Services.DATA.set(animal, traits.with(FamiliaritySlices.CARE, traits.get(FamiliaritySlices.CARE).withUpkeep(known.withInHerd(inHerd))));
+            Services.DATA.set(animal, familiarityApi.withInHerd(traits, inHerd));
         });
     }
 }

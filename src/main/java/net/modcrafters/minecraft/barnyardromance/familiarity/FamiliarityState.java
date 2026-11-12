@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
+
 // Familiarity's slice of the animal record (see FamiliaritySlices.CARE). familiarity runs 0 to 1; lastFedTick is the
 // overworld clock time of the last hand feeding, -1 for never. origin says whether the animal was raised from young or
 // won over as an adult (see WildCaught); upkeep what the herd's upkeep has done to it.

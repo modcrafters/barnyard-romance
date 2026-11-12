@@ -2,13 +2,13 @@ package net.modcrafters.minecraft.barnyardromance.advancement;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 //? if >=26.1 {
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 //?} else
@@ -207,11 +207,13 @@ public final class BarnyardAdvancements {
         try {
             // The kill credit covers a death the player only started, such as burning after Fire Aspect.
             Entity cause = source.getEntity() != null ? source.getEntity() : animal.getKillCredit();
-            if (!(cause instanceof ServerPlayer killer) || FamiliarityCare.tamed(animal)
+            FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+            if (!(cause instanceof ServerPlayer killer) || familiarityApi.isTamed(animal)
                     || Ladders.ladderFor(AnimalSex.speciesId(animal)).isEmpty()) {
                 return;
             }
-            boolean familiar = FamiliarityCare.tracked(animal).map(traits -> Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())).orElse(false);
+            boolean familiar = BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))
+                    && Services.DATA.get(animal).map(familiarityApi::isFamiliar).orElse(false);
             if (familiar) {
                 Grants.grant(killer, NOT_YOU_ITS_DINNER);
             }
@@ -244,7 +246,8 @@ public final class BarnyardAdvancements {
     // owner earns, online or not.
     public static void familiarityFell(Animal animal, double before, double after) {
         try {
-            if (!FamiliarityCare.tamed(animal) || !Familiarity.ready(before) || Familiarity.ready(after)
+            FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+            if (!familiarityApi.isTamed(animal) || !familiarityApi.isFamiliarAt(before) || familiarityApi.isFamiliarAt(after)
                     || !(animal.level() instanceof ServerLevel level)) {
                 return;
             }

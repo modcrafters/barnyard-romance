@@ -9,9 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.command.DebugSteps;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.command.HerdToolRules;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.stats.StatText;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
@@ -20,8 +18,6 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -111,19 +107,17 @@ public class HerdStick extends Item {
             if (traits == null) {
                 return new Outcome(false, Text.of("message.barnyard_romance.herd_stick.no_familiarity"));
             }
+            FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+            double before = familiarityApi.familiarity(traits);
             double next = tool.sets()
                     ? DebugSteps.familiarityAt(tool.percent())
-                    : DebugSteps.familiarity(traits.get(FamiliaritySlices.CARE).familiarity(), tool.direction());
-            FamiliarityState care = traits.get(FamiliaritySlices.CARE);
-            // Going up obeys the wild-caught cap, as feeding would.
-            AnimalTraits updated = next > care.familiarity()
-                    ? FamiliarityCare.raise(animal, traits, next, care.lastFedTick())
-                    : traits.with(FamiliaritySlices.CARE, care.withFamiliarity(next));
+                    : DebugSteps.familiarity(before, tool.direction());
+            AnimalTraits updated = familiarityApi.withFamiliaritySetTo(animal, traits, next);
             Services.DATA.set(animal, updated);
-            double familiarity = updated.get(FamiliaritySlices.CARE).familiarity();
-            FamiliarityActions.tameIfFamiliar(animal, player, familiarity);
-            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Familiarity.percent(care.familiarity()),
-                    Familiarity.percent(familiarity)));
+            double familiarity = familiarityApi.familiarity(updated);
+            familiarityApi.tameIfFamiliar(animal, player, familiarity);
+            return new Outcome(true, Text.of("message.barnyard_romance.herd_stick.familiarity", Text.percent(before),
+                    Text.percent(familiarity)));
         }
         Pregnancy current = pregnancies.pregnancy(animal).orElse(null);
         if (current == null) {

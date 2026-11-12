@@ -1,7 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
@@ -73,8 +74,9 @@ public final class StatText {
         if (needsTaming && !tamed) {
             return NOT_TAMED;
         }
-        if (!Familiarity.ready(familiarity)) {
-            return Text.of("gui.barnyard_romance.inspector.needs_familiarity", Familiarity.percent(Familiarity.threshold()));
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        if (!familiarityApi.isFamiliarAt(familiarity)) {
+            return Text.of("gui.barnyard_romance.inspector.needs_familiarity", Text.percent(familiarityApi.familiarThreshold()));
         }
         if (young) {
             return TOO_YOUNG;

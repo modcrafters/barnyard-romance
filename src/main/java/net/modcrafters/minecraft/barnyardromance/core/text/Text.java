@@ -36,6 +36,12 @@ public sealed interface Text permits Text.Key, Text.Plain, Text.Join {
         return new Join(separator, parts);
     }
 
+    // A value from 0 to 1 as a whole percent.
+    static Text percent(double value) {
+        long points = Math.round(Math.clamp(value, 0.0, 1.0) * 100.0);
+        return of("gui.barnyard_romance.percent", points);
+    }
+
     default boolean isEmpty() {
         return this instanceof Plain plain && plain.value().isEmpty();
     }

@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.familiarity;
+package net.modcrafters.minecraft.barnyardromance.familiarity.api;
 
 // What the herd's upkeep has done to one animal. cared: it was looked after, so it is not neglected. ranAway: it
 // ran off for want of care and wants a note in the herd book until it is cared for again. feederDay is the GameDay

@@ -119,7 +119,6 @@ public final class Familiarity {
     }
 
     public static Text percent(double familiarity) {
-        long points = Math.round(Math.clamp(familiarity, 0.0, 1.0) * 100.0);
-        return Text.of("gui.barnyard_romance.percent", points);
+        return Text.percent(familiarity);
     }
 }

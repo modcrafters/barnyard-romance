@@ -7,7 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
@@ -48,7 +48,7 @@ public final class PregnancyCareActions {
             animal.heal(heal);
         }
         VersionCompat.playEatingSound(animal, stack);
-        FamiliarityCare.markEaten(animal);
+        FeaturesRepository.get(FamiliarityApi.class).recordMeal(animal);
         return VersionCompat.SUCCESS_SERVER;
     }
 

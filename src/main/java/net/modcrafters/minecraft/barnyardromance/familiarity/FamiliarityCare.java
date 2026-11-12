@@ -1,9 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
@@ -107,7 +108,7 @@ public final class FamiliarityCare {
         for (long day = 0L; day < days; day++) {
             boolean ate = day < days - hungryDays;
             double roll = ate ? 1.0 : animal.getRandom().nextDouble();
-            DailyUpkeep.Outcome outcome = DailyUpkeep.day(
+            UpkeepOutcome outcome = DailyUpkeep.day(
                     new DailyUpkeep.State(familiarity, animal.getHealth() - damage, cared, grown, neverRuns), ate, roll, hunger, tuning);
             familiarity = outcome.familiarity();
             damage += outcome.damage();
@@ -130,14 +131,14 @@ public final class FamiliarityCare {
     // One day of a herd's catch-up for an animal settled up to that day (see FeederCatchUp), by the same rules as a
     // lone settle. feeder is the kind of block that fed it that day, if one did. The damage isn't dealt here: the
     // caller adds up a few days' and deals them with toll, and owed, what it owes so far, comes off today's health.
-    public static DailyUpkeep.Outcome settleDay(Animal animal, ServerLevel level, AnimalTraits traits, long day, boolean ate,
+    public static UpkeepOutcome settleDay(Animal animal, ServerLevel level, AnimalTraits traits, long day, boolean ate,
                                                 @Nullable String feeder, float owed) {
         BarnyardConfig config = BarnyardConfig.current();
         Upkeep upkeep = upkeep(traits);
         boolean cared = caredFor(animal, level, traits, upkeep);
         double roll = ate ? 1.0 : animal.getRandom().nextDouble();
         FamiliarityState care = traits.get(CARE);
-        DailyUpkeep.Outcome outcome = DailyUpkeep.day(
+        UpkeepOutcome outcome = DailyUpkeep.day(
                 new DailyUpkeep.State(care.familiarity(), animal.getHealth() - owed, cared, grown(animal), neverRunsAway(animal)),
                 ate, roll, config.hunger(), config.tuning());
         Hunger hunger = care.hunger();
@@ -278,8 +279,7 @@ public final class FamiliarityCare {
     }
 
     public static boolean grown(Animal animal) {
-        AgeStage stage = AgeController.stage(animal);
-        return stage == AgeStage.ADULT || stage == AgeStage.OLD;
+        return AgeController.grown(animal);
     }
 
     public static double tamingGrace() {

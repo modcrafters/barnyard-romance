@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.familiarity;
+package net.modcrafters.minecraft.barnyardromance.familiarity.api;
 
 import org.junit.jupiter.api.Test;
 

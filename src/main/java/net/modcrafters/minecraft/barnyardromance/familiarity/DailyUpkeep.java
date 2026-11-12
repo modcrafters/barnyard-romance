@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
 
 // One day of an animal's upkeep, worked out from plain numbers so the same rule serves a single day and a long catch-up.
 public final class DailyUpkeep {
@@ -15,12 +16,9 @@ public final class DailyUpkeep {
     public record State(double familiarity, float health, boolean cared, boolean grown, boolean pet) {
     }
 
-    public record Outcome(double familiarity, float damage, boolean escapes, boolean cared) {
-    }
-
-    public static Outcome day(State state, boolean ate, double roll, HungerSettings hunger, Tuning tuning) {
+    public static UpkeepOutcome day(State state, boolean ate, double roll, HungerSettings hunger, Tuning tuning) {
         if (ate) {
-            return new Outcome(state.familiarity(), 0f, false, state.cared());
+            return new UpkeepOutcome(state.familiarity(), 0f, false, state.cared());
         }
         double threshold = tuning.familiarityThreshold() - EPSILON;
         double after = Math.max(0.0, state.familiarity() - tuning.familiarityHungerLoss());
@@ -31,7 +29,7 @@ public final class DailyUpkeep {
         boolean escapes = state.cared() && state.grown() && !state.pet()
                 && after < tuning.escapeBelow() && roll < tuning.escapeChance();
         boolean cared = !escapes && (state.cared() || after >= threshold);
-        return new Outcome(after, damage, escapes, cared);
+        return new UpkeepOutcome(after, damage, escapes, cared);
     }
 
     // The catch-up modes are for days spent away from a pen: a single day (last night) always counts.

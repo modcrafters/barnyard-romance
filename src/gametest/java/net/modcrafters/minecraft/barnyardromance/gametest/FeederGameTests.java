@@ -15,7 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederHerd;

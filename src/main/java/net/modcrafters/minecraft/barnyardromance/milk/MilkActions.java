@@ -9,10 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Refusal;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
@@ -21,7 +18,6 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -89,24 +85,25 @@ public final class MilkActions {
         if (tracked.isEmpty()) {
             return null;
         }
-        AnimalTraits traits = FamiliarityCare.settle(animal).orElse(tracked.get());
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        AnimalTraits traits = familiarityApi.settle(animal).orElse(tracked.get());
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
         long clock = animal.level().getOverworldClockTime();
         // Whether she went hungry yesterday isn't known until her days are settled, which for one in a feeding
         // block's herd may take a few ticks; until then the bucket does nothing.
-        if (!animal.level().isClientSide() && traits.get(FamiliaritySlices.CARE).hunger().settledDay() < GameDay.of(clock)) {
+        if (!animal.level().isClientSide() && familiarityApi.firstUnsettledDay(traits) < GameDay.of(clock)) {
             return InteractionResult.CONSUME;
         }
         MilkRules.Check check = MilkRules.check(traits.sex(), sizeClass(animal, traits), traits.get(LACTATION), now, clock, tuning,
-                traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(GameDay.of(clock)));
+                familiarityApi.wasHungryYesterday(traits, GameDay.of(clock)));
         if (check != MilkRules.Check.OK) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(check)));
             }
             return InteractionResult.CONSUME;
         }
-        if (traits.get(FamiliaritySlices.CARE).refusals().milkRefused(GameDay.of(clock))) {
+        if (familiarityApi.milkRefusedOn(traits, GameDay.of(clock))) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
             }
@@ -116,7 +113,7 @@ public final class MilkActions {
             return InteractionResult.SUCCESS;
         }
         // Only once every other reason has passed, so a refusal never covers up a dry or already milked cow.
-        if (Refusal.refuses(traits.get(FamiliaritySlices.CARE).familiarity(), animal.getRandom().nextDouble(), tuning)) {
+        if (familiarityApi.refuses(traits, animal.getRandom().nextDouble())) {
             refuseMilking(animal, player);
             return InteractionResult.CONSUME;
         }
@@ -124,8 +121,8 @@ public final class MilkActions {
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
         Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).milked(now, clock, tuning.milkKeepsFlowingTicks())));
-        FamiliarityCare.spend(animal, tuning.familiarityMilkingCost());
-        if (Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())) {
+        familiarityApi.spendFamiliarity(animal, tuning.familiarityMilkingCost());
+        if (familiarityApi.isFamiliar(traits)) {
             Events.post(new AnimalEvent.Milked(animal, player));
         }
         return VersionCompat.SUCCESS_SERVER;
@@ -146,7 +143,7 @@ public final class MilkActions {
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
         MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
-                traits.get(LACTATION).hasMilk(now, tuning.milkKeepsFlowingTicks()), Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()));
+                traits.get(LACTATION).hasMilk(now, tuning.milkKeepsFlowingTicks()), FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits));
         if (start != MilkRules.Start.OK) {
             VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(start)));
             return InteractionResult.CONSUME;
@@ -159,7 +156,7 @@ public final class MilkActions {
             animal.heal(heal);
         }
         VersionCompat.playEatingSound(animal, stack);
-        FamiliarityCare.markEaten(animal);
+        FeaturesRepository.get(FamiliarityApi.class).recordMeal(animal);
         return VersionCompat.SUCCESS_SERVER;
     }
 
@@ -174,7 +171,7 @@ public final class MilkActions {
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
         MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
-                traits.get(LACTATION).hasMilk(now, tuning.milkKeepsFlowingTicks()), Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()));
+                traits.get(LACTATION).hasMilk(now, tuning.milkKeepsFlowingTicks()), FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits));
         if (start == MilkRules.Start.OK) {
             Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).started(now, tuning.milkKeepsFlowingTicks())));
         }
@@ -214,7 +211,7 @@ public final class MilkActions {
         }
         int perDay = MilkRules.perDay(size, tuning);
         // A female that went hungry yesterday can't be milked today.
-        boolean hungry = traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(GameDay.of(clock));
+        boolean hungry = FeaturesRepository.get(FamiliarityApi.class).wasHungryYesterday(traits, GameDay.of(clock));
         return Optional.of(new MilkStatus(
                 lactation.nursing(now),
                 lactation.endsAt(tuning.milkKeepsFlowingTicks()) - now,
@@ -238,12 +235,12 @@ public final class MilkActions {
     // mooshroom's stew counts as milking.
     public static void refuseMilking(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal,
-                traits.with(FamiliaritySlices.CARE, traits.get(FamiliaritySlices.CARE).withRefusals(traits.get(FamiliaritySlices.CARE).refusals().withMilk(today)))));
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withMilkRefusedOn(traits, today)));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TEXT));
         }
-        FamiliarityActions.refusalCue(animal);
+        familiarityApi.showRefusal(animal);
     }
 
     // A bowl held out to a mooshroom: null lets vanilla give the stew. Unfamiliar mooshrooms are turned away earlier.
@@ -252,16 +249,17 @@ public final class MilkActions {
         if (tracked.isEmpty() || animal.isBaby()) {
             return null;
         }
-        AnimalTraits traits = FamiliarityCare.settle(animal).orElse(tracked.get());
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        AnimalTraits traits = familiarityApi.settle(animal).orElse(tracked.get());
         long clock = animal.level().getOverworldClockTime();
-        if (traits.get(FamiliaritySlices.CARE).refusals().milkRefused(GameDay.of(clock))) {
+        if (familiarityApi.milkRefusedOn(traits, GameDay.of(clock))) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
             }
             return InteractionResult.CONSUME;
         }
-        if (!animal.level().isClientSide() && Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())
-                && Refusal.refuses(traits.get(FamiliaritySlices.CARE).familiarity(), animal.getRandom().nextDouble(), BarnyardConfig.current().tuning())) {
+        if (!animal.level().isClientSide() && familiarityApi.isFamiliar(traits)
+                && familiarityApi.refuses(traits, animal.getRandom().nextDouble())) {
             refuseMilking(animal, player);
             return InteractionResult.CONSUME;
         }

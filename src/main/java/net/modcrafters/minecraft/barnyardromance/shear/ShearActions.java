@@ -3,19 +3,16 @@ package net.modcrafters.minecraft.barnyardromance.shear;
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Refusal;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
@@ -44,7 +41,7 @@ public final class ShearActions {
     }
 
     public static boolean refusedToday(Animal animal) {
-        return tracked(animal).map(traits -> traits.get(FamiliaritySlices.CARE).refusals().shearRefused(GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
+        return tracked(animal).map(traits -> FeaturesRepository.get(FamiliarityApi.class).shearRefusedOn(traits, GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
     }
 
     // Sheared or refused today: no more shearing until midnight. Rolls nothing.
@@ -99,17 +96,18 @@ public final class ShearActions {
     // A refused shearing keeps the wool and costs no familiarity, but the sheep can't be sheared again until midnight.
     public static void refuseShearing(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal,
-                traits.with(FamiliaritySlices.CARE, traits.get(FamiliaritySlices.CARE).withRefusals(traits.get(FamiliaritySlices.CARE).refusals().withShear(today)))));
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withShearRefusedOn(traits, today)));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(REFUSED));
         }
-        FamiliarityActions.refusalCue(animal);
+        familiarityApi.showRefusal(animal);
     }
 
     private static boolean rollsRefusal(Animal animal) {
-        return FamiliarityCare.settle(animal)
-                .map(traits -> Refusal.refuses(traits.get(FamiliaritySlices.CARE).familiarity(), animal.getRandom().nextDouble(), BarnyardConfig.current().tuning()))
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        return familiarityApi.settle(animal)
+                .map(traits -> familiarityApi.refuses(traits, animal.getRandom().nextDouble()))
                 .orElse(false);
     }
 
@@ -119,8 +117,9 @@ public final class ShearActions {
         UUID player = shearer != null && shearer.tick() == animal.level().getGameTime() ? shearer.player() : null;
         tracked(animal).ifPresent(traits -> {
             Services.DATA.set(animal, traits.with(ShearSlices.LAST_SHEARED, animal.level().getOverworldClockTime()));
-            FamiliarityCare.spend(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
-            if (Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity())) {
+            FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+            familiarityApi.spendFamiliarity(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
+            if (familiarityApi.isFamiliar(traits)) {
                 Events.post(new AnimalEvent.Sheared(animal, player));
             }
         });

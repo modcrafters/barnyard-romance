@@ -46,6 +46,12 @@ public final class AgeController {
         );
     }
 
+    // Adult or old.
+    public static boolean grown(Animal animal) {
+        AgeStage stage = stage(animal);
+        return stage == AgeStage.ADULT || stage == AgeStage.OLD;
+    }
+
     public static boolean allowsLove(Animal animal) {
         try {
             return stage(animal) != AgeStage.YOUNG;
