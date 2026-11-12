@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
 
 // Where things sit in the nesting box window: sixteen nests in four rows of four, each with room for its countdown
 // underneath, above the player's inventory. Positions are the top-left of a slot's item, as Minecraft's slots use.

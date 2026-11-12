@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

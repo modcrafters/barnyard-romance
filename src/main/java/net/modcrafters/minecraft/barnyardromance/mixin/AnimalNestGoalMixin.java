@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
-import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
+import net.modcrafters.minecraft.barnyardromance.eggs.LayInNestGoal;
 import net.modcrafters.minecraft.barnyardromance.rivalry.FightGoal;
 import net.minecraft.world.entity.animal.Animal;
 import org.spongepowered.asm.mixin.Mixin;

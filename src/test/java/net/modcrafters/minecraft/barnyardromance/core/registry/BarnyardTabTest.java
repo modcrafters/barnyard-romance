@@ -27,8 +27,12 @@ class BarnyardTabTest {
     void tabOrderIsUnchanged() throws IOException {
         assertEquals(List.of(
                 "new ItemStack(BarnyardItems.HERD_BOOK)",
-                "new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM)",
-                "for (FeederKind kind : FeederKind.values()) | new ItemStack(BarnyardBlocks.item(kind))",
+                "new ItemStack(item(\"nesting_box\"))",
+                "new ItemStack(item(\"bird_feeder\"))",
+                "new ItemStack(item(\"trough\"))",
+                "new ItemStack(item(\"feeder\"))",
+                "new ItemStack(item(\"manger\"))",
+                "new ItemStack(item(\"pet_bowl\"))",
                 "if (herdSticks) | HerdStick.create(HerdTool.info())",
                 "if (herdSticks) | HerdStick.create(HerdTool.familiarity(1))",
                 "if (herdSticks) | HerdStick.create(HerdTool.familiarity(-1))",
@@ -41,7 +45,7 @@ class BarnyardTabTest {
                 "new ItemStack(item(\"sheep_milk_bucket\"))",
                 "new ItemStack(item(\"goat_milk_bucket\"))"
         ), declaredContents());
-        // The feeders' place in the tab is FeederKind's order.
+        // The tab names the feeders in FeederKind's order, as when it went through FeederKind.values().
         assertEquals(List.of("bird_feeder", "trough", "feeder", "manger", "pet_bowl"),
                 Arrays.stream(FeederKind.values()).map(FeederKind::id).toList());
     }

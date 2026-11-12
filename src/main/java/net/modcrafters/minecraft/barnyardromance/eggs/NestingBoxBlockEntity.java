@@ -1,15 +1,6 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;
-import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
-import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
-import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
-import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -89,13 +80,13 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
     };
 
     public NestingBoxBlockEntity(BlockPos pos, BlockState state) {
-        super(BarnyardBlocks.NESTING_BOX_ENTITY, pos, state);
+        super(EggsBlocks.NESTING_BOX_ENTITY, pos, state);
     }
 
     // The nest an egg would go in, or -1 when there's no room: a pile of the same plain egg with room, else an empty
     // nest. The nest of a hen sitting in the box is hers.
     public int canPlaceEgg(ItemStack egg) {
-        if (!egg.is(BarnyardItems.FERTILIZED_EGG)) {
+        if (!egg.is(EggsItems.FERTILIZED_EGG)) {
             for (int slot = 0; slot < SLOTS; slot++) {
                 ItemStack pile = items.get(slot);
                 if (!reserved(slot) && !pile.isEmpty() && ItemStack.isSameItemSameComponents(pile, egg) && pile.getCount() < pile.getMaxStackSize()) {
@@ -296,11 +287,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
                 if (Hatching.hatch(server, left, box.exitPos(), now - overdue).isPresent()) {
                     box.items.set(slot, ItemStack.EMPTY);
                 } else {
-                    egg.set(BarnyardComponents.EGG_DATA, left);
+                    egg.set(EggsComponents.EGG_DATA, left);
                     box.stuck.add(egg);
                 }
             } else if (counting) {
-                egg.set(BarnyardComponents.EGG_DATA, left);
+                egg.set(EggsComponents.EGG_DATA, left);
             }
             box.setChanged();
         }
@@ -312,7 +303,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             setChanged();
             return;
         }
-        WildEgg wild = egg.get(BarnyardComponents.WILD_EGG);
+        WildEgg wild = egg.get(EggsComponents.WILD_EGG);
         if (wild == null || elapsed <= 0L && wild.remainingTicks() > 0L) {
             return;
         }
@@ -325,11 +316,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             if (Hatching.hatchWild(server, left, exitPos(), now - overdue).isPresent()) {
                 items.set(slot, ItemStack.EMPTY);
             } else {
-                egg.set(BarnyardComponents.WILD_EGG, left);
+                egg.set(EggsComponents.WILD_EGG, left);
                 stuck.add(egg);
             }
         } else {
-            egg.set(BarnyardComponents.WILD_EGG, left);
+            egg.set(EggsComponents.WILD_EGG, left);
         }
         setChanged();
     }
@@ -380,7 +371,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
     }
 
     public static boolean allowedByHand(ItemStack stack) {
-        return stack.is(BarnyardItems.FERTILIZED_EGG);
+        return stack.is(EggsItems.FERTILIZED_EGG);
     }
 
     // Breaking the box drops the eggs a sitting hen was about to leave along with the rest, and lets her out. Every
@@ -423,7 +414,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return !stack.is(BarnyardItems.FERTILIZED_EGG);
+        return !stack.is(EggsItems.FERTILIZED_EGG);
     }
 
     @Override

@@ -2,9 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxLayout;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxMenu;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxLayout;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;

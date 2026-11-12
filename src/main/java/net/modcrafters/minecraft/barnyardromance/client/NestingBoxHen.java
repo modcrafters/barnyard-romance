@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.nest.NestOccupant;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestOccupant;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;

@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core.config;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -256,7 +256,7 @@ public final class BarnyardConfig {
         if (settings != null && settings.enabled() != null) {
             return settings.enabled();
         }
-        return !excluded(speciesId) && !excludedByTag.test(speciesId) && !NaturalistCompat.ignoredByDefault(speciesId);
+        return !excluded(speciesId) && !excludedByTag.test(speciesId) && !FeaturesRepository.ignoredByDefault(speciesId);
     }
 
     public List<String> exclude() {

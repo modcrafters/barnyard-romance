@@ -10,10 +10,10 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
@@ -24,10 +24,12 @@ import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxMenu;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsComponents;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsItems;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.LayInNestGoal;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxMenu;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
@@ -490,7 +492,7 @@ public final class EggGameTests {
         }
 
         helper.assertTrue(box.getItem(0).isEmpty(), "the hopper left plain eggs: " + box.getItem(0));
-        helper.assertTrue(box.getItem(1).is(BarnyardItems.FERTILIZED_EGG), "the hopper took the fertilized egg");
+        helper.assertTrue(box.getItem(1).is(EggsItems.FERTILIZED_EGG), "the hopper took the fertilized egg");
         helper.succeed();
     }
 
@@ -565,7 +567,7 @@ public final class EggGameTests {
         menu.getSlot(0).setByPlayer(wild);
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
 
-        WildEgg egg = box.getItem(0).get(BarnyardComponents.WILD_EGG);
+        WildEgg egg = box.getItem(0).get(EggsComponents.WILD_EGG);
         Range range = BarnyardConfig.current().eggsFor("minecraft:chicken").hatchTicks();
         helper.assertTrue(egg != null && egg.started(), "the wild egg has no countdown in the box: " + egg);
         helper.assertTrue(egg.totalTicks() >= range.min() && egg.totalTicks() <= range.max(), "a wild egg's countdown is " + egg.totalTicks());
@@ -592,7 +594,7 @@ public final class EggGameTests {
     public static void aWildEggHatchesAChickWithNoParents(GameTestHelper helper) {
         NestingBoxBlockEntity box = box(helper, BOX);
         ItemStack wild = WildEggs.taint(FertilizedEggItem.create(eggData(LARGE_HEN, 1.2, 1_000L)));
-        wild.set(BarnyardComponents.WILD_EGG, wild.get(BarnyardComponents.WILD_EGG).withTicks(5L));
+        wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
         helper.runAfterDelay(COUNT_AND_HATCH, () -> {
@@ -632,15 +634,15 @@ public final class EggGameTests {
     }
 
     static void assertWild(GameTestHelper helper, ItemStack egg, String what) {
-        helper.assertTrue(egg.is(BarnyardItems.FERTILIZED_EGG), what + " is " + egg);
+        helper.assertTrue(egg.is(EggsItems.FERTILIZED_EGG), what + " is " + egg);
         helper.assertTrue(FertilizedEggItem.data(egg).isEmpty(), what + " still knows its parents");
-        WildEgg wild = egg.get(BarnyardComponents.WILD_EGG);
+        WildEgg wild = egg.get(EggsComponents.WILD_EGG);
         helper.assertTrue(wild != null && !wild.started() && wild.species().equals("minecraft:chicken"), what + " isn't wild: " + wild);
     }
 
     static ItemStack carriedEgg(GameTestHelper helper, Player player) {
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            if (player.getInventory().getItem(slot).is(BarnyardItems.FERTILIZED_EGG)) {
+            if (player.getInventory().getItem(slot).is(EggsItems.FERTILIZED_EGG)) {
                 return player.getInventory().getItem(slot);
             }
         }
@@ -656,7 +658,7 @@ public final class EggGameTests {
 
         List<ItemEntity> dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0));
         int plain = dropped.stream().filter(item -> item.getItem().is(Items.EGG)).mapToInt(item -> item.getItem().getCount()).sum();
-        List<ItemStack> fertile = dropped.stream().map(ItemEntity::getItem).filter(item -> item.is(BarnyardItems.FERTILIZED_EGG)).toList();
+        List<ItemStack> fertile = dropped.stream().map(ItemEntity::getItem).filter(item -> item.is(EggsItems.FERTILIZED_EGG)).toList();
         helper.assertTrue(plain == 3, "breaking the box dropped " + plain + " plain eggs");
         helper.assertTrue(fertile.size() == 1, "breaking the box dropped fertilized eggs " + fertile);
         assertWild(helper, fertile.getFirst(), "an egg dropped from a broken box");
@@ -679,7 +681,7 @@ public final class EggGameTests {
         ItemStack result = recipe.get().value().assemble(input);
         //?} else
         //ItemStack result = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
-        helper.assertTrue(result.is(BarnyardBlocks.NESTING_BOX_ITEM), "planks round wheat craft " + result);
+        helper.assertTrue(result.is(EggsBlocks.NESTING_BOX_ITEM), "planks round wheat craft " + result);
         helper.succeed();
     }
 
@@ -924,7 +926,7 @@ public final class EggGameTests {
 
         once(helper, () -> placed[0] != null && placed[0].occupied(), () -> {
             placed[0].finishSitting();
-            helper.assertTrue(boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) == 2, "the box holds " + boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) + " fertilized eggs");
+            helper.assertTrue(boxEggs(placed[0], EggsItems.FERTILIZED_EGG) == 2, "the box holds " + boxEggs(placed[0], EggsItems.FERTILIZED_EGG) + " fertilized eggs");
             helper.succeed();
         });
     }
@@ -954,8 +956,8 @@ public final class EggGameTests {
 
         once(helper, () -> placed[0] != null && placed[0].occupied(), () -> {
             placed[0].finishSitting();
-            helper.assertTrue(boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) == 1 && boxEggs(placed[0], Items.EGG) == 1,
-                    "the box holds " + boxEggs(placed[0], BarnyardItems.FERTILIZED_EGG) + " fertilized and " + boxEggs(placed[0], Items.EGG) + " plain eggs");
+            helper.assertTrue(boxEggs(placed[0], EggsItems.FERTILIZED_EGG) == 1 && boxEggs(placed[0], Items.EGG) == 1,
+                    "the box holds " + boxEggs(placed[0], EggsItems.FERTILIZED_EGG) + " fertilized and " + boxEggs(placed[0], Items.EGG) + " plain eggs");
             helper.succeed();
         });
     }
@@ -1015,7 +1017,7 @@ public final class EggGameTests {
         inPen(() -> EggLaying.layDue(hen, helper.getLevel(), 1));
 
         helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "no plain egg on the ground");
-        helper.assertTrue(eggsNear(helper, hen, BarnyardItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
+        helper.assertTrue(eggsNear(helper, hen, EggsItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
         helper.succeed();
     }
 
@@ -1120,7 +1122,7 @@ public final class EggGameTests {
 
         helper.assertTrue(helper.getLevel().getEntity(id) instanceof Animal, "breaking the box didn't let the hen out");
         List<ItemEntity> dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0));
-        helper.assertTrue(dropped.stream().anyMatch(item -> item.getItem().is(BarnyardItems.FERTILIZED_EGG)), "breaking the box lost its egg");
+        helper.assertTrue(dropped.stream().anyMatch(item -> item.getItem().is(EggsItems.FERTILIZED_EGG)), "breaking the box lost its egg");
         helper.assertTrue(dropped.stream().anyMatch(item -> item.getItem().is(Items.EGG)), "breaking the box lost the sitting hen's egg");
         helper.succeed();
     }
@@ -1166,7 +1168,7 @@ public final class EggGameTests {
         box.finishSitting();
 
         for (int slot = 0; slot < 3; slot++) {
-            helper.assertTrue(box.getItem(slot).is(BarnyardItems.FERTILIZED_EGG), "nest " + (slot + 1) + " holds " + box.getItem(slot));
+            helper.assertTrue(box.getItem(slot).is(EggsItems.FERTILIZED_EGG), "nest " + (slot + 1) + " holds " + box.getItem(slot));
         }
         helper.assertTrue(!box.occupied(), "she's still in the box");
         helper.succeed();
@@ -1184,11 +1186,11 @@ public final class EggGameTests {
         box.finishSitting();
 
         int outside = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BOX)).inflate(2.0)).stream()
-                .filter(item -> item.getItem().is(BarnyardItems.FERTILIZED_EGG))
+                .filter(item -> item.getItem().is(EggsItems.FERTILIZED_EGG))
                 .mapToInt(item -> item.getItem().getCount())
                 .sum();
         helper.assertTrue(took, "a box with one free nest turned her away");
-        helper.assertTrue(box.getItem(NestingBoxBlockEntity.SLOTS - 1).is(BarnyardItems.FERTILIZED_EGG), "the last nest holds " + box.getItem(NestingBoxBlockEntity.SLOTS - 1));
+        helper.assertTrue(box.getItem(NestingBoxBlockEntity.SLOTS - 1).is(EggsItems.FERTILIZED_EGG), "the last nest holds " + box.getItem(NestingBoxBlockEntity.SLOTS - 1));
         helper.assertTrue(outside == 1, outside + " fertilized eggs were left outside, not 1");
         helper.succeed();
     }
@@ -1422,7 +1424,7 @@ public final class EggGameTests {
     }
 
     static NestingBoxBlockEntity boxAt(GameTestHelper helper, BlockPos absolute) {
-        helper.getLevel().setBlockAndUpdate(absolute, BarnyardBlocks.NESTING_BOX.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST));
+        helper.getLevel().setBlockAndUpdate(absolute, EggsBlocks.NESTING_BOX.defaultBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST));
         return (NestingBoxBlockEntity) helper.getLevel().getBlockEntity(absolute);
     }
 
@@ -1446,7 +1448,7 @@ public final class EggGameTests {
     }
 
     static NestingBoxBlockEntity box(GameTestHelper helper, BlockPos pos) {
-        helper.setBlock(pos, BarnyardBlocks.NESTING_BOX.defaultBlockState());
+        helper.setBlock(pos, EggsBlocks.NESTING_BOX.defaultBlockState());
         return (NestingBoxBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(pos));
     }
 

@@ -10,12 +10,12 @@ import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
-import net.modcrafters.minecraft.barnyardromance.feed.FeederIndex;
 import net.modcrafters.minecraft.barnyardromance.herd.api.HerdApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
+import net.modcrafters.minecraft.barnyardromance.feed.api.FeedApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -172,11 +172,11 @@ public final class FamiliarityCare {
         if (!traits.get(CARE).upkeep().inHerd()) {
             return false;
         }
-        if (FeederIndex.waiting(animal, today)) {
+        if (FeaturesRepository.get(FeedApi.class).isWaitingForFeeder(animal, today)) {
             return true;
         }
         // tickCount isn't saved, so it counts the ticks since this animal loaded.
-        return animal.tickCount < HERD_WAIT_TICKS && !FeederIndex.heldByRunning(animal);
+        return animal.tickCount < HERD_WAIT_TICKS && !FeaturesRepository.get(FeedApi.class).isHeldByRunningFeeder(animal);
     }
 
     // Saves from before upkeep was kept start from none.

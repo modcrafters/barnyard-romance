@@ -3,8 +3,9 @@ package net.modcrafters.minecraft.barnyardromance.food;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.feed.FeederFoods;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.feed.api.FeedApi;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -38,19 +39,19 @@ public final class FoodData {
         diets = Collections.unmodifiableSortedMap(new TreeMap<>(loaded));
         WARNED.clear();
         FEEDS.clear();
-        FeederFoods.clear();
+        FeaturesRepository.get(FeedApi.class).foodsChanged();
     }
 
     public static void replaceFoods(List<FoodFile> loaded) {
         foods = List.copyOf(loaded);
         FEEDS.clear();
-        FeederFoods.clear();
+        FeaturesRepository.get(FeedApi.class).foodsChanged();
     }
 
     // Tags were loaded or reloaded, which changes which items match a diet or a food file.
     public static void tagsReloaded() {
         FEEDS.clear();
-        FeederFoods.clear();
+        FeaturesRepository.get(FeedApi.class).foodsChanged();
     }
 
     public static List<FoodFile> foods() {

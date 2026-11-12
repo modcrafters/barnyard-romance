@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import net.modcrafters.minecraft.barnyardromance.stats.StatKind;

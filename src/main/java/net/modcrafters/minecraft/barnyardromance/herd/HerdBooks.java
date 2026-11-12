@@ -6,13 +6,13 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -131,7 +131,7 @@ public final class HerdBooks {
         long now = level.getGameTime();
         refresh(data, animal, now);
         // A hen going into a nesting box leaves the world for a while but hasn't died.
-        if (reason != null && reason.shouldDestroy() && !NestingBoxes.inNest(animal.getUUID())) {
+        if (reason != null && reason.shouldDestroy() && !FeaturesRepository.get(EggsApi.class).isInNest(animal.getUUID())) {
             HerdRecord record = data.record(animal.getUUID());
             if (record != null) {
                 DeathCause cause = FeaturesRepository.get(RivalryApi.class).killedByRival(animal) ? DeathCause.RIVAL : DeathCause.NONE;

@@ -7,7 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.core.age.Aging;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.WildCaught;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
@@ -22,7 +22,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearApi;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.stats.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
@@ -33,6 +33,7 @@ import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
@@ -186,7 +187,7 @@ public final class HerdStatus {
         if (!record.alive() || !settings.enabled() || traits.sex() != Sex.FEMALE || (stage != AgeStage.ADULT && stage != AgeStage.OLD)) {
             return null;
         }
-        return EggOutlook.tomorrow(
+        return FeaturesRepository.get(EggsApi.class).eggsTomorrow(
                 SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())),
                 traits.get(FamiliaritySlices.CARE).hunger().lastAteDay() == GameDay.of(clock),
                 Familiarity.ready(traits.get(FamiliaritySlices.CARE).familiarity()),

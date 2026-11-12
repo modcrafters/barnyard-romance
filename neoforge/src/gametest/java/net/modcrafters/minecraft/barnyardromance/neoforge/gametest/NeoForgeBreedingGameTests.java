@@ -16,7 +16,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.UpkeepGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FightGameTests;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
@@ -241,7 +241,7 @@ public final class NeoForgeBreedingGameTests {
     // Other mods' pipes use the item capability rather than the container, so it must keep the block's rules: from a
     // side or from no side at all, wheat goes in, beef doesn't, and nothing comes out.
     private static void pipesPutFoodInAMangerButTakeNoneOut(GameTestHelper helper) {
-        FeederBlockEntity manger = FeederGameTests.feeder(helper, BarnyardBlocks.MANGER, FeederGameTests.FEEDER);
+        FeederBlockEntity manger = FeederGameTests.feeder(helper, FeedBlocks.MANGER, FeederGameTests.FEEDER);
         BlockPos at = helper.absolutePos(FeederGameTests.FEEDER);
         for (Direction side : new Direction[]{Direction.UP, Direction.NORTH, null}) {
             int[] moved = throughThePipe(helper, at, side);

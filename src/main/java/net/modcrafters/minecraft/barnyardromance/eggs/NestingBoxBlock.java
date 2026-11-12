@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -80,7 +80,7 @@ public class NestingBoxBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, BarnyardBlocks.NESTING_BOX_ENTITY, NestingBoxBlockEntity::serverTick);
+        return level.isClientSide() ? null : createTickerHelper(type, EggsBlocks.NESTING_BOX_ENTITY, NestingBoxBlockEntity::serverTick);
     }
 
     @Override

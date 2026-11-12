@@ -4,8 +4,6 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
@@ -36,12 +34,12 @@ public final class ThrownEggs {
 
     // Vanilla's chicks from thrown eggs are only left alone when chickens are excluded.
     public static boolean blocksVanillaChicks(ItemStack thrown) {
-        return thrown.is(BarnyardItems.FERTILIZED_EGG) || BarnyardConfig.current().eggsFor("minecraft:chicken").enabled();
+        return thrown.is(EggsItems.FERTILIZED_EGG) || BarnyardConfig.current().eggsFor("minecraft:chicken").enabled();
     }
 
     public static void land(ServerLevel level, Vec3 position, ItemStack thrown, RandomSource random) {
-        EggData data = thrown.get(BarnyardComponents.EGG_DATA);
-        WildEgg wild = thrown.get(BarnyardComponents.WILD_EGG);
+        EggData data = thrown.get(EggsComponents.EGG_DATA);
+        WildEgg wild = thrown.get(EggsComponents.WILD_EGG);
         String species = data != null ? data.species() : wild != null ? wild.species() : null;
         if (species == null) {
             return;

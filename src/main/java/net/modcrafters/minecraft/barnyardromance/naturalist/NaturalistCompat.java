@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.compat;
+package net.modcrafters.minecraft.barnyardromance.naturalist;
 
 import java.util.Set;
 

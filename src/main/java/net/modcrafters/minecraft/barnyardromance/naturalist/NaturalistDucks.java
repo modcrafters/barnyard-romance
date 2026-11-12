@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.compat;
+package net.modcrafters.minecraft.barnyardromance.naturalist;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.minecraft.world.entity.animal.Animal;

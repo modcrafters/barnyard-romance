@@ -1,4 +1,5 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
+
 
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -9,7 +10,6 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
 
 // The nesting box window: sixteen nests (NestSlot), then the player's inventory and hotbar.
 public class NestingBoxMenu extends AbstractContainerMenu {
@@ -27,7 +27,7 @@ public class NestingBoxMenu extends AbstractContainerMenu {
     }
 
     public NestingBoxMenu(int containerId, Inventory inventory, Container box, ContainerData sitting) {
-        super(BarnyardBlocks.NESTING_BOX_MENU, containerId);
+        super(EggsBlocks.NESTING_BOX_MENU, containerId);
         checkContainerSize(box, NestingBoxBlockEntity.SLOTS);
         checkContainerDataCount(sitting, 1);
         this.box = box;

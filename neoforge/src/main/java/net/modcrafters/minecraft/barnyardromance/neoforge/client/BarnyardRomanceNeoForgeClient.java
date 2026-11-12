@@ -4,7 +4,8 @@ import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
@@ -66,12 +67,12 @@ public final class BarnyardRomanceNeoForgeClient {
     *///?}
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(BarnyardBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
+        event.registerBlockEntityRenderer(EggsBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
-        event.register(BarnyardBlocks.FEEDER_MENU, FeederScreen::new);
+        event.register(EggsBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
+        event.register(FeedBlocks.FEEDER_MENU, FeederScreen::new);
     }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {

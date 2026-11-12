@@ -1,6 +1,5 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -159,7 +158,7 @@ public class FeederBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, BarnyardBlocks.FEEDER_ENTITY, FeederBlockEntity::serverTick);
+        return level.isClientSide() ? null : createTickerHelper(type, FeedBlocks.FEEDER_ENTITY, FeederBlockEntity::serverTick);
     }
 
     // A comparator reads how full it is, as it reads a chest: a farm can be told when a block runs low.

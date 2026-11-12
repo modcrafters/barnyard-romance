@@ -15,10 +15,6 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
@@ -27,6 +23,8 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -194,7 +192,7 @@ public final class EggLaying {
     }
 
     public static boolean boxWithRoomNear(Animal hen, ServerLevel level) {
-        ItemStack egg = new ItemStack(BarnyardItems.FERTILIZED_EGG);
+        ItemStack egg = new ItemStack(EggsItems.FERTILIZED_EGG);
         return NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange()).stream()
                 .anyMatch(box -> !box.occupied() && box.canPlaceEgg(egg) >= 0);
     }

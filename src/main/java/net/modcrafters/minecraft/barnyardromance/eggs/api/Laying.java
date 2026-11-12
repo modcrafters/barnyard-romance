@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.eggs;
+package net.modcrafters.minecraft.barnyardromance.eggs.api;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;

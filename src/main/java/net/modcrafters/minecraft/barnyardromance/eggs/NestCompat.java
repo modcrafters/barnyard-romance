@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.minecraft.core.registries.BuiltInRegistries;

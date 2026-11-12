@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.nest;
+package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -8,7 +8,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.Optional;
 
-// The 1.21.1 copy of src/.../nest/NestCompat.
+// The 1.21.1 copy of src/.../eggs/NestCompat.
 final class NestCompat {
     private NestCompat() {
     }

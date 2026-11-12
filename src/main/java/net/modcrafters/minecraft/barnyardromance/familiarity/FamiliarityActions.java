@@ -3,8 +3,6 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
-import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
@@ -22,6 +20,8 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
+import net.modcrafters.minecraft.barnyardromance.naturalist.api.NaturalistApi;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -197,7 +197,7 @@ public final class FamiliarityActions {
             pet.setTarget(null);
             pet.setOrderedToSit(true);
             pet.level().broadcastEntityEvent(pet, (byte) 7);
-        } else if (animal instanceof TamableAnimal pet && NaturalistCompat.LIVESTOCK.contains(AnimalSex.speciesId(animal))
+        } else if (animal instanceof TamableAnimal pet && FeaturesRepository.get(NaturalistApi.class).isLivestock(AnimalSex.speciesId(animal))
                 && Familiarity.tames(pet.isTame(), familiarity)) {
             // Naturalist tames these while feeding them, which the mod's feeding runs ahead of.
             pet.tame(player);
@@ -252,7 +252,7 @@ public final class FamiliarityActions {
             return true;
         }
         // Egg layers never breed by love: hens lay, and a rooster nearby makes the eggs fertile.
-        if (EggLaying.laysEggs(animal)) {
+        if (FeaturesRepository.get(EggsApi.class).laysEggs(animal)) {
             return false;
         }
         // Only females fall in love; Courtship chooses the male (see Courtship).

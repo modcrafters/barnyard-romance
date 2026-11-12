@@ -1,8 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
-import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
@@ -15,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sheep.Sheep;
@@ -34,14 +33,15 @@ public final class HerdRecords {
         }
         Pregnancy pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY).map(HerdRecords::withoutLitter).orElse(null);
         String name = animal.hasCustomName() && animal.getCustomName() != null ? animal.getCustomName().getString() : "";
-        NestCheck nest = EggLaying.isLayingHen(animal) && animal.level() instanceof ServerLevel level
-                ? new NestCheck(EggLaying.roosterNear(animal, level), EggLaying.boxWithRoomNear(animal, level))
+        EggsApi eggs = FeaturesRepository.get(EggsApi.class);
+        NestCheck nest = eggs.isLayingHen(animal) && animal.level() instanceof ServerLevel level
+                ? new NestCheck(eggs.roosterNear(animal, level), eggs.hasBoxWithRoomNear(animal, level))
                 : NestCheck.NONE;
         return Optional.of(new HerdRecord(AnimalSex.speciesId(animal), name, traits.get(), pregnancy, animal.isBaby(),
                 FeaturesRepository.get(MilkApi.class).givesMilk(animal), animal instanceof Sheep,
                 animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
                 FamiliarityCare.tamed(animal), nest, DeathCause.NONE,
-                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), LiveFacts.needsTaming(animal), Services.DATA.get(animal, EggsFeature.LAYING).orElse(Laying.NONE))));
+                new RecordSheet(animal.getHealth(), animal.getMaxHealth(), LiveFacts.needsTaming(animal), eggs.laying(animal).orElse(Laying.NONE))));
     }
 
     // Below the familiarity threshold the book stops updating an animal: it keeps the old values and only

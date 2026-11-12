@@ -5,7 +5,6 @@ import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggSchedule;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -14,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 
@@ -56,7 +56,7 @@ public final class RivalRolls {
         Optional<AnimalTraits> traits = rolling(male);
         return traits.isPresent()
                 && FightRules.due(FeaturesRepository.get(VigourApi.class).lastRivalRoll(traits.get()), GameDay.of(clock),
-                EggSchedule.sinceMidnight(clock), FightRules.rollTime(male.getUUID()));
+                FeaturesRepository.get(EggsApi.class).ticksSinceMidnight(clock), FightRules.rollTime(male.getUUID()));
     }
 
     // Rolls today's fights for this male: roll below a pair's chance starts that fight, and at most one starts. The

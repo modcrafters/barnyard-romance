@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.herd;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 
 // What was around a hen when the herd book last saw her: the best rooster in range, and whether a nesting box in
 // range had room. NONE for every other animal.

@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.WildEgg;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
@@ -31,6 +31,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearSlices;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -195,22 +196,22 @@ class SaveFixturesTest {
 
     @Test
     void eggDataDecodes() {
-        assertEquals(eggData(), decode(BarnyardComponents.EGG_DATA.codecOrThrow(), "egg_data"));
+        assertEquals(eggData(), decode(EggsComponents.EGG_DATA.codecOrThrow(), "egg_data"));
     }
 
     @Test
     void eggDataEncodes() {
-        assertEquals(Snbt.fixture("egg_data"), encode(BarnyardComponents.EGG_DATA.codecOrThrow(), eggData()));
+        assertEquals(Snbt.fixture("egg_data"), encode(EggsComponents.EGG_DATA.codecOrThrow(), eggData()));
     }
 
     @Test
     void wildEggDecodes() {
-        assertEquals(wildEgg(), decode(BarnyardComponents.WILD_EGG.codecOrThrow(), "wild_egg"));
+        assertEquals(wildEgg(), decode(EggsComponents.WILD_EGG.codecOrThrow(), "wild_egg"));
     }
 
     @Test
     void wildEggEncodes() {
-        assertEquals(Snbt.fixture("wild_egg"), encode(BarnyardComponents.WILD_EGG.codecOrThrow(), wildEgg()));
+        assertEquals(Snbt.fixture("wild_egg"), encode(EggsComponents.WILD_EGG.codecOrThrow(), wildEgg()));
     }
 
     @Test

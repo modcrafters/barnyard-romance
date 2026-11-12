@@ -2,8 +2,6 @@ package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Range;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -24,16 +22,16 @@ public final class WildEggs {
     }
 
     public static boolean wild(ItemStack stack) {
-        return stack.has(BarnyardComponents.WILD_EGG);
+        return stack.has(EggsComponents.WILD_EGG);
     }
 
     // Turns a fertilized egg wild, or takes a wild egg's countdown away. Anything else is left alone.
     public static ItemStack taint(ItemStack stack) {
-        if (!stack.is(BarnyardItems.FERTILIZED_EGG)) {
+        if (!stack.is(EggsItems.FERTILIZED_EGG)) {
             return stack;
         }
-        EggData data = stack.get(BarnyardComponents.EGG_DATA);
-        WildEgg wild = stack.get(BarnyardComponents.WILD_EGG);
+        EggData data = stack.get(EggsComponents.EGG_DATA);
+        WildEgg wild = stack.get(EggsComponents.WILD_EGG);
         WildEgg outside;
         if (data != null) {
             outside = WildEgg.of(data.species(), data.variant());
@@ -42,8 +40,8 @@ public final class WildEggs {
         } else {
             return stack;
         }
-        stack.remove(BarnyardComponents.EGG_DATA);
-        stack.set(BarnyardComponents.WILD_EGG, outside);
+        stack.remove(EggsComponents.EGG_DATA);
+        stack.set(EggsComponents.WILD_EGG, outside);
         stack.set(DataComponents.MAX_STACK_SIZE, STACK);
         stack.set(DataComponents.ITEM_NAME, Component.translatable("item.barnyard_romance.fertilized_egg.wild"));
         return stack;
@@ -51,22 +49,22 @@ public final class WildEggs {
 
     // A wild egg that has just gone into a box gets its countdown; true when it changed.
     public static boolean start(ItemStack stack, RandomSource random) {
-        WildEgg wild = stack.get(BarnyardComponents.WILD_EGG);
+        WildEgg wild = stack.get(EggsComponents.WILD_EGG);
         if (wild == null || wild.started()) {
             return false;
         }
         Range range = BarnyardConfig.current().eggsFor(wild.species()).hatchTicks();
-        stack.set(BarnyardComponents.WILD_EGG, wild.withTicks(Math.max(1L, LitterRoll.pickTicks(range, AVERAGE_WEIGHT, random.nextDouble()))));
+        stack.set(EggsComponents.WILD_EGG, wild.withTicks(Math.max(1L, LitterRoll.pickTicks(range, AVERAGE_WEIGHT, random.nextDouble()))));
         return true;
     }
 
     // How long an egg in a box has left, for its tooltip and the box window; empty for an egg with no countdown.
     public static OptionalLong remainingTicks(ItemStack stack) {
-        EggData data = stack.get(BarnyardComponents.EGG_DATA);
+        EggData data = stack.get(EggsComponents.EGG_DATA);
         if (data != null) {
             return OptionalLong.of(data.remainingTicks());
         }
-        WildEgg wild = stack.get(BarnyardComponents.WILD_EGG);
+        WildEgg wild = stack.get(EggsComponents.WILD_EGG);
         return wild != null && wild.started() ? OptionalLong.of(wild.remainingTicks()) : OptionalLong.empty();
     }
 }

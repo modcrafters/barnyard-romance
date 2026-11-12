@@ -5,8 +5,6 @@ import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -51,10 +49,12 @@ public final class BarnyardTab {
     public static List<ItemStack> contents(boolean herdSticks) {
         List<ItemStack> contents = new ArrayList<>();
         contents.add(new ItemStack(BarnyardItems.HERD_BOOK));
-        contents.add(new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM));
-        for (FeederKind kind : FeederKind.values()) {
-            contents.add(new ItemStack(BarnyardBlocks.item(kind)));
-        }
+        contents.add(new ItemStack(item("nesting_box")));
+        contents.add(new ItemStack(item("bird_feeder")));
+        contents.add(new ItemStack(item("trough")));
+        contents.add(new ItemStack(item("feeder")));
+        contents.add(new ItemStack(item("manger")));
+        contents.add(new ItemStack(item("pet_bowl")));
         if (herdSticks) {
             contents.add(HerdStick.create(HerdTool.info()));
             contents.add(HerdStick.create(HerdTool.familiarity(1)));

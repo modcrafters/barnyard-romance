@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
@@ -30,7 +30,8 @@ import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourItems;
 import net.modcrafters.minecraft.barnyardromance.mixin.MobGoalsAccessor;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
@@ -160,8 +161,8 @@ public final class FeederGameTests {
         BlockPos pos = helper.absolutePos(FEEDER);
         helper.setBlock(FEEDER, Blocks.AIR);
         helper.setBlock(FEEDER.below(), Blocks.STONE);
-        for (Block block : List.of(BarnyardBlocks.BIRD_FEEDER, BarnyardBlocks.TROUGH, BarnyardBlocks.FEEDER,
-                BarnyardBlocks.MANGER, BarnyardBlocks.PET_BOWL, BarnyardBlocks.NESTING_BOX)) {
+        for (Block block : List.of(FeedBlocks.BIRD_FEEDER, FeedBlocks.TROUGH, FeedBlocks.FEEDER,
+                FeedBlocks.MANGER, FeedBlocks.PET_BOWL, EggsBlocks.NESTING_BOX)) {
             for (Direction look : Direction.Plane.HORIZONTAL) {
                 player.setYRot(look.toYRot());
                 BlockPlaceContext context = new BlockPlaceContext(player, InteractionHand.MAIN_HAND,
@@ -172,7 +173,7 @@ public final class FeederGameTests {
                 BlockState restored = BlockState.CODEC.parse(JsonOps.INSTANCE,
                         BlockState.CODEC.encodeStart(JsonOps.INSTANCE, state).getOrThrow()).getOrThrow();
                 helper.assertTrue(restored == state, block + " loses its facing when saved");
-                if (block == BarnyardBlocks.BIRD_FEEDER) {
+                if (block == FeedBlocks.BIRD_FEEDER) {
                     helper.assertTrue(!state.hasProperty(BlockStateProperties.HORIZONTAL_FACING), "symmetric feeding block saves a facing");
                     helper.assertTrue(state == block.defaultBlockState(), "symmetric placement depends on player direction");
                     helper.assertTrue(state.rotate(Rotation.CLOCKWISE_90) == state && state.mirror(Mirror.LEFT_RIGHT) == state,
@@ -196,8 +197,8 @@ public final class FeederGameTests {
         double[][] heights = {
                 // outline, collision
                 {8.125, 8.125}, {11.375, 11.375}, {14.875, 24.0}, {16.0, 24.0}, {5.625, 5.625}};
-        List<Block> blocks = List.of(BarnyardBlocks.BIRD_FEEDER, BarnyardBlocks.TROUGH, BarnyardBlocks.FEEDER,
-                BarnyardBlocks.MANGER, BarnyardBlocks.PET_BOWL);
+        List<Block> blocks = List.of(FeedBlocks.BIRD_FEEDER, FeedBlocks.TROUGH, FeedBlocks.FEEDER,
+                FeedBlocks.MANGER, FeedBlocks.PET_BOWL);
         for (int i = 0; i < blocks.size(); i++) {
             BlockState state = blocks.get(i).defaultBlockState();
             double outline = state.getShape(helper.getLevel(), pos).max(Direction.Axis.Y) * 16.0;
@@ -205,43 +206,43 @@ public final class FeederGameTests {
             helper.assertTrue(Math.abs(outline - heights[i][0]) < 1.0E-6, blocks.get(i) + " outline is " + outline + " high");
             helper.assertTrue(Math.abs(collision - heights[i][1]) < 1.0E-6, blocks.get(i) + " collision is " + collision + " high");
         }
-        BlockState trough = BarnyardBlocks.TROUGH.defaultBlockState();
+        BlockState trough = FeedBlocks.TROUGH.defaultBlockState();
         helper.assertTrue(trough.getShape(helper.getLevel(), pos).min(Direction.Axis.Z) > 0.0
                         && trough.setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST).getShape(helper.getLevel(), pos).min(Direction.Axis.X) > 0.0,
                 "the trough's outline doesn't turn with it");
-        BlockState bowl = BarnyardBlocks.PET_BOWL.defaultBlockState();
+        BlockState bowl = FeedBlocks.PET_BOWL.defaultBlockState();
         helper.assertTrue(bowl.getShape(helper.getLevel(), pos).min(Direction.Axis.X) > 0.0, "the pet bowl's outline is a full block wide");
         helper.succeed();
     }
 
     public static void mangerHayTracksInventoryAndHerd(GameTestHelper helper) {
-        foodTracksInventoryAndHerd(helper, EntityTypes.COW, BarnyardBlocks.MANGER, MangerBlock.HAY_LEVEL);
+        foodTracksInventoryAndHerd(helper, EntityTypes.COW, FeedBlocks.MANGER, MangerBlock.HAY_LEVEL);
     }
 
     public static void feederFoodTracksInventoryAndHerd(GameTestHelper helper) {
-        foodTracksInventoryAndHerd(helper, EntityTypes.PIG, BarnyardBlocks.FEEDER, GrainFeederBlock.FOOD_LEVEL);
+        foodTracksInventoryAndHerd(helper, EntityTypes.PIG, FeedBlocks.FEEDER, GrainFeederBlock.FOOD_LEVEL);
     }
 
     public static void troughFoodTracksInventoryAndHerd(GameTestHelper helper) {
-        foodTracksInventoryAndHerd(helper, EntityTypes.RABBIT, BarnyardBlocks.TROUGH, GrainFeederBlock.FOOD_LEVEL);
+        foodTracksInventoryAndHerd(helper, EntityTypes.RABBIT, FeedBlocks.TROUGH, GrainFeederBlock.FOOD_LEVEL);
     }
 
     public static void birdFeederSeedsTrackInventoryAndHerd(GameTestHelper helper) {
-        foodTracksInventoryAndHerd(helper, EntityTypes.CHICKEN, BarnyardBlocks.BIRD_FEEDER, GrainFeederBlock.FOOD_LEVEL);
+        foodTracksInventoryAndHerd(helper, EntityTypes.CHICKEN, FeedBlocks.BIRD_FEEDER, GrainFeederBlock.FOOD_LEVEL);
     }
 
     public static void petBowlFoodTracksDogs(GameTestHelper helper) {
-        foodTracksInventoryAndHerd(helper, EntityTypes.WOLF, BarnyardBlocks.PET_BOWL, GrainFeederBlock.FOOD_LEVEL);
+        foodTracksInventoryAndHerd(helper, EntityTypes.WOLF, FeedBlocks.PET_BOWL, GrainFeederBlock.FOOD_LEVEL);
     }
 
     public static void petBowlFoodTracksCats(GameTestHelper helper) {
-        foodTracksInventoryAndHerd(helper, EntityTypes.CAT, BarnyardBlocks.PET_BOWL, GrainFeederBlock.FOOD_LEVEL);
+        foodTracksInventoryAndHerd(helper, EntityTypes.CAT, FeedBlocks.PET_BOWL, GrainFeederBlock.FOOD_LEVEL);
     }
 
     private static void foodTracksInventoryAndHerd(GameTestHelper helper, EntityType<? extends Animal> type, Block block, IntegerProperty property) {
         onceLanded(helper, type, new int[][]{{2, 3}, {6, 3}, {2, 5}, {6, 5}}, cows -> {
             cows.forEach(cow -> familiar(cow, 0.8));
-            if (block == BarnyardBlocks.PET_BOWL) {
+            if (block == FeedBlocks.PET_BOWL) {
                 Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
                 cows.forEach(pet -> ((TamableAnimal) pet).tame(owner));
             }
@@ -252,8 +253,8 @@ public final class FeederGameTests {
             }
             manger.refreshHerd(helper.getLevel());
             assertHerd(helper, manger, cows);
-            Item food = block == BarnyardBlocks.PET_BOWL ? (type == EntityTypes.CAT ? Items.COD : Items.BEEF)
-                    : block == BarnyardBlocks.BIRD_FEEDER ? Items.WHEAT_SEEDS : block == BarnyardBlocks.MANGER ? Items.WHEAT : Items.CARROT;
+            Item food = block == FeedBlocks.PET_BOWL ? (type == EntityTypes.CAT ? Items.COD : Items.BEEF)
+                    : block == FeedBlocks.BIRD_FEEDER ? Items.WHEAT_SEEDS : block == FeedBlocks.MANGER ? Items.WHEAT : Items.CARROT;
             helper.assertTrue(manger.canPlaceItem(0, new ItemStack(food)), "fill test food is not accepted");
             manger.setItem(0, new ItemStack(food, 8));
             assertFoodLevel(helper, manger, property, 4);
@@ -280,7 +281,7 @@ public final class FeederGameTests {
     private static void assertFoodLevel(GameTestHelper helper, FeederBlockEntity manger, IntegerProperty property, int expected) {
         BlockState state = helper.getLevel().getBlockState(manger.getBlockPos());
         helper.assertTrue(state.getValue(property) == expected, "expected food level " + expected + ", got " + state);
-        if (state.is(BarnyardBlocks.BIRD_FEEDER)) {
+        if (state.is(FeedBlocks.BIRD_FEEDER)) {
             helper.assertTrue(!state.hasProperty(BlockStateProperties.HORIZONTAL_FACING), "food update added a facing");
         } else {
             helper.assertTrue(state.getValue(BlockStateProperties.HORIZONTAL_FACING) == Direction.WEST, "food update changed facing");
@@ -290,7 +291,7 @@ public final class FeederGameTests {
 
     // By hand too: the window's slots ask the block.
     public static void feederTakesWheatButNotBeef(GameTestHelper helper) {
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, FEEDER);
         Player player = holding(helper, Items.BEEF);
         FeederMenu menu = new FeederMenu(1, player.getInventory(), manger);
 
@@ -302,7 +303,7 @@ public final class FeederGameTests {
     }
 
     public static void feederRefusesSuperfoods(GameTestHelper helper) {
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, FEEDER);
 
         helper.assertTrue(!manger.canPlaceItem(0, new ItemStack(VigourItems.STUD_MASH)), "the Manger takes Stud Mash");
         helper.assertTrue(!manger.canPlaceItem(0, new ItemStack(BarnyardItems.BREEDERS_MASH)), "the Manger takes Breeder's Mash");
@@ -310,7 +311,7 @@ public final class FeederGameTests {
     }
 
     public static void birdFeederTakesSeeds(GameTestHelper helper) {
-        FeederBlockEntity birds = feeder(helper, BarnyardBlocks.BIRD_FEEDER, FEEDER);
+        FeederBlockEntity birds = feeder(helper, FeedBlocks.BIRD_FEEDER, FEEDER);
 
         helper.assertTrue(birds.canPlaceItem(0, new ItemStack(Items.WHEAT_SEEDS)), "the Bird Feeder refuses seeds");
         helper.assertTrue(!birds.canPlaceItem(0, new ItemStack(Items.BEEF)), "the Bird Feeder takes beef");
@@ -320,7 +321,7 @@ public final class FeederGameTests {
     // The refused beef sits first in the hopper, so the hopper has to pass it over to move the wheat.
     public static void aHopperFillsAMangerAndKeepsWhatItRefuses(GameTestHelper helper) {
         BlockPos below = FEEDER.below();
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, below);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, below);
         helper.setBlock(FEEDER, Blocks.HOPPER.defaultBlockState());
         HopperBlockEntity hopper = (HopperBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(FEEDER));
         hopper.setItem(0, new ItemStack(Items.BEEF, 4));
@@ -334,7 +335,7 @@ public final class FeederGameTests {
     }
 
     public static void aHopperCannotEmptyAManger(GameTestHelper helper) {
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, FEEDER);
         manger.setItem(0, new ItemStack(Items.WHEAT, 4));
         helper.setBlock(FEEDER.below(), Blocks.HOPPER.defaultBlockState());
         HopperBlockEntity hopper = (HopperBlockEntity) helper.getLevel().getBlockEntity(helper.absolutePos(FEEDER.below()));
@@ -347,7 +348,7 @@ public final class FeederGameTests {
     }
 
     public static void breakingAMangerDropsItsFood(GameTestHelper helper) {
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, FEEDER);
         manger.setItem(0, new ItemStack(Items.WHEAT, 5));
         manger.setItem(4, new ItemStack(Items.HAY_BLOCK, 2));
 
@@ -357,12 +358,12 @@ public final class FeederGameTests {
         List<ItemEntity> dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(FEEDER)).inflate(2.0));
         helper.assertTrue(dropped(dropped, Items.WHEAT) == 5, "breaking the Manger dropped " + dropped(dropped, Items.WHEAT) + " wheat");
         helper.assertTrue(dropped(dropped, Items.HAY_BLOCK) == 2, "breaking the Manger dropped " + dropped(dropped, Items.HAY_BLOCK) + " hay");
-        helper.assertTrue(dropped(dropped, BarnyardBlocks.MANGER_ITEM) == 1, "breaking the Manger didn't drop the Manger");
+        helper.assertTrue(dropped(dropped, FeedBlocks.MANGER_ITEM) == 1, "breaking the Manger didn't drop the Manger");
         helper.succeed();
     }
 
     public static void aMealComesFromTheFirstFullSlot(GameTestHelper helper) {
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, FEEDER);
         manger.setItem(2, new ItemStack(Items.WHEAT, 1));
         manger.setItem(5, new ItemStack(Items.CARROT, 3));
 
@@ -619,7 +620,7 @@ public final class FeederGameTests {
     public static void aHerdHenHungryYesterdayLaysNothing(GameTestHelper helper) {
         onceLanded(helper, EntityTypes.CHICKEN, new int[][]{{3, 4}}, hens -> {
             Animal hen = hens.getFirst();
-            FeederBlockEntity feeder = blockAt(helper, BarnyardBlocks.BIRD_FEEDER, walkingLayer(helper, hen, 4, 4));
+            FeederBlockEntity feeder = blockAt(helper, FeedBlocks.BIRD_FEEDER, walkingLayer(helper, hen, 4, 4));
             unsettled(hen, 0.8, DAY - 1L, Upkeep.NONE);
             // A tick just before her day, as a block placed earlier would have had: it finds its herd and has nothing
             // to settle yet.
@@ -725,7 +726,7 @@ public final class FeederGameTests {
     // sunrise.
     public static void cowsWalkToTheMangerAndEat(GameTestHelper helper) {
         Set<Animal> near = new HashSet<>();
-        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 4}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 4}, {7, 5}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 3)),
                 m -> {
                     for (Animal cow : m.animals) {
@@ -748,7 +749,7 @@ public final class FeederGameTests {
         // Above the pen, in range but out of the cow's way: standing between her and the Manger, a player can keep her
         // from reaching it in time.
         ServerPlayer watching = AdvancementGameTests.playerAt(helper, new Vec3(4.5, 6.0, 4.5));
-        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
                     if (ateOn(helper, m.animals.getFirst(), DAY)) {
@@ -765,7 +766,7 @@ public final class FeederGameTests {
     public static void aCowStaysToEatThenWalksOff(GameTestHelper helper) {
         long[] ate = {-1L};
         Vec3[] ateAt = {Vec3.ZERO};
-        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
                     Animal cow = m.animals.getFirst();
@@ -798,7 +799,7 @@ public final class FeederGameTests {
     public static void aCowWalkingOffDoesntWander(GameTestHelper helper) {
         long[] ate = {-1L};
         Vec3[] ateAt = {Vec3.ZERO};
-        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
                     Animal cow = m.animals.getFirst();
@@ -837,7 +838,7 @@ public final class FeederGameTests {
         // Away from the pen's corners. A search from a corner may never leave it, and a cow there more than 4 blocks
         // from the Manger only joins its herd at a later refresh (see HerdRefresh.find), after this test is over.
         int[][] columns = {{4, 2}, {4, 6}, {5, 2}, {5, 4}, {5, 6}, {6, 3}, {6, 5}, {7, 2}, {7, 4}, {7, 6}};
-        morning(helper, EntityTypes.COW, columns, BarnyardBlocks.MANGER, new int[]{2, 4},
+        morning(helper, EntityTypes.COW, columns, FeedBlocks.MANGER, new int[]{2, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 10)),
                 m -> {
                     // Walking there or eating, with the goal running; one walking off afterwards leaves its place.
@@ -855,7 +856,7 @@ public final class FeederGameTests {
     // The other cow eats at the Manger, which leaves her hand-feeding to come: it still wins her over a little.
     public static void aHandFedCowStaysPut(GameTestHelper helper) {
         long[] otherAte = {-1L};
-        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 5}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> {
                     m.feeder.setItem(0, new ItemStack(Items.WHEAT, 2));
                     handFeed(helper, m.animals.get(0), m.clock);
@@ -886,7 +887,7 @@ public final class FeederGameTests {
 
     // Her wheat at the Manger heals her, but doesn't win her over or put her in love as the same wheat would by hand.
     public static void aFeederMealIsNotLove(GameTestHelper helper) {
-        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> {
                     m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1));
                     m.animals.getFirst().setHealth(6.0F);
@@ -909,7 +910,7 @@ public final class FeederGameTests {
     // The Manger is empty at sunrise, so nobody walks. At noon it gets wheat, and the cows are fed by the next rounds.
     public static void foodAddedAtNoonFeedsTheHungry(GameTestHelper helper) {
         long[] stocked = {-1L};
-        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 4}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 3}, {7, 4}, {7, 5}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> {
                 },
                 m -> {
@@ -936,7 +937,7 @@ public final class FeederGameTests {
     public static void aSittingWolfIsNotMoved(GameTestHelper helper) {
         Vec3[] seat = {null};
         long[] moved = {-1L};
-        morning(helper, EntityTypes.WOLF, new int[][]{{7, 4}}, BarnyardBlocks.PET_BOWL, new int[]{2, 4},
+        morning(helper, EntityTypes.WOLF, new int[][]{{7, 4}}, FeedBlocks.PET_BOWL, new int[]{2, 4},
                 m -> {
                     TamableAnimal wolf = (TamableAnimal) m.animals.getFirst();
                     wolf.tame(helper.makeMockPlayer(GameType.SURVIVAL));
@@ -971,7 +972,7 @@ public final class FeederGameTests {
 
     // From the corner spot where a path search may never leave its start, she still gets to the Manger and eats.
     public static void aCowInACornerWalksOutToEat(GameTestHelper helper) {
-        morning(helper, EntityTypes.COW, new int[][]{{7, 7}}, BarnyardBlocks.MANGER, new int[]{3, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 7}}, FeedBlocks.MANGER, new int[]{3, 4},
                 m -> {
                     m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1));
                     Animal cow = m.animals.getFirst();
@@ -989,7 +990,7 @@ public final class FeederGameTests {
     // Fed at the Manger and not by hand, she is fed today on her stat sheet and her herd book page, which name the
     // Manger. The book's contents icon is the half drumstick, and its tooltip names the Manger too.
     public static void aMangerMealShowsOnTheFedRow(GameTestHelper helper) {
-        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
                     Animal cow = m.animals.getFirst();
@@ -1023,7 +1024,7 @@ public final class FeederGameTests {
     // hungry on the third.
     public static void aBriefMorningLoadLeavesTheRestOfTheDayToCatchUp(GameTestHelper helper) {
         FeederBlockEntity[] reloaded = {null};
-        morning(helper, EntityTypes.COW, new int[][]{{3, 4}, {7, 3}, {7, 5}}, BarnyardBlocks.MANGER, new int[]{1, 4},
+        morning(helper, EntityTypes.COW, new int[][]{{3, 4}, {7, 3}, {7, 5}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 6)),
                 m -> {
                     if (reloaded[0] == null) {
@@ -1220,7 +1221,7 @@ public final class FeederGameTests {
     }
 
     private static FeederBlockEntity mangerAt(GameTestHelper helper, BlockPos absolute) {
-        return blockAt(helper, BarnyardBlocks.MANGER, absolute);
+        return blockAt(helper, FeedBlocks.MANGER, absolute);
     }
 
     private static FeederBlockEntity blockAt(GameTestHelper helper, Block block, BlockPos absolute) {
@@ -1288,7 +1289,7 @@ public final class FeederGameTests {
     // A comparator reading the Manger gives a chest's signal for what it holds: up when wheat goes in, and 0 again
     // once it's empty.
     public static void aComparatorReadsHowFullAMangerIs(GameTestHelper helper) {
-        FeederBlockEntity manger = feeder(helper, BarnyardBlocks.MANGER, FEEDER);
+        FeederBlockEntity manger = feeder(helper, FeedBlocks.MANGER, FEEDER);
         BlockPos comparator = FEEDER.east();
         helper.setBlock(comparator.below(), Blocks.STONE.defaultBlockState());
         // A comparator reads the block its FACING points at.

@@ -6,11 +6,13 @@ import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.drops.DropsFeature;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedFeature;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityFeature;
 import net.modcrafters.minecraft.barnyardromance.food.FoodFeature;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkFeature;
+import net.modcrafters.minecraft.barnyardromance.naturalist.NaturalistFeature;
 import net.modcrafters.minecraft.barnyardromance.rivalry.RivalryFeature;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearFeature;
 import net.modcrafters.minecraft.barnyardromance.vigour.VigourFeature;
@@ -31,6 +33,7 @@ public final class BarnyardFeatures {
                 new BreedingFeature(),
                 new PregnancyFeature(),
                 new EggsFeature(),
+                new FeedFeature(),
                 new FoodFeature(),
                 new MilkFeature(),
                 new ShearFeature(),
@@ -39,7 +42,8 @@ public final class BarnyardFeatures {
                 new DropsFeature(),
                 // Before advancement, so a birth reaches the herd book before advancements grant on it.
                 new HerdFeature(),
-                new AdvancementFeature()
+                new AdvancementFeature(),
+                new NaturalistFeature()
         );
     }
 

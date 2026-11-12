@@ -9,8 +9,8 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
@@ -54,7 +54,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 ServerLevel level = player.level();
                 BlockPos at = player.blockPosition().east(3);
-                level.setBlockAndUpdate(at, BarnyardBlocks.NESTING_BOX.defaultBlockState()
+                level.setBlockAndUpdate(at, EggsBlocks.NESTING_BOX.defaultBlockState()
                         .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST));
                 NestingBoxBlockEntity box = (NestingBoxBlockEntity) level.getBlockEntity(at);
                 box.placeEgg(egg(20_000L));
@@ -62,7 +62,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
                 box.placeEgg(egg(6_500L));
                 box.placeEgg(new ItemStack(Items.BROWN_EGG, 16));
                 box.enter(chicken(level, player, Sex.FEMALE, 0.85, 0.0), List.of(new ItemStack(Items.EGG)), level.getGameTime());
-                player.getInventory().setItem(0, new ItemStack(BarnyardBlocks.NESTING_BOX_ITEM));
+                player.getInventory().setItem(0, new ItemStack(EggsBlocks.NESTING_BOX_ITEM));
                 player.getInventory().setItem(1, egg(12_000L));
             });
             world.getConnection().waitForClientboundPackets();
@@ -104,7 +104,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             world.getServer().runOnServer(server -> {
                 ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
                 ServerLevel level = player.level();
-                level.setBlockAndUpdate(player.blockPosition().north(3), BarnyardBlocks.NESTING_BOX.defaultBlockState());
+                level.setBlockAndUpdate(player.blockPosition().north(3), EggsBlocks.NESTING_BOX.defaultBlockState());
                 ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
                 player.setItemInHand(InteractionHand.MAIN_HAND, book);
                 level.getEntities(EntityTypes.CHICKEN, chicken -> true).forEach(chicken -> {

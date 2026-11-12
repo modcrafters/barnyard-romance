@@ -1,18 +1,18 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
+import net.modcrafters.minecraft.barnyardromance.naturalist.NaturalistCompat;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
-import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsItems;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -238,7 +238,7 @@ public final class NaturalistGameTests {
         inPen(DUCK, () -> EggLaying.layDue(duck, helper.getLevel(), 1));
 
         helper.assertTrue(eggsNear(helper, duck, duckEgg(helper)) == 1, "no duck egg on the ground");
-        helper.assertTrue(eggsNear(helper, duck, BarnyardItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
+        helper.assertTrue(eggsNear(helper, duck, EggsItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
         helper.succeed();
     }
 

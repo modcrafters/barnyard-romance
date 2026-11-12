@@ -15,7 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
 //import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
 import net.minecraft.resources.Identifier;
@@ -101,10 +101,10 @@ public class BarnyardRomanceNeoForge {
     // automation, so it counts as coming from above.
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         //? if >=1.21.9 {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, BarnyardBlocks.FEEDER_ENTITY,
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FeedBlocks.FEEDER_ENTITY,
                 (feeder, side) -> new WorldlyContainerWrapper(feeder, side == null ? Direction.UP : side));
         //?} else {
-        /*event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BarnyardBlocks.FEEDER_ENTITY,
+        /*event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FeedBlocks.FEEDER_ENTITY,
                 (feeder, side) -> new SidedInvWrapper(feeder, side == null ? Direction.UP : side));
         *///?}
     }

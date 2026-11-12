@@ -2,8 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
-import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
@@ -30,7 +31,7 @@ class StatSheetTest {
     }
 
     private static EggOutlook outlook() {
-        return EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN, "minecraft:chicken");
+        return EggRules.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN, "minecraft:chicken");
     }
 
     private static List<String> english(AnimalFacts.Builder facts) {

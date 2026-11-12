@@ -1,8 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.core.config;
 
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -15,6 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardConfigTest {
+    // Naturalist hands config its default ignore list when it registers.
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
+
     @Test
     void hungerDefaultsWhenMissing() {
         assertEquals(HungerSettings.DEFAULTS, BarnyardConfig.parse("{}").hunger());

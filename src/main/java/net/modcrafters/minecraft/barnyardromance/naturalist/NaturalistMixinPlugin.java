@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.compat;
+package net.modcrafters.minecraft.barnyardromance.naturalist;
 
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;

@@ -3,7 +3,8 @@ package net.modcrafters.minecraft.barnyardromance.fabric.client;
 import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
@@ -41,9 +42,9 @@ public class BarnyardRomanceFabricClient implements ClientModInitializer {
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "animal_tooltip"),
                 AnimalHoverTooltip::render
         );
-        MenuScreens.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
-        MenuScreens.register(BarnyardBlocks.FEEDER_MENU, FeederScreen::new);
-        BlockEntityRenderers.register(BarnyardBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
+        MenuScreens.register(EggsBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
+        MenuScreens.register(FeedBlocks.FEEDER_MENU, FeederScreen::new);
+        BlockEntityRenderers.register(EggsBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(HerdBookPayloads.ShowBook.TYPE, (payload, context) -> HerdBookClient.show(payload));
     }
 }

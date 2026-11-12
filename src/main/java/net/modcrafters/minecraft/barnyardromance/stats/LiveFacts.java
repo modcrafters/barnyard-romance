@@ -12,9 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
@@ -35,6 +33,7 @@ import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 
 import java.util.Optional;
 
@@ -128,7 +127,8 @@ public final class LiveFacts {
 
     // A hen counts today's eggs; a rooster says whether he makes them fertile today.
     private static Text eggsToday(Animal animal, AnimalTraits traits, String species, long clock) {
-        if (animal.isBaby() || !EggLaying.laysEggs(animal)) {
+        EggsApi eggs = FeaturesRepository.get(EggsApi.class);
+        if (animal.isBaby() || !eggs.laysEggs(animal)) {
             return Text.EMPTY;
         }
         long today = GameDay.of(clock);
@@ -137,8 +137,8 @@ public final class LiveFacts {
             value = StatText.roosterText(AgeController.stage(animal, traits) == AgeStage.YOUNG, vigour(traits, clock),
                     FeaturesRepository.get(VigourApi.class).hungry(traits.get(FamiliaritySlices.CARE).hunger().lastAteDay(), today),
                     BarnyardConfig.current().tuning().vigourPerEgg());
-        } else if (EggLaying.isLayingHen(animal)) {
-            Laying laying = Services.DATA.get(animal, EggsFeature.LAYING).filter(current -> current.day() == today).orElse(Laying.NONE);
+        } else if (eggs.isLayingHen(animal)) {
+            Laying laying = eggs.laying(animal).filter(current -> current.day() == today).orElse(Laying.NONE);
             value = StatText.eggsText(laying.laid(), laying.planned(), traits.get(FamiliaritySlices.CARE).hunger().hungryYesterday(today));
         } else {
             return Text.EMPTY;

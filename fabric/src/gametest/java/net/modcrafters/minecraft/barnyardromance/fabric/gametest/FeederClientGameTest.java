@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,12 +28,12 @@ public class FeederClientGameTest implements FabricClientGameTest {
                 ServerLevel level = player.level();
                 BlockPos ahead = player.blockPosition().east(3);
                 for (FeederKind kind : FeederKind.values()) {
-                    level.setBlockAndUpdate(ahead.south(kind.ordinal() - 2), BarnyardBlocks.block(kind).defaultBlockState());
+                    level.setBlockAndUpdate(ahead.south(kind.ordinal() - 2), FeedBlocks.block(kind).defaultBlockState());
                 }
                 FeederBlockEntity manger = (FeederBlockEntity) level.getBlockEntity(ahead.south(FeederKind.MANGER.ordinal() - 2));
                 manger.setItem(0, new ItemStack(Items.WHEAT, 64));
                 manger.setItem(1, new ItemStack(Items.HAY_BLOCK, 12));
-                player.getInventory().setItem(0, new ItemStack(BarnyardBlocks.MANGER_ITEM));
+                player.getInventory().setItem(0, new ItemStack(FeedBlocks.MANGER_ITEM));
             });
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(5);

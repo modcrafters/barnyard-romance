@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.eggs;
+package net.modcrafters.minecraft.barnyardromance.eggs.api;
 
 // The best adult rooster within range of a hen: none, one that hasn't eaten today (so he won't be fertile tomorrow),
 // or one that has.
