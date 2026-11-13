@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -276,21 +277,25 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             if (data.isEmpty()) {
                 continue;
             }
-            EggData left = counting ? data.get().counted(elapsed) : data.get();
+            // An egg laid before size ranges were kept takes the species' range the first time a box sees it, the
+            // way animals take theirs when they join.
+            boolean stamped = data.get().sizeRange() == null;
+            EggData stored = stamped ? data.get().withSizeRange(BarnyardConfig.current().sizeFor(data.get().species())) : data.get();
+            EggData left = counting ? stored.counted(elapsed) : stored;
             if (left.remainingTicks() <= 0L) {
                 if (box.stuck.contains(egg)) {
                     continue;
                 }
                 // A chick that hatched while the box was unloaded, or while the night was slept through, was born
                 // when its time ran out.
-                long overdue = counting ? Math.max(0L, elapsed - data.get().remainingTicks()) : 0L;
+                long overdue = counting ? Math.max(0L, elapsed - stored.remainingTicks()) : 0L;
                 if (Hatching.hatch(server, left, box.exitPos(), now - overdue).isPresent()) {
                     box.items.set(slot, ItemStack.EMPTY);
                 } else {
                     egg.set(EggsComponents.EGG_DATA, left);
                     box.stuck.add(egg);
                 }
-            } else if (counting) {
+            } else if (counting || stamped) {
                 egg.set(EggsComponents.EGG_DATA, left);
             }
             box.setChanged();

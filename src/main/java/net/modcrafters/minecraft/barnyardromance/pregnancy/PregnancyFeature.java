@@ -25,6 +25,7 @@ public final class PregnancyFeature implements Feature {
         registrar.attachment(PREGNANCY);
         registrar.hook(AnimalPhase.SERVER_AI_STEP, "pregnancy.catch_up", PregnancyController::catchUp);
         registrar.hook(AnimalPhase.SERVER_AI_STEP, "pregnancy.hearts", PregnancyHearts::serverTick);
+        registrar.hook(AnimalPhase.JOINED, "pregnancy.joined", (animal, level) -> PregnancyController.onJoin(animal));
         // A lambda, so PregnancyItems (and its items) load only once the registries are open.
         registrar.content(sink -> PregnancyItems.register(sink));
     }

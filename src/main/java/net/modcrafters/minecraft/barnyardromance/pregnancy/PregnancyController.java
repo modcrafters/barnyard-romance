@@ -66,6 +66,20 @@ public final class PregnancyController {
         Services.DATA.remove(animal, PregnancyFeature.PREGNANCY);
     }
 
+    // A pregnancy from before size ranges were saved takes the father's species' range the first time the mother joins,
+    // the way animals take theirs, so editing the numbers later moves the father's scale with them. Like her traits,
+    // an excluded species' pregnancy is left as it was saved.
+    public static void onJoin(Animal mother) {
+        BarnyardConfig config = BarnyardConfig.current();
+        if (!config.speciesEnabled(AnimalSex.speciesId(mother))) {
+            return;
+        }
+        Services.DATA.get(mother, PregnancyFeature.PREGNANCY)
+                .filter(pregnancy -> pregnancy.fatherSizeRange() == null)
+                .ifPresent(pregnancy -> Services.DATA.set(mother, PregnancyFeature.PREGNANCY,
+                        pregnancy.withFatherSizeRange(config.sizeFor(pregnancy.fatherSpecies()))));
+    }
+
     // Time skipped by sleeping or /time add counts towards the pregnancy, including any skipped while she was unloaded.
     // A clock that falls behind (a stopped daylight cycle, or set back) takes nothing away; it's caught up with now
     // and then, so a later skip still counts in full. Otherwise she's only saved when something was skipped.

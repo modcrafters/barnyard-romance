@@ -56,6 +56,7 @@ public final class BreedingGameTests {
             new Case("excluded_members_are_not_refreshed", 20, BreedingGameTests::excludedMembersAreNotRefreshed),
             new Case("animals_follow_a_size_range_change", 20, BreedingGameTests::animalsFollowASizeRangeChange),
             new Case("an_animal_without_a_range_keeps_its_size", 20, BreedingGameTests::anAnimalWithoutARangeKeepsItsSize),
+            new Case("a_pregnancy_without_a_range_takes_one_when_she_joins", 20, BreedingGameTests::aPregnancyWithoutARangeTakesOneWhenSheJoins),
             new Case("a_mule_is_saved_in_its_own_range", 20, BreedingGameTests::aMuleIsSavedInItsOwnRange),
             new Case("pigs_conceive_a_litter_and_rest", 200, BreedingGameTests::pigsConceiveALitterAndRest),
             new Case("cows_carry_one_calf_for_about_three_days", 20, BreedingGameTests::cowsCarryOneCalfForAboutThreeDays),
@@ -418,6 +419,45 @@ public final class BreedingGameTests {
         helper.assertTrue(traits.scale() == 1.16, "the bull's scale is " + traits.scale() + ", not 1.16");
         helper.assertTrue(traits.sizeRange().equals(Optional.of(new SizeSettings(0.87, 1.13, 0.1))), "the bull's range is " + traits.sizeRange());
         assertBodyScale(helper, cow, 1.16);
+        helper.succeed();
+    }
+
+    // A pregnancy from before ranges were saved takes the father's species' range when the mother joins, like an
+    // animal does, and keeps it after the numbers are edited. The father is a mooshroom with a range of his own under
+    // the first numbers, so taking the mother's species or sex for him would show. At birth he is moved from that
+    // range into the new one: 1.35 in a 1.3 male base is 0.05 over, three quarters up the span, and so is the mother,
+    // so with no improvement or spread the calf is too. Left in the old range he would read as the top of the new one.
+    public static void aPregnancyWithoutARangeTakesOneWhenSheJoins(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.COW);
+        Services.DATA.set(mother, AnimalTraits.of(Sex.FEMALE, 0.85).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY,
+                new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:mooshroom", 1.35, 1, 1.0));
+        BarnyardConfig config = BarnyardConfig.current();
+        SizeSettings joinedIn;
+        SizeSettings current;
+        List<Animal> young;
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"femaleScale\": 0.8, \"maleScale\": 1.2, \"scaleVariation\": 0.1,"
+                    + " \"species\": {\"minecraft:mooshroom\": {\"maleScale\": 1.3}}}"));
+            AnimalTicks.joined(mother);
+            joinedIn = pregnancy(helper, mother).fatherSizeRange();
+            BarnyardConfig.set(BarnyardConfig.parse("{\"femaleScale\": 0.87, \"maleScale\": 1.13, \"scaleVariation\": 0.1,"
+                    + " \"tuning\": {\"improveStep\": 0.0, \"inheritSpread\": 0.0}}"));
+            AnimalTicks.joined(mother);
+            current = BarnyardConfig.current().sizeFor("minecraft:cow");
+            young = forceBirth(helper, mother);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(new SizeSettings(0.8, 1.3, 0.1).equals(joinedIn), "the pregnancy took " + joinedIn + ", not the mooshroom's range");
+        helper.assertTrue(current.equals(new SizeSettings(0.87, 1.13, 0.1)), "the test config wasn't read: " + current);
+        for (Animal calf : young) {
+            AnimalTraits traits = traits(helper, calf);
+            double expected = SizeRanges.base(traits.sex(), current) + 0.05;
+            helper.assertTrue(Math.abs(traits.scale() - expected) < 1.0e-9,
+                    "the father wasn't moved into the new range: a " + traits.sex() + " calf of " + traits.scale() + ", not " + expected);
+        }
         helper.succeed();
     }
 

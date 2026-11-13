@@ -19,7 +19,7 @@ class AnimalTicksTest {
                 AnimalTicks.order(AnimalPhase.SERVER_AI_STEP));
         assertEquals(List.of("rivalry.courtship", "rivalry.fights", "rivalry.rival_rolls", "familiarity.escapes"),
                 AnimalTicks.order(AnimalPhase.AI_STEP_SERVER));
-        assertEquals(List.of("breeding.traits", "milk.joined"), AnimalTicks.order(AnimalPhase.JOINED));
+        assertEquals(List.of("breeding.traits", "pregnancy.joined", "milk.joined"), AnimalTicks.order(AnimalPhase.JOINED));
         assertEquals(List.of("breeding.scale"), AnimalTicks.order(AnimalPhase.AGE_BOUNDARY));
     }
 

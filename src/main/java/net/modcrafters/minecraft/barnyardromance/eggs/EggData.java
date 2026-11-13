@@ -61,6 +61,11 @@ public record EggData(
                 fatherWeight, variant, totalTicks, remainingTicks, null);
     }
 
+    public EggData withSizeRange(SizeSettings range) {
+        return new EggData(species, mother, father, motherScale, motherGrowth, motherWeight, motherFamiliarity,
+                fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, remainingTicks, range);
+    }
+
     public EggData counted(long ticks) {
         return new EggData(species, mother, father, motherScale, motherGrowth, motherWeight, motherFamiliarity,
                 fatherScale, fatherGrowth, fatherWeight, variant, totalTicks, Math.max(0L, remainingTicks - ticks), sizeRange);

@@ -17,7 +17,7 @@ public final class AnimalTicks {
             AnimalPhase.SERVER_AI_STEP, List.of("pregnancy.catch_up", "pregnancy.hearts", "core.age", "familiarity.care", "eggs.laying"),
             AnimalPhase.AI_STEP_SERVER, List.of("rivalry.courtship", "rivalry.fights", "rivalry.rival_rolls", "familiarity.escapes"),
             // Traits first: milk's first join reads the sex they give.
-            AnimalPhase.JOINED, List.of("breeding.traits", "milk.joined"),
+            AnimalPhase.JOINED, List.of("breeding.traits", "pregnancy.joined", "milk.joined"),
             AnimalPhase.AGE_BOUNDARY, List.of("breeding.scale")
     );
     // Steps core runs itself: every animal ages, whatever features there are.
