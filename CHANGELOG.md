@@ -9,7 +9,7 @@ After publishing, the action prepares the next development version and archives 
 ## Unreleased
 
 - On a new install, males are about 30% bigger than females instead of 50%. The numbers are `femaleScale`, `maleScale` and `scaleVariation` in `config/barnyard_romance.json`, and an existing install keeps the ones already in its file.
-- Changing the size numbers in the config now resizes existing animals, eggs and pregnancies, and every animal keeps its size band: an M male stays an M male.
+- Changing the size numbers in the config now resizes existing animals after a restart, and every animal keeps its size band: an M male stays an M male. Chicks from eggs and young from pregnancies started before the change are sized for the new numbers too.
 - Leaving a world and opening another in the same game no longer carries over the first world's courtships, fights, truces or nesting hens.
 - The mod's jars no longer include its game tests, so they're smaller.
 - An animal done eating at a feeding block walks all the way off to make room, instead of sometimes wandering straight back to the block.
