@@ -11,6 +11,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -24,7 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 // The animal record is saved as one compound: the core fields, then each feature's slice inline beside them, under the
-// names they have always had. It is synced as the core fields, then each slice in registration order.
+// names they have always had. It is synced as the core fields, the size range, then each slice in registration order.
 public final class AnimalTraitCodecs {
     public static final Codec<Sex> SEX_CODEC = Codec.STRING.xmap(Sex::valueOf, Sex::name);
     // Saved inline as motherId and fatherId, each left out when unknown.
@@ -47,9 +48,11 @@ public final class AnimalTraitCodecs {
             Codec.INT.optionalFieldOf("growthTicks").xmap(ticks -> ticks.orElseGet(Growth::wild), Optional::of).forGetter(AnimalTraits::growthTicks),
             Codec.DOUBLE.optionalFieldOf("weight", 0.5).forGetter(AnimalTraits::weight),
             Codec.LONG.optionalFieldOf("bornTick", -1L).forGetter(AnimalTraits::bornTick),
-            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage)
-    ).apply(instance, (sex, scale, growthTicks, weight, bornTick, lineage) ->
-            new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, Map.of())));
+            LINEAGE_MAP_CODEC.forGetter(AnimalTraits::lineage),
+            // Left out when the record has no range, as one saved before ranges were kept.
+            SizeSettings.CODEC.optionalFieldOf("sizeRange").forGetter(AnimalTraits::sizeRange)
+    ).apply(instance, (sex, scale, growthTicks, weight, bornTick, lineage, sizeRange) ->
+            new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange.orElse(null), Map.of())));
     private static final StreamCodec<ByteBuf, Sex> SEX_STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Sex::valueOf, Sex::name);
     private static final StreamCodec<ByteBuf, AnimalTraits> CORE_STREAM_CODEC = StreamCodec.composite(
             SEX_STREAM_CODEC,
@@ -64,8 +67,10 @@ public final class AnimalTraitCodecs {
             AnimalTraits::bornTick,
             LINEAGE_STREAM_CODEC,
             AnimalTraits::lineage,
-            (sex, scale, growthTicks, weight, bornTick, lineage) -> new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, Map.of())
+            (sex, scale, growthTicks, weight, bornTick, lineage) -> new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, null, Map.of())
     );
+    // Written by hand after CORE_STREAM_CODEC: a composite takes six fields at most on 1.21.1.
+    private static final StreamCodec<ByteBuf, Optional<SizeSettings>> SIZE_RANGE_STREAM_CODEC = ByteBufCodecs.optional(SizeSettings.STREAM_CODEC);
     // Built once, on first use: every feature must have registered its slice by then.
     private static final Supplier<MapCodec<AnimalTraits>> BUILT_MAP_CODEC = Suppliers.memoize(
             () -> mapCodecOf(FeaturesRepository.features().slices()));
@@ -150,12 +155,14 @@ public final class AnimalTraitCodecs {
         return StreamCodec.of(
                 (buf, traits) -> {
                     CORE_STREAM_CODEC.encode(buf, traits);
+                    SIZE_RANGE_STREAM_CODEC.encode(buf, traits.sizeRange());
                     for (AnimalSlice<?> slice : slices) {
                         writeSlice(buf, slice, traits);
                     }
                 },
                 buf -> {
-                    AnimalTraits traits = CORE_STREAM_CODEC.decode(buf);
+                    AnimalTraits core = CORE_STREAM_CODEC.decode(buf);
+                    AnimalTraits traits = SIZE_RANGE_STREAM_CODEC.decode(buf).map(core::withSizeRange).orElse(core);
                     for (AnimalSlice<?> slice : slices) {
                         traits = readSlice(buf, slice, traits);
                     }

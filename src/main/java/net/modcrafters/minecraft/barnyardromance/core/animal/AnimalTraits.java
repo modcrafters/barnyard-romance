@@ -1,10 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeMap;
 
 // What the mod keeps on an animal: the core facts every feature reads, and each feature's own slice (see AnimalSlice).
@@ -16,22 +19,26 @@ public final class AnimalTraits {
     private final double weight;
     private final long bornTick;
     private final Lineage lineage;
+    // The size range the scale was set in (see SizeRanges), or null for a record saved before ranges were kept.
+    private final @Nullable SizeSettings sizeRange;
     // Only slices set away from their default, so a record that set a slice back to its default equals one that never did.
     private final Map<AnimalSlice<?>, Object> slices;
 
-    AnimalTraits(Sex sex, double scale, int growthTicks, double weight, long bornTick, Lineage lineage, Map<AnimalSlice<?>, Object> slices) {
+    AnimalTraits(Sex sex, double scale, int growthTicks, double weight, long bornTick, Lineage lineage, @Nullable SizeSettings sizeRange,
+            Map<AnimalSlice<?>, Object> slices) {
         this.sex = Objects.requireNonNull(sex);
         this.scale = scale;
         this.growthTicks = growthTicks;
         this.weight = weight;
         this.bornTick = bornTick;
         this.lineage = Objects.requireNonNull(lineage);
+        this.sizeRange = sizeRange;
         this.slices = Map.copyOf(slices);
     }
 
     // A record with every other fact at its default; it grows at the wild rate.
     public static AnimalTraits of(Sex sex, double scale) {
-        return new AnimalTraits(sex, scale, Growth.wild(), 0.5, -1L, Lineage.UNKNOWN, Map.of());
+        return new AnimalTraits(sex, scale, Growth.wild(), 0.5, -1L, Lineage.UNKNOWN, null, Map.of());
     }
 
     public Sex sex() {
@@ -59,6 +66,10 @@ public final class AnimalTraits {
         return lineage;
     }
 
+    public Optional<SizeSettings> sizeRange() {
+        return Optional.ofNullable(sizeRange);
+    }
+
     // The slice's value, or its default when the record never set it.
     public <T> T get(AnimalSlice<T> slice) {
         Object value = slices.get(slice);
@@ -72,23 +83,31 @@ public final class AnimalTraits {
         } else {
             next.put(slice, Objects.requireNonNull(value));
         }
-        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, next);
+        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange, next);
+    }
+
+    public AnimalTraits withScale(double scale) {
+        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange, slices);
+    }
+
+    public AnimalTraits withSizeRange(SizeSettings range) {
+        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, Objects.requireNonNull(range), slices);
     }
 
     public AnimalTraits withGrowthTicks(int growthTicks) {
-        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, slices);
+        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange, slices);
     }
 
     public AnimalTraits withWeight(double weight) {
-        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, slices);
+        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange, slices);
     }
 
     public AnimalTraits withBornTick(long tick) {
-        return new AnimalTraits(sex, scale, growthTicks, weight, tick, lineage, slices);
+        return new AnimalTraits(sex, scale, growthTicks, weight, tick, lineage, sizeRange, slices);
     }
 
     public AnimalTraits withLineage(Lineage lineage) {
-        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, slices);
+        return new AnimalTraits(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange, slices);
     }
 
     // with only ever stores a T under an AnimalSlice<T>.
@@ -106,12 +125,13 @@ public final class AnimalTraits {
                 && Double.compare(weight, traits.weight) == 0
                 && bornTick == traits.bornTick
                 && lineage.equals(traits.lineage)
+                && Objects.equals(sizeRange, traits.sizeRange)
                 && slices.equals(traits.slices);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sex, scale, growthTicks, weight, bornTick, lineage, slices);
+        return Objects.hash(sex, scale, growthTicks, weight, bornTick, lineage, sizeRange, slices);
     }
 
     @Override
@@ -119,6 +139,6 @@ public final class AnimalTraits {
         Map<String, Object> named = new TreeMap<>();
         slices.forEach((slice, value) -> named.put(slice.name(), value));
         return "AnimalTraits[sex=" + sex + ", scale=" + scale + ", growthTicks=" + growthTicks + ", weight=" + weight
-                + ", bornTick=" + bornTick + ", lineage=" + lineage + ", slices=" + named + "]";
+                + ", bornTick=" + bornTick + ", lineage=" + lineage + ", sizeRange=" + sizeRange + ", slices=" + named + "]";
     }
 }
