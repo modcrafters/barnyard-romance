@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.compat.JadeBridge;
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -48,7 +48,7 @@ public final class AnimalHoverTooltip {
         if (anchor.isEmpty()) {
             return;
         }
-        SizeSettings size = BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal));
+        SizeSettings size = SizeRanges.rangeOf(traits.get(), AnimalSex.speciesId(animal));
         if (minecraft.options.keyShift.isDown()) {
             Optional<AnimalFacts> facts = LiveFacts.of(animal, animal.level().getGameTime(), animal.level().getOverworldClockTime());
             if (facts.isPresent()) {

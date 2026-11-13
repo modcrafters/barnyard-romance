@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
@@ -103,7 +104,7 @@ public final class HerdStatus {
         PregnancyApi pregnancies = FeaturesRepository.get(PregnancyApi.class);
         Pregnancy pregnancy = record.alive() ? record.pregnancy() : null;
         double progress = pregnancy == null ? 0.0 : pregnancies.progress(pregnancy, now);
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species()));
+        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, record.species()));
         Optional<MilkStatus> milk = female && record.milkable() && record.alive()
                 ? FeaturesRepository.get(MilkApi.class).status(traits, size, now, clock)
                 : Optional.empty();
@@ -156,7 +157,7 @@ public final class HerdStatus {
                 .eggsToday(record.alive() ? eggsToday(record, traits, stage, vigour, today, config) : Text.EMPTY)
                 .breeding(breeding)
                 .father(pregnancy == null ? Text.EMPTY : stats.fatherText(
-                        SizeClass.of(Sex.MALE, pregnancy.fatherScale(), config.sizeFor(pregnancy.fatherSpecies())).name(), pregnancy.fatherSpecies()))
+                        SizeClass.of(Sex.MALE, pregnancy.fatherScale(), SizeRanges.orCurrent(pregnancy.fatherSizeRange(), pregnancy.fatherSpecies())).name(), pregnancy.fatherSpecies()))
                 .lastBirth(stats.lastBirthText(stats.lastOffspringName(traits), pregnancies.lastBirthTick(traits), now))
                 .build();
         return new View(stage, female, familiar, fed, feeder, pregnancy, progress, milk, shear, eggs, facts);
@@ -190,7 +191,7 @@ public final class HerdStatus {
         }
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         return FeaturesRepository.get(EggsApi.class).eggsTomorrow(
-                SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(record.species())),
+                SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, record.species())),
                 familiarityApi.lastAteDay(traits) == GameDay.of(clock),
                 familiarityApi.isFamiliar(traits),
                 record.nest().rooster(),

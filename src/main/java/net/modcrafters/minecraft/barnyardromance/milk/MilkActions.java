@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
@@ -221,7 +222,7 @@ public final class MilkActions {
     }
 
     private static SizeClass sizeClass(Animal animal, AnimalTraits traits) {
-        return SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)));
+        return SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(animal)));
     }
 
     private static SoundEvent milkingSound(Animal animal) {

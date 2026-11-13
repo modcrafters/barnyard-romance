@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -58,7 +59,7 @@ public final class ThrownEggs {
     }
 
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, EggData data, RandomSource random) {
-        SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
+        SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
         Optional<Animal> chick = hatchTainted(level, position, data.species(), data.variant(),
                 SizeClass.of(Sex.FEMALE, data.motherScale(), size), SizeClass.of(Sex.MALE, data.fatherScale(), size), random);
         chick.ifPresent(hatched -> Events.post(

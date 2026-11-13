@@ -111,7 +111,7 @@ public final class EggLaying {
 
     private static Laying plan(Animal hen, long today, int sinceMidnight) {
         AnimalTraits traits = Services.DATA.get(hen).orElseThrow();
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(hen)));
+        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(hen)));
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         int count = EggRules.perDay(size, familiarityApi.wasHungryYesterday(traits, today), familiarityApi.isFamiliar(traits), settings(hen));
         return new Laying(today, EggSchedule.plan(sinceMidnight, count, hen.getRandom().nextDouble()), 0);

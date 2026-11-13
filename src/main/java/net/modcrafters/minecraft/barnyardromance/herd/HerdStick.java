@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
@@ -27,6 +28,7 @@ import net.minecraft.world.item.component.ItemLore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class HerdStick extends Item {
     public HerdStick(Properties properties) {
@@ -95,18 +97,19 @@ public class HerdStick extends Item {
     private static Outcome apply(Animal animal, HerdTool tool, Player player) {
         PregnancyApi pregnancies = FeaturesRepository.get(PregnancyApi.class);
         if (tool.kind() == HerdTool.Kind.INFO) {
+            String species = AnimalSex.speciesId(animal);
+            Optional<AnimalTraits> traits = Services.DATA.get(animal);
             Text text = AnimalInfoText.format(
                     animal.getName().getString(),
-                    AnimalSex.speciesId(animal),
-                    Services.DATA.get(animal),
+                    species,
+                    traits,
                     AnimalSex.currentScale(animal),
                     AgeController.stage(animal),
                     pregnancies.pregnancy(animal).map(pregnancy -> pregnancies.progressLine(pregnancy, animal.level().getGameTime(), true)),
-                    BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal)),
+                    traits.map(value -> SizeRanges.rangeOf(value, species)).orElseGet(() -> BarnyardConfig.current().sizeFor(species)),
                     animal.level().getGameTime(),
-                    Services.DATA.get(animal)
-                            .flatMap(traits -> FeaturesRepository.get(MilkApi.class)
-                                    .status(animal, traits, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
+                    traits.flatMap(value -> FeaturesRepository.get(MilkApi.class)
+                                    .status(animal, value, animal.level().getGameTime(), animal.level().getOverworldClockTime()))
                             .map(status -> FeaturesRepository.get(StatsApi.class).milkText(status))
                             .orElse(Text.EMPTY)
             );

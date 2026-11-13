@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -64,7 +65,7 @@ public final class LiveFacts {
                 now
         );
         boolean hungryMale = traits.sex() == Sex.MALE && FeaturesRepository.get(VigourApi.class).hungry(familiarityApi.lastAteDay(traits), GameDay.of(clock));
-        return Optional.of(AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), config.sizeFor(species)).name(), stage)
+        return Optional.of(AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, species)).name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, now - traits.bornTick()))
                 .fedToday(fedToday(traits, clock))
                 .fedBy(StatText.feeder(familiarityApi.upkeep(traits), GameDay.of(clock)))
@@ -90,7 +91,7 @@ public final class LiveFacts {
                 .eggsToday(eggsToday(animal, traits, species, clock))
                 .breeding(breeding)
                 .father(pregnancy.map(current -> StatText.father(
-                        SizeClass.of(Sex.MALE, current.fatherScale(), config.sizeFor(current.fatherSpecies())).name(),
+                        SizeClass.of(Sex.MALE, current.fatherScale(), SizeRanges.orCurrent(current.fatherSizeRange(), current.fatherSpecies())).name(),
                         current.fatherSpecies())).orElse(Text.EMPTY))
                 .lastBirth(StatText.lastBirth(offspring(traits), pregnancies.lastBirthTick(traits), now))
                 .build());

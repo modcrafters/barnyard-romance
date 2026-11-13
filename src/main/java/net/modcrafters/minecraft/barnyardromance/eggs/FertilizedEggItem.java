@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
@@ -55,7 +55,7 @@ public class FertilizedEggItem extends EggItem {
     public static List<Text> lines(ItemStack stack) {
         EggData data = stack.get(EggsComponents.EGG_DATA);
         if (data != null) {
-            SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
+            SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
             Text parents = Text.of(
                     "item.barnyard_romance.fertilized_egg.parents",
                     SizeClass.of(Sex.FEMALE, data.motherScale(), size).name(),
