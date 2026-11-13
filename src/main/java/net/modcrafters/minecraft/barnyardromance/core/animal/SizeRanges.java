@@ -17,9 +17,10 @@ public final class SizeRanges {
         return sex == Sex.FEMALE ? range.femaleScale() : range.maleScale();
     }
 
-    // Only clamped to the scale limits, so an animal outside its range stays as far outside.
+    // Only clamped to the scale limits, so an animal outside its range stays as far outside. A range with no variation,
+    // or a broken one from a corrupt save (negative or NaN), puts it at the base.
     public static double rescale(Sex sex, double scale, SizeSettings from, SizeSettings to) {
-        double offset = from.variation() == 0.0 ? 0.0 : (scale - base(sex, from)) * (to.variation() / from.variation());
+        double offset = !(from.variation() > 0.0) ? 0.0 : (scale - base(sex, from)) * (to.variation() / from.variation());
         return Math.clamp(base(sex, to) + offset, MIN_SCALE, MAX_SCALE);
     }
 

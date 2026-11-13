@@ -37,6 +37,17 @@ class SizeRangesTest {
         assertEquals(1.13, SizeRanges.rescale(Sex.MALE, 1.25, new SizeSettings(0.8, 1.2, 0.0), NEW), 1e-9);
     }
 
+    // A corrupt save's range: neither flips the animal to the other side of the base nor gives it no scale at all.
+    @Test
+    void fromNegativeVariationGoesToTheBase() {
+        assertEquals(1.13, SizeRanges.rescale(Sex.MALE, 1.25, new SizeSettings(0.8, 1.2, -0.1), NEW), 1e-9);
+    }
+
+    @Test
+    void fromNaNVariationGoesToTheBase() {
+        assertEquals(0.87, SizeRanges.rescale(Sex.FEMALE, 0.75, new SizeSettings(0.8, 1.2, Double.NaN), NEW), 1e-9);
+    }
+
     @Test
     void toZeroVariationGoesToTheBase() {
         assertEquals(0.87, SizeRanges.rescale(Sex.FEMALE, 0.75, OLD, new SizeSettings(0.87, 1.13, 0.0)), 1e-9);
