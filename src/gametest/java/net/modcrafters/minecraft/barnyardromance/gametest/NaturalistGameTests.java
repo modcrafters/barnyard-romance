@@ -399,7 +399,7 @@ public final class NaturalistGameTests {
 
     private static Animal bird(GameTestHelper helper, String id, Sex sex, double familiarity, int x) {
         Animal bird = GameTestCompat.spawn(helper, type(helper, id), x, 1, 4);
-        Services.DATA.set(bird, AnimalTraits.of(sex, sex == Sex.MALE ? 1.2 : EggGameTests.MEDIUM_HEN).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L)));
+        Services.DATA.set(bird, AnimalTraits.of(sex, sex == Sex.MALE ? 1.2 : EggGameTests.mediumHen()).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L)));
         Services.DATA.set(bird, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
         return bird;
     }

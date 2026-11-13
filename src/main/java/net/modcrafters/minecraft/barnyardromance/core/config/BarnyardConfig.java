@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 public final class BarnyardConfig {
-    private static final SizeSettings DEFAULT_SIZE = new SizeSettings(0.8, 1.2, 0.1);
+    private static final SizeSettings DEFAULT_SIZE = new SizeSettings(0.87, 1.13, 0.1);
     private static final Range DEFAULT_PREGNANCY_TICKS = new Range(24_000L, 24_000L);
     private static final Range DEFAULT_LITTER = new Range(1L, 1L);
     private static final long MAX_PREGNANCY_TICKS = 480_000L;

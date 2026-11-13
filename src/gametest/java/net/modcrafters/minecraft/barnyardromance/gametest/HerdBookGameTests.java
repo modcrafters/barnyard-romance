@@ -566,7 +566,7 @@ public final class HerdBookGameTests {
     }
 
     public static void theEggTipSaysWhatSheLaidToday(GameTestHelper helper) {
-        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.MEDIUM_HEN, 0.5, 3);
+        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.mediumHen(), 0.5, 3);
         FamiliarityCare.markEaten(hen);
         Services.DATA.set(hen, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(5_000, 9_000), 1, 1));
 

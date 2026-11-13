@@ -78,7 +78,7 @@ public final class StatGameTests {
     }
 
     public static void aLayingHenCountsTodaysEggs(GameTestHelper helper) {
-        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.MEDIUM_HEN, 0.5, 3);
+        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.mediumHen(), 0.5, 3);
         long clock = clock(DAY) + 2_000L;
         Services.DATA.set(hen, EggsFeature.LAYING, new Laying(GameDay.of(clock), List.of(5_000, 9_000), 1, 1));
 

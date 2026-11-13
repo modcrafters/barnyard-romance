@@ -103,8 +103,8 @@ class BarnyardConfigTest {
         assertEquals(Sex.FEMALE, SexRoll.roll(0.49, config.femaleRatio()));
         assertEquals(Sex.MALE, SexRoll.roll(0.5, config.femaleRatio()));
         SizeSettings size = config.sizeFor("minecraft:cow");
-        assertEquals(0.70, ScaleRoll.roll(Sex.FEMALE, size, 0.0), 1.0e-9);
-        assertEquals(1.30, ScaleRoll.roll(Sex.MALE, size, 1.0), 1.0e-9);
+        assertEquals(0.77, ScaleRoll.roll(Sex.FEMALE, size, 0.0), 1.0e-9);
+        assertEquals(1.23, ScaleRoll.roll(Sex.MALE, size, 1.0), 1.0e-9);
     }
 
     @Test
@@ -134,9 +134,9 @@ class BarnyardConfigTest {
 
         assertFalse(config.speciesEnabled("minecraft:cow"));
         assertTrue(config.speciesEnabled("minecraft:chicken"));
-        assertEquals(new SizeSettings(0.8, 1.2, 0.01), config.sizeFor("minecraft:chicken"));
-        assertEquals(new SizeSettings(0.8, 1.4, 0.1), config.sizeFor("minecraft:cow"));
-        assertEquals(new SizeSettings(0.8, 1.2, 0.1), config.sizeFor("minecraft:pig"));
+        assertEquals(new SizeSettings(0.8, 1.13, 0.01), config.sizeFor("minecraft:chicken"));
+        assertEquals(new SizeSettings(0.87, 1.4, 0.1), config.sizeFor("minecraft:cow"));
+        assertEquals(new SizeSettings(0.87, 1.13, 0.1), config.sizeFor("minecraft:pig"));
     }
 
     @Test
@@ -290,8 +290,13 @@ class BarnyardConfigTest {
 
         assertTrue(json.contains("\"femaleScale\""));
         assertEquals(0.5, parsed.femaleRatio(), 1.0e-9);
-        assertEquals(new SizeSettings(0.8, 1.2, 0.1), parsed.sizeFor("minecraft:cow"));
+        assertEquals(new SizeSettings(0.87, 1.13, 0.1), parsed.sizeFor("minecraft:cow"));
         assertTrue(parsed.speciesEnabled("minecraft:cow"));
+    }
+
+    @Test
+    void newInstallsGetGentlerSizes() {
+        assertEquals(new SizeSettings(0.87, 1.13, 0.1), BarnyardConfig.parse("{}").sizeFor("minecraft:cow"));
     }
 
     @Test
