@@ -19,6 +19,7 @@ import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.minecraft.nbt.CompoundTag;
@@ -220,6 +221,8 @@ public final class PregnancyController {
                 mother.level().getGameTime(),
                 new Lineage(mother.getUUID(), pregnancy.fatherId())
         );
+        // Rolled in the mother's range; a young one of another kind (a mule) is saved in its own.
+        traits = SizeRanges.settled(traits, config.sizeFor(AnimalSex.speciesId(child)));
         Services.DATA.set(child, traits);
         return traits.growthTicks();
     }

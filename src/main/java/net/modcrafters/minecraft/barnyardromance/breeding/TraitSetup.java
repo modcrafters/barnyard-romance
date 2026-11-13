@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -38,13 +39,17 @@ public final class TraitSetup {
         if (resolved.isEmpty()) {
             return;
         }
-        if (createIfMissing && existing.isEmpty()) {
-            Services.DATA.set(animal, resolved.get());
+        SizeSettings size = config.sizeFor(speciesId);
+        // An animal sized in another range moves to the same spot in this one (see SizeRanges.settled). A fresh roll has
+        // no range yet, so it is stamped and saved here too.
+        AnimalTraits settled = SizeRanges.settled(resolved.get(), size);
+        if (settled != resolved.get()) {
+            Services.DATA.set(animal, settled);
         }
-        TraitAssignment.scaleToApply(resolved.get(), animal.isBaby())
+        TraitAssignment.scaleToApply(settled, animal.isBaby())
                 .ifPresent(scale -> applyScale(animal, scale));
         if (animal instanceof Wolf) {
-            applyWolfStrength(animal, resolved.get(), config.sizeFor(speciesId));
+            applyWolfStrength(animal, settled, size);
         }
     }
 

@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -83,8 +84,9 @@ public final class Hatching {
             BarnyardConfig config = BarnyardConfig.current();
             BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
             Sex sex = breeding.newbornSex(chick.getRandom().nextDouble(), config.femaleRatio());
-            double scale = breeding.wildScale(sex, config.sizeFor(egg.species()), chick.getRandom().nextDouble());
-            AnimalTraits traits = AnimalTraits.of(sex, scale).withBornTick(bornTick);
+            SizeSettings size = config.sizeFor(egg.species());
+            double scale = breeding.wildScale(sex, size, chick.getRandom().nextDouble());
+            AnimalTraits traits = AnimalTraits.of(sex, scale).withBornTick(bornTick).withSizeRange(size);
             Services.DATA.set(chick, traits);
             place(chick, egg.variant(), (int) Math.max(0L, traits.growthTicks() - (level.getGameTime() - bornTick)), position);
             if (!level.tryAddFreshEntityWithPassengers(chick)) {

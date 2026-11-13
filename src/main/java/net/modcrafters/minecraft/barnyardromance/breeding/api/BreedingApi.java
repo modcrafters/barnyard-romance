@@ -18,7 +18,7 @@ public interface BreedingApi {
     double scaleAt(Sex sex, SizeSettings size, double percent);
 
     // A newborn's traits from its parents: a calf from a pregnancy and a chick from a fertilized egg alike. nutrition
-    // is how well the mother knew her keeper, plus any superfood bonus.
+    // is how well the mother knew her keeper, plus any superfood bonus. The traits keep size as their range.
     AnimalTraits newbornTraits(Sex sex, SizeSettings size, Parent mother, Parent father, double nutrition, RandomSource random,
                                long bornTick, Lineage lineage);
 }

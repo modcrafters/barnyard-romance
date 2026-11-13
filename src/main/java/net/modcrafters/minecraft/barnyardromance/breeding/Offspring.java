@@ -35,7 +35,8 @@ public final class Offspring {
                 .withGrowthTicks(growth)
                 .withWeight(weight)
                 .withBornTick(bornTick)
-                .withLineage(lineage);
+                .withLineage(lineage)
+                .withSizeRange(size);
         return FeaturesRepository.get(FamiliarityApi.class).withNewbornFamiliarity(traits, nutrition);
     }
 

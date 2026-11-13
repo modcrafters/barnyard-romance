@@ -90,7 +90,8 @@ public final class ThrownEggs {
         Services.DATA.set(chick, AnimalTraits.of(sex, scale)
                 .withGrowthTicks(growth)
                 .withWeight(TAINTED_WEIGHT)
-                .withBornTick(level.getGameTime()));
+                .withBornTick(level.getGameTime())
+                .withSizeRange(size));
         Hatching.place(chick, variant, growth, position);
         level.addFreshEntityWithPassengers(chick);
         return Optional.of(chick);

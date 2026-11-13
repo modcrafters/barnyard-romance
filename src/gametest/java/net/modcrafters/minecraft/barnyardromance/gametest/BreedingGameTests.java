@@ -6,6 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
@@ -22,14 +24,18 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -48,6 +54,9 @@ public final class BreedingGameTests {
             new Case("excluded_species_keep_their_traits", 20, BreedingGameTests::excludedSpeciesKeepTheirTraits),
             new Case("excluded_species_cannot_join_a_book", 20, BreedingGameTests::excludedSpeciesCannotJoinABook),
             new Case("excluded_members_are_not_refreshed", 20, BreedingGameTests::excludedMembersAreNotRefreshed),
+            new Case("animals_follow_a_size_range_change", 20, BreedingGameTests::animalsFollowASizeRangeChange),
+            new Case("an_animal_without_a_range_keeps_its_size", 20, BreedingGameTests::anAnimalWithoutARangeKeepsItsSize),
+            new Case("a_mule_is_saved_in_its_own_range", 20, BreedingGameTests::aMuleIsSavedInItsOwnRange),
             new Case("pigs_conceive_a_litter_and_rest", 200, BreedingGameTests::pigsConceiveALitterAndRest),
             new Case("cows_carry_one_calf_for_about_three_days", 20, BreedingGameTests::cowsCarryOneCalfForAboutThreeDays),
             new Case("time_skip_moves_pregnancies_on", 20, BreedingGameTests::timeSkipMovesPregnanciesOn),
@@ -370,6 +379,95 @@ public final class BreedingGameTests {
 
         helper.assertTrue(data.record(cow.getUUID()).traits().get(CARE).lastFedTick() == recorded, "an excluded cow's record was refreshed");
         helper.succeed();
+    }
+
+    // A bull sized in an old range moves to the same spot in the new one when it joins: 0.04 under the old male base
+    // is 0.04 under the new one.
+    public static void animalsFollowASizeRangeChange(GameTestHelper helper) {
+        Animal cow = male(helper, EntityTypes.COW);
+        Services.DATA.set(cow, AnimalTraits.of(Sex.MALE, 1.16).withSizeRange(new SizeSettings(0.8, 1.2, 0.1))
+                .with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"femaleScale\": 0.87, \"maleScale\": 1.13, \"scaleVariation\": 0.1}"));
+            AnimalTicks.joined(cow);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        AnimalTraits traits = traits(helper, cow);
+        helper.assertTrue(Math.abs(traits.scale() - 1.09) < 1.0e-9, "the bull's scale is " + traits.scale() + ", not 1.09");
+        helper.assertTrue(traits.sizeRange().equals(Optional.of(new SizeSettings(0.87, 1.13, 0.1))), "the bull's range is " + traits.sizeRange());
+        assertBodyScale(helper, cow, 1.09);
+        helper.succeed();
+    }
+
+    // Traits from before ranges were saved are taken to be in the current range, so the animal keeps its size.
+    public static void anAnimalWithoutARangeKeepsItsSize(GameTestHelper helper) {
+        Animal cow = male(helper, EntityTypes.COW);
+        Services.DATA.set(cow, AnimalTraits.of(Sex.MALE, 1.16).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"femaleScale\": 0.87, \"maleScale\": 1.13, \"scaleVariation\": 0.1}"));
+            AnimalTicks.joined(cow);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        AnimalTraits traits = traits(helper, cow);
+        helper.assertTrue(traits.scale() == 1.16, "the bull's scale is " + traits.scale() + ", not 1.16");
+        helper.assertTrue(traits.sizeRange().equals(Optional.of(new SizeSettings(0.87, 1.13, 0.1))), "the bull's range is " + traits.sizeRange());
+        assertBodyScale(helper, cow, 1.16);
+        helper.succeed();
+    }
+
+    // A mule is rolled in its mother's range, then moved into the mule's own before it is saved.
+    public static void aMuleIsSavedInItsOwnRange(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.HORSE);
+        CompoundTag mule = new CompoundTag();
+        mule.putString("id", "minecraft:mule");
+        mule.putInt("Age", -24000);
+        BarnyardConfig config = BarnyardConfig.current();
+        BarnyardConfig muleConfig = BarnyardConfig.parse("{\"species\": {\"minecraft:mule\": {\"femaleScale\": 1.5, \"maleScale\": 2.0}}}");
+        List<Animal> young;
+        try {
+            BarnyardConfig.set(muleConfig);
+            Services.DATA.set(mother, PregnancyFeature.PREGNANCY,
+                    new Pregnancy(0L, 72_000L, "minecraft:donkey", 1.0, 1, 1.0, 24_000, 0.5, List.of(mule)));
+            young = bornMules(helper, mother);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        SizeSettings range = muleConfig.sizeFor("minecraft:mule");
+        for (Animal foal : young) {
+            AnimalTraits traits = traits(helper, foal);
+            helper.assertTrue(traits.sizeRange().equals(Optional.of(range)), "the mule's range is " + traits.sizeRange() + ", not " + range);
+            double base = SizeRanges.base(traits.sex(), range);
+            helper.assertTrue(traits.scale() >= base - 0.1 - 1.0e-9 && traits.scale() <= base + 0.1 + 1.0e-9,
+                    "a " + traits.sex() + " mule's scale is " + traits.scale() + ", more than 0.1 from " + base);
+        }
+        helper.succeed();
+    }
+
+    // Like forceBirth, but the young are mules, not their mother's kind.
+    private static List<Animal> bornMules(GameTestHelper helper, Animal mother) {
+        Pregnancy pregnancy = pregnancy(helper, mother);
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
+        List<Animal> before = List.copyOf(helper.getEntities(EntityTypes.MULE).stream().map(Animal.class::cast).toList());
+        PregnancyController.catchUp(mother, helper.getLevel());
+        List<Animal> young = helper.getEntities(EntityTypes.MULE).stream()
+                .map(Animal.class::cast)
+                .filter(animal -> !before.contains(animal))
+                .toList();
+        helper.assertTrue(!young.isEmpty(), "no mule was born");
+        return young;
+    }
+
+    private static void assertBodyScale(GameTestHelper helper, Animal animal, double expected) {
+        AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
+        helper.assertTrue(scale != null && Math.abs(scale.getBaseValue() - expected) < 1.0e-6,
+                "the body's scale is " + (scale == null ? null : scale.getBaseValue()) + ", not " + expected);
     }
 
     public static Animal female(GameTestHelper helper, EntityType<? extends Animal> type) {
