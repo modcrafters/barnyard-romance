@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -47,11 +48,14 @@ public final class Hatching {
             long bornTick = Math.min(hatchedAt, level.getGameTime());
             BarnyardConfig config = BarnyardConfig.current();
             BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+            // The parents' scales are moved from the range the egg was laid in to the one the chick is sized in.
+            SizeSettings current = config.sizeFor(data.species());
+            SizeSettings laidIn = SizeRanges.orCurrent(data.sizeRange(), data.species());
             AnimalTraits traits = breeding.newbornTraits(
                     breeding.newbornSex(chick.getRandom().nextDouble(), config.femaleRatio()),
-                    config.sizeFor(data.species()),
-                    new Parent(data.motherScale(), data.motherGrowth(), data.motherWeight()),
-                    new Parent(data.fatherScale(), data.fatherGrowth(), data.fatherWeight()),
+                    current,
+                    new Parent(SizeRanges.rescale(Sex.FEMALE, data.motherScale(), laidIn, current), data.motherGrowth(), data.motherWeight()),
+                    new Parent(SizeRanges.rescale(Sex.MALE, data.fatherScale(), laidIn, current), data.fatherGrowth(), data.fatherWeight()),
                     Math.clamp(data.motherFamiliarity(), 0.0, 1.0),
                     chick.getRandom(),
                     bornTick,

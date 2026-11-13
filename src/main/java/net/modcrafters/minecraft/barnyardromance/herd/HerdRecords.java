@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.SkippedTime;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
@@ -52,7 +53,8 @@ public final class HerdRecords {
                 old.diedAt(), old.diedClock(), fresh.tamed(), old.nest(), old.cause(), old.sheet());
     }
 
-    private static Pregnancy withoutLitter(Pregnancy pregnancy) {
+    // The record keeps the father's range, so his size letter reads against the range his scale was set in.
+    static Pregnancy withoutLitter(Pregnancy pregnancy) {
         return new Pregnancy(
                 pregnancy.conceivedAt(),
                 pregnancy.durationTicks(),
@@ -64,7 +66,10 @@ public final class HerdRecords {
                 pregnancy.fatherWeight(),
                 List.of(),
                 pregnancy.care(),
-                pregnancy.fatherId()
+                pregnancy.fatherId(),
+                SkippedTime.UNSEEN,
+                null,
+                pregnancy.fatherSizeRange()
         );
     }
 }

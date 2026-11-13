@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -34,6 +35,7 @@ public final class PregnancyCodecs {
             PregnancyCare::nutritionBonus,
             PregnancyCare::new
     );
+    private static final StreamCodec<ByteBuf, Optional<SizeSettings>> FATHER_SIZE_RANGE_STREAM_CODEC = ByteBufCodecs.optional(SizeSettings.STREAM_CODEC);
     public static final MapCodec<Pregnancy> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.LONG.fieldOf("conceivedAt").forGetter(Pregnancy::conceivedAt),
             Codec.LONG.fieldOf("durationTicks").forGetter(Pregnancy::durationTicks),
@@ -48,12 +50,14 @@ public final class PregnancyCodecs {
             UUIDUtil.CODEC.optionalFieldOf("fatherId").forGetter(pregnancy -> Optional.ofNullable(pregnancy.fatherId())),
             Codec.LONG.optionalFieldOf("seenAt", Long.MIN_VALUE).forGetter(pregnancy -> pregnancy.seen().game()),
             Codec.LONG.optionalFieldOf("seenClock", Long.MIN_VALUE).forGetter(pregnancy -> pregnancy.seen().clock()),
-            UUIDUtil.CODEC.optionalFieldOf("breederId").forGetter(pregnancy -> Optional.ofNullable(pregnancy.breederId()))
-    ).apply(instance, (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seenAt, seenClock, breederId) ->
+            UUIDUtil.CODEC.optionalFieldOf("breederId").forGetter(pregnancy -> Optional.ofNullable(pregnancy.breederId())),
+            SizeSettings.CODEC.optionalFieldOf("fatherSizeRange").forGetter(pregnancy -> Optional.ofNullable(pregnancy.fatherSizeRange()))
+    ).apply(instance, (conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seenAt, seenClock, breederId,
+                       fatherSizeRange) ->
             new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId.orElse(null),
-                    new SkippedTime(seenAt, seenClock), breederId.orElse(null))));
+                    new SkippedTime(seenAt, seenClock), breederId.orElse(null), fatherSizeRange.orElse(null))));
     public static final Codec<Pregnancy> CODEC = MAP_CODEC.codec();
-    // The litter stays on the server; clients only see the fields below.
+    // The litter stays on the server; clients only see the fields below, the father's range among them for his size letter.
     // Written field by field: StreamCodec.composite only takes six fields on 1.21.1.
     public static final StreamCodec<ByteBuf, Pregnancy> STREAM_CODEC = StreamCodec.of(
             (buf, pregnancy) -> {
@@ -66,6 +70,7 @@ public final class PregnancyCodecs {
                 ByteBufCodecs.VAR_INT.encode(buf, pregnancy.fatherGrowthTicks());
                 ByteBufCodecs.DOUBLE.encode(buf, pregnancy.fatherWeight());
                 CARE_STREAM_CODEC.encode(buf, pregnancy.care());
+                FATHER_SIZE_RANGE_STREAM_CODEC.encode(buf, Optional.ofNullable(pregnancy.fatherSizeRange()));
             },
             // Arguments are evaluated left to right, so this reads the fields in the order they were written.
             buf -> new Pregnancy(
@@ -78,7 +83,11 @@ public final class PregnancyCodecs {
                     ByteBufCodecs.VAR_INT.decode(buf),
                     ByteBufCodecs.DOUBLE.decode(buf),
                     List.of(),
-                    CARE_STREAM_CODEC.decode(buf)
+                    CARE_STREAM_CODEC.decode(buf),
+                    null,
+                    SkippedTime.UNSEEN,
+                    null,
+                    FATHER_SIZE_RANGE_STREAM_CODEC.decode(buf).orElse(null)
             )
     );
 

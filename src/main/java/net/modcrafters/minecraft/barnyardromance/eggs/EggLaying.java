@@ -20,6 +20,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.minecraft.core.BlockPos;
@@ -251,7 +252,8 @@ public final class EggLaying {
                 fatherTraits.weight(),
                 variant(hen),
                 hatchTicks,
-                hatchTicks
+                hatchTicks,
+                SizeRanges.rangeOf(motherTraits, AnimalSex.speciesId(hen))
         )));
     }
 

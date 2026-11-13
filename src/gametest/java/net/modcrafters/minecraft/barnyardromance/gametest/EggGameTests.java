@@ -10,6 +10,9 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
+import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
@@ -141,6 +144,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("egg_hatches_in_the_box", 40, EggGameTests::eggHatchesInTheBox),
             new BreedingGameTests.Case("hatched_chick_inherits", 20, EggGameTests::hatchedChickInherits),
             new BreedingGameTests.Case("hatched_chick_joins_mothers_book", 20, EggGameTests::hatchedChickJoinsMothersBook),
+            new BreedingGameTests.Case("an_egg_laid_in_an_old_range_hatches_in_the_new", 20, EggGameTests::anEggLaidInAnOldRangeHatchesInTheNew),
             new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
             new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload),
             new BreedingGameTests.Case("time_skip_counts_eggs_down", 20, EggGameTests::timeSkipCountsEggsDown),
@@ -733,6 +737,36 @@ public final class EggGameTests {
         Animal chick = chickIn(helper, BOX.north());
         HerdBookData herd = HerdBookData.get(helper.getLevel().getServer());
         helper.assertTrue(herd.ledger().isMember(bookId, chick.getUUID()), "the chick didn't join its mother's book");
+        helper.succeed();
+    }
+
+    // An egg laid before the size range was edited: both parents are moved to the same spot in the new range before
+    // the chick inherits from them. With no improvement or spread, each parent sits three quarters up its sex's span,
+    // so the chick does too; left in the old range the father would read as the top of the new one.
+    public static void anEggLaidInAnOldRangeHatchesInTheNew(GameTestHelper helper) {
+        SizeSettings old = new SizeSettings(0.8, 1.2, 0.1);
+        EggData data = new EggData("minecraft:chicken", UUID.randomUUID(), UUID.randomUUID(), 0.85, Growth.wild(), 0.5, 0.5,
+                1.25, Growth.wild(), 0.5, "", 1_000L, 0L, old);
+        BarnyardConfig config = BarnyardConfig.current();
+        AnimalTraits traits;
+        SizeSettings current;
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"femaleScale\": 0.87, \"maleScale\": 1.13, \"scaleVariation\": 0.1,"
+                    + " \"tuning\": {\"improveStep\": 0.0, \"inheritSpread\": 0.0}}"));
+            current = BarnyardConfig.current().sizeFor("minecraft:chicken");
+            Animal chick = Hatching.hatch(helper.getLevel(), data, helper.absoluteVec(new Vec3(4.5, 2.0, 4.5)), helper.getLevel().getGameTime())
+                    .orElseThrow(() -> GameTestCompat.failure(helper, "the egg didn't hatch"));
+            traits = traits(helper, chick);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        double base = SizeRanges.base(traits.sex(), current);
+        helper.assertTrue(current.equals(new SizeSettings(0.87, 1.13, 0.1)), "the test config wasn't read: " + current);
+        helper.assertTrue(traits.sizeRange().equals(Optional.of(current)), "the chick was saved in " + traits.sizeRange());
+        helper.assertTrue(Math.abs(traits.scale() - base) <= current.variation() + 1.0e-9,
+                "a " + traits.sex() + " chick of " + traits.scale() + " is outside the new range");
+        helper.assertTrue(Math.abs(traits.scale() - (base + 0.05)) < 1.0e-9,
+                "the parents weren't moved into the new range: a " + traits.sex() + " chick of " + traits.scale());
         helper.succeed();
     }
 

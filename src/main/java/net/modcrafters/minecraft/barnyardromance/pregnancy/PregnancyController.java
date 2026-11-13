@@ -130,7 +130,8 @@ public final class PregnancyController {
                     fatherTraits.growthTicks(),
                     fatherTraits.weight(),
                     litter.get()
-            ).withFatherId(father.getUUID()).withBreederId(breeder));
+            ).withFatherId(father.getUUID()).withBreederId(breeder)
+                    .withFatherSizeRange(SizeRanges.rangeOf(fatherTraits, AnimalSex.speciesId(father))));
             Events.post(new AnimalEvent.Conceived(mother, breeder));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
@@ -209,13 +210,16 @@ public final class PregnancyController {
         double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
         // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
         double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
+        // The father's scale is moved from the range it was set in at conception to his species' range now.
+        double fatherScale = SizeRanges.rescale(Sex.MALE, pregnancy.fatherScale(),
+                SizeRanges.orCurrent(pregnancy.fatherSizeRange(), pregnancy.fatherSpecies()), config.sizeFor(pregnancy.fatherSpecies()));
         BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
         Sex sex = breeding.newbornSex(child.getRandom().nextDouble(), config.femaleRatio());
         AnimalTraits traits = breeding.newbornTraits(
                 sex,
                 size,
                 new Parent(motherScale, motherGrowth, motherWeight),
-                new Parent(pregnancy.fatherScale(), pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
+                new Parent(fatherScale, pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
                 nutrition,
                 child.getRandom(),
                 mother.level().getGameTime(),
