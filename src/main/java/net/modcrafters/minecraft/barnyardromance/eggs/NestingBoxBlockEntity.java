@@ -278,9 +278,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
                 continue;
             }
             // An egg laid before size ranges were kept takes the species' range the first time a box sees it, the
-            // way animals take theirs when they join.
-            boolean stamped = data.get().sizeRange() == null;
-            EggData stored = stamped ? data.get().withSizeRange(BarnyardConfig.current().sizeFor(data.get().species())) : data.get();
+            // way animals take theirs when they join. Like an excluded mother's pregnancy, an excluded species' egg
+            // is left as it was saved.
+            BarnyardConfig config = BarnyardConfig.current();
+            boolean stamped = data.get().sizeRange() == null && config.speciesEnabled(data.get().species());
+            EggData stored = stamped ? data.get().withSizeRange(config.sizeFor(data.get().species())) : data.get();
             EggData left = counting ? stored.counted(elapsed) : stored;
             if (left.remainingTicks() <= 0L) {
                 if (box.stuck.contains(egg)) {

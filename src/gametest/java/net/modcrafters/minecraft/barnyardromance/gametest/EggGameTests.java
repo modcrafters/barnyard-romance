@@ -143,6 +143,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("hatched_chick_joins_mothers_book", 20, EggGameTests::hatchedChickJoinsMothersBook),
             new BreedingGameTests.Case("an_egg_laid_in_an_old_range_hatches_in_the_new", 20, EggGameTests::anEggLaidInAnOldRangeHatchesInTheNew),
             new BreedingGameTests.Case("an_egg_without_a_range_takes_one_in_the_box", 20, EggGameTests::anEggWithoutARangeTakesOneInTheBox),
+            new BreedingGameTests.Case("an_excluded_egg_without_a_range_is_left_alone", 20, EggGameTests::anExcludedEggWithoutARangeIsLeftAlone),
             new BreedingGameTests.Case("blocked_front_hatches_on_top", 20, EggGameTests::blockedFrontHatchesOnTop),
             new BreedingGameTests.Case("hatching_catches_up_after_unload", 20, EggGameTests::hatchingCatchesUpAfterUnload),
             new BreedingGameTests.Case("time_skip_counts_eggs_down", 20, EggGameTests::timeSkipCountsEggsDown),
@@ -787,6 +788,24 @@ public final class EggGameTests {
         helper.assertTrue(current.equals(new SizeSettings(0.7, 1.3, 0.1)), "the test config wasn't read: " + current);
         Optional<EggData> data = FertilizedEggItem.data(box.getItem(0));
         helper.assertTrue(data.isPresent() && current.equals(data.get().sizeRange()), "the egg in the box has " + data);
+        helper.succeed();
+    }
+
+    // With chickens excluded, an egg from before ranges were saved is left as it was, like an excluded mother's
+    // pregnancy, so it takes the range in force when chickens are switched back on rather than today's.
+    public static void anExcludedEggWithoutARangeIsLeftAlone(GameTestHelper helper) {
+        NestingBoxBlockEntity box = box(helper, BOX);
+        box.setItem(0, FertilizedEggItem.create(eggData(mediumHen(), 1.2, 1_000L)));
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:chicken\"]}"));
+            NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        Optional<EggData> data = FertilizedEggItem.data(box.getItem(0));
+        helper.assertTrue(data.isPresent() && data.get().sizeRange() == null, "the excluded chicken's egg has " + data);
         helper.succeed();
     }
 

@@ -50,6 +50,16 @@ These runs test compatibility with [Naturalist](https://modrinth.com/mod/natural
 
 Naturalist needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.101` to the `:neoforge:26.3` versions of these commands.
 
+## Before a release
+
+CI runs client tests only on Fabric 26.3. NeoForge 1.21.1 has its own copy of the renderer mixin, which shares almost no lines with 26.3's, so check it by eye before you push a release tag. Start the game with `gradlew :neoforge:1.21.1:runClient` in a creative world:
+
+- A pregnant cow widens sideways as her pregnancy goes on, and only sideways.
+- Rams, bulls and billy goats have horns, a calf has none, and a goat shows only the mod's horns, not vanilla's as well.
+- Roosters have a comb and wattles, and hens have none.
+- A hen sitting in a nesting box is drawn inside it.
+- Sneaking while looking at an animal shows its stat card, and the herd book opens, pages and shows heads.
+
 ## Pull requests
 
 - CI runs all of the above on every pull request. The `all-versions` check must pass before a change can merge.
