@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.herd;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 
 // What a herd book record keeps for the full stat sheet beyond the animal's traits: its health, whether it only breeds
 // once tamed, and the eggs it laid on the day it was last seen. A maxHealth of 0 means nothing was recorded (a record

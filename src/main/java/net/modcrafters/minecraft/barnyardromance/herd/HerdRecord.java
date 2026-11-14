@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import org.jspecify.annotations.Nullable;
 
 // What the server last saw of an animal in a herd book, so the book can show it while it isn't loaded.

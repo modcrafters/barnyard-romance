@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Unit tests log through Minecraft's Log4j. Tests that feed in bad config expect warnings, so nothing is printed,
+     as with the no-op SLF4J binding the tests used before Minecraft was on their classpath. -->
+<Configuration status="OFF">
+    <Loggers>
+        <Root level="off"/>
+    </Loggers>
+</Configuration>

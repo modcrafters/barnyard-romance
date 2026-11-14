@@ -3,12 +3,14 @@ package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
-import net.modcrafters.minecraft.barnyardromance.config.ClientConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornRoll;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -31,6 +33,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // Lines up rows of animals in front of the camera and screenshots their bellies and horns.
 public class LooksClientGameTest implements FabricClientGameTest {
@@ -152,7 +156,7 @@ public class LooksClientGameTest implements FabricClientGameTest {
                 animal.setNoAi(true);
                 animal.setBaby(spec.baby());
                 level.addFreshEntity(animal);
-                Services.DATA.set(animal, spec.change().apply(new AnimalTraits(spec.sex(), 1.0, 1.0, -1L)));
+                Services.DATA.set(animal, spec.change().apply(AnimalTraits.of(spec.sex(), 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L))));
                 // Joining rolled a random size; every animal gets the same one so they compare fairly.
                 AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
                 if (scale != null) {
@@ -160,7 +164,7 @@ public class LooksClientGameTest implements FabricClientGameTest {
                 }
                 if (spec.pregnancy() >= 0.0) {
                     long duration = 66_000L;
-                    Services.DATA.setPregnancy(animal, new Pregnancy(level.getGameTime() - Math.round(duration * spec.pregnancy()), duration, "minecraft:cow", 1.0, 1, 1.0));
+                    Services.DATA.set(animal, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - Math.round(duration * spec.pregnancy()), duration, "minecraft:cow", 1.0, 1, 1.0));
                 }
                 spec.extra().accept(animal);
                 spawned.add(animal.getUUID());

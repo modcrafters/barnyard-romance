@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.compat.NaturalistDucks;
+import net.modcrafters.minecraft.barnyardromance.naturalist.NaturalistDucks;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.minecraft.world.entity.animal.Animal;
 import org.spongepowered.asm.mixin.Mixin;

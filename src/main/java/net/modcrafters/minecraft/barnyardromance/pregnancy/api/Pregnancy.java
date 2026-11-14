@@ -1,0 +1,180 @@
+package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
+
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.minecraft.nbt.CompoundTag;
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.UUID;
+
+// The litter is made at conception, while the father is still there to shape it.
+public record Pregnancy(
+        long conceivedAt,
+        long durationTicks,
+        String fatherSpecies,
+        double fatherScale,
+        int litterSize,
+        double motherFamiliarity,
+        int fatherGrowthTicks,
+        double fatherWeight,
+        List<CompoundTag> litter,
+        PregnancyCare care,
+        // Null for pregnancies from older saves; clients never see it.
+        @Nullable UUID fatherId,
+        // Server only, like fatherId.
+        SkippedTime seen,
+        // The player who put the mother in love, credited with the birth's advancements. Server only, like fatherId;
+        // null for no player, or a pregnancy from an older save.
+        @Nullable UUID breederId,
+        // The size range the father's scale was set in (see SizeRanges), or null for a pregnancy from an older save.
+        @Nullable SizeSettings fatherSizeRange
+) {
+    public Pregnancy {
+        litter = List.copyOf(litter);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter,
+            PregnancyCare care,
+            @Nullable UUID fatherId,
+            SkippedTime seen,
+            @Nullable UUID breederId
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seen, breederId, null);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter,
+            PregnancyCare care,
+            @Nullable UUID fatherId,
+            SkippedTime seen
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seen, null);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter,
+            PregnancyCare care,
+            @Nullable UUID fatherId
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, SkippedTime.UNSEEN);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter,
+            PregnancyCare care
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, null);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight,
+            List<CompoundTag> litter
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, PregnancyCare.NONE);
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, 0.5);
+    }
+
+    // What clients see: the litter stays on the server.
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity,
+            int fatherGrowthTicks,
+            double fatherWeight
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, List.of());
+    }
+
+    public Pregnancy(
+            long conceivedAt,
+            long durationTicks,
+            String fatherSpecies,
+            double fatherScale,
+            int litterSize,
+            double motherFamiliarity
+    ) {
+        this(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, Growth.wild());
+    }
+
+    // Debug steps set an exact elapsed time, so food's gained or lost ticks are dropped.
+    public Pregnancy withConceivedAt(long tick) {
+        return new Pregnancy(tick, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care.withoutTicks(), fatherId, seen, breederId, fatherSizeRange);
+    }
+
+    public Pregnancy withCare(PregnancyCare next) {
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, next, fatherId, seen, breederId, fatherSizeRange);
+    }
+
+    public Pregnancy withFatherId(@Nullable UUID id) {
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, id, seen, breederId, fatherSizeRange);
+    }
+
+    public Pregnancy withBreederId(@Nullable UUID id) {
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seen, id, fatherSizeRange);
+    }
+
+    public Pregnancy withFatherSizeRange(SizeSettings range) {
+        return new Pregnancy(conceivedAt, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter, care, fatherId, seen, breederId, range);
+    }
+
+    // Moved on by ticks of skipped time: everything that was counting from a tick now counts from that much earlier.
+    public Pregnancy skipped(long ticks, SkippedTime now) {
+        return new Pregnancy(conceivedAt - ticks, durationTicks, fatherSpecies, fatherScale, litterSize, motherFamiliarity, fatherGrowthTicks, fatherWeight, litter,
+                care.shifted(ticks), fatherId, now, breederId, fatherSizeRange);
+    }
+}

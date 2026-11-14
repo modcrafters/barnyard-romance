@@ -128,6 +128,16 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void anEggLaidInAnOldRangeHatchesInTheNew(GameTestHelper helper) {
+        EggGameTests.anEggLaidInAnOldRangeHatchesInTheNew(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anEggWithoutARangeTakesOneInTheBox(GameTestHelper helper) {
+        EggGameTests.anEggWithoutARangeTakesOneInTheBox(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void blockedFrontHatchesOnTop(GameTestHelper helper) {
         EggGameTests.blockedFrontHatchesOnTop(helper);
     }

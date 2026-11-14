@@ -1,11 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
-import net.modcrafters.minecraft.barnyardromance.command.AnimalInfoText;
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.text.English;
+import net.modcrafters.minecraft.barnyardromance.herd.AnimalInfoText;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -21,7 +21,7 @@ class HoverTooltipTest {
     void hoverTextShowsTheSizeLetterInsteadOfADecimal() {
         List<String> lines = AnimalInfoText.hoverLines(
                 "Cow",
-                Optional.of(new AnimalTraits(Sex.FEMALE, 0.90)),
+                Optional.of(AnimalTraits.of(Sex.FEMALE, 0.90)),
                 AgeStage.ADULT,
                 size
         ).stream().map(English::of).toList();
@@ -33,7 +33,7 @@ class HoverTooltipTest {
     void babiesShowTheirLetterToo() {
         List<String> lines = AnimalInfoText.hoverLines(
                 "Pig",
-                Optional.of(new AnimalTraits(Sex.MALE, 1.12)),
+                Optional.of(AnimalTraits.of(Sex.MALE, 1.12)),
                 AgeStage.BABY,
                 size
         ).stream().map(English::of).toList();

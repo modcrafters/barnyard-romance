@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
-import net.modcrafters.minecraft.barnyardromance.config.BellySettings;
+import net.modcrafters.minecraft.barnyardromance.core.config.BellySettings;
 
 public final class Belly {
     private Belly() {

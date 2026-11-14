@@ -1,0 +1,225 @@
+package net.modcrafters.minecraft.barnyardromance.core.config;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class TuningTest {
+    @Test
+    void petBowlFullDaysDefaultsClampsAndRoundTrips() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().petBowlFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":4}}");
+        assertEquals(4, config.tuning().petBowlFullDays());
+        assertEquals(2, config.tuning().birdFeederFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().petBowlFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":0}}").tuning().petBowlFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":9999}}").tuning().petBowlFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"petBowlFullDays\":\"bad\"}}").tuning().petBowlFullDays());
+    }
+
+    @Test
+    void birdFeederFullDaysDefaultsClampsAndRoundTrips() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().birdFeederFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":4}}");
+        assertEquals(4, config.tuning().birdFeederFullDays());
+        assertEquals(2, config.tuning().troughFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().birdFeederFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":0}}").tuning().birdFeederFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":9999}}").tuning().birdFeederFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"birdFeederFullDays\":\"bad\"}}").tuning().birdFeederFullDays());
+    }
+
+    @Test
+    void troughFullDaysDefaultsClampsAndRoundTripsIndependently() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().troughFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":5,\"feederFullDays\":4,\"mangerFullDays\":3}}");
+        assertEquals(5, config.tuning().troughFullDays());
+        assertEquals(4, config.tuning().feederFullDays());
+        assertEquals(3, config.tuning().mangerFullDays());
+        assertEquals(5, BarnyardConfig.parse(config.toJson()).tuning().troughFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":0}}").tuning().troughFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":9999}}").tuning().troughFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"troughFullDays\":\"bad\"}}").tuning().troughFullDays());
+    }
+
+    @Test
+    void feederFullDaysDefaultsClampsAndRoundTripsIndependently() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().feederFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":4,\"mangerFullDays\":3}}");
+        assertEquals(4, config.tuning().feederFullDays());
+        assertEquals(3, config.tuning().mangerFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().feederFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":0}}").tuning().feederFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":9999}}").tuning().feederFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"feederFullDays\":\"bad\"}}").tuning().feederFullDays());
+    }
+
+    @Test
+    void mangerFullDaysDefaultsClampsAndRoundTrips() {
+        assertEquals(2, BarnyardConfig.defaults().tuning().mangerFullDays());
+        BarnyardConfig config = BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":4}}");
+        assertEquals(4, config.tuning().mangerFullDays());
+        assertEquals(4, BarnyardConfig.parse(config.toJson()).tuning().mangerFullDays());
+        assertEquals(1, BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":0}}").tuning().mangerFullDays());
+        assertEquals(365, BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":9999}}").tuning().mangerFullDays());
+        assertEquals(2, BarnyardConfig.parse("{\"tuning\":{\"mangerFullDays\":\"bad\"}}").tuning().mangerFullDays());
+    }
+
+    @Test
+    void defaultsMatchTodaysBehaviour() {
+        assertEquals(Tuning.DEFAULTS, BarnyardConfig.defaults().tuning());
+        assertEquals(new Tuning(0.2, 0.3, 15_000, 30_000, 24_000, 0.35, 0.45, 0.25, 0.05, 0.25, 0.1, 0.25, 0.5, 0.1, 0.5, 1.0,
+                72_000L, 72_000L, 1, 2, 1.25, 1.0, 0.75, 1.0, 0.05, 0.05, 0.05, 0.4, 0.8, 0.5, 0.2,
+                0.3, 0.15, 2.0, 1.0, 16, 0.5, 0.25, 0.05, 8, 1000, 16, 2, 2, 2, 2, 2, 0.10, 0.10, 16), Tuning.DEFAULTS);
+    }
+
+    @Test
+    void feederAndEscapeNumbersRoundTrip() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "feederRange": 24, "escapeBelow": 0.2, "escapeChance": 0.5 } }
+                """).tuning();
+
+        assertEquals(24, tuning.feederRange());
+        assertEquals(0.2, tuning.escapeBelow(), 1.0e-9);
+        assertEquals(0.5, tuning.escapeChance(), 1.0e-9);
+        assertEquals(tuning, BarnyardConfig.parse(BarnyardConfig.parse("{ \"tuning\": { \"feederRange\": 24, \"escapeBelow\": 0.2, \"escapeChance\": 0.5 } }").toJson()).tuning());
+        assertEquals(Tuning.DEFAULTS, BarnyardConfig.parse(BarnyardConfig.defaults().toJson()).tuning());
+    }
+
+    @Test
+    void wildCaughtTuningIsReadWrittenAndClamped() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "wildFamiliarityCap": 0.35, "wildPetFamiliarityCap": 2, "refusalBelow": 0.6, "refusalChance": -1 } }
+                """).tuning();
+
+        assertEquals(0.35, tuning.wildFamiliarityCap(), 1.0e-9);
+        assertEquals(1.0, tuning.wildPetFamiliarityCap(), 1.0e-9);
+        assertEquals(0.6, tuning.refusalBelow(), 1.0e-9);
+        assertEquals(0.0, tuning.refusalChance(), 1.0e-9);
+        assertEquals(Tuning.DEFAULTS, BarnyardConfig.parse(BarnyardConfig.defaults().toJson()).tuning());
+    }
+
+    @Test
+    void parsedTuningOverridesDefaults() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "familiarityThreshold": 0.5 } }
+                """).tuning();
+
+        assertEquals(0.5, tuning.familiarityThreshold(), 1.0e-9);
+        assertEquals(0.2, tuning.familiarityGain(), 1.0e-9);
+    }
+
+    @Test
+    void badTuningIsClamped() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "familiarityGain": 7, "growthFastTicks": 40000, "growthSlowTicks": 10000,
+                  "fertilityCostPerBirth": -1, "fertilityRecoveryPerDay": 4, "fertilityMinToConceive": 2,
+                  "oldFertilityFactor": 3, "deathSpread": -0.5, "foodHealFactor": 2, "foodHealDefault": 99 } }
+                """).tuning();
+
+        assertEquals(1.0, tuning.familiarityGain(), 1.0e-9);
+        assertEquals(10_000, tuning.growthFastTicks());
+        assertEquals(40_000, tuning.growthSlowTicks());
+        assertEquals(24_000, tuning.growthWildTicks());
+        assertEquals(0.0, tuning.fertilityCostPerBirth(), 1.0e-9);
+        assertEquals(1.0, tuning.fertilityRecoveryPerDay(), 1.0e-9);
+        assertEquals(1.0, tuning.fertilityMinToConceive(), 1.0e-9);
+        assertEquals(1.0, tuning.oldFertilityFactor(), 1.0e-9);
+        assertEquals(0.0, tuning.deathSpread(), 1.0e-9);
+        assertEquals(1.0, tuning.foodHealFactor(), 1.0e-9);
+        assertEquals(20.0, tuning.foodHealDefault(), 1.0e-9);
+    }
+
+    @Test
+    void badProductTuningIsClamped() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "lactationTicks": 0, "milkKeepsFlowingTicks": 9000000, "milkingsPerDaySmall": -3,
+                  "milkingsPerDayLarge": 40, "maleYield": 9, "femaleYield": -1, "oldYieldFactor": 5, "yieldScaleExponent": -2 } }
+                """).tuning();
+
+        assertEquals(1L, tuning.lactationTicks());
+        assertEquals(2_400_000L, tuning.milkKeepsFlowingTicks());
+        assertEquals(0, tuning.milkingsPerDaySmall());
+        assertEquals(16, tuning.milkingsPerDayLarge());
+        assertEquals(4.0, tuning.maleYield(), 1.0e-9);
+        assertEquals(0.0, tuning.femaleYield(), 1.0e-9);
+        assertEquals(4.0, tuning.oldYieldFactor(), 1.0e-9);
+        assertEquals(0.0, tuning.yieldScaleExponent(), 1.0e-9);
+    }
+
+    @Test
+    void territorialDefaults() {
+        Tuning tuning = Tuning.DEFAULTS;
+        assertEquals(0.3, tuning.vigourPerMating(), 1.0e-9);
+        assertEquals(0.15, tuning.vigourPerEgg(), 1.0e-9);
+        assertEquals(2.0, tuning.hungryMatingHealth(), 1.0e-9);
+        assertEquals(1.0, tuning.hungryEggHealth(), 1.0e-9);
+        assertEquals(16, tuning.matingRange());
+        assertEquals(0.5, tuning.rivalFightChance(), 1.0e-9);
+        assertEquals(0.25, tuning.roosterFightChance(), 1.0e-9);
+        assertEquals(0.05, tuning.wildFightChance(), 1.0e-9);
+        assertEquals(8, tuning.fightStopRange());
+        assertEquals(1000, tuning.fightTruceTicks());
+    }
+
+    @Test
+    void territorialTuningIsReadAndClamped() {
+        Tuning tuning = BarnyardConfig.parse("""
+                { "tuning": { "vigourPerMating": 2, "vigourPerEgg": 0.2, "hungryMatingHealth": 50, "hungryEggHealth": -3,
+                  "matingRange": 500, "rivalFightChance": -1, "roosterFightChance": 0.75, "wildFightChance": 3,
+                  "fightStopRange": 0, "fightTruceTicks": -20 } }
+                """).tuning();
+
+        assertEquals(1.0, tuning.vigourPerMating(), 1.0e-9);
+        assertEquals(0.2, tuning.vigourPerEgg(), 1.0e-9);
+        assertEquals(20.0, tuning.hungryMatingHealth(), 1.0e-9);
+        assertEquals(0.0, tuning.hungryEggHealth(), 1.0e-9);
+        assertEquals(64, tuning.matingRange());
+        assertEquals(0.0, tuning.rivalFightChance(), 1.0e-9);
+        assertEquals(0.75, tuning.roosterFightChance(), 1.0e-9);
+        assertEquals(1.0, tuning.wildFightChance(), 1.0e-9);
+        assertEquals(1, tuning.fightStopRange());
+        assertEquals(0, tuning.fightTruceTicks());
+    }
+
+    @Test
+    void matingRangeStillReadsTheOldRivalRangeKey() {
+        assertEquals(12, BarnyardConfig.parse("{ \"tuning\": { \"rivalRange\": 12 } }").tuning().matingRange());
+        assertEquals(20, BarnyardConfig.parse("{ \"tuning\": { \"rivalRange\": 12, \"matingRange\": 20 } }").tuning().matingRange());
+    }
+
+    @Test
+    void sulkRangeDefaultsTo16AndClamps() {
+        assertEquals(16, Tuning.DEFAULTS.sulkRange());
+        assertEquals(24, BarnyardConfig.parse("{ \"tuning\": { \"sulkRange\": 24 } }").tuning().sulkRange());
+        assertEquals(64, BarnyardConfig.parse("{ \"tuning\": { \"sulkRange\": 500 } }").tuning().sulkRange());
+        assertEquals(1, BarnyardConfig.parse("{ \"tuning\": { \"sulkRange\": 0 } }").tuning().sulkRange());
+    }
+
+    @Test
+    void tuningRoundTripsThroughJson() {
+        assertEquals(Tuning.DEFAULTS, BarnyardConfig.parse(BarnyardConfig.defaults().toJson()).tuning());
+    }
+
+    @Test
+    void familiarityLossesDefaultToFivePercent() {
+        Tuning tuning = BarnyardConfig.parse("{}").tuning();
+
+        assertEquals(0.05, tuning.familiarityHungerLoss(), 1.0e-9);
+        assertEquals(0.05, tuning.familiarityMilkingCost(), 1.0e-9);
+        assertEquals(0.05, tuning.familiarityShearingCost(), 1.0e-9);
+    }
+
+    @Test
+    void familiarityLossesParseAndClamp() {
+        BarnyardConfig config = BarnyardConfig.parse("""
+                { "tuning": { "familiarityHungerLoss": 0.03, "familiarityMilkingCost": 2, "familiarityShearingCost": -1 } }
+                """);
+        Tuning tuning = config.tuning();
+
+        assertEquals(0.03, tuning.familiarityHungerLoss(), 1.0e-9);
+        assertEquals(1.0, tuning.familiarityMilkingCost(), 1.0e-9);
+        assertEquals(0.0, tuning.familiarityShearingCost(), 1.0e-9);
+        assertEquals(tuning, BarnyardConfig.parse(config.toJson()).tuning());
+    }
+}

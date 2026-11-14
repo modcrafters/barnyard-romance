@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;

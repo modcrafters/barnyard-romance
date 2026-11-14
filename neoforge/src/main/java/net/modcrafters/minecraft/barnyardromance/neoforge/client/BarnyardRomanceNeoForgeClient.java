@@ -4,18 +4,19 @@ import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
-import net.modcrafters.minecraft.barnyardromance.client.BarnyardParticles;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
-import net.modcrafters.minecraft.barnyardromance.config.ClientConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -66,12 +67,12 @@ public final class BarnyardRomanceNeoForgeClient {
     *///?}
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(BarnyardBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
+        event.registerBlockEntityRenderer(EggsBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(BarnyardBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
-        event.register(BarnyardBlocks.FEEDER_MENU, FeederScreen::new);
+        event.register(EggsBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
+        event.register(FeedBlocks.FEEDER_MENU, FeederScreen::new);
     }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {

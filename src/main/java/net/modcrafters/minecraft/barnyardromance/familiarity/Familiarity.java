@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 
 public final class Familiarity {
     private Familiarity() {
@@ -119,7 +119,6 @@ public final class Familiarity {
     }
 
     public static Text percent(double familiarity) {
-        long points = Math.round(Math.clamp(familiarity, 0.0, 1.0) * 100.0);
-        return Text.of("gui.barnyard_romance.percent", points);
+        return Text.percent(familiarity);
     }
 }

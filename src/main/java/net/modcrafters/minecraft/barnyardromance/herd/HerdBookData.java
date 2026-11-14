@@ -2,9 +2,10 @@ package net.modcrafters.minecraft.barnyardromance.herd;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyCodecs;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCodecs;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -92,6 +93,8 @@ public final class HerdBookData extends SavedData {
 
     private final HerdLedger ledger;
     private final Map<UUID, HerdRecord> records = new LinkedHashMap<>();
+    // Not saved: set once the records have been given their size ranges after loading.
+    private boolean sizeRangesFilled;
 
     public HerdBookData() {
         this.ledger = new HerdLedger();
@@ -110,9 +113,32 @@ public final class HerdBookData extends SavedData {
 
     public static HerdBookData get(MinecraftServer server) {
         //? if >=1.21.5 {
-        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
+        HerdBookData data = server.overworld().getDataStorage().computeIfAbsent(TYPE);
         //?} else
-        //return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        //HerdBookData data = server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        data.fillSizeRanges();
+        return data;
+    }
+
+    // Records saved before animals kept their size range are taken to be in the current one. This runs once per
+    // loaded data, outside the codec, so loading reads the save as it is.
+    private void fillSizeRanges() {
+        if (sizeRangesFilled) {
+            return;
+        }
+        sizeRangesFilled = true;
+        BarnyardConfig config = BarnyardConfig.current();
+        boolean changed = false;
+        for (Map.Entry<UUID, HerdRecord> entry : records.entrySet()) {
+            HerdRecord filled = HerdRecords.withSizeRanges(entry.getValue(), config::sizeFor);
+            if (filled != entry.getValue()) {
+                entry.setValue(filled);
+                changed = true;
+            }
+        }
+        if (changed) {
+            setDirty();
+        }
     }
 
     //? if <1.21.5 {

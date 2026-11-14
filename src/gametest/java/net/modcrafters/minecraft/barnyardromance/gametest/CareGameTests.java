@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
@@ -9,27 +9,30 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 //? if >=1.21.2
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarShearing;
+import net.modcrafters.minecraft.barnyardromance.shear.FamiliarShearing;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Sulk;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStatus;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
-import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.command.HerdTool;
-import net.modcrafters.minecraft.barnyardromance.item.HerdStick;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;
 import net.minecraft.util.RandomSource;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
@@ -60,6 +63,8 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.assertFamiliarity;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.holding;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.withFamiliarity;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
 
 // In-game checks for looking after animals: hunger, familiarity costs, and grumpy pets.
 // Days are driven by passing overworld clock times, so a test can live through a week in one tick.
@@ -157,7 +162,7 @@ public final class CareGameTests {
         FamiliarityActions.interact(cow, holding(helper, Items.WHEAT), InteractionHand.MAIN_HAND);
 
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        helper.assertTrue(traits(helper, cow).hunger().lastAteDay() == today, "feeding left the last meal on day " + traits(helper, cow).hunger().lastAteDay());
+        helper.assertTrue(traits(helper, cow).get(CARE).hunger().lastAteDay() == today, "feeding left the last meal on day " + traits(helper, cow).get(CARE).hunger().lastAteDay());
         helper.succeed();
     }
 
@@ -165,10 +170,10 @@ public final class CareGameTests {
     public static void superfoodCountsAsEating(GameTestHelper helper) {
         Animal cow = FoodGameTests.pregnantCow(helper, 0.5);
 
-        FamiliarityActions.interact(cow, holding(helper, BarnyardItems.BREEDERS_MASH), InteractionHand.MAIN_HAND);
+        FamiliarityActions.interact(cow, holding(helper, PregnancyItems.BREEDERS_MASH), InteractionHand.MAIN_HAND);
 
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        helper.assertTrue(traits(helper, cow).hunger().lastAteDay() == today, "the mash left the last meal on day " + traits(helper, cow).hunger().lastAteDay());
+        helper.assertTrue(traits(helper, cow).get(CARE).hunger().lastAteDay() == today, "the mash left the last meal on day " + traits(helper, cow).get(CARE).hunger().lastAteDay());
         helper.succeed();
     }
 
@@ -188,7 +193,7 @@ public final class CareGameTests {
     public static void oldTamedWolfGetsTamingGrace(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         wolf.tame(helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL));
-        Services.DATA.set(wolf, traits(helper, wolf).fed(0.0, -1L).withHunger(Hunger.NONE));
+        Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.0, -1L).withHunger(Hunger.NONE)));
 
         FamiliarityCare.settle(wolf, clock(10L));
 
@@ -200,14 +205,14 @@ public final class CareGameTests {
     // However it is tamed, a pet can go a week unfed before it turns grumpy, and not a day longer.
     public static void tamedWolfLastsAWeekUnfed(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
-        Services.DATA.set(wolf, traits(helper, wolf).fed(0.0, -1L));
+        Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.0, -1L)));
         wolf.tame(helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL));
         FamiliarityCare.settle(wolf, clock(10L));
 
         FamiliarityCare.settle(wolf, clock(10L + FamiliarityCare.TAMING_GRACE_DAYS));
-        helper.assertTrue(!FamiliarityCare.grumpy(wolf), "a week unfed made a newly tamed wolf grumpy: " + traits(helper, wolf).familiarity());
+        helper.assertTrue(!FamiliarityCare.grumpy(wolf), "a week unfed made a newly tamed wolf grumpy: " + traits(helper, wolf).get(CARE).familiarity());
         FamiliarityCare.settle(wolf, clock(11L + FamiliarityCare.TAMING_GRACE_DAYS));
-        helper.assertTrue(FamiliarityCare.grumpy(wolf), "eight days unfed and a wolf isn't grumpy: " + traits(helper, wolf).familiarity());
+        helper.assertTrue(FamiliarityCare.grumpy(wolf), "eight days unfed and a wolf isn't grumpy: " + traits(helper, wolf).get(CARE).familiarity());
         helper.succeed();
     }
 
@@ -228,8 +233,8 @@ public final class CareGameTests {
     // Far from home, the book still shows the familiarity a hungry animal has lost since it was last seen.
     public static void unloadedMemberShowsProjectedFamiliarity(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L)));
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L))));
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
         HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
         HerdRecord record = data.record(cow.getUUID());
@@ -309,7 +314,7 @@ public final class CareGameTests {
     // Hungry on days 10 and 11, so on day 12 she has no milk, and the herd book agrees.
     public static void hungryCowGivesNoMilkNextDay(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
         FamiliarityCare.settle(cow, clock(10L));
         long before = helper.getLevel().getOverworldClockTime();
         Player player = holding(helper, Items.BUCKET);
@@ -335,12 +340,12 @@ public final class CareGameTests {
     public static void hungryDaysCountTowardsDryingUp(GameTestHelper helper) {
         Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
         long keep = BarnyardConfig.current().tuning().milkKeepsFlowingTicks();
-        long endsBefore = traits(helper, cow).lactation().endsAt(keep);
+        long endsBefore = traits(helper, cow).get(LACTATION).endsAt(keep);
         FamiliarityCare.settle(cow, clock(10L));
 
         FamiliarityCare.settle(cow, clock(12L));
 
-        long endsAfter = traits(helper, cow).lactation().endsAt(keep);
+        long endsAfter = traits(helper, cow).get(LACTATION).endsAt(keep);
         helper.assertTrue(endsAfter == endsBefore, "two hungry days moved her milk's end by " + (endsAfter - endsBefore));
         helper.succeed();
     }
@@ -380,13 +385,13 @@ public final class CareGameTests {
         ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
         // Already settled, so it doesn't get an old pet's taming grace.
-        Services.DATA.set(wolf, traits(helper, wolf).withHunger(new Hunger(9L, 9L, -1L)));
+        Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).withHunger(new Hunger(9L, 9L, -1L))));
         wolf.setOrderedToSit(true);
         FamiliarityCare.settle(wolf, clock(10L));
 
         FamiliarityCare.settle(wolf, clock(12L));
 
-        helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).familiarity() + " is not grumpy");
+        helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).get(CARE).familiarity() + " is not grumpy");
         helper.assertTrue(!wolf.isOrderedToSit() && !wolf.isInSittingPose(), "a wolf that turned grumpy kept sitting");
         helper.succeed();
     }
@@ -395,13 +400,13 @@ public final class CareGameTests {
         ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.32);
         // Already settled, so it doesn't get an old pet's taming grace.
-        Services.DATA.set(wolf, traits(helper, wolf).withHunger(new Hunger(9L, 9L, -1L)));
+        Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).withHunger(new Hunger(9L, 9L, -1L))));
         FamiliarityCare.settle(wolf, clock(10L));
         helper.assertTrue(!AdvancementGameTests.earned(owner, BarnyardAdvancements.SILENT_TREATMENT), "a fed wolf earned The Silent Treatment");
 
         FamiliarityCare.settle(wolf, clock(12L));
 
-        helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).familiarity() + " is not grumpy");
+        helper.assertTrue(FamiliarityCare.grumpy(wolf), "a wolf at " + traits(helper, wolf).get(CARE).familiarity() + " is not grumpy");
         helper.assertTrue(AdvancementGameTests.earned(owner, BarnyardAdvancements.SILENT_TREATMENT), "a wolf turning grumpy didn't earn its owner The Silent Treatment");
         helper.succeed();
     }
@@ -523,7 +528,7 @@ public final class CareGameTests {
         owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         GameTestCompat.interact(wolf, owner);
 
-        helper.assertTrue(!FamiliarityCare.grumpy(wolf), "a fed wolf at " + traits(helper, wolf).familiarity() + " is still grumpy");
+        helper.assertTrue(!FamiliarityCare.grumpy(wolf), "a fed wolf at " + traits(helper, wolf).get(CARE).familiarity() + " is still grumpy");
         helper.assertTrue(wolf.isOrderedToSit(), "a wolf fed back to familiar won't sit");
         helper.succeed();
     }
@@ -531,11 +536,11 @@ public final class CareGameTests {
     public static void grumpyPetShowsInTheBook(GameTestHelper helper) {
         ServerPlayer owner = MockPlayers.inLevel(helper);
         TamableAnimal wolf = tamedWolf(helper, owner, 0.5);
-        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, wolf);
-        Services.DATA.set(wolf, traits(helper, wolf).fed(0.1, -1L));
+        Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.1, -1L)));
 
-        HerdEntry entry = HerdBooks.entries(helper.getLevel().getServer(), book.get(BarnyardComponents.HERD_BOOK), helper.getLevel().getGameTime()).getFirst();
+        HerdEntry entry = HerdBooks.entries(helper.getLevel().getServer(), book.get(HerdComponents.HERD_BOOK), helper.getLevel().getGameTime()).getFirst();
 
         helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().getContents().toString().contains("herd_book.grumpy")),
                 "the book doesn't say the wolf is grumpy: " + entry.lines());
@@ -547,7 +552,7 @@ public final class CareGameTests {
     public static void tamedParrotIsNeverGrumpy(GameTestHelper helper) {
         TamableAnimal parrot = (TamableAnimal) female(helper, EntityTypes.PARROT);
         parrot.tame(MockPlayers.inLevel(helper));
-        Services.DATA.set(parrot, traits(helper, parrot).fed(0.0, -1L));
+        Services.DATA.set(parrot, traits(helper, parrot).with(CARE, traits(helper, parrot).get(CARE).fed(0.0, -1L)));
 
         helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy");
         helper.succeed();
@@ -557,9 +562,9 @@ public final class CareGameTests {
     // doesn't take those days off a second time.
     public static void frozenMemberIsNotChargedTwice(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L)));
-        HerdBooks.register(new ItemStack(BarnyardItems.HERD_BOOK), cow);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.2, -1L).withHunger(new Hunger(14L, 10L, 13L)));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.5, -1L).withHunger(new Hunger(10L, 10L, -1L))));
+        HerdBooks.register(new ItemStack(HerdItems.HERD_BOOK), cow);
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.2, -1L).withHunger(new Hunger(14L, 10L, 13L))));
         HerdBooks.leftLevel(cow, Entity.RemovalReason.UNLOADED_TO_CHUNK);
         HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
 
@@ -573,14 +578,14 @@ public final class CareGameTests {
     private static AbstractHorse tamedHorse(GameTestHelper helper, Player owner, double familiarity) {
         AbstractHorse horse = (AbstractHorse) female(helper, EntityTypes.HORSE);
         horse.tameWithName(owner);
-        Services.DATA.set(horse, traits(helper, horse).fed(familiarity, -1L));
+        Services.DATA.set(horse, traits(helper, horse).with(CARE, traits(helper, horse).get(CARE).fed(familiarity, -1L)));
         return horse;
     }
 
     static TamableAnimal tamedWolf(GameTestHelper helper, Player owner, double familiarity) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         wolf.tame(owner);
-        Services.DATA.set(wolf, traits(helper, wolf).fed(familiarity, -1L));
+        Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(familiarity, -1L)));
         return wolf;
     }
 
@@ -648,20 +653,20 @@ public final class CareGameTests {
 
     public static void newbornOfAFamiliarMotherIsFarmRaised(GameTestHelper helper) {
         SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
-        Offspring.Parent parent = new Offspring.Parent(1.0, 24_000, 0.5);
+        Parent parent = new Parent(1.0, 24_000, 0.5);
         RandomSource random = helper.getLevel().getRandom();
 
         AnimalTraits familiar = Offspring.traits(Sex.FEMALE, size, parent, parent, 0.6, random, 0L, Lineage.UNKNOWN);
         AnimalTraits unfed = Offspring.traits(Sex.FEMALE, size, parent, parent, 0.0, random, 0L, Lineage.UNKNOWN);
 
-        helper.assertTrue(familiar.origin() == Origin.FARM, "a familiar mother's calf is " + familiar.origin());
-        helper.assertTrue(unfed.origin() == Origin.UNKNOWN, "an unfamiliar mother's calf is " + unfed.origin());
+        helper.assertTrue(familiar.get(CARE).origin() == Origin.FARM, "a familiar mother's calf is " + familiar.get(CARE).origin());
+        helper.assertTrue(unfed.get(CARE).origin() == Origin.UNKNOWN, "an unfamiliar mother's calf is " + unfed.get(CARE).origin());
         helper.succeed();
     }
 
     public static void herdStickUpStopsAtTheCap(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.4, -1L).withOrigin(Origin.WILD));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.4, -1L).withOrigin(Origin.WILD)));
         Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
 
         // Below the config gate, so this never depends on the herdSticks option.
@@ -683,7 +688,7 @@ public final class CareGameTests {
         helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a cow that refused today gave " + player.getMainHandItem());
         assertFamiliarity(helper, cow, 0.4);
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        helper.assertTrue(traits(helper, cow).refusals().milkRefused(today), "the refusal wasn't kept for today");
+        helper.assertTrue(traits(helper, cow).get(CARE).refusals().milkRefused(today), "the refusal wasn't kept for today");
         helper.succeed();
     }
 
@@ -719,7 +724,7 @@ public final class CareGameTests {
 
         ShearActions.refuseShearing(ewe, null);
 
-        ProductGameTests.assertMilks(helper, ewe, BarnyardItems.SHEEP_MILK_BUCKET);
+        ProductGameTests.assertMilks(helper, ewe, MilkItems.SHEEP_MILK_BUCKET);
         helper.succeed();
     }
 
@@ -728,19 +733,19 @@ public final class CareGameTests {
         Animal cow = withFamiliarity(helper, ProductGameTests.mother(helper, EntityTypes.COW, 0.5), 0.5);
         for (int i = 0; i < 50; i++) {
             AnimalTraits traits = traits(helper, cow);
-            Lactation lactation = traits.lactation();
-            Services.DATA.set(cow, traits.fed(0.5, traits.lastFedTick())
-                    .withLactation(new Lactation(lactation.milkUntil(), lactation.youngUntil(), -1L, 0, lactation.graceGiven())));
+            Lactation lactation = traits.get(LACTATION);
+            Services.DATA.set(cow, traits.with(CARE, traits.get(CARE).fed(0.5, traits.get(CARE).lastFedTick()))
+                    .with(LACTATION, new Lactation(lactation.milkUntil(), lactation.youngUntil(), -1L, 0, lactation.graceGiven())));
             ProductGameTests.assertMilks(helper, cow, Items.MILK_BUCKET);
         }
-        helper.assertTrue(traits(helper, cow).refusals().equals(Refusals.NONE), "a cow at 50% refused");
+        helper.assertTrue(traits(helper, cow).get(CARE).refusals().equals(Refusals.NONE), "a cow at 50% refused");
         helper.succeed();
     }
 
     // A cow with no milk gives the usual reply; a refusal never covers up another reason.
     public static void refusalNeverRollsForADryCow(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).fed(0.35, -1L).withOrigin(Origin.FARM).withLactation(Lactation.NONE.withGraceGiven()));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.35, -1L).withOrigin(Origin.FARM)).with(LACTATION, Lactation.NONE.withGraceGiven()));
         Player player = holding(helper, Items.BUCKET);
 
         for (int i = 0; i < 50; i++) {
@@ -748,7 +753,7 @@ public final class CareGameTests {
         }
 
         helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a dry cow gave " + player.getMainHandItem());
-        helper.assertTrue(traits(helper, cow).refusals().equals(Refusals.NONE), "a dry cow refused");
+        helper.assertTrue(traits(helper, cow).get(CARE).refusals().equals(Refusals.NONE), "a dry cow refused");
         helper.succeed();
     }
 
@@ -783,12 +788,12 @@ public final class CareGameTests {
 
     // An animal whose origin isn't known yet, as every animal is before it first gains familiarity.
     private static Animal unknown(GameTestHelper helper, Animal animal, double familiarity) {
-        Services.DATA.set(animal, traits(helper, animal).fed(familiarity, -1L).withOrigin(Origin.UNKNOWN));
+        Services.DATA.set(animal, traits(helper, animal).with(CARE, traits(helper, animal).get(CARE).fed(familiarity, -1L).withOrigin(Origin.UNKNOWN)));
         return animal;
     }
 
     private static void assertOrigin(GameTestHelper helper, Animal animal, Origin expected) {
-        Origin origin = traits(helper, animal).origin();
+        Origin origin = traits(helper, animal).get(CARE).origin();
         helper.assertTrue(origin == expected, "the " + animal.getType().getDescription().getString() + " is " + origin + ", not " + expected);
     }
 
@@ -799,7 +804,7 @@ public final class CareGameTests {
     static Animal withFamiliarity(GameTestHelper helper, Animal animal, double familiarity) {
         AnimalTraits traits = traits(helper, animal);
         // Farm-raised, so feeding it on isn't held at the wild-caught cap.
-        Services.DATA.set(animal, traits.fed(familiarity, traits.lastFedTick()).withOrigin(Origin.FARM));
+        Services.DATA.set(animal, traits.with(CARE, traits.get(CARE).fed(familiarity, traits.get(CARE).lastFedTick()).withOrigin(Origin.FARM)));
         return animal;
     }
 

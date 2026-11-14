@@ -1,10 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.advancement;
 
-import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdLedger;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.herd.api.HerdApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
@@ -31,7 +31,6 @@ public final class FamilyTree {
             Lineage lineage = Services.DATA.get(parent).map(AnimalTraits::lineage).orElse(Lineage.UNKNOWN);
             return lineage.mother() != null || lineage.father() != null;
         }
-        HerdLedger.Node node = HerdBookData.get(level.getServer()).ledger().node(animal);
-        return node != null && (node.mother() != null || node.father() != null);
+        return FeaturesRepository.get(HerdApi.class).hasParentOnRecord(level.getServer(), animal);
     }
 }

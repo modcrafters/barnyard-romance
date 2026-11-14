@@ -3,17 +3,18 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.Animal;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
-import net.modcrafters.minecraft.barnyardromance.stats.StatKind;
-import net.modcrafters.minecraft.barnyardromance.stats.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
 import static net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests.withVigour;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // In-game checks that the stat sheet reads a loaded animal correctly.
 public final class StatGameTests {
@@ -66,7 +68,7 @@ public final class StatGameTests {
 
     public static void aWildCaughtCowNotesHerCap(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, traits(helper, cow).withOrigin(Origin.WILD));
+        Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).withOrigin(Origin.WILD)));
 
         List<StatLine> lines = lines(helper, cow, clock(DAY));
 
@@ -76,9 +78,9 @@ public final class StatGameTests {
     }
 
     public static void aLayingHenCountsTodaysEggs(GameTestHelper helper) {
-        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.MEDIUM_HEN, 0.5, 3);
+        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.mediumHen(), 0.5, 3);
         long clock = clock(DAY) + 2_000L;
-        Services.DATA.setLaying(hen, new Laying(GameDay.of(clock), List.of(5_000, 9_000), 1, 1));
+        Services.DATA.set(hen, EggsFeature.LAYING, new Laying(GameDay.of(clock), List.of(5_000, 9_000), 1, 1));
 
         List<StatLine> lines = lines(helper, hen, clock);
 

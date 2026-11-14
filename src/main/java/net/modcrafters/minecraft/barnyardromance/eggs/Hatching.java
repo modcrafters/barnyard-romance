@@ -1,16 +1,18 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
-import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
-import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +27,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 //?}
 
-import java.util.List;
 import java.util.Optional;
 
 // Chicks from eggs. One hatched in a nesting box inherits from both parents like a calf (Offspring) and joins its
@@ -46,11 +47,15 @@ public final class Hatching {
             chick = created.get();
             long bornTick = Math.min(hatchedAt, level.getGameTime());
             BarnyardConfig config = BarnyardConfig.current();
-            AnimalTraits traits = Offspring.traits(
-                    SexRoll.roll(chick.getRandom().nextDouble(), config.femaleRatio()),
-                    config.sizeFor(data.species()),
-                    new Offspring.Parent(data.motherScale(), data.motherGrowth(), data.motherWeight()),
-                    new Offspring.Parent(data.fatherScale(), data.fatherGrowth(), data.fatherWeight()),
+            BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+            // The parents' scales are moved from the range the egg was laid in to the one the chick is sized in.
+            SizeSettings current = config.sizeFor(data.species());
+            SizeSettings laidIn = SizeRanges.orCurrent(data.sizeRange(), data.species());
+            AnimalTraits traits = breeding.newbornTraits(
+                    breeding.newbornSex(chick.getRandom().nextDouble(), config.femaleRatio()),
+                    current,
+                    new Parent(SizeRanges.rescale(Sex.FEMALE, data.motherScale(), laidIn, current), data.motherGrowth(), data.motherWeight()),
+                    new Parent(SizeRanges.rescale(Sex.MALE, data.fatherScale(), laidIn, current), data.fatherGrowth(), data.fatherWeight()),
                     Math.clamp(data.motherFamiliarity(), 0.0, 1.0),
                     chick.getRandom(),
                     bornTick,
@@ -66,13 +71,7 @@ public final class Hatching {
             Constants.LOG.error("Failed to hatch a {} egg", data.species(), exception);
             return Optional.empty();
         }
-        // The chick is out by now, so a herd book problem mustn't count as a failed hatch.
-        try {
-            HerdBooks.born(level, data.mother(), List.of(chick));
-        } catch (RuntimeException exception) {
-            Constants.LOG.warn("Failed to add a hatched {} to herd books", data.species(), exception);
-        }
-        BarnyardAdvancements.hatched(level, chick, new Lineage(data.mother(), data.father()));
+        Events.post(new AnimalEvent.Hatched(level, chick, new Lineage(data.mother(), data.father()), AnimalEvent.Hatch.NEST));
         return Optional.of(chick);
     }
 
@@ -87,16 +86,18 @@ public final class Hatching {
             Animal chick = created.get();
             long bornTick = Math.min(hatchedAt, level.getGameTime());
             BarnyardConfig config = BarnyardConfig.current();
-            Sex sex = SexRoll.roll(chick.getRandom().nextDouble(), config.femaleRatio());
-            double scale = ScaleRoll.rollWild(sex, config.sizeFor(egg.species()), chick.getRandom().nextDouble());
-            AnimalTraits traits = new AnimalTraits(sex, scale).withBornTick(bornTick);
+            BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+            Sex sex = breeding.newbornSex(chick.getRandom().nextDouble(), config.femaleRatio());
+            SizeSettings size = config.sizeFor(egg.species());
+            double scale = breeding.wildScale(sex, size, chick.getRandom().nextDouble());
+            AnimalTraits traits = AnimalTraits.of(sex, scale).withBornTick(bornTick).withSizeRange(size);
             Services.DATA.set(chick, traits);
             place(chick, egg.variant(), (int) Math.max(0L, traits.growthTicks() - (level.getGameTime() - bornTick)), position);
             if (!level.tryAddFreshEntityWithPassengers(chick)) {
                 Constants.LOG.warn("Couldn't hatch a wild {} egg: the level refused the chick", egg.species());
                 return Optional.empty();
             }
-            BarnyardAdvancements.hatched(level, chick, null);
+            Events.post(new AnimalEvent.Hatched(level, chick, null, AnimalEvent.Hatch.WILD));
             return Optional.of(chick);
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to hatch a wild {} egg", egg.species(), exception);

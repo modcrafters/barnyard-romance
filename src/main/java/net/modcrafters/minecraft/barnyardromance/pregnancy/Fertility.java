@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
-import net.modcrafters.minecraft.barnyardromance.age.Aging;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.age.Aging;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 
 // Each birth wears a mother out a little. Fertility is stored with the tick it was set and recovers with the clock,
 // so nothing has to tick and the client can show it without a new sync.
@@ -30,7 +30,8 @@ public final class Fertility {
     }
 
     public static double current(AnimalTraits traits, AgeSettings age, long now) {
-        return current(traits.fertility(), traits.fertilityTick(), now, Aging.oldFrom(traits.bornTick(), age));
+        BreedingState breeding = traits.get(PregnancySlices.BREEDING);
+        return current(breeding.fertility(), breeding.fertilityTick(), now, Aging.oldFrom(traits.bornTick(), age));
     }
 
     public static double afterBirth(double current) {

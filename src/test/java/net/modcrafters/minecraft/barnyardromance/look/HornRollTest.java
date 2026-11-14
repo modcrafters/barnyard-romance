@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
-import net.modcrafters.minecraft.barnyardromance.age.Aging;
+import net.modcrafters.minecraft.barnyardromance.core.age.Aging;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

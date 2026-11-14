@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

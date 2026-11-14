@@ -1,13 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.HungerSettings;
-import net.modcrafters.minecraft.barnyardromance.familiarity.DailyUpkeep;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 // A feeding block settling the days its herd missed, day by day across the whole herd so the food is shared fairly:
@@ -64,26 +65,26 @@ public final class FeederCatchUp {
     // were missed; those it doesn't are passed over at once, as a lone settle passes them over.
     static FeederCatchUp start(FeederBlockEntity feeder, ServerLevel level, long today, long liveDay, boolean liveDayFed) {
         HungerSettings.CatchUp mode = BarnyardConfig.current().hunger().catchUp();
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         List<UUID> members = new ArrayList<>();
         List<Long> from = new ArrayList<>();
         for (UUID id : feeder.herd()) {
             Animal animal = loaded(level, id);
-            AnimalTraits traits = animal == null ? null : FamiliarityCare.tracked(animal).orElse(null);
+            AnimalTraits traits = animal == null ? null : tracked(animal).orElse(null);
             // A nursing baby is fed by its mother, so it never goes hungry.
             if (traits == null || animal.isBaby()) {
                 continue;
             }
-            Hunger hunger = traits.hunger();
-            long first = hunger.settledDay();
+            long first = familiarityApi.firstUnsettledDay(traits);
             // Never settled yet, so its own first settle starts it counting; or settled already, perhaps by another
             // block it's in the herd of too.
             if (first < 0L || first >= today) {
                 continue;
             }
-            long counted = DailyUpkeep.daysToSettle(today - first, mode);
+            long counted = familiarityApi.daysCounted(today - first, mode);
             if (counted < today - first) {
                 first = today - counted;
-                Services.DATA.set(animal, traits.withHunger(new Hunger(first, hunger.lastAteDay(), hunger.lastHungryDay())));
+                Services.DATA.set(animal, familiarityApi.skippingDaysBefore(traits, first));
                 if (counted == 0L) {
                     continue;
                 }
@@ -124,33 +125,34 @@ public final class FeederCatchUp {
     private void settle(FeederBlockEntity feeder, ServerLevel level, int member) {
         UUID id = members.get(member);
         Animal animal = loaded(level, id);
-        AnimalTraits traits = animal == null ? null : FamiliarityCare.tracked(animal).orElse(null);
+        AnimalTraits traits = animal == null ? null : tracked(animal).orElse(null);
         // Dead, unloaded, out of the herd, or settled by something else since: it settles alone later, from the day
         // it has reached.
-        if (traits == null || animal.isBaby() || !feeder.herdHolds(id) || traits.hunger().settledDay() != day) {
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        if (traits == null || animal.isBaby() || !feeder.herdHolds(id) || familiarityApi.firstUnsettledDay(traits) != day) {
             leave(member);
             return;
         }
         // A meal it had that day before the pen unloaded counts. Otherwise a member still familiar enough eats from
         // the block, on days the pen wasn't loaded to feed itself.
-        boolean ate = traits.hunger().lastAteDay() == day;
-        boolean eats = !ate && unfedDay(feeder, animal) && Familiarity.ready(traits.familiarity()) && feeder.food() > 0;
+        boolean ate = familiarityApi.lastAteDay(traits) == day;
+        boolean eats = !ate && unfedDay(feeder, animal) && familiarityApi.isFamiliar(traits) && feeder.food() > 0;
         float owing = owed.getOrDefault(id, 0f);
         // The hungry days before a meal (only when food came in partway through) hurt before it heals.
         if (eats && owing > 0f) {
             owed.remove(id);
-            FamiliarityCare.toll(animal, level, owing, false, true);
+            familiarityApi.takeToll(animal, level, owing, false, true);
             owing = 0f;
             if (!animal.isAlive()) {
                 leave(member);
                 return;
             }
-            traits = FamiliarityCare.tracked(animal).orElse(traits);
+            traits = tracked(animal).orElse(traits);
         }
         ItemStack meal = eats ? feeder.takeOne(level) : ItemStack.EMPTY;
         boolean fromBlock = !meal.isEmpty();
         ate |= fromBlock;
-        DailyUpkeep.Outcome outcome = FamiliarityCare.settleDay(animal, level, traits, day, ate,
+        UpkeepOutcome outcome = familiarityApi.settleHerdDay(animal, level, traits, day, ate,
                 fromBlock ? feeder.kind().id() : null, owing);
         if (fromBlock) {
             FeederMeal.heal(animal, meal);
@@ -162,7 +164,7 @@ public final class FeederCatchUp {
         }
         if (outcome.escapes()) {
             owed.remove(id);
-            FamiliarityCare.toll(animal, level, owing + outcome.damage(), true, true);
+            familiarityApi.takeToll(animal, level, owing + outcome.damage(), true, true);
         } else if (outcome.damage() > 0f) {
             owed.put(id, owing + outcome.damage());
         }
@@ -190,10 +192,18 @@ public final class FeederCatchUp {
         for (Map.Entry<UUID, Float> debt : owed.entrySet()) {
             Animal animal = loaded(level, debt.getKey());
             if (animal != null) {
-                FamiliarityCare.toll(animal, level, debt.getValue(), false, true);
+                FeaturesRepository.get(FamiliarityApi.class).takeToll(animal, level, debt.getValue(), false, true);
             }
         }
         owed.clear();
+    }
+
+    // The animal's traits, if its species is enabled.
+    private static Optional<AnimalTraits> tracked(Animal animal) {
+        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
+            return Optional.empty();
+        }
+        return Services.DATA.get(animal);
     }
 
     private static @Nullable Animal loaded(ServerLevel level, UUID id) {

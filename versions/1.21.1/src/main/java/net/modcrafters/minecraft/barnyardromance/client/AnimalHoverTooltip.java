@@ -1,12 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.compat.JadeBridge;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.stats.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;
 import net.minecraft.client.Camera;
@@ -51,7 +51,7 @@ public final class AnimalHoverTooltip {
         if (anchor.isEmpty()) {
             return;
         }
-        SizeSettings size = BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal));
+        SizeSettings size = SizeRanges.rangeOf(traits.get(), AnimalSex.speciesId(animal));
         if (minecraft.options.keyShift.isDown()) {
             Optional<AnimalFacts> facts = LiveFacts.of(animal, animal.level().getGameTime(), animal.level().getDayTime());
             if (facts.isPresent()) {

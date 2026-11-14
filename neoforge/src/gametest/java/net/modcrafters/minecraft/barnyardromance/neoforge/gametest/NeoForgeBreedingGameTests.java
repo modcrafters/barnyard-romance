@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.neoforge.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.gametest.AdvancementGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
@@ -16,12 +16,13 @@ import net.modcrafters.minecraft.barnyardromance.gametest.UpkeepGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FightGameTests;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -212,7 +213,7 @@ public final class NeoForgeBreedingGameTests {
         mother.spawnChildFromBreeding(helper.getLevel(), father);
 
         helper.assertTrue(!ANSWERS.containsKey(mother.getUUID()), "BabyEntitySpawnEvent did not fire");
-        helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother became pregnant anyway");
+        helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother became pregnant anyway");
         helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a refused breeding gave XP");
         BreedingGameTests.assertResting(helper, mother, now);
         BreedingGameTests.assertResting(helper, father, now);
@@ -240,7 +241,7 @@ public final class NeoForgeBreedingGameTests {
     // Other mods' pipes use the item capability rather than the container, so it must keep the block's rules: from a
     // side or from no side at all, wheat goes in, beef doesn't, and nothing comes out.
     private static void pipesPutFoodInAMangerButTakeNoneOut(GameTestHelper helper) {
-        FeederBlockEntity manger = FeederGameTests.feeder(helper, BarnyardBlocks.MANGER, FeederGameTests.FEEDER);
+        FeederBlockEntity manger = FeederGameTests.feeder(helper, FeedBlocks.MANGER, FeederGameTests.FEEDER);
         BlockPos at = helper.absolutePos(FeederGameTests.FEEDER);
         for (Direction side : new Direction[]{Direction.UP, Direction.NORTH, null}) {
             int[] moved = throughThePipe(helper, at, side);

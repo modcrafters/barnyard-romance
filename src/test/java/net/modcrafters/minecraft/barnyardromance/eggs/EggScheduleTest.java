@@ -11,14 +11,6 @@ class EggScheduleTest {
     private static final double ROLL = 0.5;
 
     @Test
-    void sinceMidnight() {
-        assertEquals(0, EggSchedule.sinceMidnight(18_000L));
-        assertEquals(6_000, EggSchedule.sinceMidnight(0L));
-        assertEquals(18_000, EggSchedule.sinceMidnight(12_000L));
-        assertEquals(0, EggSchedule.sinceMidnight(42_000L));
-    }
-
-    @Test
     void planFromMidnightIsDaytime() {
         List<Integer> times = EggSchedule.plan(0, 3, ROLL);
 

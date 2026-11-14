@@ -1,22 +1,33 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggOutlook;
-import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
-import net.modcrafters.minecraft.barnyardromance.herd.Familiar;
-import net.modcrafters.minecraft.barnyardromance.herd.ShearState;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.text.English;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
+import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggRules;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
+import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.text.English;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static net.modcrafters.minecraft.barnyardromance.stats.StatKind.*;
+import static net.modcrafters.minecraft.barnyardromance.stats.api.StatKind.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatSheetTest {
+    @BeforeAll
+    static void installFeatures() {
+        BarnyardFeatures.ensureInstalled();
+    }
+
     private static final long DAY = 24_000L;
 
     private static AnimalFacts.Builder cow() {
@@ -30,7 +41,7 @@ class StatSheetTest {
     }
 
     private static EggOutlook outlook() {
-        return EggOutlook.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN, "minecraft:chicken");
+        return EggRules.tomorrow(SizeClass.M, true, false, RoosterNear.NONE, true, EggSettings.CHICKEN, "minecraft:chicken");
     }
 
     private static List<String> english(AnimalFacts.Builder facts) {

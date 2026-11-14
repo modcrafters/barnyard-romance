@@ -1,25 +1,29 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.drops.MeatDrop;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Refusals;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraitCodecs;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.NonNullList;
@@ -54,6 +58,11 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Optional;
+
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
+import static net.modcrafters.minecraft.barnyardromance.shear.ShearSlices.LAST_SHEARED;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
 
 // In-game checks for milk, sized drops, shearing and taming carnivores, run by each loader's game test server.
 public final class ProductGameTests {
@@ -96,29 +105,29 @@ public final class ProductGameTests {
 
     // Traits saved before Stage 5 have no lactation and load with none.
     public static void oldTraitsLoadWithoutHunger(GameTestHelper helper) {
-        AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L).sheared(40L);
+        AnimalTraits saved = AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.5, 10L)).with(LAST_SHEARED, 40L);
         CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
         tag.remove("hunger");
 
         AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-        helper.assertTrue(loaded.hunger().equals(Hunger.NONE), "old traits loaded with " + loaded.hunger());
-        helper.assertTrue(loaded.lastShearedClock() == 40L, "old traits lost their shearing time: " + loaded.lastShearedClock());
+        helper.assertTrue(loaded.get(CARE).hunger().equals(Hunger.NONE), "old traits loaded with " + loaded.get(CARE).hunger());
+        helper.assertTrue(loaded.get(LAST_SHEARED) == 40L, "old traits lost their shearing time: " + loaded.get(LAST_SHEARED));
 
         Hunger hunger = new Hunger(12L, 11L, 9L);
-        AnimalTraits hungry = saved.withHunger(hunger);
+        AnimalTraits hungry = saved.with(CARE, saved.get(CARE).withHunger(hunger));
         CompoundTag hungryTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, hungry).getOrThrow();
         AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, hungryTag).getOrThrow();
-        helper.assertTrue(reloaded.equals(hungry), "hunger came back as " + reloaded.hunger());
+        helper.assertTrue(reloaded.equals(hungry), "hunger came back as " + reloaded.get(CARE).hunger());
         ByteBuf buffer = Unpooled.buffer();
         AnimalTraitCodecs.STREAM_CODEC.encode(buffer, hungry);
         AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
-        helper.assertTrue(synced.equals(hungry), "hunger synced as " + synced.hunger());
+        helper.assertTrue(synced.equals(hungry), "hunger synced as " + synced.get(CARE).hunger());
         helper.succeed();
     }
 
     // Traits saved before wild-caught animals have no origin and no refusals, and load as unknown.
     public static void oldTraitsLoadWithUnknownOrigin(GameTestHelper helper) {
-        AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L).sheared(40L);
+        AnimalTraits saved = AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.5, 10L)).with(LAST_SHEARED, 40L);
         CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
         tag.remove("origin");
         tag.remove("milkRefusedDay");
@@ -126,67 +135,67 @@ public final class ProductGameTests {
         tag.remove("vigour");
 
         AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-        helper.assertTrue(loaded.origin() == Origin.UNKNOWN, "old traits loaded as " + loaded.origin());
-        helper.assertTrue(loaded.refusals().equals(Refusals.NONE), "old traits loaded with " + loaded.refusals());
-        helper.assertTrue(loaded.vigour().equals(Vigour.NONE), "old traits loaded with " + loaded.vigour());
+        helper.assertTrue(loaded.get(CARE).origin() == Origin.UNKNOWN, "old traits loaded as " + loaded.get(CARE).origin());
+        helper.assertTrue(loaded.get(CARE).refusals().equals(Refusals.NONE), "old traits loaded with " + loaded.get(CARE).refusals());
+        helper.assertTrue(loaded.get(VIGOUR).equals(Vigour.NONE), "old traits loaded with " + loaded.get(VIGOUR));
 
-        AnimalTraits wild = saved.withOrigin(Origin.WILD).withRefusals(new Refusals(12L, 13L)).withVigour(new Vigour(0.4, 12L, 11L));
+        AnimalTraits wild = saved.with(CARE, saved.get(CARE).withOrigin(Origin.WILD).withRefusals(new Refusals(12L, 13L))).with(VIGOUR, new Vigour(0.4, 12L, 11L));
         CompoundTag wildTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, wild).getOrThrow();
         AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, wildTag).getOrThrow();
-        helper.assertTrue(reloaded.equals(wild), "came back as " + reloaded.origin() + " " + reloaded.refusals() + " " + reloaded.vigour());
+        helper.assertTrue(reloaded.equals(wild), "came back as " + reloaded.get(CARE).origin() + " " + reloaded.get(CARE).refusals() + " " + reloaded.get(VIGOUR));
         ByteBuf buffer = Unpooled.buffer();
         AnimalTraitCodecs.STREAM_CODEC.encode(buffer, wild);
         AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
-        helper.assertTrue(synced.equals(wild), "synced as " + synced.origin() + " " + synced.refusals() + " " + synced.vigour());
+        helper.assertTrue(synced.equals(wild), "synced as " + synced.get(CARE).origin() + " " + synced.get(CARE).refusals() + " " + synced.get(VIGOUR));
         helper.succeed();
     }
 
     // Traits saved before upkeep load as unknown, a new animal's none stays none, and a saved upkeep survives both the
     // save and the sync.
     public static void oldTraitsLoadWithoutUpkeep(GameTestHelper helper) {
-        AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L).sheared(40L);
+        AnimalTraits saved = AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.5, 10L)).with(LAST_SHEARED, 40L);
         CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
         AnimalTraits fresh = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag.copy()).getOrThrow();
-        helper.assertTrue(fresh.upkeep().equals(Upkeep.NONE), "a new animal's upkeep came back as " + fresh.upkeep());
+        helper.assertTrue(fresh.get(CARE).upkeep().equals(Upkeep.NONE), "a new animal's upkeep came back as " + fresh.get(CARE).upkeep());
         tag.remove("upkeep");
 
         AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-        helper.assertTrue(loaded.upkeep().equals(Upkeep.UNKNOWN), "old traits loaded with " + loaded.upkeep());
+        helper.assertTrue(loaded.get(CARE).upkeep().equals(Upkeep.UNKNOWN), "old traits loaded with " + loaded.get(CARE).upkeep());
 
-        AnimalTraits kept = saved.withUpkeep(new Upkeep(true, false, 12L, "manger", true));
+        AnimalTraits kept = saved.with(CARE, saved.get(CARE).withUpkeep(new Upkeep(true, false, 12L, "manger", true)));
         CompoundTag keptTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, kept).getOrThrow();
         AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, keptTag).getOrThrow();
-        helper.assertTrue(reloaded.equals(kept), "upkeep came back as " + reloaded.upkeep());
+        helper.assertTrue(reloaded.equals(kept), "upkeep came back as " + reloaded.get(CARE).upkeep());
         ByteBuf buffer = Unpooled.buffer();
         AnimalTraitCodecs.STREAM_CODEC.encode(buffer, kept);
         AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
-        helper.assertTrue(synced.equals(kept), "upkeep synced as " + synced.upkeep());
+        helper.assertTrue(synced.equals(kept), "upkeep synced as " + synced.get(CARE).upkeep());
         helper.succeed();
     }
 
     public static void oldTraitsLoadWithoutLactation(GameTestHelper helper) {
-        AnimalTraits saved = new AnimalTraits(Sex.FEMALE, 1.0, 0.5, 10L);
+        AnimalTraits saved = AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.5, 10L));
         CompoundTag tag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
         tag.remove("lactation");
 
         AnimalTraits loaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
-        helper.assertTrue(loaded.lactation().equals(Lactation.NONE), "old traits loaded with " + loaded.lactation());
+        helper.assertTrue(loaded.get(LACTATION).equals(Lactation.NONE), "old traits loaded with " + loaded.get(LACTATION));
 
         Lactation lactation = new Lactation(100L, 200L, 50L, 1, true);
-        AnimalTraits milking = saved.withLactation(lactation);
+        AnimalTraits milking = saved.with(LACTATION, lactation);
         CompoundTag milkingTag = (CompoundTag) AnimalTraitCodecs.CODEC.encodeStart(NbtOps.INSTANCE, milking).getOrThrow();
         AnimalTraits reloaded = AnimalTraitCodecs.CODEC.parse(NbtOps.INSTANCE, milkingTag).getOrThrow();
-        helper.assertTrue(reloaded.lactation().equals(lactation), "lactation came back as " + reloaded.lactation());
+        helper.assertTrue(reloaded.get(LACTATION).equals(lactation), "lactation came back as " + reloaded.get(LACTATION));
         ByteBuf buffer = Unpooled.buffer();
         AnimalTraitCodecs.STREAM_CODEC.encode(buffer, milking);
         AnimalTraits synced = AnimalTraitCodecs.STREAM_CODEC.decode(buffer);
-        helper.assertTrue(synced.lactation().equals(lactation), "lactation synced as " + synced.lactation());
+        helper.assertTrue(synced.get(LACTATION).equals(lactation), "lactation synced as " + synced.get(LACTATION));
         helper.succeed();
     }
 
     // The mod's cake recipe takes any bucket in barnyard_romance:milk_buckets, and hands every bucket back.
     public static void cakeTakesEveryMilk(GameTestHelper helper) {
-        for (Item milk : List.of(Items.MILK_BUCKET, BarnyardItems.SHEEP_MILK_BUCKET, BarnyardItems.GOAT_MILK_BUCKET)) {
+        for (Item milk : List.of(Items.MILK_BUCKET, MilkItems.SHEEP_MILK_BUCKET, MilkItems.GOAT_MILK_BUCKET)) {
             CraftingInput input = CraftingInput.of(3, 3, List.of(
                     new ItemStack(milk), new ItemStack(milk), new ItemStack(milk),
                     new ItemStack(Items.SUGAR), new ItemStack(Items.EGG), new ItemStack(Items.SUGAR),
@@ -208,7 +217,7 @@ public final class ProductGameTests {
     }
 
     public static void milkBucketsAreInTheCommonTag(GameTestHelper helper) {
-        for (Item milk : List.of(BarnyardItems.SHEEP_MILK_BUCKET, BarnyardItems.GOAT_MILK_BUCKET)) {
+        for (Item milk : List.of(MilkItems.SHEEP_MILK_BUCKET, MilkItems.GOAT_MILK_BUCKET)) {
             helper.assertTrue(new ItemStack(milk).is(COMMON_MILK), milk + " is not in c:buckets/milk");
         }
         helper.succeed();
@@ -217,7 +226,7 @@ public final class ProductGameTests {
     public static void goatMilkClearsEffects(GameTestHelper helper) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
-        ItemStack left = new ItemStack(BarnyardItems.GOAT_MILK_BUCKET).finishUsingItem(helper.getLevel(), player);
+        ItemStack left = new ItemStack(MilkItems.GOAT_MILK_BUCKET).finishUsingItem(helper.getLevel(), player);
 
         helper.assertTrue(player.getActiveEffects().isEmpty(), "goat milk left " + player.getActiveEffects());
         helper.assertTrue(left.is(Items.BUCKET), "goat milk left " + left + " behind");
@@ -230,12 +239,12 @@ public final class ProductGameTests {
     }
 
     public static void goatGivesGoatMilk(GameTestHelper helper) {
-        assertMilks(helper, mother(helper, EntityTypes.GOAT, 0.5), BarnyardItems.GOAT_MILK_BUCKET);
+        assertMilks(helper, mother(helper, EntityTypes.GOAT, 0.5), MilkItems.GOAT_MILK_BUCKET);
         helper.succeed();
     }
 
     public static void sheepGivesSheepMilk(GameTestHelper helper) {
-        assertMilks(helper, mother(helper, EntityTypes.SHEEP, 0.5), BarnyardItems.SHEEP_MILK_BUCKET);
+        assertMilks(helper, mother(helper, EntityTypes.SHEEP, 0.5), MilkItems.SHEEP_MILK_BUCKET);
         helper.succeed();
     }
 
@@ -243,17 +252,17 @@ public final class ProductGameTests {
     public static void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
         long now = helper.getLevel().getGameTime();
         Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
-        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)));
+        Services.DATA.set(bull, BreedingGameTests.traits(helper, bull).with(LACTATION, Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)));
         Animal dry = BreedingGameTests.female(helper, EntityTypes.COW);
         Animal small = mother(helper, EntityTypes.COW, 0.1);
         AnimalTraits smallTraits = BreedingGameTests.traits(helper, small);
-        Services.DATA.set(small, smallTraits.withLactation(smallTraits.lactation().milked(now, helper.getLevel().getOverworldClockTime(), 72_000L)));
+        Services.DATA.set(small, smallTraits.with(LACTATION, smallTraits.get(LACTATION).milked(now, helper.getLevel().getOverworldClockTime(), 72_000L)));
         for (Animal cow : List.of(bull, dry, small)) {
-            Lactation before = BreedingGameTests.traits(helper, cow).lactation();
+            Lactation before = BreedingGameTests.traits(helper, cow).get(LACTATION);
             Player player = FoodGameTests.holding(helper, Items.BUCKET);
             GameTestCompat.interact(cow, player);
             helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a refused milking left " + player.getMainHandItem());
-            helper.assertTrue(BreedingGameTests.traits(helper, cow).lactation().equals(before), "a refused milking changed the lactation");
+            helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(before), "a refused milking changed the lactation");
         }
         helper.succeed();
     }
@@ -276,10 +285,10 @@ public final class ProductGameTests {
         father.setInLove(null);
         mother.spawnChildFromBreeding(helper.getLevel(), father);
         Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
-        Services.DATA.setPregnancy(mother, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
         helper.succeedWhen(() -> {
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isEmpty(), "the mother is still pregnant");
-            Lactation lactation = BreedingGameTests.traits(helper, mother).lactation();
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother is still pregnant");
+            Lactation lactation = BreedingGameTests.traits(helper, mother).get(LACTATION);
             long later = helper.getLevel().getGameTime();
             helper.assertTrue(lactation.hasMilk(later, BarnyardConfig.current().tuning().milkKeepsFlowingTicks()), "the mother has no milk after a birth");
             helper.assertTrue(lactation.youngUntil() > later, "the calf is not counted as young");
@@ -288,11 +297,11 @@ public final class ProductGameTests {
 
     public static void wildCowGetsOneMilkWindow(GameTestHelper helper) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        AnimalSex.onJoin(cow);
-        Lactation first = BreedingGameTests.traits(helper, cow).lactation();
+        AnimalTicks.joined(cow);
+        Lactation first = BreedingGameTests.traits(helper, cow).get(LACTATION);
         helper.assertTrue(first.hasMilk(helper.getLevel().getGameTime(), BarnyardConfig.current().tuning().milkKeepsFlowingTicks()), "a wild cow got no milk window");
-        AnimalSex.onJoin(cow);
-        helper.assertTrue(BreedingGameTests.traits(helper, cow).lactation().equals(first), "a wild cow got a second milk window");
+        AnimalTicks.joined(cow);
+        helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(first), "a wild cow got a second milk window");
         helper.succeed();
     }
 
@@ -310,8 +319,8 @@ public final class ProductGameTests {
         SizeSettings size = BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal));
         double scale = size.femaleScale() - size.variation() + 2.0 * size.variation() * point;
         long now = helper.getLevel().getGameTime();
-        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, scale, 1.0, -1L)
-                .withLactation(Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.FEMALE, scale).with(CARE, FamiliarityState.NONE.fed(1.0, -1L))
+                .with(LACTATION, Lactation.NONE.afterBirth(now, now + 24_000L, 72_000L)));
         return animal;
     }
 
@@ -325,9 +334,9 @@ public final class ProductGameTests {
     public static void sizedDropsFollowTheRule(GameTestHelper helper) {
         SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, 2.0 * size.femaleScale(), 1.0, -1L));
+        Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 2.0 * size.femaleScale()).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         Animal bull = BreedingGameTests.male(helper, EntityTypes.COW);
-        Services.DATA.set(bull, new AnimalTraits(Sex.MALE, 2.0 * size.maleScale(), 1.0, -1L));
+        Services.DATA.set(bull, AnimalTraits.of(Sex.MALE, 2.0 * size.maleScale()).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
 
         int cowLeather = ProductDrops.resize(cow, new ItemStack(Items.LEATHER, 2), cow.getRandom()).getCount();
         int bullLeather = ProductDrops.resize(bull, new ItemStack(Items.LEATHER, 2), bull.getRandom()).getCount();
@@ -344,7 +353,7 @@ public final class ProductGameTests {
         SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:cow");
         SizeSettings range = BarnyardConfig.current().defaultSize();
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, new AnimalTraits(Sex.FEMALE, size.femaleScale(), 1.0, -1L));
+        Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, size.femaleScale()).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         int lowest = MeatDrop.count(size.femaleScale(), range.smallest(), range.largest(), 0.0);
         int highest = MeatDrop.count(size.femaleScale(), range.smallest(), range.largest(), 0.999);
 
@@ -359,7 +368,7 @@ public final class ProductGameTests {
     public static void bigSheepShearMoreWool(GameTestHelper helper) {
         SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:sheep");
         Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
-        Services.DATA.set(sheep, new AnimalTraits(Sex.FEMALE, 4.0 * size.femaleScale(), 1.0, -1L));
+        Services.DATA.set(sheep, AnimalTraits.of(Sex.FEMALE, 4.0 * size.femaleScale()).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
 
         //? if >=1.21.2 {
         sheep.shear(helper.getLevel(), SoundSource.PLAYERS, new ItemStack(Items.SHEARS));
@@ -385,7 +394,7 @@ public final class ProductGameTests {
         helper.assertTrue(!sheep.isSheared(), "a sheep was sheared twice in one day");
 
         AnimalTraits traits = BreedingGameTests.traits(helper, sheep);
-        Services.DATA.set(sheep, traits.sheared(traits.lastShearedClock() - GameDay.TICKS));
+        Services.DATA.set(sheep, traits.with(LAST_SHEARED, traits.get(LAST_SHEARED) - GameDay.TICKS));
         GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
         helper.assertTrue(sheep.isSheared(), "a sheep sheared yesterday was not sheared today");
         helper.succeed();
@@ -464,8 +473,8 @@ public final class ProductGameTests {
 
     private static Animal sized(GameTestHelper helper, Animal animal, double scale) {
         AnimalTraits traits = BreedingGameTests.traits(helper, animal);
-        Services.DATA.set(animal, new AnimalTraits(traits.sex(), scale, traits.familiarity(), traits.lastFedTick()));
-        AnimalSex.onAgeBoundary(animal);
+        Services.DATA.set(animal, AnimalTraits.of(traits.sex(), scale).with(CARE, FamiliarityState.NONE.fed(traits.get(CARE).familiarity(), traits.get(CARE).lastFedTick())));
+        AnimalTicks.run(AnimalPhase.AGE_BOUNDARY, animal, helper.getLevel());
         return animal;
     }
 
@@ -501,7 +510,7 @@ public final class ProductGameTests {
     // Spawned like a natural mob, which may despawn, with no familiarity yet.
     static Animal wild(GameTestHelper helper, EntityType<? extends Animal> type) {
         Animal animal = GameTestCompat.spawnDespawnable(helper, type, new Vec3(3.5, 1.0, 4.5));
-        Services.DATA.set(animal, new AnimalTraits(Sex.FEMALE, 1.0, 0.0, -1L));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.0, -1L)));
         return animal;
     }
 

@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
+
 import java.util.List;
 
 // The sheet's lines for Jade's tooltip. Jade already shows the name and health, so health is left out. Normally only

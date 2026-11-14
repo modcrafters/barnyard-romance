@@ -1,29 +1,28 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.age.AgeStage;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.nest.LayInNestGoal;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxes;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.LitterRoll;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -73,23 +72,24 @@ public final class EggLaying {
                 return;
             }
             // Birds from older saves may still be carrying a pregnancy from before they laid eggs.
-            if (Services.DATA.getPregnancy(animal).isPresent()) {
-                Services.DATA.clearPregnancy(animal);
+            PregnancyApi pregnancy = FeaturesRepository.get(PregnancyApi.class);
+            if (pregnancy.isPregnant(animal)) {
+                pregnancy.endPregnancy(animal);
             }
             if (!isLayingHen(animal)) {
                 return;
             }
             long clock = level.getOverworldClockTime();
-            int sinceMidnight = EggSchedule.sinceMidnight(clock);
-            Laying laying = Services.DATA.getLaying(animal).orElse(Laying.NONE);
+            int sinceMidnight = GameDay.ticksSinceMidnight(clock);
+            Laying laying = Services.DATA.get(animal, EggsFeature.LAYING).orElse(Laying.NONE);
             if (laying.day() != GameDay.of(clock)) {
                 // The day is planned from yesterday's hunger, so it waits until her days are settled. A hen in a
                 // feeding block's herd may wait a few ticks for the block to settle them.
-                if (FamiliarityCare.unsettled(animal, clock)) {
+                if (FeaturesRepository.get(FamiliarityApi.class).isUnsettled(animal, clock)) {
                     return;
                 }
                 laying = plan(animal, GameDay.of(clock), sinceMidnight);
-                Services.DATA.setLaying(animal, laying);
+                Services.DATA.set(animal, EggsFeature.LAYING, laying);
             }
             // While she's on her way to a box, the next egg waits for her.
             if (LayInNestGoal.target(animal).isPresent()) {
@@ -100,7 +100,7 @@ public final class EggLaying {
                 return;
             }
             int eggs = due.layNow() ? laying.planned() - laying.next() - due.skip() : 0;
-            Services.DATA.setLaying(animal, laying.advance(due.skip(), eggs));
+            Services.DATA.set(animal, EggsFeature.LAYING, laying.advance(due.skip(), eggs));
             if (eggs > 0) {
                 layDue(animal, level, eggs);
             }
@@ -111,8 +111,9 @@ public final class EggLaying {
 
     private static Laying plan(Animal hen, long today, int sinceMidnight) {
         AnimalTraits traits = Services.DATA.get(hen).orElseThrow();
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor(AnimalSex.speciesId(hen)));
-        int count = EggRules.perDay(size, traits.hunger().hungryYesterday(today), Familiarity.ready(traits.familiarity()), settings(hen));
+        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(hen)));
+        FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+        int count = EggRules.perDay(size, familiarityApi.wasHungryYesterday(traits, today), familiarityApi.isFamiliar(traits), settings(hen));
         return new Laying(today, EggSchedule.plan(sinceMidnight, count, hen.getRandom().nextDouble()), 0);
     }
 
@@ -131,7 +132,7 @@ public final class EggLaying {
             Tuning tuning = BarnyardConfig.current().tuning();
             fathered.forEach((father, eggCount) -> {
                 if (level.getEntity(father) instanceof Animal rooster) {
-                    VigourActions.pay(rooster, tuning.vigourPerEgg() * eggCount, tuning.hungryEggHealth() * eggCount);
+                    FeaturesRepository.get(VigourApi.class).pay(rooster, tuning.vigourPerEgg() * eggCount, tuning.hungryEggHealth() * eggCount);
                 }
             });
             return;
@@ -155,8 +156,8 @@ public final class EggLaying {
     // Back from a box or a trip to one: eggs that came due while she was busy are laid now, not skipped.
     public static void resume(Animal hen, ServerLevel level) {
         long clock = level.getOverworldClockTime();
-        Services.DATA.getLaying(hen).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.setLaying(hen,
-                laying.withTimes(EggSchedule.resume(laying.times(), laying.next(), EggSchedule.sinceMidnight(clock)))));
+        Services.DATA.get(hen, EggsFeature.LAYING).filter(laying -> laying.day() == GameDay.of(clock)).ifPresent(laying -> Services.DATA.set(hen, EggsFeature.LAYING,
+                laying.withTimes(EggSchedule.resume(laying.times(), laying.next(), GameDay.ticksSinceMidnight(clock)))));
     }
 
     // For the herd book: the best adult rooster in range, by whether he ate today (so he's fertile tomorrow).
@@ -175,7 +176,7 @@ public final class EggLaying {
             if (stage != AgeStage.ADULT && stage != AgeStage.OLD) {
                 continue;
             }
-            if (traits.get().hunger().lastAteDay() == today) {
+            if (FeaturesRepository.get(FamiliarityApi.class).lastAteDay(traits.get()) == today) {
                 return RoosterNear.FED;
             }
             best = RoosterNear.HUNGRY;
@@ -185,12 +186,12 @@ public final class EggLaying {
 
     private static boolean canFather(Animal rooster, Animal hen, int eggs, EggSettings settings) {
         Tuning tuning = BarnyardConfig.current().tuning();
-        return VigourActions.canPay(rooster, tuning.vigourPerEgg() * eggs, tuning.hungryEggHealth() * eggs)
+        return FeaturesRepository.get(VigourApi.class).canPay(rooster, tuning.vigourPerEgg() * eggs, tuning.hungryEggHealth() * eggs)
                 && !Reach.blocked(rooster, hen, settings.roosterRange());
     }
 
     public static boolean boxWithRoomNear(Animal hen, ServerLevel level) {
-        ItemStack egg = new ItemStack(BarnyardItems.FERTILIZED_EGG);
+        ItemStack egg = new ItemStack(EggsItems.FERTILIZED_EGG);
         return NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange()).stream()
                 .anyMatch(box -> !box.occupied() && box.canPlaceEgg(egg) >= 0);
     }
@@ -222,7 +223,7 @@ public final class EggLaying {
             if (distance > rangeSqr || (father != null && distance >= father.distanceToSqr(hen))) {
                 continue;
             }
-            Optional<AnimalTraits> traits = FamiliarityCare.settle(other);
+            Optional<AnimalTraits> traits = FeaturesRepository.get(FamiliarityApi.class).settle(other);
             if (traits.isEmpty() || traits.get().sex() != Sex.MALE) {
                 continue;
             }
@@ -237,7 +238,7 @@ public final class EggLaying {
         }
         fathered.merge(father.getUUID(), 1, Integer::sum);
         AnimalTraits motherTraits = mother.get();
-        long hatchTicks = LitterRoll.pickTicks(settings.hatchTicks(), motherTraits.weight(), hen.getRandom().nextDouble());
+        long hatchTicks = FeaturesRepository.get(PregnancyApi.class).pickDuration(settings.hatchTicks(), motherTraits.weight(), hen.getRandom().nextDouble());
         return Optional.of(FertilizedEggItem.create(new EggData(
                 AnimalSex.speciesId(hen),
                 hen.getUUID(),
@@ -245,13 +246,14 @@ public final class EggLaying {
                 motherTraits.scale(),
                 motherTraits.growthTicks(),
                 motherTraits.weight(),
-                motherTraits.familiarity(),
+                FeaturesRepository.get(FamiliarityApi.class).familiarity(motherTraits),
                 fatherTraits.scale(),
                 fatherTraits.growthTicks(),
                 fatherTraits.weight(),
                 variant(hen),
                 hatchTicks,
-                hatchTicks
+                hatchTicks,
+                SizeRanges.rangeOf(motherTraits, AnimalSex.speciesId(hen))
         )));
     }
 

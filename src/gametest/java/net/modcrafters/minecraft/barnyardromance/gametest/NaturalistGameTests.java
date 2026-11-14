@@ -1,21 +1,24 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.naturalist.NaturalistCompat;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
 import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
-import net.modcrafters.minecraft.barnyardromance.eggs.Laying;
-import net.modcrafters.minecraft.barnyardromance.eggs.RoosterNear;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsItems;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,6 +44,7 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests.bo
 import static net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests.eggsNear;
 import static net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests.once;
 import static net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests.holding;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 // These run with Naturalist loaded, through the runs in gradle/naturalist-runs.gradle. They find its creatures by id, so
 // the mod still doesn't compile against it. Anywhere else they pass at once and prove nothing, except that a Naturalist
@@ -132,7 +136,7 @@ public final class NaturalistGameTests {
 
             mother.spawnChildFromBreeding(helper.getLevel(), father);
 
-            helper.assertTrue(Services.DATA.getPregnancy(mother).isPresent(), "a " + id + " isn't pregnant");
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "a " + id + " isn't pregnant");
         }
         helper.succeed();
     }
@@ -179,8 +183,8 @@ public final class NaturalistGameTests {
 
         helper.assertTrue(!duck.isInLove(), "fish put a duck in love");
         helper.assertTrue(!turkey.isInLove(), "seeds put a turkey in love");
-        helper.assertTrue(traits(helper, duck).lastFedTick() >= 0L, "fish didn't feed the duck");
-        helper.assertTrue(traits(helper, turkey).lastFedTick() >= 0L, "seeds didn't feed the turkey");
+        helper.assertTrue(traits(helper, duck).get(CARE).lastFedTick() >= 0L, "fish didn't feed the duck");
+        helper.assertTrue(traits(helper, turkey).get(CARE).lastFedTick() >= 0L, "seeds didn't feed the turkey");
         helper.succeed();
     }
 
@@ -234,7 +238,7 @@ public final class NaturalistGameTests {
         inPen(DUCK, () -> EggLaying.layDue(duck, helper.getLevel(), 1));
 
         helper.assertTrue(eggsNear(helper, duck, duckEgg(helper)) == 1, "no duck egg on the ground");
-        helper.assertTrue(eggsNear(helper, duck, BarnyardItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
+        helper.assertTrue(eggsNear(helper, duck, EggsItems.FERTILIZED_EGG) == 0, "a fertilized egg on the ground");
         helper.succeed();
     }
 
@@ -395,8 +399,8 @@ public final class NaturalistGameTests {
 
     private static Animal bird(GameTestHelper helper, String id, Sex sex, double familiarity, int x) {
         Animal bird = GameTestCompat.spawn(helper, type(helper, id), x, 1, 4);
-        Services.DATA.set(bird, new AnimalTraits(sex, sex == Sex.MALE ? 1.2 : EggGameTests.MEDIUM_HEN, familiarity, -1L));
-        Services.DATA.setLaying(bird, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
+        Services.DATA.set(bird, AnimalTraits.of(sex, sex == Sex.MALE ? 1.2 : EggGameTests.mediumHen()).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L)));
+        Services.DATA.set(bird, EggsFeature.LAYING, new Laying(GameDay.of(helper.getLevel().getOverworldClockTime()), List.of(), 0));
         return bird;
     }
 
@@ -430,7 +434,7 @@ public final class NaturalistGameTests {
         }
         ServerPlayer player = MockPlayers.inLevel(helper);
         Animal duck = GameTestCompat.spawn(helper, type(helper, DUCK), 4, 1, 4);
-        Services.DATA.set(duck, BreedingGameTests.traits(helper, duck).fed(1.0, -1L));
+        Services.DATA.set(duck, BreedingGameTests.traits(helper, duck).with(CARE, BreedingGameTests.traits(helper, duck).get(CARE).fed(1.0, -1L)));
         FamiliarityActions.tameIfFamiliar(duck, player, 1.0);
         helper.assertTrue(duck instanceof TamableAnimal tame && tame.isTame(), "a familiar duck wasn't tamed, so this proves nothing");
 

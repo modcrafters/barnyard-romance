@@ -1,12 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
 import java.util.function.UnaryOperator;
+
+import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices.BREEDING;
 
 // Mirrors love mode and the breeding rest into the synced traits so the stat sheet can show them.
 public final class BreedingStatus {
@@ -18,17 +20,18 @@ public final class BreedingStatus {
     public static void inLove(Animal animal) {
         update(animal, traits -> {
             long until = animal.level().getGameTime() + animal.getInLoveTime();
-            return traits.loveUntil() == until ? traits : traits.withLove(until);
+            return traits.get(BREEDING).loveUntil() == until ? traits : traits.with(BREEDING, traits.get(BREEDING).withLove(until));
         });
     }
 
     public static void outOfLove(Animal animal) {
-        update(animal, traits -> traits.loveUntil() < 0L ? traits : traits.withLove(-1L));
+        update(animal, traits -> traits.get(BREEDING).loveUntil() < 0L ? traits : traits.with(BREEDING, traits.get(BREEDING).withLove(-1L)));
     }
 
     // Called after vanilla has set the parent's age to its breeding cooldown.
     public static void resting(Animal animal) {
-        update(animal, traits -> traits.withLove(-1L).withCooldown(animal.level().getGameTime() + Math.max(0, animal.getAge())));
+        update(animal, traits -> traits.with(BREEDING,
+                traits.get(BREEDING).withLove(-1L).withCooldown(animal.level().getGameTime() + Math.max(0, animal.getAge()))));
     }
 
     private static void update(Animal animal, UnaryOperator<AnimalTraits> change) {

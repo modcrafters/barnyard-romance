@@ -1,11 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Upkeep;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Reach;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
+import net.modcrafters.minecraft.barnyardromance.core.path.Walk;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -40,7 +41,7 @@ final class HerdRefresh {
 
     // The animals that eat here now, nearest first: of this block's kind and an enabled species, past nursing,
     // familiar, within reach, and able to walk here, so a fence keeps the next pen's animals out. When the search says
-    // nothing (see Reach.Walk), a member stays, and a newcomer joins only if it's close to the block already: a fence
+    // nothing (see Walk), a member stays, and a newcomer joins only if it's close to the block already: a fence
     // between pens stops a search partway, which says no.
     static List<UUID> find(ServerLevel level, BlockPos pos, FeederKind kind, Set<UUID> members) {
         int range = BarnyardConfig.current().tuning().feederRange();
@@ -49,8 +50,8 @@ final class HerdRefresh {
         near.sort(Comparator.comparingDouble(animal -> animal.distanceToSqr(middle)));
         List<UUID> found = new ArrayList<>();
         for (Animal animal : near) {
-            Reach.Walk walk = Reach.walkTo(animal, pos, range);
-            if (walk == Reach.Walk.YES || walk == Reach.Walk.UNKNOWN
+            Walk walk = Reach.walkTo(animal, pos, range);
+            if (walk == Walk.YES || walk == Walk.UNKNOWN
                     && (members.contains(animal.getUUID()) || EatAtFeederGoal.within(animal, pos, EatAtFeederGoal.CLOSE_ENOUGH))) {
                 found.add(animal.getUUID());
             }
@@ -64,7 +65,7 @@ final class HerdRefresh {
                 || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
             return false;
         }
-        return Services.DATA.get(animal).map(traits -> Familiarity.ready(traits.familiarity())).orElse(false);
+        return Services.DATA.get(animal).map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(false);
     }
 
     private static void mark(ServerLevel level, UUID id, boolean inHerd) {
@@ -73,14 +74,11 @@ final class HerdRefresh {
             return;
         }
         Services.DATA.get(animal).ifPresent(traits -> {
-            Upkeep upkeep = traits.upkeep();
-            if (upkeep.inHerd() == inHerd) {
+            FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
+            if (familiarityApi.upkeep(traits).inHerd() == inHerd) {
                 return;
             }
-            // An old save's upkeep is worked out on its next settled day. A member is familiar, so it would count as
-            // cared for then; it does now, rather than lose the mark that tells it's from an old save.
-            Upkeep known = upkeep.equals(Upkeep.UNKNOWN) ? Upkeep.NONE.caredFor() : upkeep;
-            Services.DATA.set(animal, traits.withUpkeep(known.withInHerd(inHerd)));
+            Services.DATA.set(animal, familiarityApi.withInHerd(traits, inHerd));
         });
     }
 }

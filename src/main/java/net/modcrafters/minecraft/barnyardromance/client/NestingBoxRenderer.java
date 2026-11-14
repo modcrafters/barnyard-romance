@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.modcrafters.minecraft.barnyardromance.nest.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;

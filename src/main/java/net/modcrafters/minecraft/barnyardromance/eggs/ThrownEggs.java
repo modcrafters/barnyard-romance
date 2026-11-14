@@ -1,19 +1,19 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
-import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.Animal;
@@ -35,12 +35,12 @@ public final class ThrownEggs {
 
     // Vanilla's chicks from thrown eggs are only left alone when chickens are excluded.
     public static boolean blocksVanillaChicks(ItemStack thrown) {
-        return thrown.is(BarnyardItems.FERTILIZED_EGG) || BarnyardConfig.current().eggsFor("minecraft:chicken").enabled();
+        return thrown.is(EggsItems.FERTILIZED_EGG) || BarnyardConfig.current().eggsFor("minecraft:chicken").enabled();
     }
 
     public static void land(ServerLevel level, Vec3 position, ItemStack thrown, RandomSource random) {
-        EggData data = thrown.get(BarnyardComponents.EGG_DATA);
-        WildEgg wild = thrown.get(BarnyardComponents.WILD_EGG);
+        EggData data = thrown.get(EggsComponents.EGG_DATA);
+        WildEgg wild = thrown.get(EggsComponents.WILD_EGG);
         String species = data != null ? data.species() : wild != null ? wild.species() : null;
         if (species == null) {
             return;
@@ -59,17 +59,18 @@ public final class ThrownEggs {
     }
 
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, EggData data, RandomSource random) {
-        SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
+        SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
         Optional<Animal> chick = hatchTainted(level, position, data.species(), data.variant(),
                 SizeClass.of(Sex.FEMALE, data.motherScale(), size), SizeClass.of(Sex.MALE, data.fatherScale(), size), random);
-        chick.ifPresent(hatched -> BarnyardAdvancements.hatched(level, hatched, new Lineage(data.mother(), data.father())));
+        chick.ifPresent(hatched -> Events.post(
+                new AnimalEvent.Hatched(level, hatched, new Lineage(data.mother(), data.father()), AnimalEvent.Hatch.THROWN)));
         return chick;
     }
 
     // A wild egg's parents are unknown, so its chick is sized as if both were average.
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, WildEgg egg, RandomSource random) {
         Optional<Animal> chick = hatchTainted(level, position, egg.species(), egg.variant(), SizeClass.M, SizeClass.M, random);
-        chick.ifPresent(hatched -> BarnyardAdvancements.hatched(level, hatched, null));
+        chick.ifPresent(hatched -> Events.post(new AnimalEvent.Hatched(level, hatched, null, AnimalEvent.Hatch.THROWN)));
         return chick;
     }
 
@@ -82,13 +83,16 @@ public final class ThrownEggs {
         Animal chick = created.get();
         BarnyardConfig config = BarnyardConfig.current();
         SizeSettings size = config.sizeFor(species);
-        Sex sex = SexRoll.roll(random.nextDouble(), config.femaleRatio());
+        BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+        Sex sex = breeding.newbornSex(random.nextDouble(), config.femaleRatio());
         SizeClass chickSize = EggRules.thrownChickSize(mother, father, random.nextDouble());
-        double scale = ScaleRoll.fromPercent(sex, size, chickSize == SizeClass.M ? MEDIUM : SMALL);
+        double scale = breeding.scaleAt(sex, size, chickSize == SizeClass.M ? MEDIUM : SMALL);
         int growth = Growth.wild();
-        Services.DATA.set(chick, new AnimalTraits(sex, scale, 0.0, -1L, growth)
+        Services.DATA.set(chick, AnimalTraits.of(sex, scale)
+                .withGrowthTicks(growth)
                 .withWeight(TAINTED_WEIGHT)
-                .withBornTick(level.getGameTime()));
+                .withBornTick(level.getGameTime())
+                .withSizeRange(size));
         Hatching.place(chick, variant, growth, position);
         level.addFreshEntityWithPassengers(chick);
         return Optional.of(chick);

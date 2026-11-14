@@ -1,14 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardComponents;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeClass;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.EggItem;
@@ -32,13 +30,13 @@ public class FertilizedEggItem extends EggItem {
     }
 
     public static ItemStack create(EggData data) {
-        ItemStack stack = new ItemStack(BarnyardItems.FERTILIZED_EGG);
-        stack.set(BarnyardComponents.EGG_DATA, data);
+        ItemStack stack = new ItemStack(EggsItems.FERTILIZED_EGG);
+        stack.set(EggsComponents.EGG_DATA, data);
         return stack;
     }
 
     public static Optional<EggData> data(ItemStack stack) {
-        return Optional.ofNullable(stack.get(BarnyardComponents.EGG_DATA));
+        return Optional.ofNullable(stack.get(EggsComponents.EGG_DATA));
     }
 
     //? if >=1.21.5 {
@@ -55,9 +53,9 @@ public class FertilizedEggItem extends EggItem {
 
     // A box egg: its time, its parents and what taking it out does. A wild egg: no parents, and its time while in a box.
     public static List<Text> lines(ItemStack stack) {
-        EggData data = stack.get(BarnyardComponents.EGG_DATA);
+        EggData data = stack.get(EggsComponents.EGG_DATA);
         if (data != null) {
-            SizeSettings size = BarnyardConfig.current().sizeFor(data.species());
+            SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
             Text parents = Text.of(
                     "item.barnyard_romance.fertilized_egg.parents",
                     SizeClass.of(Sex.FEMALE, data.motherScale(), size).name(),

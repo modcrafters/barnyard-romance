@@ -1,12 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 class WildCaughtTest {
     private static final Tuning DEFAULTS = Tuning.DEFAULTS;
@@ -35,39 +36,39 @@ class WildCaughtTest {
     void aWildAdultStopsAtForty() {
         AnimalTraits raised = WildCaught.raise(traits(0.2), 0.6, 5L, true, false, DEFAULTS);
 
-        assertEquals(0.4, raised.familiarity(), 1.0e-9);
-        assertEquals(Origin.WILD, raised.origin());
-        assertEquals(5L, raised.lastFedTick());
+        assertEquals(0.4, raised.get(CARE).familiarity(), 1.0e-9);
+        assertEquals(Origin.WILD, raised.get(CARE).origin());
+        assertEquals(5L, raised.get(CARE).lastFedTick());
     }
 
     @Test
     void aYoungAnimalIsFarmRaisedAndUncapped() {
         AnimalTraits raised = WildCaught.raise(traits(0.0), 0.6, 5L, false, false, DEFAULTS);
 
-        assertEquals(0.6, raised.familiarity(), 1.0e-9);
-        assertEquals(Origin.FARM, raised.origin());
+        assertEquals(0.6, raised.get(CARE).familiarity(), 1.0e-9);
+        assertEquals(Origin.FARM, raised.get(CARE).origin());
     }
 
     @Test
     void aFarmRaisedAdultIsUncapped() {
-        AnimalTraits raised = WildCaught.raise(traits(0.8).withOrigin(Origin.FARM), 1.0, 5L, true, false, DEFAULTS);
+        AnimalTraits raised = WildCaught.raise(AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(0.8, -1L).withOrigin(Origin.FARM)), 1.0, 5L, true, false, DEFAULTS);
 
-        assertEquals(1.0, raised.familiarity(), 1.0e-9);
+        assertEquals(1.0, raised.get(CARE).familiarity(), 1.0e-9);
     }
 
     @Test
     void anUnknownAdultAboveTheCapIsCutDown() {
         AnimalTraits raised = WildCaught.raise(traits(0.9), 1.0, 5L, true, false, DEFAULTS);
 
-        assertEquals(0.4, raised.familiarity(), 1.0e-9);
-        assertEquals(Origin.WILD, raised.origin());
+        assertEquals(0.4, raised.get(CARE).familiarity(), 1.0e-9);
+        assertEquals(Origin.WILD, raised.get(CARE).origin());
     }
 
     @Test
     void raisingToZeroLeavesTheOriginUnknown() {
         AnimalTraits raised = WildCaught.raise(traits(0.0), 0.0, 5L, true, false, DEFAULTS);
 
-        assertEquals(Origin.UNKNOWN, raised.origin());
+        assertEquals(Origin.UNKNOWN, raised.get(CARE).origin());
     }
 
     @Test
@@ -82,6 +83,6 @@ class WildCaughtTest {
     }
 
     private static AnimalTraits traits(double familiarity) {
-        return new AnimalTraits(Sex.FEMALE, 1.0, familiarity, -1L);
+        return AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(familiarity, -1L));
     }
 }

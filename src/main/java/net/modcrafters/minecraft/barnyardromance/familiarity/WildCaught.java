@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 
 // An animal first won over as an adult never becomes fully familiar: livestock top out at wildFamiliarityCap, and
 // pets (wolves, cats, the horse family), who live closer to you, at wildPetFamiliarityCap. Animals raised from
@@ -27,8 +27,9 @@ public final class WildCaught {
     // Every familiarity gain goes through here: the first one decides the origin, and a wild animal is held at its
     // cap, even one that was above it before its origin was known.
     public static AnimalTraits raise(AnimalTraits traits, double familiarity, long lastFedTick, boolean grown, boolean pet, Tuning tuning) {
-        Origin origin = familiarity > 0.0 ? decide(traits.origin(), grown) : traits.origin();
-        return traits.fed(Math.min(familiarity, cap(origin, pet, tuning)), lastFedTick).withOrigin(origin);
+        FamiliarityState care = traits.get(FamiliaritySlices.CARE);
+        Origin origin = familiarity > 0.0 ? decide(care.origin(), grown) : care.origin();
+        return traits.with(FamiliaritySlices.CARE, care.fed(Math.min(familiarity, cap(origin, pet, tuning)), lastFedTick).withOrigin(origin));
     }
 
     public static double tamingGrace(double grace, Origin origin, boolean grown, Tuning tuning) {

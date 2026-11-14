@@ -1,5 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

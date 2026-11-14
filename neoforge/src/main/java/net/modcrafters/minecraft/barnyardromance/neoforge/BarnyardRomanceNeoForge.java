@@ -2,22 +2,21 @@ package net.modcrafters.minecraft.barnyardromance.neoforge;
 
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.BarnyardRegistrations;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
-import net.modcrafters.minecraft.barnyardromance.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 //? if <1.21.6
 //import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
+import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
 import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceKey;
@@ -56,7 +55,9 @@ import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 @Mod(Constants.MOD_ID)
 public class BarnyardRomanceNeoForge {
     public BarnyardRomanceNeoForge(IEventBus modBus) {
-        NeoForgeAnimalData.ATTACHMENT_TYPES.register(modBus);
+        // Installs the features first: the attachments and registry content come from them.
+        BarnyardRomance.init();
+        NeoForgeAnimalData.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
@@ -68,7 +69,6 @@ public class BarnyardRomanceNeoForge {
         //if (FMLEnvironment.dist == Dist.CLIENT) {
             BarnyardRomanceNeoForgeClient.register(modBus);
         }
-        BarnyardRomance.init();
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityJoin);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onEntityLeave);
         NeoForge.EVENT_BUS.addListener(BarnyardRomanceNeoForge::onServerTick);
@@ -100,10 +100,10 @@ public class BarnyardRomanceNeoForge {
     // automation, so it counts as coming from above.
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         //? if >=1.21.9 {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, BarnyardBlocks.FEEDER_ENTITY,
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FeedBlocks.FEEDER_ENTITY,
                 (feeder, side) -> new WorldlyContainerWrapper(feeder, side == null ? Direction.UP : side));
         //?} else {
-        /*event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BarnyardBlocks.FEEDER_ENTITY,
+        /*event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FeedBlocks.FEEDER_ENTITY,
                 (feeder, side) -> new SidedInvWrapper(feeder, side == null ? Direction.UP : side));
         *///?}
     }
@@ -120,7 +120,7 @@ public class BarnyardRomanceNeoForge {
     }
 
     private static void addToCreativeTabs(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == BarnyardItems.FOOD_AND_DRINKS) {
+        if (event.getTabKey() == BarnyardTab.FOOD_AND_DRINKS) {
             BarnyardTab.foodAndDrinks().forEach(event::accept);
         }
     }
@@ -129,7 +129,7 @@ public class BarnyardRomanceNeoForge {
         if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Animal animal)) {
             return;
         }
-        AnimalSex.onJoin(animal);
+        AnimalTicks.joined(animal);
     }
 
     private static void onEntityLeave(EntityLeaveLevelEvent event) {

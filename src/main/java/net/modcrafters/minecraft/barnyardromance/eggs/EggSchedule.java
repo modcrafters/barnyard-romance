@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,11 +17,6 @@ public final class EggSchedule {
     private static final int DAY = (int) GameDay.TICKS;
 
     private EggSchedule() {
-    }
-
-    // How far past midnight the day is; the clock wakes sleepers at 0 and reaches midnight at 18,000.
-    public static int sinceMidnight(long clock) {
-        return (int) Math.floorMod(clock + (GameDay.TICKS - 18_000L), GameDay.TICKS);
     }
 
     public static List<Integer> plan(int sinceMidnight, int count, double roll) {

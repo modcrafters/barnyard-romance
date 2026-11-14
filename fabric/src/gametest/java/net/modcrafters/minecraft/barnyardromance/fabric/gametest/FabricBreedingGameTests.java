@@ -92,4 +92,24 @@ public class FabricBreedingGameTests {
     public void excludedMembersAreNotRefreshed(GameTestHelper helper) {
         BreedingGameTests.excludedMembersAreNotRefreshed(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void animalsFollowASizeRangeChange(GameTestHelper helper) {
+        BreedingGameTests.animalsFollowASizeRangeChange(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anAnimalWithoutARangeKeepsItsSize(GameTestHelper helper) {
+        BreedingGameTests.anAnimalWithoutARangeKeepsItsSize(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPregnancyWithoutARangeTakesOneWhenSheJoins(GameTestHelper helper) {
+        BreedingGameTests.aPregnancyWithoutARangeTakesOneWhenSheJoins(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMuleIsSavedInItsOwnRange(GameTestHelper helper) {
+        BreedingGameTests.aMuleIsSavedInItsOwnRange(helper);
+    }
 }

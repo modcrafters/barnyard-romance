@@ -1,7 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
@@ -58,7 +59,7 @@ public final class MorningFeeding {
                     ItemStack food = FeederMeal.eat(animal, level, feeder, clock);
                     if (!food.isEmpty()) {
                         FeederMeal.crumbs(level, animal, food, SITTING_CRUMBS);
-                        BarnyardAdvancements.feederMeal(animal);
+                        Events.post(new AnimalEvent.FeederMeal(animal));
                         if (feeder.food() == 0) {
                             return;
                         }

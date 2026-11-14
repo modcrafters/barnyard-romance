@@ -2,16 +2,12 @@ package net.modcrafters.minecraft.barnyardromance;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,16 +17,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // one world's animals into the next.
 class ServerScopedScanTest {
     private static final Map<String, String> OUTLIVES_THE_SERVER = Map.ofEntries(
-            Map.entry("ServerScoped.CLEARS", "the clears themselves, registered once per class"),
+            Map.entry("core/ServerScoped.CLEARS", "the clears themselves, registered once per class"),
             Map.entry("client/HerdBookHeads.STAND_INS", "client only: stand-in entities for the herd book's heads"),
             Map.entry("client/HerdBookHeads.BOXES", "client only, weak keys"),
             Map.entry("client/NestingBoxHen.COPIES", "client only, weak keys"),
             Map.entry("look/VanillaHornHider.HIDDEN", "client only: model cubes, which live as long as the models"),
-            Map.entry("config/ExcludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),
+            Map.entry("core/config/ExcludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),
             Map.entry("food/MinecraftItemFacts.MATCHERS", "item id or tag to matcher; tag contents are read fresh"),
-            Map.entry("sex/AnimalSex.SPECIES_IDS", "entity type to species id, from the built-in registry"),
+            Map.entry("core/animal/AnimalSex.SPECIES_IDS", "entity type to species id, from the built-in registry"),
             Map.entry("food/FoodData.WARNED", "log messages already shown, cleared on reload"),
-            Map.entry("look/AnimalLooks.WARNED", "log messages already shown")
+            Map.entry("look/AnimalLooks.WARNED", "log messages already shown"),
+            Map.entry("fabric/data/FabricAnimalData.TYPES", "startup state: attachment types are registered once per game"),
+            Map.entry("neoforge/data/NeoForgeAnimalData.TYPES", "startup state: attachment types are registered once per game")
     );
     // A static final field set to a new mutable collection, on one line.
     private static final Pattern FIELD = Pattern.compile(
@@ -41,15 +39,13 @@ class ServerScopedScanTest {
 
     @Test
     void everyStaticCollectionIsServerScopedOrListed() {
-        Path root = repoRoot();
+        Path root = SourceScan.repoRoot();
         List<String> unscoped = new ArrayList<>();
         List<String> seen = new ArrayList<>();
         for (Path sources : mainSources(root)) {
-            for (Path file : javaFiles(sources)) {
-                String name = sources.relativize(file).toString().replace('\\', '/');
-                // Paths under the mod's package, e.g. rivalry/Courtship.
-                name = name.substring(name.indexOf("barnyardromance/") + "barnyardromance/".length(), name.length() - ".java".length());
-                List<String> lines = lines(file);
+            for (Path file : SourceScan.javaFiles(sources)) {
+                String name = SourceScan.modPath(sources, file);
+                List<String> lines = SourceScan.lines(file);
                 // A class that clears its own state, e.g. under its own lock, registers that with ServerScoped.onStop.
                 boolean clearsItself = lines.stream().anyMatch(line -> line.contains("ServerScoped.onStop("));
                 for (String line : lines) {
@@ -71,40 +67,9 @@ class ServerScopedScanTest {
         }
     }
 
-    private static Path repoRoot() {
-        Path dir = Path.of("").toAbsolutePath();
-        while (!Files.exists(dir.resolve("settings.gradle.kts"))) {
-            dir = dir.getParent();
-        }
-        return dir;
-    }
-
     private static List<Path> mainSources(Path root) {
         List<Path> dirs = new ArrayList<>(List.of(root.resolve("src/main/java"), root.resolve("fabric/src/main/java"), root.resolve("neoforge/src/main/java")));
-        try (Stream<Path> versions = Files.list(root.resolve("versions"))) {
-            versions.map(version -> version.resolve("src/main/java")).filter(Files::isDirectory).forEach(dirs::add);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        dirs.addAll(SourceScan.versionSources(root));
         return dirs;
-    }
-
-    private static List<Path> javaFiles(Path dir) {
-        if (!Files.isDirectory(dir)) {
-            return List.of();
-        }
-        try (Stream<Path> files = Files.walk(dir)) {
-            return files.filter(file -> file.toString().endsWith(".java")).toList();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static List<String> lines(Path file) {
-        try {
-            return Files.readAllLines(file);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 }

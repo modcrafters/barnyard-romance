@@ -30,12 +30,18 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.12.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testRuntimeOnly 'com.google.code.gson:gson:2.14.0'
-    testRuntimeOnly 'org.slf4j:slf4j-nop:2.0.17'
 }
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+}
+
+// The save fixture tests (saves/SaveFixturesTest) read and write NBT with the real codecs, so unit tests see
+// Minecraft the way main does. Minecraft brings Gson and SLF4J with it, at the versions it was built with; SLF4J
+// logs through Minecraft's Log4j, which src/test/resources/log4j2-test.xml keeps quiet.
+configurations {
+    testCompileClasspath.extendsFrom compileClasspath
+    testRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
 configurations {

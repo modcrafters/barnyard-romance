@@ -1,8 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -86,7 +85,7 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     };
 
     public FeederBlockEntity(BlockPos pos, BlockState state) {
-        super(BarnyardBlocks.FEEDER_ENTITY, pos, state);
+        super(FeedBlocks.FEEDER_ENTITY, pos, state);
     }
 
     public FeederKind kind() {

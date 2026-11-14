@@ -1,26 +1,26 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.vigour.VigourActions;
-import net.modcrafters.minecraft.barnyardromance.compat.NaturalistCompat;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
-import net.modcrafters.minecraft.barnyardromance.text.TextComponents;
-import net.modcrafters.minecraft.barnyardromance.text.Text;
-import net.modcrafters.minecraft.barnyardromance.compat.VersionCompat;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.food.Feed;
-import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.food.FoodHeal;
-import net.modcrafters.minecraft.barnyardromance.food.MinecraftItemFacts;
-import net.modcrafters.minecraft.barnyardromance.food.PregnancyCareActions;
-import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
+import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
+import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
+import net.modcrafters.minecraft.barnyardromance.core.text.Text;
+import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
+import net.modcrafters.minecraft.barnyardromance.naturalist.api.NaturalistApi;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -46,6 +46,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
+
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
 public final class FamiliarityActions {
     public static final Text TOO_SHY = Text.of("message.barnyard_romance.too_shy");
@@ -74,7 +76,7 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return null;
         }
-        Feed feed = FoodData.resolve(animal, stack);
+        Feed feed = FeaturesRepository.get(FoodApi.class).offered(animal, stack);
         if (feed instanceof Feed.Refused) {
             if (!animal.level().isClientSide()) {
                 player.sendSystemMessage(TextComponents.of(WONT_EAT));
@@ -86,18 +88,18 @@ public final class FamiliarityActions {
         }
         if (eaten.superfood()) {
             if (eaten.effects().startsMilk()) {
-                return MilkActions.startMilk(animal, player, hand, eaten);
+                return FeaturesRepository.get(MilkApi.class).startMilk(animal, player, hand, eaten);
             }
             return eaten.effects().vigour() > 0.0
-                    ? VigourActions.feedMash(animal, player, stack, eaten)
-                    : PregnancyCareActions.feed(animal, player, stack, eaten);
+                    ? FeaturesRepository.get(VigourApi.class).feedMash(animal, player, stack, eaten)
+                    : FeaturesRepository.get(PregnancyApi.class).feedMother(animal, player, stack, eaten);
         }
         // Hungry days are taken off first, so the animal is fed as it is today.
         AnimalTraits current = FamiliarityCare.settle(animal).orElse(traits.get());
         long now = animal.level().getOverworldClockTime();
-        boolean familiar = Familiarity.ready(current.familiarity());
+        boolean familiar = Familiarity.ready(current.get(CARE).familiarity());
         boolean hurt = animal.getHealth() < animal.getMaxHealth();
-        Familiarity.Response response = Familiarity.respond(true, current.lastFedTick(), now);
+        Familiarity.Response response = Familiarity.respond(true, current.get(CARE).lastFedTick(), now);
         Familiarity.Click click = Familiarity.click(player.isShiftKeyDown(), familiar, response, hurt);
         if (click == Familiarity.Click.SCARE) {
             if (!animal.level().isClientSide()) {
@@ -108,7 +110,7 @@ public final class FamiliarityActions {
         }
         if (click == Familiarity.Click.WAIT) {
             if (!animal.level().isClientSide()) {
-                long remaining = Familiarity.ticksUntilFeed(current.lastFedTick(), now);
+                long remaining = Familiarity.ticksUntilFeed(current.get(CARE).lastFedTick(), now);
                 player.sendSystemMessage(TextComponents.of(Familiarity.nextFeed(remaining)));
             }
             return InteractionResult.CONSUME;
@@ -116,7 +118,7 @@ public final class FamiliarityActions {
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        float heal = FoodHeal.amount(eaten.effects().heal(), new MinecraftItemFacts(animal, stack).nutrition(), eaten.factor(), BarnyardConfig.current().tuning());
+        float heal = FeaturesRepository.get(FoodApi.class).heals(animal, stack, eaten);
         if (!player.hasInfiniteMaterials()) {
             stack.consume(1, player);
         }
@@ -132,20 +134,20 @@ public final class FamiliarityActions {
             FamiliarityCare.markEaten(animal);
             return VersionCompat.SUCCESS_SERVER;
         }
-        PregnancyCareActions.applyIfPregnant(animal, eaten.effects(), eaten.factor());
+        FeaturesRepository.get(PregnancyApi.class).feedPregnancy(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
-        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.familiarity(), amount), now);
-        double gained = fed.familiarity();
+        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.get(CARE).familiarity(), amount), now);
+        double gained = fed.get(CARE).familiarity();
         Services.DATA.set(animal, fed);
         FamiliarityCare.markEaten(animal);
         if (eaten.effects().startsMilk()) {
-            MilkActions.startMilkWithMeal(animal);
+            FeaturesRepository.get(MilkApi.class).startMilkWithMeal(animal);
         }
         if (!familiar && Familiarity.ready(gained)) {
-            BarnyardAdvancements.befriended(animal, player);
+            Events.post(new AnimalEvent.Befriended(animal, player));
         }
         tameIfFamiliar(animal, player, gained);
-        if (!animal.isBaby() && Familiarity.allowsLove(gained, Services.DATA.getPregnancy(animal).isPresent())) {
+        if (!animal.isBaby() && Familiarity.allowsLove(gained, FeaturesRepository.get(PregnancyApi.class).isPregnant(animal))) {
             animal.setInLove(player);
         }
         return VersionCompat.SUCCESS_SERVER;
@@ -155,7 +157,7 @@ public final class FamiliarityActions {
     public static boolean tempts(Animal animal, ItemStack stack) {
         try {
             // The food check is a cached lookup and most held items aren't food, so it goes first.
-            return FoodData.eats(animal, stack) && !ignoresFood(animal);
+            return FeaturesRepository.get(FoodApi.class).eats(animal, stack) && !ignoresFood(animal);
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
             return false;
@@ -169,13 +171,13 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return true;
         }
-        return !Familiarity.ready(traits.get().familiarity()) && !sneakingWithFood(animal, player);
+        return !Familiarity.ready(traits.get().get(CARE).familiarity()) && !sneakingWithFood(animal, player);
     }
 
     private static boolean sneakingWithFood(Animal animal, Player player) {
         try {
-            return player.isShiftKeyDown()
-                    && (FoodData.eats(animal, player.getMainHandItem()) || FoodData.eats(animal, player.getOffhandItem()));
+            FoodApi food = FeaturesRepository.get(FoodApi.class);
+            return player.isShiftKeyDown() && (food.eats(animal, player.getMainHandItem()) || food.eats(animal, player.getOffhandItem()));
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to check a {}'s diet", AnimalSex.speciesId(animal), exception);
             return false;
@@ -194,7 +196,7 @@ public final class FamiliarityActions {
             pet.setTarget(null);
             pet.setOrderedToSit(true);
             pet.level().broadcastEntityEvent(pet, (byte) 7);
-        } else if (animal instanceof TamableAnimal pet && NaturalistCompat.LIVESTOCK.contains(AnimalSex.speciesId(animal))
+        } else if (animal instanceof TamableAnimal pet && FeaturesRepository.get(NaturalistApi.class).isLivestock(AnimalSex.speciesId(animal))
                 && Familiarity.tames(pet.isTame(), familiarity)) {
             // Naturalist tames these while feeding them, which the mod's feeding runs ahead of.
             pet.tame(player);
@@ -236,9 +238,9 @@ public final class FamiliarityActions {
         AnimalTraits current = traits.get();
         return !Familiarity.interested(
                 true,
-                current.lastFedTick(),
+                current.get(CARE).lastFedTick(),
                 animal.level().getOverworldClockTime(),
-                Familiarity.ready(current.familiarity()),
+                Familiarity.ready(current.get(CARE).familiarity()),
                 animal.getHealth() < animal.getMaxHealth()
         );
     }
@@ -249,14 +251,14 @@ public final class FamiliarityActions {
             return true;
         }
         // Egg layers never breed by love: hens lay, and a rooster nearby makes the eggs fertile.
-        if (EggLaying.laysEggs(animal)) {
+        if (FeaturesRepository.get(EggsApi.class).laysEggs(animal)) {
             return false;
         }
         // Only females fall in love; Courtship chooses the male (see Courtship).
         if (traits.get().sex() == Sex.MALE) {
             return false;
         }
-        return Familiarity.allowsLove(traits.get().familiarity(), Services.DATA.getPregnancy(animal).isPresent())
+        return Familiarity.allowsLove(traits.get().get(CARE).familiarity(), FeaturesRepository.get(PregnancyApi.class).isPregnant(animal))
                 && AgeController.allowsLove(animal);
     }
 
@@ -292,7 +294,7 @@ public final class FamiliarityActions {
         if (traits.isEmpty()) {
             return false;
         }
-        return ProductGate.blocked(true, true, traits.get().familiarity());
+        return ProductGate.blocked(true, true, traits.get().get(CARE).familiarity());
     }
 
     private static boolean isProduct(Animal animal, ItemStack stack) {

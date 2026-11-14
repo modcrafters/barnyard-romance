@@ -1,9 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.food.Feed;
-import net.modcrafters.minecraft.barnyardromance.food.FoodData;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -62,7 +63,7 @@ public final class FeederFoods {
                 continue;
             }
             Optional<Animal> sample = sample(level, type);
-            if (sample.isPresent() && FoodData.resolve(sample.get(), stack) instanceof Feed.Eaten eaten && !eaten.superfood()) {
+            if (sample.isPresent() && FeaturesRepository.get(FoodApi.class).offered(sample.get(), stack) instanceof Feed.Eaten eaten && !eaten.superfood()) {
                 return true;
             }
         }

@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
-import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 
 public final class HornGrowth {
     // Horns show up at this share of full size when the animal turns young, so they visibly appear.

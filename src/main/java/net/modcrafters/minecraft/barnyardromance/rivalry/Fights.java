@@ -1,14 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.rivalry;
 
-import net.modcrafters.minecraft.barnyardromance.ServerScoped;
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -68,7 +69,7 @@ public final class Fights {
         Fight fight = new Fight(a.getUUID(), b.getUUID(), female, foodNear);
         FIGHTS.put(a.getUUID(), fight);
         FIGHTS.put(b.getUUID(), fight);
-        BarnyardAdvancements.fightStarted(a, b);
+        Events.post(new AnimalEvent.FightStarted(a, b));
     }
 
     public static boolean fighting(Animal animal) {
@@ -146,19 +147,20 @@ public final class Fights {
     }
 
     private static boolean familiar(Animal animal) {
-        return Services.DATA.get(animal).map(AnimalTraits::familiarity).map(Familiarity::ready).orElse(false);
+        return Services.DATA.get(animal).map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(false);
     }
 
     // The players close to either fighter holding food one of them eats.
     private static Set<UUID> foodNear(ServerLevel level, Animal a, Animal b) {
         double range = BarnyardConfig.current().tuning().fightStopRange();
         Set<UUID> near = new HashSet<>();
+        FoodApi food = FeaturesRepository.get(FoodApi.class);
         for (ServerPlayer player : level.players()) {
             if (player.isSpectator() || (player.distanceToSqr(a) > range * range && player.distanceToSqr(b) > range * range)) {
                 continue;
             }
-            if (FoodData.eats(a, player.getMainHandItem()) || FoodData.eats(a, player.getOffhandItem())
-                    || FoodData.eats(b, player.getMainHandItem()) || FoodData.eats(b, player.getOffhandItem())) {
+            if (food.eats(a, player.getMainHandItem()) || food.eats(a, player.getOffhandItem())
+                    || food.eats(b, player.getMainHandItem()) || food.eats(b, player.getOffhandItem())) {
                 near.add(player.getUUID());
             }
         }

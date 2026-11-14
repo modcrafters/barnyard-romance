@@ -2,16 +2,15 @@ package net.modcrafters.minecraft.barnyardromance.fabric;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
-import net.modcrafters.minecraft.barnyardromance.BarnyardRegistrations;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.food.FoodReloadListeners;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.network.HerdBookPayloads;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardTab;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
+import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.fabric.data.FabricAnimalData;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -37,14 +36,13 @@ import java.util.function.Supplier;
 public class BarnyardRomanceFabric implements ModInitializer {
     @Override
     public void onInitialize() {
-        FabricAnimalData.ANIMAL_TRAITS.identifier();
-        FabricAnimalData.PREGNANCY.identifier();
-        FabricAnimalData.LAYING.identifier();
+        // Installs the features first: the attachments and registry content below come from them.
+        BarnyardRomance.init();
+        FabricAnimalData.register();
         BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
-        CreativeModeTabEvents.modifyOutputEvent(BarnyardItems.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
-        BarnyardRomance.init();
+        CreativeModeTabEvents.modifyOutputEvent(BarnyardTab.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
         BarnyardRomance.setup();
         ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
         data.registerReloadListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());
@@ -52,7 +50,7 @@ public class BarnyardRomanceFabric implements ModInitializer {
         CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> FoodData.tagsReloaded());
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (entity instanceof Animal animal) {
-                AnimalSex.onJoin(animal);
+                AnimalTicks.joined(animal);
             }
         });
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, level) -> {

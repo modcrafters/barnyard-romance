@@ -1,6 +1,5 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.nest.BarnyardBlocks;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -40,7 +39,7 @@ public class FeederMenu extends AbstractContainerMenu {
     }
 
     public FeederMenu(int containerId, Inventory inventory, Container feeder, ContainerData herd) {
-        super(BarnyardBlocks.FEEDER_MENU, containerId);
+        super(FeedBlocks.FEEDER_MENU, containerId);
         checkContainerSize(feeder, FeederBlockEntity.SLOTS);
         checkContainerDataCount(herd, DATA);
         this.feeder = feeder;

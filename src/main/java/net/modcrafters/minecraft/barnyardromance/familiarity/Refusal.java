@@ -1,6 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
-import net.modcrafters.minecraft.barnyardromance.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 
 // Below refusalBelow an animal sometimes won't be milked or sheared, and that try is spent until midnight.
 public final class Refusal {

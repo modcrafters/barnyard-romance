@@ -4,16 +4,17 @@ import net.modcrafters.minecraft.barnyardromance.herd.DeathCause;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdRecord;
-import net.modcrafters.minecraft.barnyardromance.item.BarnyardItems;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
 import net.modcrafters.minecraft.barnyardromance.rivalry.Fights;
 import net.modcrafters.minecraft.barnyardromance.rivalry.RivalRolls;
-import net.modcrafters.minecraft.barnyardromance.age.GameDay;
-import net.modcrafters.minecraft.barnyardromance.eggs.EggSchedule;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -34,6 +35,8 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests.assertFather;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests.fed;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
+import static net.modcrafters.minecraft.barnyardromance.vigour.VigourSlices.VIGOUR;
 
 // In-game checks for males fighting: over a female in love, to the death, and what stops a fight. Most start the
 // fight by hand, since whether rivals fight over her is a roll; those that need the roll call Courtship.court with
@@ -70,7 +73,7 @@ public final class FightGameTests {
         Animal first = bull(helper, 5, 4, 1.0);
         Animal second = bull(helper, 5, 6, 1.0);
         courtWithAFight(helper, cow, first, second);
-        helper.runAfterDelay(700, () -> helper.assertTrue(cow.isInLove() || Services.DATA.getPregnancy(cow).isPresent(),
+        helper.runAfterDelay(700, () -> helper.assertTrue(cow.isInLove() || Services.DATA.get(cow, PregnancyFeature.PREGNANCY).isPresent(),
                 "the cow's love ran out while the bulls fought"));
 
         helper.succeedWhen(() -> {
@@ -171,7 +174,7 @@ public final class FightGameTests {
     public static void foodDoesNotStopAWildFight(GameTestHelper helper) {
         Animal first = bull(helper, 3, 4, 1.0);
         Animal wild = bull(helper, 5, 4, 1.0);
-        Services.DATA.set(wild, traits(helper, wild).fed(0.1, -1L));
+        Services.DATA.set(wild, traits(helper, wild).with(CARE, traits(helper, wild).get(CARE).fed(0.1, -1L)));
         Fights.start(first, wild, null);
         playerWith(helper, Items.WHEAT);
 
@@ -203,7 +206,7 @@ public final class FightGameTests {
             helper.assertTrue(!Fights.fighting(first), "the bull still fights a rival who is gone");
             int love = cow.getInLoveTime();
             helper.runAfterDelay(5, () -> {
-                helper.assertTrue(cow.getInLoveTime() < love || Services.DATA.getPregnancy(cow).isPresent(), "the cow's love is still held");
+                helper.assertTrue(cow.getInLoveTime() < love || Services.DATA.get(cow, PregnancyFeature.PREGNANCY).isPresent(), "the cow's love is still held");
                 helper.succeed();
             });
         });
@@ -242,10 +245,10 @@ public final class FightGameTests {
         Animal big = bull(helper, 3, 4, 1.3);
         Animal small = bull(helper, 5, 4, 0.7);
         // The book keeps a dead animal only while a living member descends from it.
-        ItemStack book = new ItemStack(BarnyardItems.HERD_BOOK);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         Animal calf = GameTestCompat.spawn(helper, EntityTypes.COW, 2, 1, 2);
         calf.setBaby(true);
-        Services.DATA.set(calf, new AnimalTraits(Sex.FEMALE, 1.0, 1.0, -1L).withLineage(new Lineage(null, small.getUUID())));
+        Services.DATA.set(calf, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)).withLineage(new Lineage(null, small.getUUID())));
         HerdBooks.register(book, small);
         HerdBooks.register(book, calf);
         Fights.start(big, small, null);
@@ -261,8 +264,8 @@ public final class FightGameTests {
     public static void roostersFightWithoutAHen(GameTestHelper helper) {
         Animal first = male(helper, EntityTypes.CHICKEN, 3, 4, 1.0);
         Animal second = male(helper, EntityTypes.CHICKEN, 5, 4, 1.0);
-        Services.DATA.set(first, traits(helper, first).fed(0.0, -1L));
-        Services.DATA.set(second, traits(helper, second).fed(0.0, -1L));
+        Services.DATA.set(first, traits(helper, first).with(CARE, traits(helper, first).get(CARE).fed(0.0, -1L)));
+        Services.DATA.set(second, traits(helper, second).with(CARE, traits(helper, second).get(CARE).fed(0.0, -1L)));
         rollAfterSettling(helper, first, second, 0.0, true);
 
         helper.succeedWhen(() -> helper.assertTrue(first.isAlive() != second.isAlive(), "both roosters are " + first.isAlive()
@@ -280,15 +283,15 @@ public final class FightGameTests {
     public static void aWildAndAFamiliarBullNeverFightAtRandom(GameTestHelper helper) {
         Animal first = bull(helper, 3, 4, 1.0);
         Animal wild = bull(helper, 5, 4, 1.0);
-        Services.DATA.set(wild, traits(helper, wild).fed(0.1, -1L));
+        Services.DATA.set(wild, traits(helper, wild).with(CARE, traits(helper, wild).get(CARE).fed(0.1, -1L)));
         rollAfterSettling(helper, first, wild, 0.0, false);
     }
 
     public static void twoWildBullsFightAtRandom(GameTestHelper helper) {
         Animal first = bull(helper, 3, 4, 1.0);
         Animal second = bull(helper, 5, 4, 1.0);
-        Services.DATA.set(first, traits(helper, first).fed(0.1, -1L));
-        Services.DATA.set(second, traits(helper, second).fed(0.1, -1L));
+        Services.DATA.set(first, traits(helper, first).with(CARE, traits(helper, first).get(CARE).fed(0.1, -1L)));
+        Services.DATA.set(second, traits(helper, second).with(CARE, traits(helper, second).get(CARE).fed(0.1, -1L)));
         rollAfterSettling(helper, first, second, 0.0, true);
 
         helper.succeedWhen(() -> helper.assertTrue(Fights.fighting(first) || !first.isAlive() || !second.isAlive(), "the wild bulls never fought"));
@@ -304,8 +307,8 @@ public final class FightGameTests {
             long clock = helper.getLevel().getOverworldClockTime();
             RivalRolls.roll(roller, helper.getLevel(), 1.0);
             helper.assertTrue(!Fights.fighting(roller), "a roll of 1.0 started a fight");
-            helper.assertTrue(traits(helper, roller).vigour().rollDay() == GameDay.of(clock), "the roll wasn't recorded for today");
-            helper.assertTrue(!RivalRolls.due(roller, clock + 23_000L - EggSchedule.sinceMidnight(clock)), "the bull is due again the same day");
+            helper.assertTrue(traits(helper, roller).get(VIGOUR).rollDay() == GameDay.of(clock), "the roll wasn't recorded for today");
+            helper.assertTrue(!RivalRolls.due(roller, clock + 23_000L - GameDay.ticksSinceMidnight(clock)), "the bull is due again the same day");
             helper.succeed();
         });
     }
@@ -318,7 +321,7 @@ public final class FightGameTests {
             RivalRolls.roll(roller, helper.getLevel(), roll);
             helper.assertTrue(Fights.fighting(first) == fight && Fights.fighting(second) == fight,
                     (fight ? "the males didn't start fighting" : "the males started fighting"));
-            helper.assertTrue(traits(helper, roller).vigour().rollDay() == GameDay.of(helper.getLevel().getOverworldClockTime()),
+            helper.assertTrue(traits(helper, roller).get(VIGOUR).rollDay() == GameDay.of(helper.getLevel().getOverworldClockTime()),
                     "the roll wasn't recorded for today");
             if (!fight) {
                 helper.succeed();
@@ -341,7 +344,7 @@ public final class FightGameTests {
 
     private static Animal male(GameTestHelper helper, EntityType<? extends Animal> type, int x, int z, double scale) {
         Animal animal = GameTestCompat.spawn(helper, type, x, 1, z);
-        Services.DATA.set(animal, new AnimalTraits(Sex.MALE, scale, 1.0, -1L));
+        Services.DATA.set(animal, AnimalTraits.of(Sex.MALE, scale).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         return fed(animal);
     }
 

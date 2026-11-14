@@ -1,22 +1,27 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
-import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
-import net.modcrafters.minecraft.barnyardromance.rivalry.Courtship;
-import net.modcrafters.minecraft.barnyardromance.Constants;
-import net.modcrafters.minecraft.barnyardromance.age.AgeSettings;
-import net.modcrafters.minecraft.barnyardromance.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
-import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.sex.Growth;
-import net.modcrafters.minecraft.barnyardromance.sex.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.sex.Offspring;
-import net.modcrafters.minecraft.barnyardromance.sex.Lineage;
-import net.modcrafters.minecraft.barnyardromance.sex.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.Sex;
-import net.modcrafters.minecraft.barnyardromance.sex.SexRoll;
-import net.modcrafters.minecraft.barnyardromance.sex.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.SkippedTime;
+import net.modcrafters.minecraft.barnyardromance.advancement.api.AdvancementsApi;
+import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
+import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
+import net.modcrafters.minecraft.barnyardromance.core.event.Events;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
@@ -45,7 +50,7 @@ public final class PregnancyController {
     }
 
     public static void catchUp(Animal animal, ServerLevel level) {
-        Optional<Pregnancy> pregnancy = Services.DATA.getPregnancy(animal);
+        Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         if (pregnancy.isEmpty() || !animal.isAlive()) {
             return;
         }
@@ -58,7 +63,21 @@ public final class PregnancyController {
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to birth {}", AnimalSex.speciesId(animal), exception);
         }
-        Services.DATA.clearPregnancy(animal);
+        Services.DATA.remove(animal, PregnancyFeature.PREGNANCY);
+    }
+
+    // A pregnancy from before size ranges were saved takes the father's species' range the first time the mother joins,
+    // the way animals take theirs, so editing the numbers later moves the father's scale with them. Like her traits,
+    // an excluded species' pregnancy is left as it was saved.
+    public static void onJoin(Animal mother) {
+        BarnyardConfig config = BarnyardConfig.current();
+        if (!config.speciesEnabled(AnimalSex.speciesId(mother))) {
+            return;
+        }
+        Services.DATA.get(mother, PregnancyFeature.PREGNANCY)
+                .filter(pregnancy -> pregnancy.fatherSizeRange() == null)
+                .ifPresent(pregnancy -> Services.DATA.set(mother, PregnancyFeature.PREGNANCY,
+                        pregnancy.withFatherSizeRange(config.sizeFor(pregnancy.fatherSpecies()))));
     }
 
     // Time skipped by sleeping or /time add counts towards the pregnancy, including any skipped while she was unloaded.
@@ -72,7 +91,7 @@ public final class PregnancyController {
             return pregnancy;
         }
         Pregnancy moved = pregnancy.skipped(Math.max(0L, drift), new SkippedTime(game, clock));
-        Services.DATA.setPregnancy(mother, moved);
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, moved);
         return moved;
     }
 
@@ -98,7 +117,7 @@ public final class PregnancyController {
         Animal father = mother == self ? partner : self;
         AnimalTraits motherTraits = mother == self ? selfTraits.get() : partnerTraits.get();
         AnimalTraits fatherTraits = mother == self ? partnerTraits.get() : selfTraits.get();
-        if (Services.DATA.getPregnancy(mother).isEmpty()) {
+        if (Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty()) {
             if (Fertility.wornOut(motherTraits, config.ageFor(AnimalSex.speciesId(mother)), level.getGameTime())) {
                 // Worn out: they mate, show hearts and rest, but nothing is conceived.
                 restWithoutPregnancy(self, partner);
@@ -114,19 +133,20 @@ public final class PregnancyController {
                 restWithoutPregnancy(self, partner);
                 return true;
             }
-            UUID breeder = BarnyardAdvancements.breeder(mother, father);
-            Services.DATA.setPregnancy(mother, new Pregnancy(
+            UUID breeder = FeaturesRepository.get(AdvancementsApi.class).breeder(mother, father);
+            Services.DATA.set(mother, PregnancyFeature.PREGNANCY, new Pregnancy(
                     level.getGameTime(),
                     durationTicks,
                     AnimalSex.speciesId(father),
                     fatherTraits.scale(),
                     litterSize,
-                    motherTraits.familiarity(),
+                    FeaturesRepository.get(FamiliarityApi.class).familiarity(motherTraits),
                     fatherTraits.growthTicks(),
                     fatherTraits.weight(),
                     litter.get()
-            ).withFatherId(father.getUUID()).withBreederId(breeder));
-            BarnyardAdvancements.conceived(mother, breeder);
+            ).withFatherId(father.getUUID()).withBreederId(breeder)
+                    .withFatherSizeRange(SizeRanges.rangeOf(fatherTraits, AnimalSex.speciesId(father))));
+            Events.post(new AnimalEvent.Conceived(mother, breeder));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);
         return true;
@@ -134,8 +154,9 @@ public final class PregnancyController {
 
     // Same as vanilla's cancelled BabyEntitySpawnEvent: no pregnancy, no XP, the usual rest.
     private static void restWithoutPregnancy(Animal self, Animal partner) {
-        self.setAge(Courtship.restAfterMating(self, 6000));
-        partner.setAge(Courtship.restAfterMating(partner, 6000));
+        RivalryApi rivalry = FeaturesRepository.get(RivalryApi.class);
+        self.setAge(rivalry.restAfterMating(self, 6000));
+        partner.setAge(rivalry.restAfterMating(partner, 6000));
         self.resetLove();
         partner.resetLove();
         BreedingStatus.resting(self);
@@ -184,21 +205,14 @@ public final class PregnancyController {
             // A birth starts the milk, and it keeps flowing while the young are babies.
             Services.DATA.get(mother).ifPresent(traits -> Services.DATA.set(
                     mother,
-                    traits.gaveBirth(now, species)
-                            .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)
-                            .withLactation(traits.lactation().afterBirth(now, youngUntil, config.tuning().lactationTicks()))
+                    FeaturesRepository.get(MilkApi.class).inMilkAfterBirth(
+                            traits.with(PregnancySlices.BREEDING, traits.get(PregnancySlices.BREEDING).gaveBirth(now, species)
+                                    .withFertility(Fertility.afterBirth(Fertility.current(traits, age, now)), now)),
+                            now, youngUntil)
             ));
         }
         level.broadcastEntityEvent(mother, (byte) 18);
-        try {
-            HerdBooks.born(mother, born);
-        } catch (RuntimeException exception) {
-            Constants.LOG.warn("Failed to add {} young to herd books", AnimalSex.speciesId(mother), exception);
-        }
-        BarnyardAdvancements.born(mother, born, pregnancy.breederId());
-        for (Animal baby : born) {
-            BarnyardAdvancements.twoByTwo(level, pregnancy.breederId(), mother, baby);
-        }
+        Events.post(new AnimalEvent.Born(mother, born, pregnancy.breederId(), AnimalEvent.Birth.LIVE));
     }
 
     private static int rememberParents(Animal mother, Animal child, Pregnancy pregnancy) {
@@ -210,17 +224,23 @@ public final class PregnancyController {
         double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
         // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
         double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
-        Sex sex = SexRoll.roll(child.getRandom().nextDouble(), config.femaleRatio());
-        AnimalTraits traits = Offspring.traits(
+        // The father's scale is moved from the range it was set in at conception to his species' range now.
+        double fatherScale = SizeRanges.rescale(Sex.MALE, pregnancy.fatherScale(),
+                SizeRanges.orCurrent(pregnancy.fatherSizeRange(), pregnancy.fatherSpecies()), config.sizeFor(pregnancy.fatherSpecies()));
+        BreedingApi breeding = FeaturesRepository.get(BreedingApi.class);
+        Sex sex = breeding.newbornSex(child.getRandom().nextDouble(), config.femaleRatio());
+        AnimalTraits traits = breeding.newbornTraits(
                 sex,
                 size,
-                new Offspring.Parent(motherScale, motherGrowth, motherWeight),
-                new Offspring.Parent(pregnancy.fatherScale(), pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
+                new Parent(motherScale, motherGrowth, motherWeight),
+                new Parent(fatherScale, pregnancy.fatherGrowthTicks(), pregnancy.fatherWeight()),
                 nutrition,
                 child.getRandom(),
                 mother.level().getGameTime(),
                 new Lineage(mother.getUUID(), pregnancy.fatherId())
         );
+        // Rolled in the mother's range; a young one of another kind (a mule) is saved in its own.
+        traits = SizeRanges.settled(traits, config.sizeFor(AnimalSex.speciesId(child)));
         Services.DATA.set(child, traits);
         return traits.growthTicks();
     }
