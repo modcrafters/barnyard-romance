@@ -75,6 +75,20 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void goatLongJumpsAreOffByDefault() {
+        assertFalse(BarnyardConfig.parse("{}").goatLongJumps());
+        assertFalse(BarnyardConfig.defaults().goatLongJumps());
+    }
+
+    @Test
+    void goatLongJumpsRoundTrip() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"goatLongJumps\": true}");
+
+        assertTrue(config.goatLongJumps());
+        assertTrue(BarnyardConfig.parse(config.toJson()).goatLongJumps());
+    }
+
+    @Test
     void herdSticksAreOffByDefault() {
         assertFalse(BarnyardConfig.parse("{}").herdSticks());
     }

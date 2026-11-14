@@ -263,6 +263,11 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void trackedGoatsDoNotLongJump(GameTestHelper helper) {
+        CareGameTests.trackedGoatsDoNotLongJump(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void aNeglectedPetEarnsItsOwnerTheSilentTreatment(GameTestHelper helper) {
         CareGameTests.aNeglectedPetEarnsItsOwnerTheSilentTreatment(helper);
     }

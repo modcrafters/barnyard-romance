@@ -38,6 +38,7 @@ public final class BarnyardConfig {
 
     private final boolean enabled;
     private final boolean herdSticks;
+    private final boolean goatLongJumps;
     private final double femaleRatio;
     private final SizeSettings defaults;
     private final boolean pregnancyEnabled;
@@ -55,6 +56,7 @@ public final class BarnyardConfig {
     private BarnyardConfig(
             boolean enabled,
             boolean herdSticks,
+            boolean goatLongJumps,
             double femaleRatio,
             SizeSettings defaults,
             boolean pregnancyEnabled,
@@ -69,6 +71,7 @@ public final class BarnyardConfig {
     ) {
         this.enabled = enabled;
         this.herdSticks = herdSticks;
+        this.goatLongJumps = goatLongJumps;
         this.femaleRatio = femaleRatio;
         this.defaults = defaults;
         this.pregnancyEnabled = pregnancyEnabled;
@@ -83,7 +86,7 @@ public final class BarnyardConfig {
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, herdSticksByDefault(), 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
+        return new BarnyardConfig(true, herdSticksByDefault(), false, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
     }
 
     // The dev client runs set -Dbarnyard_romance.herd_sticks=true; a config file's own herdSticks wins over it.
@@ -132,6 +135,7 @@ public final class BarnyardConfig {
         JsonObject object = element.getAsJsonObject();
         boolean enabled = bool(object, "enabled", true);
         boolean herdSticks = bool(object, "herdSticks", herdSticksByDefault());
+        boolean goatLongJumps = bool(object, "goatLongJumps", false);
         double femaleRatio = clamp(number(object, "femaleRatio", 0.5), 0.0, 1.0);
         SizeSettings size = new SizeSettings(
                 number(object, "femaleScale", DEFAULT_SIZE.femaleScale()),
@@ -165,6 +169,7 @@ public final class BarnyardConfig {
         return new BarnyardConfig(
                 enabled,
                 herdSticks,
+                goatLongJumps,
                 femaleRatio,
                 size,
                 pregnancyEnabled,
@@ -191,6 +196,7 @@ public final class BarnyardConfig {
         JsonObject object = new JsonObject();
         object.addProperty("enabled", enabled);
         object.addProperty("herdSticks", herdSticks);
+        object.addProperty("goatLongJumps", goatLongJumps);
         object.addProperty("femaleRatio", femaleRatio);
         object.addProperty("femaleScale", defaults.femaleScale());
         object.addProperty("maleScale", defaults.maleScale());
@@ -229,6 +235,11 @@ public final class BarnyardConfig {
     // starts, so a change needs a restart.
     public boolean herdSticks() {
         return herdSticks;
+    }
+
+    // Whether goats the mod tracks keep vanilla's long jump, which carries them over a pen's fence. Off by default.
+    public boolean goatLongJumps() {
+        return goatLongJumps;
     }
 
     public double femaleRatio() {
