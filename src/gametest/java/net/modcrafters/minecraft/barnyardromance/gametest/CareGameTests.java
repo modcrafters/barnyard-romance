@@ -41,7 +41,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.entity.ai.behavior.LongJumpToRandomPos;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
@@ -75,6 +79,7 @@ public final class CareGameTests {
             new BreedingGameTests.Case("sneaking_with_food_calms_an_unfamiliar_animal", 20, CareGameTests::sneakingWithFoodCalmsAnUnfamiliarAnimal),
             new BreedingGameTests.Case("animal_still_runs_from_another_player", 20, CareGameTests::animalStillRunsFromAnotherPlayer),
             new BreedingGameTests.Case("excluded_animal_keeps_running", 20, CareGameTests::excludedAnimalKeepsRunning),
+            new BreedingGameTests.Case("tracked_goats_do_not_long_jump", 20, CareGameTests::trackedGoatsDoNotLongJump),
             new BreedingGameTests.Case("fed_cow_keeps_familiarity_over_days", 20, CareGameTests::fedCowKeepsFamiliarityOverDays),
             new BreedingGameTests.Case("hungry_cow_loses_five_percent_a_day", 20, CareGameTests::hungryCowLosesFivePercentADay),
             new BreedingGameTests.Case("feeding_marks_the_day_eaten", 20, CareGameTests::feedingMarksTheDayEaten),
@@ -898,5 +903,43 @@ public final class CareGameTests {
             BarnyardConfig.set(config);
         }
         helper.succeed();
+    }
+
+    // Vanilla goats long-jump to spots they can't walk to, which takes them over a pen's fence. With goatLongJumps
+    // off (the default) a tracked goat never starts one and waits out a fresh cooldown, the way vanilla's goat does
+    // when it can't jump; switched on, or with goats excluded, the jump starts as in vanilla. The check waits for the
+    // goat to land, since a long jump only starts from the ground.
+    public static void trackedGoatsDoNotLongJump(GameTestHelper helper) {
+        Animal goat = BreedingGameTests.female(helper, EntityTypes.GOAT);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(goat.onGround(), "the goat hasn't landed");
+            BarnyardConfig config = BarnyardConfig.current();
+            boolean tracked;
+            boolean switchedOn;
+            boolean excluded;
+            try {
+                BarnyardConfig.set(BarnyardConfig.parse("{}"));
+                tracked = tryLongJump(helper, goat);
+                helper.assertTrue(goat.getBrain().getMemory(MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS).isPresent(),
+                        "a goat kept from jumping has no cooldown, so it would sit in the long jump activity");
+                BarnyardConfig.set(BarnyardConfig.parse("{\"goatLongJumps\": true}"));
+                switchedOn = tryLongJump(helper, goat);
+                BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:goat\"]}"));
+                excluded = tryLongJump(helper, goat);
+            } finally {
+                BarnyardConfig.set(config);
+            }
+            helper.assertTrue(!tracked, "a tracked goat started a long jump");
+            helper.assertTrue(switchedOn, "with goatLongJumps on, the goat didn't start a long jump");
+            helper.assertTrue(excluded, "an excluded goat didn't start a long jump");
+        });
+    }
+
+    // Starts a fresh copy of the goat's own long jump behaviour, with its cooldown cleared.
+    private static boolean tryLongJump(GameTestHelper helper, Animal goat) {
+        goat.getBrain().eraseMemory(MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS);
+        goat.getBrain().eraseMemory(MemoryModuleType.LONG_JUMP_MID_JUMP);
+        LongJumpToRandomPos<Mob> jump = new LongJumpToRandomPos<>(UniformInt.of(600, 1200), 5, 5, 3.5714288F, mob -> SoundEvents.GOAT_LONG_JUMP);
+        return jump.tryStart(helper.getLevel(), goat, helper.getLevel().getGameTime());
     }
 }

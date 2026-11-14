@@ -54,6 +54,8 @@ Tamed wolves, cats and horses never go wild again. Below the familiarity thresho
 
 Animals that shy away from players, such as rabbits or Naturalist's deer, stop running from you once they're familiar. Before that, they hold still if you sneak up holding food they eat.
 
+Goats don't long-jump, so a fence holds them like any other animal. Vanilla's goats leap to spots they can't walk to, which takes them over a fence. To bring the jump back, set `goatLongJumps` in `config/barnyard_romance.json` to `true`. Goats left out of the mod always jump.
+
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
 ### Wild-caught animals
