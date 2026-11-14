@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+## 0.0.4
+
 - Goats no longer long-jump out of fenced pens. Set `goatLongJumps` to `true` in `config/barnyard_romance.json` to bring vanilla's jump back.
 - On a new install, males are about 30% bigger than females instead of 50%. The numbers are `femaleScale`, `maleScale` and `scaleVariation` in `config/barnyard_romance.json`, and an existing install keeps the ones already in its file.
 - Changing the size numbers in the config now resizes existing animals after a restart, and every animal keeps its size band: an M male stays an M male. Chicks from eggs and young from pregnancies started before the change are sized for the new numbers too.
