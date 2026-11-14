@@ -138,6 +138,11 @@ public class FabricEggGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void anExcludedEggWithoutARangeIsLeftAlone(GameTestHelper helper) {
+        EggGameTests.anExcludedEggWithoutARangeIsLeftAlone(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void blockedFrontHatchesOnTop(GameTestHelper helper) {
         EggGameTests.blockedFrontHatchesOnTop(helper);
     }
