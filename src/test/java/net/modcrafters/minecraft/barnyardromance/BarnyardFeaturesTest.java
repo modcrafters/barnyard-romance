@@ -15,12 +15,12 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardFeaturesTest {
-    // A top-level interface, public or not. A sealed interface is a closed set of values an api hands over (food's
-    // Feed), not something a feature provides, so it doesn't count.
-    private static final Pattern INTERFACE = Pattern.compile("^(?:public\\s+)?(?:non-sealed\\s+)?interface\\s+\\w+");
+    // A top-level interface named <Name>Api, public or not. Other interfaces in an api package are values it hands
+    // over: a sealed one is a closed set (food's Feed), and an open one is implemented by callers (stats' AnimalSubject).
+    private static final Pattern INTERFACE = Pattern.compile("^(?:public\\s+)?(?:non-sealed\\s+)?interface\\s+\\w+Api\\b");
 
-    // Every interface in a feature's api package is provided by a feature that BarnyardFeatures lists, so a forgotten
-    // registration fails here rather than in a world.
+    // Every <Name>Api interface in a feature's api package is provided by a feature that BarnyardFeatures lists, so a
+    // forgotten registration fails here rather than in a world.
     @Test
     void everyApiHasAProvider() throws ClassNotFoundException {
         FeatureSet features = FeatureSet.of(BarnyardFeatures.all());
