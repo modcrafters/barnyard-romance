@@ -16,7 +16,7 @@ import net.modcrafters.minecraft.barnyardromance.mixin.OcelotAccessor;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;

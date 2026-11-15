@@ -1,13 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.minecraft.resources.Identifier;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -59,7 +59,7 @@ final class FactSheet {
                 pregnancies.restingUntil(traits),
                 now
         );
-        return AnimalFacts.builder(SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, species)).name(), stage)
+        return AnimalFacts.builder(SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, species)).name(), stage)
                 .ageTicks(traits.bornTick() < 0L ? -1L : Math.max(0L, at - traits.bornTick()))
                 .fedToday(fedToday(traits, clock))
                 .fedBy(StatText.feeder(upkeep, today))
@@ -88,7 +88,7 @@ final class FactSheet {
                 .eggsToday(subject.alive() ? eggsToday(subject, stage, vigour, hungryMale, today) : Text.EMPTY)
                 .breeding(breeding)
                 .father(pregnancy == null ? Text.EMPTY : StatText.father(
-                        SizeClass.of(Sex.MALE, pregnancy.fatherScale(), SizeRanges.orCurrent(pregnancy.fatherSizeRange(), pregnancy.fatherSpecies())).name(),
+                        SizeClasses.of(Sex.MALE, pregnancy.fatherScale(), SizeRanges.orCurrent(pregnancy.fatherSizeRange(), pregnancy.fatherSpecies())).name(),
                         pregnancy.fatherSpecies()))
                 .lastBirth(StatText.lastBirth(offspring(traits), pregnancies.lastBirthTick(traits), now))
                 .build();

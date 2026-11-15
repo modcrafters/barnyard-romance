@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.core.data;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 
 import java.util.List;
 

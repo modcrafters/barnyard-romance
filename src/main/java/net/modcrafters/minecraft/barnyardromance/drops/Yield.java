@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.drops;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 
 // How much an animal gives: vanilla's amount × size × sex × age, rounded at random so the average is exact.
 public final class Yield {

@@ -21,7 +21,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.vigour.Vigour;
 import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;

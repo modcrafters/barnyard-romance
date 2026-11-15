@@ -21,13 +21,27 @@ dependencies {
 
 // Game tests are their own small mod, built from src/gametest beside the real one. The game test runs load both;
 // the jars only ever hold main, so no test ships and main code can't call test code.
+// The public API is its own source set too, src/api beside main: other mods compile against its jar, main and every
+// test see it, and it can't see main. In a loader project it holds that loader's native events.
 sourceSets {
+    api
+    main {
+        compileClasspath += api.output
+        runtimeClasspath += api.output
+    }
+    test {
+        compileClasspath += api.output
+        runtimeClasspath += api.output
+    }
     gametest {
-        compileClasspath += main.output
-        runtimeClasspath += main.output
+        compileClasspath += main.output + api.output
+        runtimeClasspath += main.output + api.output
     }
 }
 configurations {
+    // The API compiles against Minecraft; ApiSourcesTest keeps it off main's other libraries.
+    apiCompileClasspath.extendsFrom compileClasspath
+    apiRuntimeClasspath.extendsFrom runtimeClasspath
     gametestCompileClasspath.extendsFrom compileClasspath
     gametestRuntimeClasspath.extendsFrom runtimeClasspath
 }
@@ -40,7 +54,7 @@ base {
 // project's own branch. Stonecutter already drops the shared copy when it processes an inactive version, but the
 // active version compiles the shared folders as they are, so the shared copy is left out here as well.
 def versionOverrides = [rootProject.projectDir, project.parent.projectDir].unique().collectMany { branchDir ->
-    ['main', 'gametest'].collectMany { sourceSet ->
+    ['main', 'gametest', 'api'].collectMany { sourceSet ->
         ['java', 'resources'].collect { kind ->
             [shared: new File(branchDir, "src/${sourceSet}/${kind}").toPath(), local: new File(branchDir, "versions/${project.name}/src/${sourceSet}/${kind}")]
         }

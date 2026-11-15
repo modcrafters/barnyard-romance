@@ -1,10 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
@@ -65,7 +65,7 @@ public final class HerdCard {
             int screenHeight
     ) {
         String sign = traits.sex() == Sex.FEMALE ? FEMALE_MARK : MALE_MARK;
-        String letter = SizeClass.of(traits.sex(), traits.scale(), size).name();
+        String letter = SizeClasses.of(traits.sex(), traits.scale(), size).name();
         String name = animal.getName().getString();
         int titleWidth = font.width(sign) + 3 + font.width(letter) + 4 + font.width(name);
         int barRow = 8 + 3 + HerdCardLayout.BAR_WIDTH;

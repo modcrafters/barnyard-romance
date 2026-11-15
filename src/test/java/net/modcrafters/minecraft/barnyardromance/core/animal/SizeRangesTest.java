@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import org.junit.jupiter.api.Test;
 
@@ -64,7 +65,7 @@ class SizeRangesTest {
         for (Sex sex : Sex.values()) {
             for (double t : new double[] {0.125, 0.375, 0.625, 0.875}) {
                 double scale = SizeRanges.base(sex, OLD) - 0.1 + t * 0.2;
-                assertEquals(SizeClass.of(sex, scale, OLD), SizeClass.of(sex, SizeRanges.rescale(sex, scale, OLD, NEW), NEW));
+                assertEquals(SizeClasses.of(sex, scale, OLD), SizeClasses.of(sex, SizeRanges.rescale(sex, scale, OLD, NEW), NEW));
             }
         }
     }

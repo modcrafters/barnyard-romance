@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import java.util.stream.IntStream;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.minecraft.world.inventory.ContainerInput;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.config.Range;
@@ -42,10 +43,10 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.BlockPos;
@@ -388,7 +389,7 @@ public final class EggGameTests {
                 .orElseThrow(() -> GameTestCompat.failure(helper, "no chick hatched"));
 
         AnimalTraits traits = traits(helper, chick);
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
+        SizeClass size = SizeClasses.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
         helper.assertTrue(chick.isBaby(), "a tainted chick was born grown");
         helper.assertTrue(size == SizeClass.S || size == SizeClass.M, "a tainted chick is " + size);
         helper.assertTrue(traits.weight() == 0.25, "a tainted chick weighs " + traits.weight());
@@ -622,7 +623,7 @@ public final class EggGameTests {
                 .orElseThrow(() -> GameTestCompat.failure(helper, "no chick hatched"));
 
         AnimalTraits traits = traits(helper, chick);
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
+        SizeClass size = SizeClasses.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
         helper.assertTrue(chick.isBaby() && size == SizeClass.S, "a thrown wild egg's chick is " + size);
         helper.assertTrue(traits.weight() == 0.25 && traits.lineage().equals(Lineage.UNKNOWN), "a thrown wild egg's chick is " + traits);
         assertStampedInTheChickenRange(helper, traits);
@@ -722,7 +723,7 @@ public final class EggGameTests {
 
         Animal chick = chickIn(helper, BOX.north());
         AnimalTraits traits = traits(helper, chick);
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
+        SizeClass size = SizeClasses.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
         helper.assertTrue(traits.lineage().equals(new Lineage(data.mother(), data.father())), "the chick's parents are " + traits.lineage());
         helper.assertTrue(traits.bornTick() == helper.getLevel().getGameTime(), "the chick was born at " + traits.bornTick());
         helper.assertTrue(traits.get(CARE).familiarity() == Familiarity.inherited(0.5), "the chick starts at familiarity " + traits.get(CARE).familiarity());

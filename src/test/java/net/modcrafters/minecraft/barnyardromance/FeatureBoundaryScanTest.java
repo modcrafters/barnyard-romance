@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // The import rule between core, features and hooks: core imports only core; a feature's api imports core and other
 // features' api; a feature's implementation imports core, itself and other features' api; hooks import anything.
+// Everything may import the public API (the top-level api package, in src/api), which imports nothing from the mod:
+// Gradle enforces that half, as the API is its own source set and isn't scanned here.
 // There are no exceptions, and new ones aren't allowed: an import that breaks the rule needs an api, an event or a
 // move, not an allowance here.
 class FeatureBoundaryScanTest {
@@ -102,9 +104,10 @@ class FeatureBoundaryScanTest {
     private record Zone(String name, boolean api) {
         static final Zone CORE = new Zone("core", false);
         static final Zone HOOK = new Zone("hook", false);
+        static final Zone PUBLIC_API = new Zone("public api", false);
 
         boolean mayImport(Zone imported) {
-            if (this.equals(HOOK) || imported.equals(CORE)) {
+            if (this.equals(HOOK) || imported.equals(CORE) || imported.equals(PUBLIC_API)) {
                 return true;
             }
             if (imported.equals(HOOK) || this.equals(CORE)) {
@@ -185,6 +188,9 @@ class FeatureBoundaryScanTest {
         }
         if (top.equals("core")) {
             return Zone.CORE;
+        }
+        if (top.equals("api")) {
+            return Zone.PUBLIC_API;
         }
         if (FEATURES.contains(top)) {
             return new Zone(top, pkg.equals(top + "/api") || pkg.startsWith(top + "/api/"));

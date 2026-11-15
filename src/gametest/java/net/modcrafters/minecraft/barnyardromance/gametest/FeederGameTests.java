@@ -35,7 +35,7 @@ import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.StatSheet;

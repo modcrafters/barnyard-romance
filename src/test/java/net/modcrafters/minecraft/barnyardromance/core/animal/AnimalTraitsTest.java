@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Hunger;

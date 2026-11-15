@@ -21,7 +21,7 @@ import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import io.netty.buffer.ByteBuf;

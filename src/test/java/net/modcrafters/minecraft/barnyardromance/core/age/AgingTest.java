@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core.age;
 
+import net.modcrafters.minecraft.barnyardromance.core.text.Names;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import org.junit.jupiter.api.Test;
@@ -87,9 +89,9 @@ class AgingTest {
         assertFalse(AgeStage.YOUNG.canBreed());
         assertTrue(AgeStage.ADULT.canBreed());
         assertTrue(AgeStage.OLD.canBreed());
-        assertEquals("Young", English.of(AgeStage.YOUNG.text()));
-        assertEquals("Baby", English.of(AgeStage.BABY.text()));
-        assertEquals("Adult", English.of(AgeStage.ADULT.text()));
-        assertEquals("Old", English.of(AgeStage.OLD.text()));
+        assertEquals("Young", English.of(Names.of(AgeStage.YOUNG)));
+        assertEquals("Baby", English.of(Names.of(AgeStage.BABY)));
+        assertEquals("Adult", English.of(Names.of(AgeStage.ADULT)));
+        assertEquals("Old", English.of(Names.of(AgeStage.OLD)));
     }
 }

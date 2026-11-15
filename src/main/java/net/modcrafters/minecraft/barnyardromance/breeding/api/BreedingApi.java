@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.breeding.api;
 import net.minecraft.util.RandomSource;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 
 // What other features ask of breeding: a newborn's sex, size and traits.

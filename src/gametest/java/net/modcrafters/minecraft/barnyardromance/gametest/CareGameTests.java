@@ -30,7 +30,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;

@@ -1,7 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.breeding;
 
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import org.junit.jupiter.api.Test;
 
@@ -34,9 +35,9 @@ class ScaleRollTest {
 
         assertEquals(0.70, ScaleRoll.rollWild(Sex.FEMALE, size, 0.0), 1.0e-9);
         assertEquals(1.10, ScaleRoll.rollWild(Sex.MALE, size, 0.0), 1.0e-9);
-        assertEquals(SizeClass.S, SizeClass.of(Sex.FEMALE, ScaleRoll.rollWild(Sex.FEMALE, size, 0.0), size));
-        assertEquals(SizeClass.M, SizeClass.of(Sex.FEMALE, ScaleRoll.rollWild(Sex.FEMALE, size, 1.0), size));
-        assertEquals(SizeClass.M, SizeClass.of(Sex.MALE, ScaleRoll.rollWild(Sex.MALE, size, 1.0), size));
+        assertEquals(SizeClass.S, SizeClasses.of(Sex.FEMALE, ScaleRoll.rollWild(Sex.FEMALE, size, 0.0), size));
+        assertEquals(SizeClass.M, SizeClasses.of(Sex.FEMALE, ScaleRoll.rollWild(Sex.FEMALE, size, 1.0), size));
+        assertEquals(SizeClass.M, SizeClasses.of(Sex.MALE, ScaleRoll.rollWild(Sex.MALE, size, 1.0), size));
     }
 
     @Test

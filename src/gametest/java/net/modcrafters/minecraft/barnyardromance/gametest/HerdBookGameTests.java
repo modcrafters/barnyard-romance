@@ -17,7 +17,7 @@ import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.RecordSheet;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -19,8 +20,8 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -224,7 +225,7 @@ public final class MilkActions {
     }
 
     private static SizeClass sizeClass(Animal animal, AnimalTraits traits) {
-        return SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(animal)));
+        return SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(animal)));
     }
 
     private static SoundEvent milkingSound(Animal animal) {

@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.minecraft.nbt.CompoundTag;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import org.jspecify.annotations.Nullable;

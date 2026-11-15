@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;

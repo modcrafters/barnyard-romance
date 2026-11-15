@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import org.jspecify.annotations.Nullable;

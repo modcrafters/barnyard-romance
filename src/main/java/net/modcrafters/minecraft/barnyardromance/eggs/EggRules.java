@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
 

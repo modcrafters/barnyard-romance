@@ -9,7 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
