@@ -6,8 +6,8 @@ import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 // A feeding block settling the days its herd missed, day by day across the whole herd so the food is shared fairly:
@@ -70,7 +69,7 @@ public final class FeederCatchUp {
         List<Long> from = new ArrayList<>();
         for (UUID id : feeder.herd()) {
             Animal animal = loaded(level, id);
-            AnimalTraits traits = animal == null ? null : tracked(animal).orElse(null);
+            AnimalTraits traits = animal == null ? null : Tracked.traits(animal).orElse(null);
             // A nursing baby is fed by its mother, so it never goes hungry.
             if (traits == null || animal.isBaby()) {
                 continue;
@@ -125,7 +124,7 @@ public final class FeederCatchUp {
     private void settle(FeederBlockEntity feeder, ServerLevel level, int member) {
         UUID id = members.get(member);
         Animal animal = loaded(level, id);
-        AnimalTraits traits = animal == null ? null : tracked(animal).orElse(null);
+        AnimalTraits traits = animal == null ? null : Tracked.traits(animal).orElse(null);
         // Dead, unloaded, out of the herd, or settled by something else since: it settles alone later, from the day
         // it has reached.
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
@@ -147,7 +146,7 @@ public final class FeederCatchUp {
                 leave(member);
                 return;
             }
-            traits = tracked(animal).orElse(traits);
+            traits = Tracked.traits(animal).orElse(traits);
         }
         ItemStack meal = eats ? feeder.takeOne(level) : ItemStack.EMPTY;
         boolean fromBlock = !meal.isEmpty();
@@ -196,14 +195,6 @@ public final class FeederCatchUp {
             }
         }
         owed.clear();
-    }
-
-    // The animal's traits, if its species is enabled.
-    private static Optional<AnimalTraits> tracked(Animal animal) {
-        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
     }
 
     private static @Nullable Animal loaded(ServerLevel level, UUID id) {

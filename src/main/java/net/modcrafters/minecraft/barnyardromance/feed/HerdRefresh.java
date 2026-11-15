@@ -1,12 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
 import net.modcrafters.minecraft.barnyardromance.core.path.Walk;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -61,11 +61,10 @@ final class HerdRefresh {
 
     // Everything but the walk, which takes a path search and so is asked last.
     static boolean eats(Animal animal, FeederKind kind) {
-        if (!animal.isAlive() || animal.isBaby() || FeederKind.of(animal).orElse(null) != kind
-                || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
+        if (!animal.isAlive() || animal.isBaby() || FeederKind.of(animal).orElse(null) != kind) {
             return false;
         }
-        return Services.DATA.get(animal).map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(false);
+        return Tracked.traits(animal).map(FeaturesRepository.get(FamiliarityApi.class)::isFamiliar).orElse(false);
     }
 
     private static void mark(ServerLevel level, UUID id, boolean inHerd) {

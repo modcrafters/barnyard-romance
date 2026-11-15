@@ -4,10 +4,10 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 //? if >=26.1 {
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -212,8 +212,7 @@ public final class BarnyardAdvancements {
                     || Ladders.ladderFor(AnimalSex.speciesId(animal)).isEmpty()) {
                 return;
             }
-            boolean familiar = BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))
-                    && Services.DATA.get(animal).map(familiarityApi::isFamiliar).orElse(false);
+            boolean familiar = Tracked.traits(animal).map(familiarityApi::isFamiliar).orElse(false);
             if (familiar) {
                 Grants.grant(killer, NOT_YOU_ITS_DINNER);
             }

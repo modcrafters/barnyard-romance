@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.herd.api.HerdApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
 import net.modcrafters.minecraft.barnyardromance.feed.api.FeedApi;
 import net.minecraft.server.level.ServerLevel;
@@ -59,7 +60,7 @@ public final class FamiliarityCare {
     // Applies the days up to yesterday and returns the traits as they are now. clock is an overworld clock time. Each
     // counted day goes through DailyUpkeep: a hungry day costs familiarity, and a familiar animal health as well.
     public static Optional<AnimalTraits> settle(Animal animal, long clock) {
-        Optional<AnimalTraits> tracked = tracked(animal);
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || !(animal.level() instanceof ServerLevel level)) {
             return tracked;
         }
@@ -228,7 +229,7 @@ public final class FamiliarityCare {
     // It never touches the hand-feeding clock (lastFedTick), so a hand meal the same day still builds familiarity.
     public static void markFedBy(Animal animal, long clock, String feeder) {
         markEaten(animal, clock);
-        tracked(animal).ifPresent(traits -> {
+        Tracked.traits(animal).ifPresent(traits -> {
             if (!animal.level().isClientSide()) {
                 Services.DATA.set(animal, withCare(traits, upkeep(traits).fedBy(feeder, GameDay.of(clock)), false));
             }
@@ -248,7 +249,7 @@ public final class FamiliarityCare {
     // However an animal is tamed (familiarity, riding a horse, another mod), it starts out a week's hunger above the
     // threshold.
     public static void raiseToTamingGrace(Animal animal) {
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, toTamingGrace(animal, traits)));
+        Tracked.traits(animal).ifPresent(traits -> Services.DATA.set(animal, toTamingGrace(animal, traits)));
     }
 
     // The grace never takes a wild-caught pet past its cap, and never lowers a pet already above it.
@@ -288,14 +289,6 @@ public final class FamiliarityCare {
 
     // Tamed animals never go wild again; below the threshold they are grumpy instead and won't take orders.
     public static boolean grumpy(Animal animal) {
-        return AnimalSex.tamed(animal) && tracked(animal).map(traits -> !Familiarity.ready(traits.get(CARE).familiarity())).orElse(false);
-    }
-
-    // The animal's traits, if its species is enabled.
-    public static Optional<AnimalTraits> tracked(Animal animal) {
-        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
+        return AnimalSex.tamed(animal) && Tracked.traits(animal).map(traits -> !Familiarity.ready(traits.get(CARE).familiarity())).orElse(false);
     }
 }

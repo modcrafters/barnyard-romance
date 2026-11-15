@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.MinecraftServer;
@@ -50,8 +51,8 @@ public final class HerdBooks {
         if (existing != null && HerdBookData.get(level.getServer()).ledger().isMember(existing, animal.getUUID())) {
             return RegisterResult.ALREADY;
         }
-        Optional<AnimalTraits> traits = Services.DATA.get(animal);
-        if (traits.isEmpty() || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
+        if (traits.isEmpty()) {
             return RegisterResult.NOT_TRACKED;
         }
         if (!FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits.get())) {

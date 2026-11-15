@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -28,8 +29,7 @@ public final class AgeController {
 
     // Untracked animals and disabled species only know vanilla's baby and adult.
     public static AgeStage stage(Animal animal) {
-        String speciesId = AnimalSex.speciesId(animal);
-        Optional<AnimalTraits> traits = BarnyardConfig.current().speciesEnabled(speciesId) ? Services.DATA.get(animal) : Optional.empty();
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return animal.isBaby() ? AgeStage.BABY : AgeStage.ADULT;
         }

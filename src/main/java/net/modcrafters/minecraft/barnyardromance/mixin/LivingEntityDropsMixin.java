@@ -1,9 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -34,7 +32,7 @@ public class LivingEntityDropsMixin {
         if (!((Object) this instanceof Animal animal)) {
             return;
         }
-        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal)) || Services.DATA.get(animal).isEmpty()) {
+        if (Tracked.traits(animal).isEmpty()) {
             return;
         }
         callback.cancel();

@@ -9,8 +9,8 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.world.InteractionResult;
@@ -126,9 +126,6 @@ public final class ShearActions {
     }
 
     private static Optional<AnimalTraits> tracked(Animal animal) {
-        if (!(animal instanceof Sheep) || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
+        return animal instanceof Sheep ? Tracked.traits(animal) : Optional.empty();
     }
 }

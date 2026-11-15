@@ -7,9 +7,9 @@ import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
@@ -188,7 +188,7 @@ public final class Courtship {
     }
 
     private static boolean available(Animal female, Animal male, Tuning tuning) {
-        Optional<AnimalTraits> traits = trackedTraits(male);
+        Optional<AnimalTraits> traits = Tracked.traits(male);
         if (traits.isEmpty() || traits.get().sex() != Sex.MALE || !AgeController.grown(male)
                 || !FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits.get())) {
             return false;
@@ -242,13 +242,6 @@ public final class Courtship {
     }
 
     private static boolean isTracked(Animal animal, Sex sex) {
-        return trackedTraits(animal).map(traits -> traits.sex() == sex).orElse(false);
-    }
-
-    private static Optional<AnimalTraits> trackedTraits(Animal animal) {
-        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
+        return Tracked.traits(animal).map(traits -> traits.sex() == sex).orElse(false);
     }
 }

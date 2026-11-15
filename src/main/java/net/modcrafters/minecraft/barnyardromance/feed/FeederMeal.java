@@ -4,13 +4,11 @@ import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -37,7 +35,7 @@ public final class FeederMeal {
         if (familiarityApi.isUnsettled(animal, clock)) {
             return false;
         }
-        Optional<AnimalTraits> traits = BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal)) ? Services.DATA.get(animal) : Optional.empty();
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         return traits.isPresent() && familiarityApi.lastAteDay(traits.get()) < GameDay.of(clock) && familiarityApi.isFamiliar(traits.get());
     }
 
