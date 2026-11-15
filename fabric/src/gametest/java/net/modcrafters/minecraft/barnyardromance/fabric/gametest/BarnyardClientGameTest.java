@@ -213,7 +213,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             level.addFreshEntity(cow);
             Services.DATA.set(cow, change.apply(AnimalTraits.of(sex, sex == Sex.FEMALE ? 0.85 : 1.2).with(CARE, FamiliarityState.NONE.fed(1.0, -1L))));
             if (pregnant) {
-                Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25, 1, 1.0));
+                Services.DATA.set(cow, PregnancyFeature.PREGNANCY, Pregnancy.builder(level.getGameTime() - 30_000L, 66_000L, "minecraft:cow", 1.25).motherFamiliarity(1.0).build());
             }
             // A fresh book for each animal, opened at its page the way using the book on it does.
             ItemStack book = new ItemStack(HerdItems.HERD_BOOK);

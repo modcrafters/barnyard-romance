@@ -31,10 +31,11 @@ class PregnancySizeRangeTest {
     }
 
     private static Pregnancy ranged() {
-        return new Pregnancy(1_000L, 48_000L, "minecraft:cow", 1.25, 1, 0.5, 30_000, 0.75, litter(), PregnancyCare.NONE)
-                .withFatherId(FATHER)
-                .withBreederId(BREEDER)
-                .withFatherSizeRange(OLD);
+        return Pregnancy.builder(1_000L, 48_000L, "minecraft:cow", 1.25).motherFamiliarity(0.5).fatherGrowthTicks(30_000).fatherWeight(0.75).litter(litter())
+                .fatherId(FATHER)
+                .breederId(BREEDER)
+                .fatherSizeRange(OLD)
+                .build();
     }
 
     private static CompoundTag encode(Pregnancy pregnancy) {
@@ -55,7 +56,7 @@ class PregnancySizeRangeTest {
 
     @Test
     void noFatherRangeWritesNoField() {
-        assertFalse(encode(new Pregnancy(0L, 1L, "minecraft:cow", 1.0, 1, 0.0)).contains("fatherSizeRange"));
+        assertFalse(encode(Pregnancy.builder(0L, 1L, "minecraft:cow", 1.0).build()).contains("fatherSizeRange"));
     }
 
     @Test
@@ -64,8 +65,9 @@ class PregnancySizeRangeTest {
         PregnancyCodecs.STREAM_CODEC.encode(buf, ranged());
 
         // Clients see neither the litter nor the server-only ids, as before; they do see the father's range.
-        Pregnancy expected = new Pregnancy(1_000L, 48_000L, "minecraft:cow", 1.25, 1, 0.5, 30_000, 0.75, List.of(), PregnancyCare.NONE)
-                .withFatherSizeRange(OLD);
+        Pregnancy expected = Pregnancy.builder(1_000L, 48_000L, "minecraft:cow", 1.25).motherFamiliarity(0.5).fatherGrowthTicks(30_000).fatherWeight(0.75)
+                .fatherSizeRange(OLD)
+                .build();
         assertEquals(expected, PregnancyCodecs.STREAM_CODEC.decode(buf));
         assertEquals(0, buf.readableBytes(), "decoding reads every byte encoding wrote");
     }
@@ -73,7 +75,7 @@ class PregnancySizeRangeTest {
     @Test
     void noFatherRangeRoundTripsTheStream() {
         ByteBuf buf = Unpooled.buffer();
-        PregnancyCodecs.STREAM_CODEC.encode(buf, new Pregnancy(0L, 1L, "minecraft:cow", 1.0, 1, 0.0));
+        PregnancyCodecs.STREAM_CODEC.encode(buf, Pregnancy.builder(0L, 1L, "minecraft:cow", 1.0).build());
 
         assertNull(PregnancyCodecs.STREAM_CODEC.decode(buf).fatherSizeRange());
         assertEquals(0, buf.readableBytes(), "decoding reads every byte encoding wrote");

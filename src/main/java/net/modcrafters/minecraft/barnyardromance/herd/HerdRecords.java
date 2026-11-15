@@ -74,21 +74,10 @@ public final class HerdRecords {
 
     // The record keeps the father's range, so his size letter reads against the range his scale was set in.
     static Pregnancy withoutLitter(Pregnancy pregnancy) {
-        return new Pregnancy(
-                pregnancy.conceivedAt(),
-                pregnancy.durationTicks(),
-                pregnancy.fatherSpecies(),
-                pregnancy.fatherScale(),
-                pregnancy.litterSize(),
-                pregnancy.motherFamiliarity(),
-                pregnancy.fatherGrowthTicks(),
-                pregnancy.fatherWeight(),
-                List.of(),
-                pregnancy.care(),
-                pregnancy.fatherId(),
-                SkippedTime.UNSEEN,
-                null,
-                pregnancy.fatherSizeRange()
-        );
+        return pregnancy.toBuilder()
+                .litter(List.of())
+                .seen(SkippedTime.UNSEEN)
+                .breederId(null)
+                .build();
     }
 }

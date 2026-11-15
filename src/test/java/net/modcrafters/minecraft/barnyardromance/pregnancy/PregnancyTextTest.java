@@ -35,7 +35,7 @@ class PregnancyTextTest {
 
     @Test
     void theInfoLineNamesTheFather() {
-        Pregnancy pregnancy = new Pregnancy(1_000, 24_000, "minecraft:cow", 1.1, 1, 0.0);
+        Pregnancy pregnancy = Pregnancy.builder(1_000, 24_000, "minecraft:cow", 1.1).build();
 
         assertEquals("Pregnant 50% · 10m 0s", English.of(PregnancyText.line(pregnancy, 13_000, false)));
         assertEquals("Pregnant 50% · 10m 0s · father minecraft:cow", English.of(PregnancyText.line(pregnancy, 13_000, true)));

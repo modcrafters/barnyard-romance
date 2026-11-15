@@ -33,8 +33,9 @@ class SkippedTimeTest {
 
     @Test
     void skippingIsTheSameAsThatMuchTimePassing() {
-        Pregnancy pregnancy = new Pregnancy(1_000L, 24_000L, "minecraft:cow", 1.0, 1, 0.0)
-                .withCare(PregnancyCare.NONE.boost(5_000L, 2.0, 4_000L));
+        Pregnancy pregnancy = Pregnancy.builder(1_000L, 24_000L, "minecraft:cow", 1.0)
+                .care(PregnancyCare.NONE.boost(5_000L, 2.0, 4_000L))
+                .build();
         Pregnancy skipped = pregnancy.skipped(3_000L, new SkippedTime(6_000L, 9_000L));
         for (long now : new long[] {5_000L, 6_000L, 7_500L, 10_000L, 20_000L}) {
             assertEquals(PregnancyClock.progress(now + 3_000L, pregnancy), PregnancyClock.progress(now, skipped), 1.0e-9, "at " + now);

@@ -89,21 +89,17 @@ class SaveFixturesTest {
         CompoundTag twin = new CompoundTag();
         twin.putString("id", "minecraft:cow");
         twin.putInt("Age", -20000);
-        return new Pregnancy(
-                1000L,
-                48000L,
-                "minecraft:cow",
-                1.125,
-                2,
-                0.625,
-                30000,
-                0.75,
-                List.of(calf, twin),
-                new PregnancyCare(100L, 2000L, 3000L, 1.5, 0.25),
-                FATHER,
-                new SkippedTime(4000L, 5000L),
-                BREEDER
-        );
+        return Pregnancy.builder(1000L, 48000L, "minecraft:cow", 1.125)
+                .litterSize(2)
+                .motherFamiliarity(0.625)
+                .fatherGrowthTicks(30000)
+                .fatherWeight(0.75)
+                .litter(List.of(calf, twin))
+                .care(new PregnancyCare(100L, 2000L, 3000L, 1.5, 0.25))
+                .fatherId(FATHER)
+                .seen(new SkippedTime(4000L, 5000L))
+                .breederId(BREEDER)
+                .build();
     }
 
     static Laying fullLaying() {

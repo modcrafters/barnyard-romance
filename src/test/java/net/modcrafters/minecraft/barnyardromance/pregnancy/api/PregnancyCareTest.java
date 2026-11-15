@@ -36,8 +36,9 @@ class PregnancyCareTest {
 
     @Test
     void negativeProgressSlowsButNeverGoesBelowZero() {
-        Pregnancy pregnancy = new Pregnancy(0L, 10_000L, "minecraft:cow", 1.0, 1, 0.0)
-                .withCare(PregnancyCare.NONE.progress(10_000L, -0.5));
+        Pregnancy pregnancy = Pregnancy.builder(0L, 10_000L, "minecraft:cow", 1.0)
+                .care(PregnancyCare.NONE.progress(10_000L, -0.5))
+                .build();
 
         assertEquals(-5_000L, pregnancy.care().bankedTicks());
         assertEquals(0.0, PregnancyClock.progress(2_000L, pregnancy), 1.0e-9);
@@ -48,8 +49,9 @@ class PregnancyCareTest {
 
     @Test
     void positiveProgressBringsTheBirthForward() {
-        Pregnancy pregnancy = new Pregnancy(0L, 10_000L, "minecraft:cow", 1.0, 1, 0.0)
-                .withCare(PregnancyCare.NONE.progress(10_000L, 0.25));
+        Pregnancy pregnancy = Pregnancy.builder(0L, 10_000L, "minecraft:cow", 1.0)
+                .care(PregnancyCare.NONE.progress(10_000L, 0.25))
+                .build();
 
         assertEquals(0.75, PregnancyClock.progress(5_000L, pregnancy), 1.0e-9);
         assertTrue(PregnancyClock.ready(7_500L, pregnancy));

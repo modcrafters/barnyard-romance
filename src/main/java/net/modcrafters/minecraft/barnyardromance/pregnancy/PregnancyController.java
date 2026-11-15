@@ -134,18 +134,16 @@ public final class PregnancyController {
                 return true;
             }
             UUID breeder = FeaturesRepository.get(AdvancementsApi.class).breeder(mother, father);
-            Services.DATA.set(mother, PregnancyFeature.PREGNANCY, new Pregnancy(
-                    level.getGameTime(),
-                    durationTicks,
-                    AnimalSex.speciesId(father),
-                    fatherTraits.scale(),
-                    litterSize,
-                    FeaturesRepository.get(FamiliarityApi.class).familiarity(motherTraits),
-                    fatherTraits.growthTicks(),
-                    fatherTraits.weight(),
-                    litter.get()
-            ).withFatherId(father.getUUID()).withBreederId(breeder)
-                    .withFatherSizeRange(SizeRanges.rangeOf(fatherTraits, AnimalSex.speciesId(father))));
+            Services.DATA.set(mother, PregnancyFeature.PREGNANCY, Pregnancy.builder(level.getGameTime(), durationTicks, AnimalSex.speciesId(father), fatherTraits.scale())
+                    .litterSize(litterSize)
+                    .motherFamiliarity(FeaturesRepository.get(FamiliarityApi.class).familiarity(motherTraits))
+                    .fatherGrowthTicks(fatherTraits.growthTicks())
+                    .fatherWeight(fatherTraits.weight())
+                    .litter(litter.get())
+                    .fatherId(father.getUUID())
+                    .breederId(breeder)
+                    .fatherSizeRange(SizeRanges.rangeOf(fatherTraits, AnimalSex.speciesId(father)))
+                    .build());
             Events.post(new AnimalEvent.Conceived(mother, breeder));
         }
         self.finalizeSpawnChildFromBreeding(level, partner, null);

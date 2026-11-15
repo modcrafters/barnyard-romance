@@ -301,7 +301,7 @@ public final class EggGameTests {
 
     public static void oldChickenPregnancyIsCleared(GameTestHelper helper) {
         Animal hen = hen(helper, mediumHen(), 0.5);
-        Services.DATA.set(hen, PregnancyFeature.PREGNANCY, new Pregnancy(0L, 1L, "minecraft:chicken", 1.2, 1, 0.5));
+        Services.DATA.set(hen, PregnancyFeature.PREGNANCY, Pregnancy.builder(0L, 1L, "minecraft:chicken", 1.2).motherFamiliarity(0.5).build());
 
         EggLaying.serverTick(hen, helper.getLevel());
 
