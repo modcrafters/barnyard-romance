@@ -1,9 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.core.text.Names;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
@@ -24,8 +25,8 @@ public final class StatSheet {
     public static List<StatLine> lines(AnimalFacts facts) {
         List<StatLine> lines = new ArrayList<>();
         lines.add(StatLine.of(StatKind.SIZE, facts.ageTicks() < 0L
-                ? Text.of("gui.barnyard_romance.herd_book.size", facts.sizeLetter(), facts.stage().text())
-                : Text.of("gui.barnyard_romance.herd_book.size_age", facts.sizeLetter(), facts.stage().text(), StatText.gameTime(facts.ageTicks()))));
+                ? Text.of("gui.barnyard_romance.herd_book.size", facts.sizeLetter(), Names.of(facts.stage()))
+                : Text.of("gui.barnyard_romance.herd_book.size_age", facts.sizeLetter(), Names.of(facts.stage()), StatText.gameTime(facts.ageTicks()))));
         if (facts.diedDay() >= 0L) {
             lines.add(StatLine.of(StatKind.NOTE, Text.of("gui.barnyard_romance.herd_book.died", facts.diedDay())));
             if (facts.killedByRival()) {

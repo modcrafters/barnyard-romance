@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
@@ -9,7 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
@@ -18,8 +19,8 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.RoosterNear;
@@ -111,7 +112,7 @@ public final class EggLaying {
 
     private static Laying plan(Animal hen, long today, int sinceMidnight) {
         AnimalTraits traits = Services.DATA.get(hen).orElseThrow();
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(hen)));
+        SizeClass size = SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(hen)));
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         int count = EggRules.perDay(size, familiarityApi.wasHungryYesterday(traits, today), familiarityApi.isFamiliar(traits), settings(hen));
         return new Laying(today, EggSchedule.plan(sinceMidnight, count, hen.getRandom().nextDouble()), 0);

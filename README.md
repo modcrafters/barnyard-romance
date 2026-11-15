@@ -202,6 +202,34 @@ All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To transl
 - The card above an animal is placed with the FOV setting and the camera, so it doesn't follow view bobbing or zoom mods.
 - The herd book has no head close-ups.
 
+## For mod developers
+
+Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. Add the jar for your loader and Minecraft version as a compile-only dependency; it brings the common API jar with it.
+
+```groovy
+dependencies {
+    // NeoForge: barnyard_romance-api-neoforge-26.3 or barnyard_romance-api-neoforge-1.21.1
+    compileOnly "net.modcrafters.minecraft:barnyard_romance-api-neoforge-26.3:<version>"
+    // Fabric: barnyard_romance-api-fabric-26.3
+    compileOnly "net.modcrafters.minecraft:barnyard_romance-api-fabric-26.3:<version>"
+}
+```
+
+- Only touch the API when the mod `barnyard_romance` is loaded. Never shade the API or nest it in your jar: Barnyard Romance already carries it, and two copies clash.
+- `BarnyardEvents` has the events. `Taming`, `Milking`, `DeathDrop`, `ShearYield` and `FamiliarityChange` come before Barnyard Romance acts and can be cancelled or changed. `Befriended`, `Born` and `Hatched` come after. They fire on the server, only for animals Barnyard Romance tracks. Register listeners while your mod starts.
+- `BarnyardApi.animals()` answers `tracked(animal)` and `info(animal)`: sex, size, age, familiarity and pregnancy, as the stat card shows them.
+- NeoForge mods can also listen on NeoForge's bus (`MilkingEvent` and the rest in `api.neoforge`, each with `apiEvent()`), and Fabric mods to `BarnyardFabricEvents`. These run after the listeners on `BarnyardEvents`.
+
+```java
+BarnyardEvents.DEATH_DROP.register(drop -> {
+    if (drop.stack().is(Items.BEEF)) {
+        drop.setStack(new ItemStack(MyItems.CARCASS));
+    }
+});
+```
+
+Until 1.0, an API change that breaks callers can come in any release; the changelog lists them under **API**.
+
 ## Contributing
 
 To build the mod or send a change, see [CONTRIBUTING.md](CONTRIBUTING.md).

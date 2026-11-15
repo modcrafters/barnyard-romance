@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import com.google.common.base.Suppliers;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;

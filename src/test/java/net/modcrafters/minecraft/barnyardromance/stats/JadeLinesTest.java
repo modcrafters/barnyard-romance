@@ -3,7 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.stats;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import org.junit.jupiter.api.BeforeAll;

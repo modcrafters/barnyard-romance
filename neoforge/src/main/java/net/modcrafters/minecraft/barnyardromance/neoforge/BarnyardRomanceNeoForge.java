@@ -24,6 +24,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.api.distmarker.Dist;
+import net.modcrafters.minecraft.barnyardromance.api.neoforge.NeoForgeBridge;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -57,6 +58,8 @@ public class BarnyardRomanceNeoForge {
     public BarnyardRomanceNeoForge(IEventBus modBus) {
         // Installs the features first: the attachments and registry content come from them.
         BarnyardRomance.init();
+        // The public API's events are NeoForge events too.
+        NeoForgeBridge.register();
         NeoForgeAnimalData.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);

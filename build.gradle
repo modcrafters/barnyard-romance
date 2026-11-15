@@ -34,6 +34,12 @@ dependencies {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+    // ApiJarTest reads the API jar other mods would get.
+    def apiJar = tasks.named('apiJar', Jar)
+    dependsOn(apiJar)
+    doFirst {
+        systemProperty 'barnyard_romance.api_jar', apiJar.get().archiveFile.get().asFile.absolutePath
+    }
 }
 
 // The save fixture tests (saves/SaveFixturesTest) read and write NBT with the real codecs, so unit tests see
@@ -50,6 +56,11 @@ configurations {
         canBeConsumed = true
     }
     commonResources {
+        canBeResolved = false
+        canBeConsumed = true
+    }
+    // The public API's sources, which each loader compiles into its mod jar.
+    commonApiJava {
         canBeResolved = false
         canBeConsumed = true
     }
@@ -72,6 +83,9 @@ artifacts {
     }
     sourceSets.main.resources.srcDirs.each { dir ->
         add('commonResources', dir) { builtBy 'stonecutterGenerate' }
+    }
+    sourceSets.api.java.srcDirs.each { dir ->
+        add('commonApiJava', dir) { builtBy 'stonecutterGenerateApi' }
     }
     sourceSets.gametest.java.srcDirs.each { dir ->
         add('commonGametestJava', dir) { builtBy 'stonecutterGenerateGametest' }

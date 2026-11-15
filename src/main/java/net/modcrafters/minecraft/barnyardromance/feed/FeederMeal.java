@@ -1,7 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;

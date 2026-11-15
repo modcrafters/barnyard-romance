@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -19,8 +20,8 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
@@ -38,6 +39,8 @@ import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.api.event.Milking;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 
@@ -120,9 +123,14 @@ public final class MilkActions {
             refuseMilking(animal, player);
             return InteractionResult.CONSUME;
         }
+        // Other mods may stop the milking or change what the bucket becomes; stopped, nothing happens at all.
+        Milking milking = BarnyardEvents.MILKING.post(new Milking(animal, player, new ItemStack(milk.get())));
+        if (milking.isCancelled()) {
+            return InteractionResult.CONSUME;
+        }
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
-        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
+        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, milking.result().copy()));
         Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).milked(now, clock, tuning.milkKeepsFlowingTicks())));
         familiarityApi.spendFamiliarity(animal, tuning.familiarityMilkingCost());
         if (familiarityApi.isFamiliar(traits)) {
@@ -224,7 +232,7 @@ public final class MilkActions {
     }
 
     private static SizeClass sizeClass(Animal animal, AnimalTraits traits) {
-        return SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(animal)));
+        return SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(animal)));
     }
 
     private static SoundEvent milkingSound(Animal animal) {

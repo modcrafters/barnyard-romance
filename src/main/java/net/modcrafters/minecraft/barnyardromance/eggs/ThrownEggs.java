@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -11,8 +12,8 @@ import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -61,7 +62,7 @@ public final class ThrownEggs {
     public static Optional<Animal> hatchTainted(ServerLevel level, Vec3 position, EggData data, RandomSource random) {
         SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
         Optional<Animal> chick = hatchTainted(level, position, data.species(), data.variant(),
-                SizeClass.of(Sex.FEMALE, data.motherScale(), size), SizeClass.of(Sex.MALE, data.fatherScale(), size), random);
+                SizeClasses.of(Sex.FEMALE, data.motherScale(), size), SizeClasses.of(Sex.MALE, data.fatherScale(), size), random);
         chick.ifPresent(hatched -> Events.post(
                 new AnimalEvent.Hatched(level, hatched, new Lineage(data.mother(), data.father()), AnimalEvent.Hatch.THROWN)));
         return chick;

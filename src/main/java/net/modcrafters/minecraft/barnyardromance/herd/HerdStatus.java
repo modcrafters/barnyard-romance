@@ -1,9 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.age.Aging;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -17,8 +18,8 @@ import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearApi;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
@@ -98,7 +99,7 @@ public final class HerdStatus {
         String feeder = fed == HerdEntry.Fed.FEEDER ? upkeep.feeder() : "";
         Pregnancy pregnancy = record.alive() ? record.pregnancy() : null;
         double progress = pregnancy == null ? 0.0 : FeaturesRepository.get(PregnancyApi.class).progress(pregnancy, now);
-        SizeClass size = SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, record.species()));
+        SizeClass size = SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, record.species()));
         Optional<MilkStatus> milk = female && record.milkable() && record.alive()
                 ? FeaturesRepository.get(MilkApi.class).status(traits, size, now, clock)
                 : Optional.empty();
@@ -151,7 +152,7 @@ public final class HerdStatus {
         }
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         return FeaturesRepository.get(EggsApi.class).eggsTomorrow(
-                SizeClass.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, record.species())),
+                SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, record.species())),
                 familiarityApi.lastAteDay(traits) == GameDay.of(clock),
                 familiarityApi.isFamiliar(traits),
                 record.nest().rooster(),

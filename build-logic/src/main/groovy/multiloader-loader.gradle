@@ -12,6 +12,10 @@ configurations {
         canBeResolved = true
         canBeConsumed = false
     }
+    commonApiJava {
+        canBeResolved = true
+        canBeConsumed = false
+    }
     commonGametestJava {
         canBeResolved = true
         canBeConsumed = false
@@ -34,6 +38,7 @@ dependencies {
     }
     commonJava(project(path: commonPath, configuration: 'commonJava'))
     commonResources(project(path: commonPath, configuration: 'commonResources'))
+    commonApiJava(project(path: commonPath, configuration: 'commonApiJava'))
     commonGametestJava(project(path: commonPath, configuration: 'commonGametestJava'))
     commonGametestResources(project(path: commonPath, configuration: 'commonGametestResources'))
 }
@@ -41,6 +46,17 @@ dependencies {
 tasks.named('compileJava', JavaCompile) {
     dependsOn(configurations.commonJava)
     source(configurations.commonJava)
+}
+
+// The loader's api source set holds the common public API and this loader's native events (src/api here), so main
+// sees both through api.output. The mod jar carries them too, so players install one file.
+tasks.named('compileApiJava', JavaCompile) {
+    dependsOn(configurations.commonApiJava)
+    source(configurations.commonApiJava)
+}
+
+tasks.named('jar', Jar) {
+    from(sourceSets.api.output)
 }
 
 processResources {
@@ -60,13 +76,14 @@ tasks.named('processGametestResources', ProcessResources) {
 }
 
 tasks.named('javadoc', Javadoc).configure {
-    dependsOn(configurations.commonJava)
-    source(configurations.commonJava)
+    dependsOn(configurations.commonJava, configurations.commonApiJava)
+    source(configurations.commonJava, configurations.commonApiJava)
 }
 
 tasks.named('sourcesJar', Jar) {
-    dependsOn(configurations.commonJava)
+    dependsOn(configurations.commonJava, configurations.commonApiJava)
     from(configurations.commonJava)
+    from(configurations.commonApiJava)
     dependsOn(configurations.commonResources)
     from(configurations.commonResources)
 }

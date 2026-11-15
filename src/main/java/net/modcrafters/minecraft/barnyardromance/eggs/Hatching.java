@@ -11,7 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;

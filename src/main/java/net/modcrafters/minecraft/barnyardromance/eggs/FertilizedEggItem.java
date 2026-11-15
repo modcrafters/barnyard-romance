@@ -1,9 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
@@ -58,8 +58,8 @@ public class FertilizedEggItem extends EggItem {
             SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
             Text parents = Text.of(
                     "item.barnyard_romance.fertilized_egg.parents",
-                    SizeClass.of(Sex.FEMALE, data.motherScale(), size).name(),
-                    SizeClass.of(Sex.MALE, data.fatherScale(), size).name()
+                    SizeClasses.of(Sex.FEMALE, data.motherScale(), size).name(),
+                    SizeClasses.of(Sex.MALE, data.fatherScale(), size).name()
             );
             return List.of(Text.of("item.barnyard_romance.fertilized_egg.time", Growth.clock(data.remainingTicks())), parents,
                     Text.of("item.barnyard_romance.fertilized_egg.taking_out"));

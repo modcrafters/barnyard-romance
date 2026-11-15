@@ -18,7 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.BreedingState;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.fabric;
 
+import net.modcrafters.minecraft.barnyardromance.api.fabric.FabricBridge;
 import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import net.modcrafters.minecraft.barnyardromance.food.FoodData;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
@@ -38,6 +39,8 @@ public class BarnyardRomanceFabric implements ModInitializer {
     public void onInitialize() {
         // Installs the features first: the attachments and registry content below come from them.
         BarnyardRomance.init();
+        // The public API's events are Fabric API events too.
+        FabricBridge.register();
         FabricAnimalData.register();
         BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))

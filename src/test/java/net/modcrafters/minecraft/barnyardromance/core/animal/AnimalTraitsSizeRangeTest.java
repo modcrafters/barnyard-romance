@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;

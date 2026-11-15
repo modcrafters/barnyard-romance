@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
+
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
@@ -117,6 +119,7 @@ public final class FamiliarityCare {
             cared = outcome.cared();
         }
 
+        familiarity = FamiliarityChanges.decide(animal, care.familiarity(), familiarity, settledReason(care.familiarity(), familiarity), cap(animal, traits));
         AnimalTraits updated = refilled.with(CARE, care.withFamiliarity(familiarity).withHunger(hungerNow));
         // A pet tamed before hunger was kept gets the same grace as a newly tamed one.
         if (settled.first() && AnimalSex.tamed(animal)) {
@@ -149,7 +152,9 @@ public final class FamiliarityCare {
         if (feeder != null && upkeep.feederDay() < day) {
             upkeep = upkeep.fedBy(feeder, day);
         }
-        AnimalTraits updated = withCare(traits.with(CARE, care.withFamiliarity(outcome.familiarity()).withHunger(next)), upkeep, outcome.cared());
+        double familiarity = FamiliarityChanges.decide(animal, care.familiarity(), outcome.familiarity(),
+                settledReason(care.familiarity(), outcome.familiarity()), cap(animal, traits));
+        AnimalTraits updated = withCare(traits.with(CARE, care.withFamiliarity(familiarity).withHunger(next)), upkeep, outcome.cared());
         Services.DATA.set(animal, updated);
         Events.post(new AnimalEvent.FamiliarityFell(animal, care.familiarity(), updated.get(CARE).familiarity()));
         return outcome;
@@ -241,7 +246,9 @@ public final class FamiliarityCare {
         settle(animal).ifPresent(traits -> {
             if (!animal.level().isClientSide() && cost > 0.0) {
                 FamiliarityState care = traits.get(CARE);
-                Services.DATA.set(animal, traits.with(CARE, care.withFamiliarity(Math.max(0.0, care.familiarity() - cost))));
+                double spent = FamiliarityChanges.decide(animal, care.familiarity(), Math.max(0.0, care.familiarity() - cost),
+                        FamiliarityChange.Reason.COST, cap(animal, traits));
+                Services.DATA.set(animal, traits.with(CARE, care.withFamiliarity(spent)));
             }
         });
     }
@@ -256,12 +263,26 @@ public final class FamiliarityCare {
     private static AnimalTraits toTamingGrace(Animal animal, AnimalTraits traits) {
         FamiliarityState care = traits.get(CARE);
         double grace = WildCaught.tamingGrace(tamingGrace(), care.origin(), grown(animal), BarnyardConfig.current().tuning());
-        return care.familiarity() < grace ? raise(animal, traits, grace, care.lastFedTick()) : traits;
+        return care.familiarity() < grace ? raise(animal, traits, grace, care.lastFedTick(), FamiliarityChange.Reason.OTHER) : traits;
     }
 
-    // Every familiarity gain goes through here, so an animal won over as an adult stays a little wild (see WildCaught).
-    public static AnimalTraits raise(Animal animal, AnimalTraits traits, double familiarity, long lastFedTick) {
-        return WildCaught.raise(traits, familiarity, lastFedTick, grown(animal), pet(animal), BarnyardConfig.current().tuning());
+    // Every familiarity gain goes through here, so an animal won over as an adult stays a little wild (see WildCaught),
+    // and other mods are asked about it, with reason saying why it rose.
+    public static AnimalTraits raise(Animal animal, AnimalTraits traits, double familiarity, long lastFedTick, FamiliarityChange.Reason reason) {
+        AnimalTraits raised = WildCaught.raise(traits, familiarity, lastFedTick, grown(animal), pet(animal), BarnyardConfig.current().tuning());
+        return decided(animal, traits, raised, reason);
+    }
+
+    // after, with the familiarity other mods settled on in place of its own.
+    static AnimalTraits decided(Animal animal, AnimalTraits before, AnimalTraits after, FamiliarityChange.Reason reason) {
+        double wanted = after.get(CARE).familiarity();
+        double decided = FamiliarityChanges.decide(animal, before.get(CARE).familiarity(), wanted, reason, cap(animal, before));
+        return decided == wanted ? after : after.with(CARE, after.get(CARE).withFamiliarity(decided));
+    }
+
+    // The daily settle mostly lets familiarity fall; a day of care can raise it.
+    private static FamiliarityChange.Reason settledReason(double before, double after) {
+        return after < before ? FamiliarityChange.Reason.NEGLECT : FamiliarityChange.Reason.CARE;
     }
 
     public static double cap(Animal animal, AnimalTraits traits) {

@@ -1,13 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
-import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
@@ -112,7 +112,7 @@ public final class AnimalInfoText {
     }
 
     private static Text label(AnimalTraits traits, SizeSettings size) {
-        String letter = SizeClass.of(traits.sex(), traits.scale(), size).name();
+        String letter = SizeClasses.of(traits.sex(), traits.scale(), size).name();
         return traits.sex() == Sex.FEMALE
                 ? Text.of("gui.barnyard_romance.info.female", letter)
                 : Text.of("gui.barnyard_romance.info.male", letter);

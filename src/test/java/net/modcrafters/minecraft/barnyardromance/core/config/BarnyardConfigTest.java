@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.core.config;
 
 import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

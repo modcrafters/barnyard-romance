@@ -30,7 +30,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.breeding.Offspring;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;
@@ -807,7 +807,7 @@ public final class CareGameTests {
         return day * GameDay.TICKS;
     }
 
-    static Animal withFamiliarity(GameTestHelper helper, Animal animal, double familiarity) {
+    public static Animal withFamiliarity(GameTestHelper helper, Animal animal, double familiarity) {
         AnimalTraits traits = traits(helper, animal);
         // Farm-raised, so feeding it on isn't held at the wild-caught cap.
         Services.DATA.set(animal, traits.with(CARE, traits.get(CARE).fed(familiarity, traits.get(CARE).lastFedTick()).withOrigin(Origin.FARM)));

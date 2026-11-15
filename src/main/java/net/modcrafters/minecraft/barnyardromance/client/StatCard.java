@@ -1,8 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
-import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
+import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
@@ -40,7 +40,7 @@ public final class StatCard {
             int screenHeight
     ) {
         String sign = traits.sex() == Sex.FEMALE ? "\u2640" : "\u2642";
-        String letter = SizeClass.of(traits.sex(), traits.scale(), size).name();
+        String letter = SizeClasses.of(traits.sex(), traits.scale(), size).name();
         String name = fit(font, animal.getName().getString(), StatCardLayout.nameBudget(font.width(sign), font.width(letter)));
         int titleWidth = font.width(sign) + StatCardLayout.GAP + font.width(letter) + StatCardLayout.TITLE_GAP + font.width(name);
         String subtitle = null;

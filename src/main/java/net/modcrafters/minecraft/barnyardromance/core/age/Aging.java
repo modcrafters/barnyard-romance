@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.age;
 
+import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 
 // Age is worked out from the birth tick and the clock, so nothing ticks and the client needs no extra sync.
