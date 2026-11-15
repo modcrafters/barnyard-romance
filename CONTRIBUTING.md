@@ -11,6 +11,7 @@ You need Java 25 for Minecraft 26.3 and Java 21 for 1.21.1. In IntelliJ IDEA (20
 One codebase builds three jars: Fabric and NeoForge for 26.3, and NeoForge for 1.21.1. The build uses [Stonecutter](https://stonecutter.kikugie.dev).
 
 - Common code is in `src/`, Fabric code in `fabric/src` and NeoForge code in `neoforge/src`. Shared code keeps to Java 21.
+- The public API other mods compile against is its own source set, `src/api`. Each loader's `src/api` holds that loader's native events (`api/neoforge`, `api/fabric`). The mod jars include all of it; `apiJar` builds the separate API jars.
 - Code that differs between versions is marked with comments such as `//? if >=1.21.6 {`. The optional **Stonecutter Dev** plugin highlights them.
 - To work on another version, run the Gradle task `Set active project to <mc>`. Run `Reset active project` before you commit: git must always hold the 26.3 state.
 
@@ -21,6 +22,7 @@ The common code is split into core, features and hooks.
 - **Core** (`core` and the packages under it) is what the whole mod shares: the config, text, age, the animal record, events, tick order and registration. Core imports only core.
 - A **feature** is a top-level package such as `eggs`, `milk` or `herd`. Other features talk to it only through its `api` package, which holds a `<Name>Api` interface and the values it passes (some are interfaces callers implement, such as stats' `AnimalSubject`). A feature imports core, its own classes and other features' `api` packages. An `api` package imports only core and other `api` packages.
 - A **hook** plugs the mod into the game: mixins, `client`, `look`, `command`, the Jade plugin, the `fabric` and `neoforge` modules, `BarnyardRomance` and `BarnyardFeatures`. Hooks and tests may import anything.
+- Core, features and hooks may all import the public API (the top-level `api` package in `src/api`). The API imports nothing from the mod: Gradle keeps `src/api` from seeing `main`, and `ApiSourcesTest` keeps it to Minecraft, the JDK and itself.
 - `FeatureBoundaryScanTest` checks every import against these rules, with no exceptions. When an import breaks them, add a method to an `api`, post an event, or move the class.
 - To add a feature, write a `<Name>Feature` class in its package and add it to the list in `BarnyardFeatures`. It registers everything the feature brings: items and blocks, its fields in the animal record, attachments, event listeners and tick hooks. List its items by id in `BarnyardTab`; a stack that needs more than an id is registered with `registrar.tabEntry`, named in `BarnyardTab` and listed in `TabEntries`, which start-up checks.
 - Give a feature an `api` package only when core or another feature calls into it. Callers get it with `FeaturesRepository.get(<Name>Api.class)`.

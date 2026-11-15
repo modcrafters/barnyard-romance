@@ -149,3 +149,75 @@ publishing {
         }
     }
 }
+
+// The public API's own jars, which other mods compile against. The common project's holds the API for its Minecraft
+// version; a loader's holds only that loader's native events, as its api output also carries the common API compiled
+// with them. The loader's published metadata depends on the common one, so a modder adds one dependency.
+def apiArchiveName = loaderName == 'common' ? "${mod_id}-api-${minecraft_version}" : "${mod_id}-api-${loaderName}-${minecraft_version}"
+def apiClasses = loaderName == 'common' ? 'net/modcrafters/minecraft/barnyardromance/api/**' : "net/modcrafters/minecraft/barnyardromance/api/${loaderName}/**"
+def generateApi = tasks.matching { it.name == 'stonecutterGenerateApi' }
+def apiJar = tasks.register('apiJar', Jar) {
+    group = 'build'
+    description = 'The public API jar other mods compile against.'
+    archiveBaseName = apiArchiveName
+    from(sourceSets.api.output) {
+        include apiClasses
+    }
+}
+def apiSourcesJar = tasks.register('apiSourcesJar', Jar) {
+    dependsOn(generateApi)
+    archiveBaseName = apiArchiveName
+    archiveClassifier = 'sources'
+    from(sourceSets.api.allSource)
+}
+def apiJavadoc = tasks.register('apiJavadoc', Javadoc) {
+    dependsOn(generateApi)
+    source = sourceSets.api.allJava
+    classpath = sourceSets.api.compileClasspath + sourceSets.api.output
+    destinationDir = layout.buildDirectory.dir('docs/apiJavadoc').get().asFile
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+def apiJavadocJar = tasks.register('apiJavadocJar', Jar) {
+    archiveBaseName = apiArchiveName
+    archiveClassifier = 'javadoc'
+    from(apiJavadoc)
+}
+
+publishing {
+    publications {
+        register('api', MavenPublication) {
+            groupId = rootProject.group
+            artifactId = apiArchiveName
+            version = project.version
+            artifact apiJar
+            artifact apiSourcesJar
+            artifact apiJavadocJar
+            if (loaderName != 'common') {
+                def commonApi = "${mod_id}-api-${minecraft_version}"
+                pom.withXml {
+                    def dependency = asNode().appendNode('dependencies').appendNode('dependency')
+                    dependency.appendNode('groupId', rootProject.group)
+                    dependency.appendNode('artifactId', commonApi)
+                    dependency.appendNode('version', project.version)
+                    dependency.appendNode('scope', 'compile')
+                }
+            }
+        }
+    }
+    // The release maven: set MAVEN_URL, MAVEN_USERNAME and MAVEN_PASSWORD to publish the API jars there with
+    // publishApiPublicationToReleaseRepository. Without MAVEN_URL there is no such repository.
+    repositories {
+        if (System.getenv('MAVEN_URL')) {
+            maven {
+                name = 'release'
+                url = System.getenv('MAVEN_URL')
+                if (System.getenv('MAVEN_USERNAME')) {
+                    credentials {
+                        username = System.getenv('MAVEN_USERNAME')
+                        password = System.getenv('MAVEN_PASSWORD')
+                    }
+                }
+            }
+        }
+    }
+}

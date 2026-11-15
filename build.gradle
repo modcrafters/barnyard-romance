@@ -34,6 +34,12 @@ dependencies {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
+    // ApiJarTest reads the API jar other mods would get.
+    def apiJar = tasks.named('apiJar', Jar)
+    dependsOn(apiJar)
+    doFirst {
+        systemProperty 'barnyard_romance.api_jar', apiJar.get().archiveFile.get().asFile.absolutePath
+    }
 }
 
 // The save fixture tests (saves/SaveFixturesTest) read and write NBT with the real codecs, so unit tests see

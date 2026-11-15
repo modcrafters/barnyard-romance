@@ -8,6 +8,12 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Other mods can now hook into Barnyard Romance: stop or change taming, milking, death drops, shearing and familiarity, hear about births and hatching, and read an animal's sex, size, age and familiarity. See "For mod developers" in the README.
+
+### API
+
+- First public API, in separate jars: `barnyard_romance-api-<mc>` and `barnyard_romance-api-<loader>-<mc>`.
+
 ## 0.0.4
 
 - Goats no longer long-jump out of fenced pens. Set `goatLongJumps` to `true` in `config/barnyard_romance.json` to bring vanilla's jump back.
