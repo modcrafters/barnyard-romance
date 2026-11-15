@@ -39,6 +39,8 @@ import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.api.event.Milking;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 
@@ -121,9 +123,14 @@ public final class MilkActions {
             refuseMilking(animal, player);
             return InteractionResult.CONSUME;
         }
+        // Other mods may stop the milking or change what the bucket becomes; stopped, nothing happens at all.
+        Milking milking = BarnyardEvents.MILKING.post(new Milking(animal, player, new ItemStack(milk.get())));
+        if (milking.isCancelled()) {
+            return InteractionResult.CONSUME;
+        }
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
-        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(milk.get())));
+        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, milking.result().copy()));
         Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).milked(now, clock, tuning.milkKeepsFlowingTicks())));
         familiarityApi.spendFamiliarity(animal, tuning.familiarityMilkingCost());
         if (familiarityApi.isFamiliar(traits)) {

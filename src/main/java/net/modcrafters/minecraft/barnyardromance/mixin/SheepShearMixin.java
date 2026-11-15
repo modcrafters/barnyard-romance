@@ -1,6 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
+import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.api.event.ShearYield;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
+import net.modcrafters.minecraft.barnyardromance.drops.DropStacks;
 import net.modcrafters.minecraft.barnyardromance.drops.ProductDrops;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.minecraft.server.level.ServerLevel;
@@ -23,7 +27,7 @@ public class SheepShearMixin {
         ShearActions.recordShearing((Sheep) (Object) this);
     }
 
-    // Wool from shears and dispensers is sized before vanilla spawns it one at a time.
+    // Wool from shears and dispensers is sized and offered to other mods before vanilla spawns it one at a time.
     @ModifyArg(
             method = "shear(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/sounds/SoundSource;Lnet/minecraft/world/item/ItemStack;)V",
             at = @At(
@@ -41,7 +45,22 @@ public class SheepShearMixin {
             } catch (RuntimeException exception) {
                 Constants.LOG.error("Failed to size a sheep's wool, leaving it to vanilla", exception);
             }
-            original.accept(level, sized);
+            if (sized.isEmpty()) {
+                return;
+            }
+            // Only tracked sheep fire the event; the rest shear as vanilla does.
+            if (Tracked.traits(sheep).isEmpty()) {
+                original.accept(level, sized);
+                return;
+            }
+            ShearYield yield = BarnyardEvents.SHEAR_YIELD.post(new ShearYield(sheep, sized));
+            if (yield.isCancelled()) {
+                return;
+            }
+            ItemStack wool = yield.stack();
+            for (int count : DropStacks.sizes(wool.getCount(), wool.getMaxStackSize())) {
+                original.accept(level, wool.copyWithCount(count));
+            }
         };
     }
 }

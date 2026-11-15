@@ -17,6 +17,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.api.event.DeathDrop;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -59,7 +61,7 @@ public final class ProductDrops {
         return stack;
     }
 
-    // One loot stack from a tracked animal's death: resized, then spawned in stacks that fit.
+    // One loot stack from a tracked animal's death: resized, offered to other mods, then spawned in stacks that fit.
     public static void dropSized(Animal animal, ItemStack stack, Consumer<ItemStack> spawn) {
         ItemStack sized = stack;
         try {
@@ -67,6 +69,14 @@ public final class ProductDrops {
         } catch (RuntimeException exception) {
             Constants.LOG.error("Failed to size a {} drop, leaving it to vanilla", AnimalSex.speciesId(animal), exception);
         }
+        if (sized.isEmpty()) {
+            return;
+        }
+        DeathDrop drop = BarnyardEvents.DEATH_DROP.post(new DeathDrop(animal, sized));
+        if (drop.isCancelled()) {
+            return;
+        }
+        sized = drop.stack();
         for (int count : DropStacks.sizes(sized.getCount(), sized.getMaxStackSize())) {
             spawn.accept(sized.copyWithCount(count));
         }
