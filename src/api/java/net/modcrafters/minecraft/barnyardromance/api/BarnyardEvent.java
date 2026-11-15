@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-// One of Barnyard Romance's events and its listeners. They run synchronously on the server thread, in the order they
-// registered; a listener that throws is logged and skipped, so the others still run and the game goes on as if it had
-// done nothing. Register listeners while your mod starts up.
+/**
+ * One of Barnyard Romance's events and its listeners. They run synchronously on the server thread, in the order they
+ * registered. A listener that throws is logged and the rest still run; whatever it changed or cancelled before it
+ * threw stays. Register listeners while your mod starts up.
+ */
 public final class BarnyardEvent<E> {
     private static final Logger LOG = LoggerFactory.getLogger("barnyard_romance");
 
@@ -25,13 +27,17 @@ public final class BarnyardEvent<E> {
         listeners.add(listener);
     }
 
-    // For Barnyard Romance's loader layers, which re-fire the event as a NeoForge or Fabric event: they run after
-    // every ordinary listener, so they see what those changed.
+    /**
+     * For Barnyard Romance's loader layers, which re-fire the event as a NeoForge or Fabric event: they run after
+     * every ordinary listener, so they see what those changed.
+     */
     public void registerLate(Consumer<? super E> listener) {
         late.add(listener);
     }
 
-    // For Barnyard Romance only: other mods listen, they don't post.
+    /**
+     * For Barnyard Romance only: other mods listen, they don't post.
+     */
     public E post(E event) {
         deliver(listeners, event);
         deliver(late, event);

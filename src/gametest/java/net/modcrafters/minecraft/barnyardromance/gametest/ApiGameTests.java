@@ -74,6 +74,7 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("death_drop_can_be_replaced", 20, ApiGameTests::deathDropCanBeReplaced),
             new BreedingGameTests.Case("a_huge_death_drop_splits_into_stacks", 20, ApiGameTests::aHugeDeathDropSplitsIntoStacks),
             new BreedingGameTests.Case("shear_yield_can_be_cancelled", 20, ApiGameTests::shearYieldCanBeCancelled),
+            new BreedingGameTests.Case("shear_yield_can_be_changed", 20, ApiGameTests::shearYieldCanBeChanged),
             new BreedingGameTests.Case("a_throwing_listener_does_not_stop_milking", 20, ApiGameTests::aThrowingListenerDoesNotStopMilking),
             new BreedingGameTests.Case("disabled_species_fire_no_milking", 20, ApiGameTests::disabledSpeciesFireNoMilking),
             new BreedingGameTests.Case("cancelled_familiarity_change_keeps_familiarity", 20, ApiGameTests::cancelledFamiliarityChangeKeepsFamiliarity),
@@ -243,6 +244,32 @@ public final class ApiGameTests {
         sheep.setSheared(false);
         GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
         helper.assertTrue(!sheep.isSheared(), "a cancelled yield didn't count as today's shearing");
+        helper.succeed();
+    }
+
+    // The first wool stack becomes 100 string, past a stack's size, and any other is cancelled: 100 string and no
+    // wool lie in the pen. On 1.21.1 this is the path where the mod spawns the changed stack itself.
+    public static void shearYieldCanBeChanged(GameTestHelper helper) {
+        Sheep sheep = (Sheep) female(helper, EntityTypes.SHEEP);
+        AtomicBoolean changed = new AtomicBoolean();
+        SHEAR_YIELDS.add(sheep.getUUID(), yield -> {
+            if (changed.compareAndSet(false, true)) {
+                yield.setStack(new ItemStack(Items.STRING, 100));
+            } else {
+                yield.cancel();
+            }
+        });
+        try {
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
+        } finally {
+            SHEAR_YIELDS.remove(sheep.getUUID());
+        }
+        List<ItemEntity> dropped = itemsAround(helper, sheep.blockPosition());
+
+        helper.assertTrue(sheep.isSheared(), "the sheep wasn't sheared");
+        helper.assertTrue(dropped.stream().allMatch(item -> item.getItem().is(Items.STRING)), "the shearing dropped " + names(dropped));
+        int string = dropped.stream().mapToInt(item -> item.getItem().getCount()).sum();
+        helper.assertTrue(string == 100, "the shearing dropped " + string + " string: " + names(dropped));
         helper.succeed();
     }
 

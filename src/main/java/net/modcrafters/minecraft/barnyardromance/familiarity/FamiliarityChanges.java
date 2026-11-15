@@ -19,7 +19,9 @@ public final class FamiliarityChanges {
     }
 
     // What a posted change comes to: before when cancelled or set to NaN; after when no listener changed it, even past
-    // the cap, which an animal can be from before caps; otherwise the listener's value, kept within 0 and the cap.
+    // the cap, which an animal can be from before caps or a lowered cap; otherwise the listener's value, kept at 0 or
+    // above and no higher than the cap, or than where the animal already is when that's higher. So a listener can
+    // hold or slow an animal above its cap, but never push it further.
     static double outcome(FamiliarityChange posted, double after, double cap) {
         if (posted.isCancelled() || Double.isNaN(posted.after())) {
             return posted.before();
@@ -27,6 +29,6 @@ public final class FamiliarityChanges {
         if (posted.after() == after) {
             return after;
         }
-        return Math.clamp(posted.after(), 0.0, Math.max(0.0, cap));
+        return Math.clamp(posted.after(), 0.0, Math.max(Math.max(0.0, cap), posted.before()));
     }
 }

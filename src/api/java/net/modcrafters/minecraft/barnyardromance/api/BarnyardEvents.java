@@ -9,7 +9,9 @@ import net.modcrafters.minecraft.barnyardromance.api.event.Milking;
 import net.modcrafters.minecraft.barnyardromance.api.event.ShearYield;
 import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
 
-// Every event Barnyard Romance fires. They fire on the server only, and only for animals it tracks.
+/**
+ * Every event Barnyard Romance fires. They fire on the server only, and only for animals it tracks.
+ */
 public final class BarnyardEvents {
     public static final BarnyardEvent<Taming> TAMING = new BarnyardEvent<>("Taming");
     public static final BarnyardEvent<Milking> MILKING = new BarnyardEvent<>("Milking");

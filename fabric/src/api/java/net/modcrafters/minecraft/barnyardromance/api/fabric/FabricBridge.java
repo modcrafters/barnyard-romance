@@ -2,12 +2,16 @@ package net.modcrafters.minecraft.barnyardromance.api.fabric;
 
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
 
-// Re-fires every public API event as its Fabric API event, after the API's own listeners. The mod never listens here.
+/**
+ * Re-fires every public API event as its Fabric API event, after the API's own listeners. The mod never listens here.
+ */
 public final class FabricBridge {
     private FabricBridge() {
     }
 
-    // Called once by Barnyard Romance as it starts.
+    /**
+     * Called once by Barnyard Romance as it starts.
+     */
     public static void register() {
         BarnyardEvents.TAMING.registerLate(event -> BarnyardFabricEvents.TAMING.invoker().onTaming(event));
         BarnyardEvents.MILKING.registerLate(event -> BarnyardFabricEvents.MILKING.invoker().onMilking(event));

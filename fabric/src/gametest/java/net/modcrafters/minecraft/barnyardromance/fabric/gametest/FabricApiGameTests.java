@@ -96,4 +96,9 @@ public class FabricApiGameTests {
     public void aWildEggHatchesWithNoParents(GameTestHelper helper) {
         ApiGameTests.aWildEggHatchesWithNoParents(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shearYieldCanBeChanged(GameTestHelper helper) {
+        ApiGameTests.shearYieldCanBeChanged(helper);
+    }
 }

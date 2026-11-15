@@ -3,12 +3,16 @@ package net.modcrafters.minecraft.barnyardromance.api.event;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.api.Cancellable;
 
-// An animal's familiarity is about to change from before to after (both 0 to 1). A listener may set another after;
-// Barnyard Romance clamps it to 0 and the animal's cap (wild-caught animals have one), and keeps before for NaN.
-// Cancelled, familiarity stays at before.
+/**
+ * An animal's familiarity is about to change from before to after (both 0 to 1). A listener may set another after;
+ * Barnyard Romance clamps it to 0 and the animal's cap (wild-caught animals have one), and keeps before for NaN.
+ * Cancelled, familiarity stays at before.
+ */
 public final class FamiliarityChange implements Cancellable {
-    // CARE: feeding, a feeding block or care raised it. NEGLECT: the daily settle let it fall. COST: taking a product
-    // (milk, wool) cost some. OTHER: anything else, such as a command.
+    /**
+     * CARE: feeding, a feeding block or care raised it. NEGLECT: the daily settle let it fall. COST: taking a product
+     * (milk, wool) cost some. OTHER: anything else, such as a command.
+     */
     public enum Reason {
         CARE,
         NEGLECT,

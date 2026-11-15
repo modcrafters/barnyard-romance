@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.api;
 
-// The way in. Check that the mod "barnyard_romance" is loaded before you touch any of this.
+/**
+ * The way in. Check that the mod "barnyard_romance" is loaded before you touch any of this.
+ */
 public final class BarnyardApi {
     private static volatile BarnyardAnimals animals;
 
@@ -15,7 +17,9 @@ public final class BarnyardApi {
         return installed;
     }
 
-    // For Barnyard Romance only: it installs the queries while it starts.
+    /**
+     * For Barnyard Romance only: it installs the queries while it starts.
+     */
     public static void install(BarnyardAnimals queries) {
         animals = queries;
     }

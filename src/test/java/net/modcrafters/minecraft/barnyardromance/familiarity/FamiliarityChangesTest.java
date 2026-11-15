@@ -31,6 +31,24 @@ class FamiliarityChangesTest {
         assertEquals(0.4, FamiliarityChanges.outcome(change, 0.35, 0.4));
     }
 
+    // An animal above its cap (tamed before caps, or the cap was lowered) can be held or slowed by a listener, but
+    // never pushed higher than it already is.
+    @Test
+    void aListenerCanSlowTheFallOfAnAnimalAboveItsCap() {
+        FamiliarityChange change = change(0.75, 0.73);
+        change.setAfter(0.74);
+
+        assertEquals(0.74, FamiliarityChanges.outcome(change, 0.73, 0.4));
+    }
+
+    @Test
+    void aListenerCannotRaiseAnAnimalAboveItsCapFurther() {
+        FamiliarityChange change = change(0.75, 0.73);
+        change.setAfter(0.9);
+
+        assertEquals(0.75, FamiliarityChanges.outcome(change, 0.73, 0.4));
+    }
+
     @Test
     void negativeIsClampedToZero() {
         FamiliarityChange change = change(0.3, 0.25);

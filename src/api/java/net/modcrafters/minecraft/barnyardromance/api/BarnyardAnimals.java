@@ -4,7 +4,9 @@ import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
 
-// Questions about one animal. Exact on the server; on the client, only what Barnyard Romance syncs to it.
+/**
+ * Questions about one animal. Exact on the server; on the client, only what Barnyard Romance syncs to it.
+ */
 public interface BarnyardAnimals {
     // Barnyard Romance looks after this animal: its species is enabled and it has a sex and size.
     boolean tracked(Animal animal);

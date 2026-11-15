@@ -9,12 +9,16 @@ import net.neoforged.neoforge.event.EventHooks;
 
 import java.util.function.Function;
 
-// Re-fires every public API event on NeoForge's bus, after the API's own listeners. The mod never listens here.
+/**
+ * Re-fires every public API event on NeoForge's bus, after the API's own listeners. The mod never listens here.
+ */
 public final class NeoForgeBridge {
     private NeoForgeBridge() {
     }
 
-    // Called once by Barnyard Romance as it starts.
+    /**
+     * Called once by Barnyard Romance as it starts.
+     */
     public static void register() {
         cancellable(BarnyardEvents.TAMING, TamingEvent::new);
         // A familiarity tame is a tame like any other to NeoForge mods, horses included; a trusting ocelot isn't.

@@ -50,6 +50,52 @@ class ApiSourcesTest {
         assertTrue(broken.isEmpty(), () -> "the public API may only import Minecraft, the JDK and itself:\n" + String.join("\n", broken));
     }
 
+    // The javadoc jar and an IDE's quick doc only show /** */ comments, so every public type in the API (the common
+    // one and the loaders' native layers) has one.
+    @Test
+    void everyPublicApiTypeHasJavadoc() {
+        Path root = SourceScan.repoRoot();
+        List<Path> dirs = new ArrayList<>(List.of(root.resolve("src/api/java"), root.resolve("neoforge/src/api/java"), root.resolve("fabric/src/api/java")));
+        dirs.addAll(versionApiSources(root));
+        List<String> bare = new ArrayList<>();
+        for (Path dir : dirs) {
+            for (Path file : SourceScan.javaFiles(dir)) {
+                List<String> lines = SourceScan.lines(file);
+                for (int i = 0; i < lines.size(); i++) {
+                    if (TYPE.matcher(lines.get(i)).find() && !documented(lines, i)) {
+                        bare.add(dir.relativize(file) + ":" + (i + 1));
+                    }
+                }
+            }
+        }
+        assertTrue(bare.isEmpty(), () -> "public API types without javadoc:\n" + String.join("\n", bare));
+    }
+
+    private static final Pattern TYPE = Pattern.compile("^\\s*public\\s+(?:static\\s+|final\\s+|abstract\\s+)*(?:class|interface|enum|record)\\s");
+
+    // The nearest line above the declaration, past annotations, closes a /** */ comment.
+    private static boolean documented(List<String> lines, int declaration) {
+        for (int i = declaration - 1; i >= 0; i--) {
+            String line = lines.get(i).strip();
+            if (line.startsWith("@")) {
+                continue;
+            }
+            if (!line.endsWith("*/")) {
+                return false;
+            }
+            for (int j = i; j >= 0; j--) {
+                if (lines.get(j).strip().startsWith("/**")) {
+                    return true;
+                }
+                if (lines.get(j).strip().startsWith("/*")) {
+                    return false;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
     private static List<Path> versionApiSources(Path root) {
         try (Stream<Path> versions = Files.list(root.resolve("versions"))) {
             return versions.map(version -> version.resolve("src/api/java")).filter(Files::isDirectory).toList();

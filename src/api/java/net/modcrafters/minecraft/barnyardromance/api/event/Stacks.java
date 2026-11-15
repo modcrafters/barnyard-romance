@@ -2,7 +2,9 @@ package net.modcrafters.minecraft.barnyardromance.api.event;
 
 import net.minecraft.world.item.ItemStack;
 
-// The check every stack-changing event shares: nothing is given by cancelling, never by an empty stack.
+/**
+ * The check every stack-changing event shares: nothing is given by cancelling, never by an empty stack.
+ */
 final class Stacks {
     private Stacks() {
     }
