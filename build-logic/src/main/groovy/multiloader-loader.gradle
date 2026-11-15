@@ -43,10 +43,20 @@ dependencies {
     commonGametestResources(project(path: commonPath, configuration: 'commonGametestResources'))
 }
 
-// The public API's classes go into the mod jar with the common code, so players install one file.
 tasks.named('compileJava', JavaCompile) {
-    dependsOn(configurations.commonJava, configurations.commonApiJava)
-    source(configurations.commonJava, configurations.commonApiJava)
+    dependsOn(configurations.commonJava)
+    source(configurations.commonJava)
+}
+
+// The loader's api source set holds the common public API and this loader's native events (src/api here), so main
+// sees both through api.output. The mod jar carries them too, so players install one file.
+tasks.named('compileApiJava', JavaCompile) {
+    dependsOn(configurations.commonApiJava)
+    source(configurations.commonApiJava)
+}
+
+tasks.named('jar', Jar) {
+    from(sourceSets.api.output)
 }
 
 processResources {

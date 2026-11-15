@@ -21,6 +21,8 @@ neoForge {
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
+            // The public API and its NeoForge events load as part of the mod.
+            sourceSet sourceSets.api
         }
         // The game test mod, built from src/gametest. It never goes in the jar.
         "${mod_id}_gametest" {

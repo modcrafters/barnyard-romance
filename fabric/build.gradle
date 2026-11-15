@@ -21,6 +21,11 @@ loom {
     }
     // The game test mod (src/gametest) has its own classpath group; only the game test runs load it.
     mods {
+        // The public API and its Fabric events load as part of the mod.
+        "${mod_id}" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.api
+        }
         "${mod_id}_gametest" {
             sourceSet sourceSets.gametest
         }

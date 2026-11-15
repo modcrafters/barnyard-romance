@@ -196,7 +196,7 @@ public final class FoodGameTests {
         helper.succeed();
     }
 
-    static Player holding(GameTestHelper helper, Item item) {
+    public static Player holding(GameTestHelper helper, Item item) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(item));
         return player;

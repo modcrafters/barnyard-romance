@@ -314,7 +314,7 @@ public final class ProductGameTests {
     }
 
     // A female that just gave birth, sized at a point of her species range: 0 is the smallest, 1 the largest.
-    static Animal mother(GameTestHelper helper, EntityType<? extends Animal> type, double point) {
+    public static Animal mother(GameTestHelper helper, EntityType<? extends Animal> type, double point) {
         Animal animal = BreedingGameTests.female(helper, type);
         SizeSettings size = BarnyardConfig.current().sizeFor(AnimalSex.speciesId(animal));
         double scale = size.femaleScale() - size.variation() + 2.0 * size.variation() * point;

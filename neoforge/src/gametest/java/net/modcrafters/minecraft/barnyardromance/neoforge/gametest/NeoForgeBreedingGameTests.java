@@ -110,6 +110,7 @@ public final class NeoForgeBreedingGameTests {
         modBus.addListener(NeoForgeBreedingGameTests::registerTests);
         NeoForge.EVENT_BUS.addListener(NeoForgeBreedingGameTests::onBabySpawn);
         NeoForge.EVENT_BUS.addListener(NeoForgeBreedingGameTests::onDeath);
+        NeoForgeApiGameTests.listen();
     }
 
     private static List<BreedingGameTests.Case> cases() {
@@ -128,6 +129,7 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(FightGameTests.CASES);
         cases.addAll(AdvancementGameTests.CASES);
         cases.addAll(ApiGameTests.CASES);
+        cases.addAll(NeoForgeApiGameTests.CASES);
         cases.add(new BreedingGameTests.Case("unload_event_refreshes_the_record", 20,
                 helper -> HerdBookGameTests.unloadEventRefreshesTheRecord(helper,
                         cow -> NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(cow, helper.getLevel())))));

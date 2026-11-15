@@ -84,7 +84,7 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("a_wild_egg_hatches_with_no_parents", 40, ApiGameTests::aWildEggHatchesWithNoParents)
     );
 
-    static final Handlers<Milking> MILKINGS = new Handlers<>(BarnyardEvents.MILKING, event -> event.animal().getUUID());
+    public static final Handlers<Milking> MILKINGS = new Handlers<>(BarnyardEvents.MILKING, event -> event.animal().getUUID());
     static final Handlers<DeathDrop> DEATH_DROPS = new Handlers<>(BarnyardEvents.DEATH_DROP, event -> event.animal().getUUID());
     static final Handlers<FamiliarityChange> FAMILIARITY_CHANGES = new Handlers<>(BarnyardEvents.FAMILIARITY_CHANGE, event -> event.animal().getUUID());
     static final Handlers<Taming> TAMINGS = new Handlers<>(BarnyardEvents.TAMING, event -> event.animal().getUUID());
@@ -323,7 +323,7 @@ public final class ApiGameTests {
     }
 
     // One hand meal, sneaking, so an animal that isn't familiar yet takes it instead of shying away.
-    private static void feed(GameTestHelper helper, Animal animal, Item food) {
+    public static void feed(GameTestHelper helper, Animal animal, Item food) {
         Player player = FoodGameTests.holding(helper, food);
         player.setShiftKeyDown(true);
         FamiliarityActions.interact(animal, player, InteractionHand.MAIN_HAND);
