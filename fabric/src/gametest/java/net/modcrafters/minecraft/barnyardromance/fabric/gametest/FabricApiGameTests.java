@@ -66,4 +66,34 @@ public class FabricApiGameTests {
     public void disabledSpeciesFireNoMilking(GameTestHelper helper) {
         ApiGameTests.disabledSpeciesFireNoMilking(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void cancelledFamiliarityChangeKeepsFamiliarity(GameTestHelper helper) {
+        ApiGameTests.cancelledFamiliarityChangeKeepsFamiliarity(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void cancelledTamingLeavesAWolfWild(GameTestHelper helper) {
+        ApiGameTests.cancelledTamingLeavesAWolfWild(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void befriendedFiresOnceWhenACowBecomesFamiliar(GameTestHelper helper) {
+        ApiGameTests.befriendedFiresOnceWhenACowBecomesFamiliar(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 200)
+    public void bornFiresWithTheMotherAndHerYoung(GameTestHelper helper) {
+        ApiGameTests.bornFiresWithTheMotherAndHerYoung(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void hatchedFiresWithTheParents(GameTestHelper helper) {
+        ApiGameTests.hatchedFiresWithTheParents(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 40)
+    public void aWildEggHatchesWithNoParents(GameTestHelper helper) {
+        ApiGameTests.aWildEggHatchesWithNoParents(helper);
+    }
 }

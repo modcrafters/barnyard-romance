@@ -1,7 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
-import net.modcrafters.minecraft.barnyardromance.api.event.Befriended;
 import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
 import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
 
@@ -151,7 +150,6 @@ public final class FamiliarityActions {
         }
         if (!familiar && Familiarity.ready(gained)) {
             Events.post(new AnimalEvent.Befriended(animal, player));
-            BarnyardEvents.BEFRIENDED.post(new Befriended(animal, player));
         }
         tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, FeaturesRepository.get(PregnancyApi.class).isPregnant(animal))) {

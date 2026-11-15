@@ -4,6 +4,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,17 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.item.Item;
 import net.modcrafters.minecraft.barnyardromance.api.event.Befriended;
+import net.modcrafters.minecraft.barnyardromance.api.event.Born;
+import net.modcrafters.minecraft.barnyardromance.api.event.Hatched;
+import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsComponents;
+import net.modcrafters.minecraft.barnyardromance.eggs.FertilizedEggItem;
+import net.modcrafters.minecraft.barnyardromance.eggs.NestingBoxBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.api.event.DeathDrop;
 import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
 import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
@@ -39,6 +51,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -64,7 +78,10 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("disabled_species_fire_no_milking", 20, ApiGameTests::disabledSpeciesFireNoMilking),
             new BreedingGameTests.Case("cancelled_familiarity_change_keeps_familiarity", 20, ApiGameTests::cancelledFamiliarityChangeKeepsFamiliarity),
             new BreedingGameTests.Case("cancelled_taming_leaves_a_wolf_wild", 20, ApiGameTests::cancelledTamingLeavesAWolfWild),
-            new BreedingGameTests.Case("befriended_fires_once_when_a_cow_becomes_familiar", 20, ApiGameTests::befriendedFiresOnceWhenACowBecomesFamiliar)
+            new BreedingGameTests.Case("befriended_fires_once_when_a_cow_becomes_familiar", 20, ApiGameTests::befriendedFiresOnceWhenACowBecomesFamiliar),
+            new BreedingGameTests.Case("born_fires_with_the_mother_and_her_young", 200, ApiGameTests::bornFiresWithTheMotherAndHerYoung),
+            new BreedingGameTests.Case("hatched_fires_with_the_parents", 20, ApiGameTests::hatchedFiresWithTheParents),
+            new BreedingGameTests.Case("a_wild_egg_hatches_with_no_parents", 40, ApiGameTests::aWildEggHatchesWithNoParents)
     );
 
     static final Handlers<Milking> MILKINGS = new Handlers<>(BarnyardEvents.MILKING, event -> event.animal().getUUID());
@@ -72,6 +89,14 @@ public final class ApiGameTests {
     static final Handlers<FamiliarityChange> FAMILIARITY_CHANGES = new Handlers<>(BarnyardEvents.FAMILIARITY_CHANGE, event -> event.animal().getUUID());
     static final Handlers<Taming> TAMINGS = new Handlers<>(BarnyardEvents.TAMING, event -> event.animal().getUUID());
     static final Handlers<Befriended> BEFRIENDS = new Handlers<>(BarnyardEvents.BEFRIENDED, event -> event.animal().getUUID());
+    static final Handlers<Born> BIRTHS = new Handlers<>(BarnyardEvents.BORN, event -> event.mother().getUUID());
+    // A wild egg's chick has no parent to key on, so every hatch is kept and a test finds its own by the chick.
+    static final List<Hatched> HATCHES = new CopyOnWriteArrayList<>();
+
+    static {
+        BarnyardEvents.HATCHED.register(HATCHES::add);
+    }
+
     static final Handlers<ShearYield> SHEAR_YIELDS = new Handlers<>(BarnyardEvents.SHEAR_YIELD, event -> event.animal().getUUID());
 
     private static final String GIVE_NOTHING = "use cancel() to give nothing";
@@ -304,6 +329,66 @@ public final class ApiGameTests {
         FamiliarityActions.interact(animal, player, InteractionHand.MAIN_HAND);
     }
 
+    // The litter is due now, so she gives birth on her next tick.
+    public static void bornFiresWithTheMotherAndHerYoung(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.PIG);
+        Animal father = male(helper, EntityTypes.PIG);
+        mother.setInLove(null);
+        father.setInLove(null);
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+        Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
+        long now = helper.getLevel().getGameTime();
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
+        AtomicReference<Born> heard = new AtomicReference<>();
+        BIRTHS.add(mother.getUUID(), heard::set);
+
+        helper.succeedWhen(() -> {
+            Born born = heard.get();
+            helper.assertTrue(born != null, "no Born was heard");
+            List<UUID> piglets = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).map(Animal::getUUID).sorted().toList();
+            List<UUID> young = born.young().stream().map(Animal::getUUID).sorted().toList();
+            helper.assertTrue(!young.isEmpty() && young.equals(piglets), "Born named " + young + ", the pen has " + piglets);
+            BIRTHS.remove(mother.getUUID());
+        });
+    }
+
+    public static void hatchedFiresWithTheParents(GameTestHelper helper) {
+        NestingBoxBlockEntity box = EggGameTests.box(helper, EggGameTests.BOX);
+        EggData data = new EggData("minecraft:chicken", UUID.randomUUID(), UUID.randomUUID(), EggGameTests.largeHen(), Growth.wild(), 1.0, 0.5,
+                1.3, Growth.wild(), 1.0, "", 1_000L, 0L);
+        box.setItem(0, FertilizedEggItem.create(data));
+
+        NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(EggGameTests.BOX), helper.getBlockState(EggGameTests.BOX), box);
+
+        Hatched hatched = hatchOf(helper, EggGameTests.chickIn(helper, EggGameTests.BOX.north()));
+        helper.assertTrue(data.mother().equals(hatched.mother()) && data.father().equals(hatched.father()),
+                "Hatched named " + hatched.mother() + " and " + hatched.father());
+        helper.succeed();
+    }
+
+    public static void aWildEggHatchesWithNoParents(GameTestHelper helper) {
+        NestingBoxBlockEntity box = EggGameTests.box(helper, EggGameTests.BOX);
+        ItemStack wild = WildEggs.taint(FertilizedEggItem.create(EggGameTests.eggData(EggGameTests.largeHen(), 1.2, 1_000L)));
+        wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
+        box.setItem(0, wild);
+
+        helper.runAfterDelay(EggGameTests.COUNT_AND_HATCH, () -> {
+            // Where EggGameTests.aWildEggHatchesAChickWithNoParents finds it: in front of the hole, or fallen below.
+            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class,
+                    new AABB(helper.absolutePos(EggGameTests.BOX.north())).expandTowards(0.0, -2.0, 0.0));
+            helper.assertTrue(chicks.size() == 1, "in front of the hole: " + chicks);
+            Hatched hatched = hatchOf(helper, chicks.getFirst());
+            helper.assertTrue(hatched.mother() == null && hatched.father() == null,
+                    "a wild egg's Hatched named " + hatched.mother() + " and " + hatched.father());
+            helper.succeed();
+        });
+    }
+
+    private static Hatched hatchOf(GameTestHelper helper, Animal chick) {
+        return HATCHES.stream().filter(hatched -> hatched.chick().getUUID().equals(chick.getUUID())).findFirst()
+                .orElseThrow(() -> GameTestCompat.failure(helper, "no Hatched was heard for the chick"));
+    }
+
     private static List<ItemEntity> dieWith(GameTestHelper helper, Animal animal, Consumer<DeathDrop> handler) {
         BlockPos at = animal.blockPosition();
         DEATH_DROPS.add(animal.getUUID(), handler);
@@ -330,7 +415,8 @@ public final class ApiGameTests {
 
         public Handlers(BarnyardEvent<E> event, Function<E, UUID> key) {
             event.register(fired -> {
-                Consumer<E> handler = byAnimal.get(key.apply(fired));
+                UUID animal = key.apply(fired);
+                Consumer<E> handler = animal == null ? null : byAnimal.get(animal);
                 if (handler != null) {
                     handler.accept(fired);
                 }

@@ -14,6 +14,7 @@ public final class Events {
 
     public static void post(AnimalEvent event) {
         post(FeaturesRepository.features(), event);
+        PublicEvents.forward(event);
     }
 
     static void post(FeatureSet features, AnimalEvent event) {
