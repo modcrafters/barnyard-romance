@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
+
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
@@ -63,9 +65,10 @@ final class FamiliarityApiImpl implements FamiliarityApi {
     @Override
     public AnimalTraits withFamiliaritySetTo(Animal animal, AnimalTraits traits, double familiarity) {
         FamiliarityState care = traits.get(CARE);
+        // Set by hand (the herd stick), not earned: other mods hear it as OTHER.
         return familiarity > care.familiarity()
-                ? FamiliarityCare.raise(animal, traits, familiarity, care.lastFedTick())
-                : traits.with(CARE, care.withFamiliarity(familiarity));
+                ? FamiliarityCare.raise(animal, traits, familiarity, care.lastFedTick(), FamiliarityChange.Reason.OTHER)
+                : FamiliarityCare.decided(animal, traits, traits.with(CARE, care.withFamiliarity(familiarity)), FamiliarityChange.Reason.OTHER);
     }
 
     @Override

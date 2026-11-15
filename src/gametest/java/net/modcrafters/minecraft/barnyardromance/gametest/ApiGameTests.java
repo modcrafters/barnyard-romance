@@ -15,7 +15,17 @@ import net.minecraft.world.item.Items;
 import net.modcrafters.minecraft.barnyardromance.api.AnimalInfo;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardApi;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvent;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.item.Item;
+import net.modcrafters.minecraft.barnyardromance.api.event.Befriended;
 import net.modcrafters.minecraft.barnyardromance.api.event.DeathDrop;
+import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
+import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
+import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.api.event.Milking;
 import net.modcrafters.minecraft.barnyardromance.api.event.ShearYield;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -27,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -50,11 +61,17 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("a_huge_death_drop_splits_into_stacks", 20, ApiGameTests::aHugeDeathDropSplitsIntoStacks),
             new BreedingGameTests.Case("shear_yield_can_be_cancelled", 20, ApiGameTests::shearYieldCanBeCancelled),
             new BreedingGameTests.Case("a_throwing_listener_does_not_stop_milking", 20, ApiGameTests::aThrowingListenerDoesNotStopMilking),
-            new BreedingGameTests.Case("disabled_species_fire_no_milking", 20, ApiGameTests::disabledSpeciesFireNoMilking)
+            new BreedingGameTests.Case("disabled_species_fire_no_milking", 20, ApiGameTests::disabledSpeciesFireNoMilking),
+            new BreedingGameTests.Case("cancelled_familiarity_change_keeps_familiarity", 20, ApiGameTests::cancelledFamiliarityChangeKeepsFamiliarity),
+            new BreedingGameTests.Case("cancelled_taming_leaves_a_wolf_wild", 20, ApiGameTests::cancelledTamingLeavesAWolfWild),
+            new BreedingGameTests.Case("befriended_fires_once_when_a_cow_becomes_familiar", 20, ApiGameTests::befriendedFiresOnceWhenACowBecomesFamiliar)
     );
 
     static final Handlers<Milking> MILKINGS = new Handlers<>(BarnyardEvents.MILKING, event -> event.animal().getUUID());
     static final Handlers<DeathDrop> DEATH_DROPS = new Handlers<>(BarnyardEvents.DEATH_DROP, event -> event.animal().getUUID());
+    static final Handlers<FamiliarityChange> FAMILIARITY_CHANGES = new Handlers<>(BarnyardEvents.FAMILIARITY_CHANGE, event -> event.animal().getUUID());
+    static final Handlers<Taming> TAMINGS = new Handlers<>(BarnyardEvents.TAMING, event -> event.animal().getUUID());
+    static final Handlers<Befriended> BEFRIENDS = new Handlers<>(BarnyardEvents.BEFRIENDED, event -> event.animal().getUUID());
     static final Handlers<ShearYield> SHEAR_YIELDS = new Handlers<>(BarnyardEvents.SHEAR_YIELD, event -> event.animal().getUUID());
 
     private static final String GIVE_NOTHING = "use cancel() to give nothing";
@@ -235,6 +252,56 @@ public final class ApiGameTests {
 
         helper.assertTrue(!heard.get(), "an excluded cow fired a Milking");
         helper.succeed();
+    }
+
+    public static void cancelledFamiliarityChangeKeepsFamiliarity(GameTestHelper helper) {
+        Animal cow = CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.COW), 0.3);
+        FAMILIARITY_CHANGES.add(cow.getUUID(), FamiliarityChange::cancel);
+        try {
+            feed(helper, cow, Items.WHEAT);
+        } finally {
+            FAMILIARITY_CHANGES.remove(cow.getUUID());
+        }
+
+        double familiarity = FeaturesRepository.get(FamiliarityApi.class).familiarity(traits(helper, cow));
+        helper.assertTrue(familiarity == 0.3, "a cancelled change left familiarity at " + familiarity);
+        helper.succeed();
+    }
+
+    // The meal brings the wolf to the familiar mark, which would tame it.
+    public static void cancelledTamingLeavesAWolfWild(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.WOLF), Familiarity.threshold() - 0.05);
+        TAMINGS.add(wolf.getUUID(), Taming::cancel);
+        try {
+            feed(helper, wolf, Items.BEEF);
+        } finally {
+            TAMINGS.remove(wolf.getUUID());
+        }
+
+        helper.assertTrue(FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits(helper, wolf)), "the wolf didn't reach the mark, so this proves nothing");
+        helper.assertTrue(!wolf.isTame(), "a cancelled taming tamed the wolf");
+        helper.succeed();
+    }
+
+    public static void befriendedFiresOnceWhenACowBecomesFamiliar(GameTestHelper helper) {
+        Animal cow = CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.COW), Familiarity.threshold() - 0.05);
+        AtomicInteger heard = new AtomicInteger();
+        BEFRIENDS.add(cow.getUUID(), befriended -> heard.incrementAndGet());
+        try {
+            feed(helper, cow, Items.WHEAT);
+        } finally {
+            BEFRIENDS.remove(cow.getUUID());
+        }
+
+        helper.assertTrue(heard.get() == 1, "Befriended fired " + heard.get() + " times");
+        helper.succeed();
+    }
+
+    // One hand meal, sneaking, so an animal that isn't familiar yet takes it instead of shying away.
+    private static void feed(GameTestHelper helper, Animal animal, Item food) {
+        Player player = FoodGameTests.holding(helper, food);
+        player.setShiftKeyDown(true);
+        FamiliarityActions.interact(animal, player, InteractionHand.MAIN_HAND);
     }
 
     private static List<ItemEntity> dieWith(GameTestHelper helper, Animal animal, Consumer<DeathDrop> handler) {

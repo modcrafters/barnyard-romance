@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Escapes;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
@@ -132,7 +133,7 @@ public final class UpkeepGameTests {
         Animal cow = cow(helper, 0.25, 10.0F, DAY - 1L);
         FamiliarityCare.settle(cow, clock(DAY));
         helper.assertTrue(!traits(helper, cow).get(CARE).upkeep().cared(), "a cow at 25% counts as cared for");
-        Services.DATA.set(cow, FamiliarityCare.raise(cow, traits(helper, cow), 0.3, -1L));
+        Services.DATA.set(cow, FamiliarityCare.raise(cow, traits(helper, cow), 0.3, -1L, FamiliarityChange.Reason.CARE));
 
         FamiliarityCare.settle(cow, clock(DAY + 1L));
 

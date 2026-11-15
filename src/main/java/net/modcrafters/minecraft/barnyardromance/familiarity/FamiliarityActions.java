@@ -1,5 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.api.event.Befriended;
+import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
+import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
+
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.vigour.api.VigourApi;
@@ -136,7 +141,8 @@ public final class FamiliarityActions {
         }
         FeaturesRepository.get(PregnancyApi.class).feedPregnancy(animal, eaten.effects(), eaten.factor());
         double amount = eaten.effects().familiarity().orElseGet(Familiarity::gain) * eaten.factor();
-        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.get(CARE).familiarity(), amount), now);
+        AnimalTraits fed = FamiliarityCare.raise(animal, current, Familiarity.gain(current.get(CARE).familiarity(), amount), now,
+                FamiliarityChange.Reason.CARE);
         double gained = fed.get(CARE).familiarity();
         Services.DATA.set(animal, fed);
         FamiliarityCare.markEaten(animal);
@@ -145,6 +151,7 @@ public final class FamiliarityActions {
         }
         if (!familiar && Familiarity.ready(gained)) {
             Events.post(new AnimalEvent.Befriended(animal, player));
+            BarnyardEvents.BEFRIENDED.post(new Befriended(animal, player));
         }
         tameIfFamiliar(animal, player, gained);
         if (!animal.isBaby() && Familiarity.allowsLove(gained, FeaturesRepository.get(PregnancyApi.class).isPregnant(animal))) {
@@ -188,9 +195,14 @@ public final class FamiliarityActions {
     // Ocelots never become pets in vanilla; familiarity gives them the same trust their fish roll would.
     public static void tameIfFamiliar(Animal animal, Player player, double familiarity) {
         if (animal instanceof AbstractHorse horse && Familiarity.tames(horse.isTamed(), familiarity)) {
-            horse.tameWithName(player);
+            if (allowsTaming(animal, player, Taming.Kind.TAME)) {
+                horse.tameWithName(player);
+            }
         } else if ((animal instanceof Wolf || animal instanceof Cat) && animal instanceof TamableAnimal pet
                 && Familiarity.tames(pet.isTame(), familiarity)) {
+            if (!allowsTaming(animal, player, Taming.Kind.TAME)) {
+                return;
+            }
             pet.tame(player);
             pet.getNavigation().stop();
             pet.setTarget(null);
@@ -198,17 +210,28 @@ public final class FamiliarityActions {
             pet.level().broadcastEntityEvent(pet, (byte) 7);
         } else if (animal instanceof TamableAnimal pet && FeaturesRepository.get(NaturalistApi.class).isLivestock(AnimalSex.speciesId(animal))
                 && Familiarity.tames(pet.isTame(), familiarity)) {
+            if (!allowsTaming(animal, player, Taming.Kind.TAME)) {
+                return;
+            }
             // Naturalist tames these while feeding them, which the mod's feeding runs ahead of.
             pet.tame(player);
             pet.level().broadcastEntityEvent(pet, (byte) 7);
         } else if (animal instanceof Ocelot ocelot && ocelot instanceof OcelotAccessor trust
                 && Familiarity.tames(trust.barnyardromance$isTrusting(), familiarity)) {
+            if (!allowsTaming(animal, player, Taming.Kind.TRUST)) {
+                return;
+            }
             trust.barnyardromance$setTrusting(true);
             ocelot.level().broadcastEntityEvent(ocelot, (byte) 41);
         }
     }
 
     // Bones would tame a wolf behind familiarity's back, so a tracked wild wolf turns them down.
+    // Other mods may stop a familiarity taming; the animal then tries again at its next meal.
+    private static boolean allowsTaming(Animal animal, Player player, Taming.Kind kind) {
+        return animal.level().isClientSide() || !BarnyardEvents.TAMING.post(new Taming(animal, player, kind)).isCancelled();
+    }
+
     public static InteractionResult blocksVanillaTaming(Animal animal, Player player, ItemStack stack) {
         if (!(animal instanceof Wolf wolf) || wolf.isTame() || !stack.is(Items.BONE) || Tracked.traits(animal).isEmpty()) {
             return null;
