@@ -4,10 +4,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 // What other features ask of familiarity: how familiar an animal is, its meals and hungry days, the days it has yet to
 // settle, and its refusals. Days are GameDays and clock is an overworld clock time (see GameDay).
@@ -79,11 +79,10 @@ public interface FamiliarityApi {
     // The traits as they would be after today's settle, for an animal far from home that goes on missing meals.
     AnimalTraits afterMissedDays(AnimalTraits traits, long today, boolean nursing);
 
-    // Of missedDays missed, the days the config's catch-up mode counts.
-    long daysCounted(long missedDays, HungerSettings.CatchUp mode);
-
-    // The traits with the days before day passed over uncounted, as the catch-up mode passes them over.
-    AnimalTraits skippingDaysBefore(AnimalTraits traits, long day);
+    // The first day a feeding block's catch-up settles for this animal, or empty when it has none to settle: never
+    // settled (its own first settle starts it counting), or settled up to today already, perhaps by another block. The
+    // config's catch-up mode may count fewer days than were missed; those it doesn't are passed over now, and saved.
+    OptionalLong catchUpFrom(Animal animal, AnimalTraits traits, long today);
 
     // One day of a feeding block's catch-up for an animal settled up to that day, by the same rules as a settle; feeder
     // is the kind of block that fed it that day, if one did. The damage isn't dealt: owed, what the block owes it so

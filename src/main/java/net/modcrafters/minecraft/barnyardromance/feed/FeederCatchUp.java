@@ -1,11 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 // A feeding block settling the days its herd missed, day by day across the whole herd so the food is shared fairly:
@@ -61,9 +59,8 @@ public final class FeederCatchUp {
     }
 
     // Gathers the members loaded now that have days before today to settle. The config may count fewer days than
-    // were missed; those it doesn't are passed over at once, as a lone settle passes them over.
+    // were missed; familiarity passes over the ones it doesn't at once, as a lone settle passes them over.
     static FeederCatchUp start(FeederBlockEntity feeder, ServerLevel level, long today, long liveDay, boolean liveDayFed) {
-        HungerSettings.CatchUp mode = BarnyardConfig.current().hunger().catchUp();
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         List<UUID> members = new ArrayList<>();
         List<Long> from = new ArrayList<>();
@@ -74,22 +71,11 @@ public final class FeederCatchUp {
             if (traits == null || animal.isBaby()) {
                 continue;
             }
-            long first = familiarityApi.firstUnsettledDay(traits);
-            // Never settled yet, so its own first settle starts it counting; or settled already, perhaps by another
-            // block it's in the herd of too.
-            if (first < 0L || first >= today) {
-                continue;
+            OptionalLong first = familiarityApi.catchUpFrom(animal, traits, today);
+            if (first.isPresent()) {
+                members.add(id);
+                from.add(first.getAsLong());
             }
-            long counted = familiarityApi.daysCounted(today - first, mode);
-            if (counted < today - first) {
-                first = today - counted;
-                Services.DATA.set(animal, familiarityApi.skippingDaysBefore(traits, first));
-                if (counted == 0L) {
-                    continue;
-                }
-            }
-            members.add(id);
-            from.add(first);
         }
         long[] next = new long[from.size()];
         for (int i = 0; i < next.length; i++) {
