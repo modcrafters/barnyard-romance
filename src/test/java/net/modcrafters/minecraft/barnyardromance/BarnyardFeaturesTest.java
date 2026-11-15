@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance;
 import net.modcrafters.minecraft.barnyardromance.advancement.AdvancementFeature;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureSet;
+import net.modcrafters.minecraft.barnyardromance.core.registry.TabEntries;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdFeature;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +39,12 @@ class BarnyardFeaturesTest {
             }
         }
         assertTrue(missing.isEmpty(), () -> "no feature in BarnyardFeatures provides " + missing);
+    }
+
+    // The game's set checks this at install; every entry the creative tab shows is registered by a listed feature.
+    @Test
+    void everyTabEntryIsRegistered() {
+        TabEntries.checkRegistered(FeatureSet.of(BarnyardFeatures.all()).tabEntries().keySet());
     }
 
     // Listeners run in registration order, so herd must come before advancement.

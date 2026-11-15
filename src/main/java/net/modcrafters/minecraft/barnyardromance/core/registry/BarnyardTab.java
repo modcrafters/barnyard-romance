@@ -18,7 +18,8 @@ import java.util.function.Supplier;
 // The mod's own creative tab. Each loader brings its builder and fills it from contents(),
 // because CreativeModeTab.Output is only widened in the loaders. An item a feature registers is named by its id, and
 // looked up when the tab is filled, after registration. Stacks that need more than an id are a tab entry the feature
-// registers under a name (see FeatureRegistrar.tabEntry), also looked up when the tab is filled.
+// registers under a name (see FeatureRegistrar.tabEntry), also looked up when the tab is filled. Each such name is
+// listed in TabEntries, which start-up checks.
 public final class BarnyardTab {
     public static final ResourceKey<CreativeModeTab> ID = ResourceKey.create(
             Registries.CREATIVE_MODE_TAB,

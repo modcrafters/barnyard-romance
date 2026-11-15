@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core;
 
+import net.modcrafters.minecraft.barnyardromance.core.registry.TabEntries;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -136,6 +138,22 @@ class FeatureSetTest {
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains("scale"), thrown.getMessage());
+    }
+
+    // A misspelt name would sit in the set and never show in the tab.
+    @Test
+    void aTabEntryTheTabDoesntShowIsRejected() {
+        List<Feature> features = List.of(feature("herd", registrar -> registrar.tabEntry("herd_stiks", List::of)));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
+        assertEquals("Tab entry herd_stiks has no place in BarnyardTab", thrown.getMessage());
+    }
+
+    @Test
+    void aTabEntryNobodyRegistersIsReported() {
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> TabEntries.checkRegistered(Set.of()));
+        assertEquals("Nobody registers tab entry herd_sticks", thrown.getMessage());
+        TabEntries.checkRegistered(Set.copyOf(TabEntries.names()));
     }
 
     // Every set needs the tick hooks AnimalTicks places (see AnimalTicksTest); these tests are about everything else.
