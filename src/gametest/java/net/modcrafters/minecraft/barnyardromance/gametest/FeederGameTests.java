@@ -98,17 +98,22 @@ public final class FeederGameTests {
     public static final BlockPos FEEDER = new BlockPos(2, 2, 2);
     // A hopper moves an item every 8 ticks; this is long enough for eight.
     static final int HOPPER_TICKS = 100;
+    // For tests that first wait until their animals have landed and the entities around the pen have loaded. Landing
+    // takes a few ticks, but entities load off the server thread and the test server ticks as fast as it can, so on
+    // a busy machine the wait can take well over 100 ticks. The wait checks a condition, so the extra ticks only
+    // matter when a test is running late.
+    public static final int LOADING_TICKS = 600;
     // Far past the test world's own clock, so the animals' own ticks never settle these days for them.
     private static final long DAY = 10_000L;
     private static final long SUNRISE = clock(DAY);
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
-            new BreedingGameTests.Case("pet_bowl_food_tracks_dogs", 100, FeederGameTests::petBowlFoodTracksDogs),
-            new BreedingGameTests.Case("pet_bowl_food_tracks_cats", 100, FeederGameTests::petBowlFoodTracksCats),
-            new BreedingGameTests.Case("bird_feeder_seeds_track_inventory_and_herd", 100, FeederGameTests::birdFeederSeedsTrackInventoryAndHerd),
-            new BreedingGameTests.Case("trough_food_tracks_inventory_and_herd", 100, FeederGameTests::troughFoodTracksInventoryAndHerd),
-            new BreedingGameTests.Case("feeder_food_tracks_inventory_and_herd", 100, FeederGameTests::feederFoodTracksInventoryAndHerd),
-            new BreedingGameTests.Case("manger_hay_tracks_inventory_and_herd", 100, FeederGameTests::mangerHayTracksInventoryAndHerd),
+            new BreedingGameTests.Case("pet_bowl_food_tracks_dogs", LOADING_TICKS, FeederGameTests::petBowlFoodTracksDogs),
+            new BreedingGameTests.Case("pet_bowl_food_tracks_cats", LOADING_TICKS, FeederGameTests::petBowlFoodTracksCats),
+            new BreedingGameTests.Case("bird_feeder_seeds_track_inventory_and_herd", LOADING_TICKS, FeederGameTests::birdFeederSeedsTrackInventoryAndHerd),
+            new BreedingGameTests.Case("trough_food_tracks_inventory_and_herd", LOADING_TICKS, FeederGameTests::troughFoodTracksInventoryAndHerd),
+            new BreedingGameTests.Case("feeder_food_tracks_inventory_and_herd", LOADING_TICKS, FeederGameTests::feederFoodTracksInventoryAndHerd),
+            new BreedingGameTests.Case("manger_hay_tracks_inventory_and_herd", LOADING_TICKS, FeederGameTests::mangerHayTracksInventoryAndHerd),
             new BreedingGameTests.Case("feeding_blocks_remember_placement_facing", 20, FeederGameTests::feedingBlocksRememberPlacementFacing),
             new BreedingGameTests.Case("feeding_block_shapes_follow_their_models", 20, FeederGameTests::feedingBlockShapesFollowTheirModels),
             new BreedingGameTests.Case("feeder_takes_wheat_but_not_beef", 20, FeederGameTests::feederTakesWheatButNotBeef),
@@ -119,23 +124,23 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_hopper_cannot_empty_a_manger", HOPPER_TICKS + 40, FeederGameTests::aHopperCannotEmptyAManger),
             new BreedingGameTests.Case("breaking_a_manger_drops_its_food", 20, FeederGameTests::breakingAMangerDropsItsFood),
             new BreedingGameTests.Case("a_meal_comes_from_the_first_full_slot", 20, FeederGameTests::aMealComesFromTheFirstFullSlot),
-            new BreedingGameTests.Case("a_manger_finds_the_cows_in_its_pen", 100, FeederGameTests::aMangerFindsTheCowsInItsPen),
+            new BreedingGameTests.Case("a_manger_finds_the_cows_in_its_pen", LOADING_TICKS, FeederGameTests::aMangerFindsTheCowsInItsPen),
             new BreedingGameTests.Case("a_cow_in_a_pen_corner_stays_in_the_herd", 100, FeederGameTests::aCowInAPenCornerStaysInTheHerd),
-            new BreedingGameTests.Case("an_unfamiliar_cow_is_not_in_the_herd", 100, FeederGameTests::anUnfamiliarCowIsNotInTheHerd),
-            new BreedingGameTests.Case("catch_up_shares_two_days_of_food_over_ten_days", 100,
+            new BreedingGameTests.Case("an_unfamiliar_cow_is_not_in_the_herd", LOADING_TICKS, FeederGameTests::anUnfamiliarCowIsNotInTheHerd),
+            new BreedingGameTests.Case("catch_up_shares_two_days_of_food_over_ten_days", LOADING_TICKS,
                     FeederGameTests::catchUpSharesTwoDaysOfFoodOverTenDays),
             new BreedingGameTests.Case("a_cow_waits_for_its_manger", 140, FeederGameTests::aCowWaitsForItsManger),
             new BreedingGameTests.Case("breaking_the_manger_mid_catch_up_lets_the_rest_settle_alone", 240,
                     FeederGameTests::breakingTheMangerMidCatchUpLetsTheRestSettleAlone),
-            new BreedingGameTests.Case("catch_up_does_not_walk", 100, FeederGameTests::catchUpDoesNotWalk),
-            new BreedingGameTests.Case("a_cow_in_two_herds_is_settled_once", 100, FeederGameTests::aCowInTwoHerdsIsSettledOnce),
-            new BreedingGameTests.Case("none_mode_catch_up_takes_no_food", 100, FeederGameTests::noneModeCatchUpTakesNoFood),
-            new BreedingGameTests.Case("one_day_mode_catch_up_feeds_one_day", 100, FeederGameTests::oneDayModeCatchUpFeedsOneDay),
+            new BreedingGameTests.Case("catch_up_does_not_walk", LOADING_TICKS, FeederGameTests::catchUpDoesNotWalk),
+            new BreedingGameTests.Case("a_cow_in_two_herds_is_settled_once", LOADING_TICKS, FeederGameTests::aCowInTwoHerdsIsSettledOnce),
+            new BreedingGameTests.Case("none_mode_catch_up_takes_no_food", LOADING_TICKS, FeederGameTests::noneModeCatchUpTakesNoFood),
+            new BreedingGameTests.Case("one_day_mode_catch_up_feeds_one_day", LOADING_TICKS, FeederGameTests::oneDayModeCatchUpFeedsOneDay),
             new BreedingGameTests.Case("two_mangers_catching_up_at_once_settle_each_day_once", 100,
                     FeederGameTests::twoMangersCatchingUpAtOnceSettleEachDayOnce),
-            new BreedingGameTests.Case("a_day_the_pen_was_loaded_takes_no_food", 100, FeederGameTests::aDayThePenWasLoadedTakesNoFood),
+            new BreedingGameTests.Case("a_day_the_pen_was_loaded_takes_no_food", LOADING_TICKS, FeederGameTests::aDayThePenWasLoadedTakesNoFood),
             new BreedingGameTests.Case("a_cow_below_familiar_gets_no_food", 100, FeederGameTests::aCowBelowFamiliarGetsNoFood),
-            new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", 100, FeederGameTests::aHerdHenHungryYesterdayLaysNothing),
+            new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", LOADING_TICKS, FeederGameTests::aHerdHenHungryYesterdayLaysNothing),
             new BreedingGameTests.Case("cows_walk_to_the_manger_and_eat", 400, FeederGameTests::cowsWalkToTheMangerAndEat),
             new BreedingGameTests.Case("a_morning_feeder_meal_earns_self_service", 400, FeederGameTests::aMorningFeederMealEarnsSelfService),
             new BreedingGameTests.Case("no_more_than_four_walk_at_once", 800, FeederGameTests::noMoreThanFourWalkAtOnce),
@@ -143,7 +148,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_feeder_meal_is_not_love", 400, FeederGameTests::aFeederMealIsNotLove),
             new BreedingGameTests.Case("food_added_at_noon_feeds_the_hungry", 400, FeederGameTests::foodAddedAtNoonFeedsTheHungry),
             new BreedingGameTests.Case("a_sitting_wolf_is_not_moved", 300, FeederGameTests::aSittingWolfIsNotMoved),
-            new BreedingGameTests.Case("a_catch_up_meal_heals", 100, FeederGameTests::aCatchUpMealHeals),
+            new BreedingGameTests.Case("a_catch_up_meal_heals", LOADING_TICKS, FeederGameTests::aCatchUpMealHeals),
             new BreedingGameTests.Case("a_cow_in_a_corner_walks_out_to_eat", 400, FeederGameTests::aCowInACornerWalksOutToEat),
             new BreedingGameTests.Case("a_manger_meal_shows_on_the_fed_row", 400, FeederGameTests::aMangerMealShowsOnTheFedRow),
             new BreedingGameTests.Case("a_brief_morning_load_leaves_the_rest_of_the_day_to_catch_up", 400,

@@ -9,32 +9,32 @@ import static net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricBr
 // The hopper tests run real hoppers, so on Fabric they also check the block works with hoppers here. The herd,
 // catch-up and morning feeding tests are the shared ones, wrapped.
 public class FabricFeederGameTests {
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void petBowlFoodTracksDogs(GameTestHelper helper) {
         FeederGameTests.petBowlFoodTracksDogs(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void petBowlFoodTracksCats(GameTestHelper helper) {
         FeederGameTests.petBowlFoodTracksCats(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void birdFeederSeedsTrackInventoryAndHerd(GameTestHelper helper) {
         FeederGameTests.birdFeederSeedsTrackInventoryAndHerd(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void troughFoodTracksInventoryAndHerd(GameTestHelper helper) {
         FeederGameTests.troughFoodTracksInventoryAndHerd(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void feederFoodTracksInventoryAndHerd(GameTestHelper helper) {
         FeederGameTests.feederFoodTracksInventoryAndHerd(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void mangerHayTracksInventoryAndHerd(GameTestHelper helper) {
         FeederGameTests.mangerHayTracksInventoryAndHerd(helper);
     }
@@ -84,7 +84,7 @@ public class FabricFeederGameTests {
         FeederGameTests.aMealComesFromTheFirstFullSlot(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void aMangerFindsTheCowsInItsPen(GameTestHelper helper) {
         FeederGameTests.aMangerFindsTheCowsInItsPen(helper);
     }
@@ -94,12 +94,12 @@ public class FabricFeederGameTests {
         FeederGameTests.aCowInAPenCornerStaysInTheHerd(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void anUnfamiliarCowIsNotInTheHerd(GameTestHelper helper) {
         FeederGameTests.anUnfamiliarCowIsNotInTheHerd(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void catchUpSharesTwoDaysOfFoodOverTenDays(GameTestHelper helper) {
         FeederGameTests.catchUpSharesTwoDaysOfFoodOverTenDays(helper);
     }
@@ -114,22 +114,22 @@ public class FabricFeederGameTests {
         FeederGameTests.breakingTheMangerMidCatchUpLetsTheRestSettleAlone(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void catchUpDoesNotWalk(GameTestHelper helper) {
         FeederGameTests.catchUpDoesNotWalk(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void aCowInTwoHerdsIsSettledOnce(GameTestHelper helper) {
         FeederGameTests.aCowInTwoHerdsIsSettledOnce(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void noneModeCatchUpTakesNoFood(GameTestHelper helper) {
         FeederGameTests.noneModeCatchUpTakesNoFood(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void oneDayModeCatchUpFeedsOneDay(GameTestHelper helper) {
         FeederGameTests.oneDayModeCatchUpFeedsOneDay(helper);
     }
@@ -139,7 +139,7 @@ public class FabricFeederGameTests {
         FeederGameTests.twoMangersCatchingUpAtOnceSettleEachDayOnce(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void aDayThePenWasLoadedTakesNoFood(GameTestHelper helper) {
         FeederGameTests.aDayThePenWasLoadedTakesNoFood(helper);
     }
@@ -149,7 +149,7 @@ public class FabricFeederGameTests {
         FeederGameTests.aCowBelowFamiliarGetsNoFood(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void aHerdHenHungryYesterdayLaysNothing(GameTestHelper helper) {
         FeederGameTests.aHerdHenHungryYesterdayLaysNothing(helper);
     }
@@ -184,7 +184,7 @@ public class FabricFeederGameTests {
         FeederGameTests.aSittingWolfIsNotMoved(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 100)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.LOADING_TICKS)
     public void aCatchUpMealHeals(GameTestHelper helper) {
         FeederGameTests.aCatchUpMealHeals(helper);
     }
