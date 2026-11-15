@@ -21,4 +21,14 @@ public class FabricApiGameTests {
     public void anEmptyShearYieldIsRefused(GameTestHelper helper) {
         ApiGameTests.anEmptyShearYieldIsRefused(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void infoAgreesWithTheStatCard(GameTestHelper helper) {
+        ApiGameTests.infoAgreesWithTheStatCard(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void untrackedAnimalsHaveNoInfo(GameTestHelper helper) {
+        ApiGameTests.untrackedAnimalsHaveNoInfo(helper);
+    }
 }
