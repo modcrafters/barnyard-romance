@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
@@ -693,7 +694,7 @@ public final class CareGameTests {
         helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a cow that refused today gave " + player.getMainHandItem());
         assertFamiliarity(helper, cow, 0.4);
         long today = GameDay.of(helper.getLevel().getOverworldClockTime());
-        helper.assertTrue(traits(helper, cow).get(CARE).refusals().milkRefused(today), "the refusal wasn't kept for today");
+        helper.assertTrue(traits(helper, cow).get(CARE).refusals().refused(Refusable.MILKING, today), "the refusal wasn't kept for today");
         helper.succeed();
     }
 

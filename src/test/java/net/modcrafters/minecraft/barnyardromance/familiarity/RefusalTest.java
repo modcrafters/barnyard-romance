@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import org.junit.jupiter.api.Test;
@@ -33,12 +34,12 @@ class RefusalTest {
 
     @Test
     void refusalDaysAreKeptApart() {
-        Refusals refusals = Refusals.NONE.withMilk(12L);
+        Refusals refusals = Refusals.NONE.with(Refusable.MILKING, 12L);
 
-        assertTrue(refusals.milkRefused(12L));
-        assertFalse(refusals.milkRefused(13L));
-        assertFalse(refusals.shearRefused(12L));
-        assertEquals(12L, refusals.withShear(14L).milkDay());
-        assertTrue(refusals.withShear(14L).shearRefused(14L));
+        assertTrue(refusals.refused(Refusable.MILKING, 12L));
+        assertFalse(refusals.refused(Refusable.MILKING, 13L));
+        assertFalse(refusals.refused(Refusable.SHEARING, 12L));
+        assertEquals(12L, refusals.with(Refusable.SHEARING, 14L).milkDay());
+        assertTrue(refusals.with(Refusable.SHEARING, 14L).refused(Refusable.SHEARING, 14L));
     }
 }

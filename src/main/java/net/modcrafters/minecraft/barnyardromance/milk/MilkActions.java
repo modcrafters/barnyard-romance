@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -105,7 +106,7 @@ public final class MilkActions {
             }
             return InteractionResult.CONSUME;
         }
-        if (familiarityApi.milkRefusedOn(traits, GameDay.of(clock))) {
+        if (familiarityApi.refusedOn(traits, Refusable.MILKING, GameDay.of(clock))) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
             }
@@ -238,7 +239,7 @@ public final class MilkActions {
     public static void refuseMilking(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
-        Tracked.traits(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withMilkRefusedOn(traits, today)));
+        Tracked.traits(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withRefusedOn(traits, Refusable.MILKING, today)));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TEXT));
         }
@@ -254,7 +255,7 @@ public final class MilkActions {
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         AnimalTraits traits = familiarityApi.settle(animal).orElse(tracked.get());
         long clock = animal.level().getOverworldClockTime();
-        if (familiarityApi.milkRefusedOn(traits, GameDay.of(clock))) {
+        if (familiarityApi.refusedOn(traits, Refusable.MILKING, GameDay.of(clock))) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
             }

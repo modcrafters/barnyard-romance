@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
@@ -183,23 +184,14 @@ final class FamiliarityApiImpl implements FamiliarityApi {
     }
 
     @Override
-    public boolean milkRefusedOn(AnimalTraits traits, long day) {
-        return traits.get(CARE).refusals().milkRefused(day);
+    public boolean refusedOn(AnimalTraits traits, Refusable what, long day) {
+        return traits.get(CARE).refusals().refused(what, day);
     }
 
     @Override
-    public boolean shearRefusedOn(AnimalTraits traits, long day) {
-        return traits.get(CARE).refusals().shearRefused(day);
-    }
-
-    @Override
-    public AnimalTraits withMilkRefusedOn(AnimalTraits traits, long day) {
-        return traits.with(CARE, traits.get(CARE).withRefusals(traits.get(CARE).refusals().withMilk(day)));
-    }
-
-    @Override
-    public AnimalTraits withShearRefusedOn(AnimalTraits traits, long day) {
-        return traits.with(CARE, traits.get(CARE).withRefusals(traits.get(CARE).refusals().withShear(day)));
+    public AnimalTraits withRefusedOn(AnimalTraits traits, Refusable what, long day) {
+        FamiliarityState care = traits.get(CARE);
+        return traits.with(CARE, care.withRefusals(care.refusals().with(what, day)));
     }
 
     @Override

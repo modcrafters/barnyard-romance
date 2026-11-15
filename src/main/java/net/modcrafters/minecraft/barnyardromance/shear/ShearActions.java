@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
@@ -41,7 +42,7 @@ public final class ShearActions {
     }
 
     public static boolean refusedToday(Animal animal) {
-        return tracked(animal).map(traits -> FeaturesRepository.get(FamiliarityApi.class).shearRefusedOn(traits, GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
+        return tracked(animal).map(traits -> FeaturesRepository.get(FamiliarityApi.class).refusedOn(traits, Refusable.SHEARING, GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
     }
 
     // Sheared or refused today: no more shearing until midnight. Rolls nothing.
@@ -97,7 +98,7 @@ public final class ShearActions {
     public static void refuseShearing(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withShearRefusedOn(traits, today)));
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withRefusedOn(traits, Refusable.SHEARING, today)));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(REFUSED));
         }

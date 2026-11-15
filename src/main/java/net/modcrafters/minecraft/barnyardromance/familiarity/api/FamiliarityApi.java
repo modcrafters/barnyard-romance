@@ -103,15 +103,11 @@ public interface FamiliarityApi {
     // Whether an animal this familiar refuses a milking or shearing, for a roll from 0 to 1.
     boolean refuses(AnimalTraits traits, double roll);
 
-    boolean milkRefusedOn(AnimalTraits traits, long day);
+    // Whether the animal refused that on day, which keeps it from being tried again until midnight.
+    boolean refusedOn(AnimalTraits traits, Refusable what, long day);
 
-    boolean shearRefusedOn(AnimalTraits traits, long day);
-
-    // The traits with a refused milking recorded on day: no more milking until midnight.
-    AnimalTraits withMilkRefusedOn(AnimalTraits traits, long day);
-
-    // The traits with a refused shearing recorded on day: no more shearing until midnight.
-    AnimalTraits withShearRefusedOn(AnimalTraits traits, long day);
+    // The traits with a refusal of that recorded on day.
+    AnimalTraits withRefusedOn(AnimalTraits traits, Refusable what, long day);
 
     // The animal makes its noise and looks cross, so the player sees why it refused.
     void showRefusal(Animal animal);
