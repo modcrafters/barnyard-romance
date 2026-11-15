@@ -25,7 +25,7 @@ class DebugStepsTest {
 
     @Test
     void pregnancyMovesByTenPercentOfItsDuration() {
-        Pregnancy pregnancy = new Pregnancy(1_000L, 10_000L, "minecraft:cow", 1.1, 1, 0.4);
+        Pregnancy pregnancy = Pregnancy.builder(1_000L, 10_000L, "minecraft:cow", 1.1).motherFamiliarity(0.4).build();
 
         Pregnancy forward = DebugSteps.pregnancy(pregnancy, 1_000L, 1);
         Pregnancy back = DebugSteps.pregnancy(forward, 1_000L, -1);
@@ -37,8 +37,8 @@ class DebugStepsTest {
 
     @Test
     void pregnancyStopsAtConceptionAndAtBirth() {
-        Pregnancy fresh = new Pregnancy(5_000L, 10_000L, "minecraft:pig", 1.0, 2, 0.2);
-        Pregnancy due = new Pregnancy(0L, 10_000L, "minecraft:pig", 1.0, 2, 0.2);
+        Pregnancy fresh = Pregnancy.builder(5_000L, 10_000L, "minecraft:pig", 1.0).litterSize(2).motherFamiliarity(0.2).build();
+        Pregnancy due = Pregnancy.builder(0L, 10_000L, "minecraft:pig", 1.0).litterSize(2).motherFamiliarity(0.2).build();
 
         assertEquals(5_000L, DebugSteps.pregnancy(fresh, 5_000L, -1).conceivedAt());
         assertEquals(0L, DebugSteps.pregnancy(due, 10_000L, 1).conceivedAt());
@@ -46,7 +46,7 @@ class DebugStepsTest {
 
     @Test
     void pregnancyCanBeSetToAnExactPercent() {
-        Pregnancy pregnancy = new Pregnancy(1_000L, 10_000L, "minecraft:cow", 1.1, 1, 0.4);
+        Pregnancy pregnancy = Pregnancy.builder(1_000L, 10_000L, "minecraft:cow", 1.1).motherFamiliarity(0.4).build();
 
         assertEquals(8_000L, DebugSteps.pregnancyAt(pregnancy, 8_000L, 0).conceivedAt());
         assertEquals(5_500L, DebugSteps.pregnancyAt(pregnancy, 8_000L, 25).conceivedAt());
@@ -56,8 +56,9 @@ class DebugStepsTest {
 
     @Test
     void pregnancyStepsFromTheProgressShown() {
-        Pregnancy fed = new Pregnancy(0L, 10_000L, "minecraft:cow", 1.0, 1, 0.0)
-                .withCare(PregnancyCare.NONE.progress(10_000L, 0.3));
+        Pregnancy fed = Pregnancy.builder(0L, 10_000L, "minecraft:cow", 1.0)
+                .care(PregnancyCare.NONE.progress(10_000L, 0.3))
+                .build();
 
         Pregnancy next = DebugSteps.pregnancy(fed, 2_000L, 1);
 

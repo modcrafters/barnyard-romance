@@ -76,7 +76,7 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
                         // Her milk adds a page row: the notes that explain her rows live in tooltips, so they don't fill the page.
                         .with(LACTATION, Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L))
                         .withLineage(new Lineage(bess.getUUID(), null)));
-                Services.DATA.set(daisyCow, PregnancyFeature.PREGNANCY, new Pregnancy(now - 40_000L, 66_000L, "minecraft:cow", 1.3, 1, 0.8));
+                Services.DATA.set(daisyCow, PregnancyFeature.PREGNANCY, Pregnancy.builder(now - 40_000L, 66_000L, "minecraft:cow", 1.3).motherFamiliarity(0.8).build());
                 Animal bluebell = cow(level, player, "Bluebell", Sex.FEMALE, false, AnimalTraits.of(Sex.FEMALE, 0.85).with(CARE, FamiliarityState.NONE.fed(0.9, -1L))
                         .withBornTick(now - 300_000L)
                         .with(LACTATION, Lactation.NONE.afterBirth(now - 1_000L, now + 24_000L, 72_000L)));

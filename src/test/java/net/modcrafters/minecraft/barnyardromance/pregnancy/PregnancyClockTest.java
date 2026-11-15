@@ -38,7 +38,7 @@ class PregnancyClockTest {
 
     @Test
     void noCareMatchesTheOldClock() {
-        Pregnancy pregnancy = new Pregnancy(1_000L, 24_000L, "minecraft:cow", 1.0, 1, 0.0);
+        Pregnancy pregnancy = Pregnancy.builder(1_000L, 24_000L, "minecraft:cow", 1.0).build();
         for (long now : new long[] {0L, 1_000L, 7_000L, 25_000L, 40_000L}) {
             assertEquals(PregnancyClock.progress(now, 1_000L, 24_000L), PregnancyClock.progress(now, pregnancy), 1.0e-12);
             assertEquals(PregnancyClock.remainingTicks(now, 1_000L, 24_000L), PregnancyClock.remainingTicks(now, pregnancy));
@@ -48,8 +48,9 @@ class PregnancyClockTest {
 
     @Test
     void remainingCountsTheBoost() {
-        Pregnancy pregnancy = new Pregnancy(0L, 30_000L, "minecraft:cow", 1.0, 1, 0.0)
-                .withCare(PregnancyCare.NONE.boost(24_000L, 2.0, 24_000L));
+        Pregnancy pregnancy = Pregnancy.builder(0L, 30_000L, "minecraft:cow", 1.0)
+                .care(PregnancyCare.NONE.boost(24_000L, 2.0, 24_000L))
+                .build();
 
         assertEquals(3_000L, PregnancyClock.remainingTicks(24_000L, pregnancy));
         assertEquals(0.9, PregnancyClock.progress(25_500L, pregnancy), 1.0e-9);
@@ -57,8 +58,9 @@ class PregnancyClockTest {
 
     @Test
     void remainingAfterAShortBoost() {
-        Pregnancy pregnancy = new Pregnancy(0L, 100_000L, "minecraft:cow", 1.0, 1, 0.0)
-                .withCare(PregnancyCare.NONE.boost(0L, 2.0, 1_000L));
+        Pregnancy pregnancy = Pregnancy.builder(0L, 100_000L, "minecraft:cow", 1.0)
+                .care(PregnancyCare.NONE.boost(0L, 2.0, 1_000L))
+                .build();
 
         assertEquals(99_000L, PregnancyClock.remainingTicks(0L, pregnancy));
         assertEquals(97_000L, PregnancyClock.remainingTicks(2_000L, pregnancy));

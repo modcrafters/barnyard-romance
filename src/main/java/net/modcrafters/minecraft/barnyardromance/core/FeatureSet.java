@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
+import net.modcrafters.minecraft.barnyardromance.core.registry.TabEntries;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSlice;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 
@@ -157,6 +158,7 @@ public final class FeatureSet {
         @Override
         public void tabEntry(String name, Supplier<List<ItemStack>> stacks) {
             open();
+            TabEntries.checkNamed(name);
             if (tabEntries.putIfAbsent(name, stacks) != null) {
                 throw new IllegalStateException("Two tab entries are named " + name + "; the second is from " + feature);
             }

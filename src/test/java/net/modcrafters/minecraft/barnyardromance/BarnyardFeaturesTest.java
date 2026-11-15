@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance;
 import net.modcrafters.minecraft.barnyardromance.advancement.AdvancementFeature;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureSet;
+import net.modcrafters.minecraft.barnyardromance.core.registry.TabEntries;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdFeature;
 import org.junit.jupiter.api.Test;
 
@@ -14,12 +15,12 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardFeaturesTest {
-    // A top-level interface, public or not. A sealed interface is a closed set of values an api hands over (food's
-    // Feed), not something a feature provides, so it doesn't count.
-    private static final Pattern INTERFACE = Pattern.compile("^(?:public\\s+)?(?:non-sealed\\s+)?interface\\s+\\w+");
+    // A top-level interface named <Name>Api, public or not. Other interfaces in an api package are values it hands
+    // over: a sealed one is a closed set (food's Feed), and an open one is implemented by callers (stats' AnimalSubject).
+    private static final Pattern INTERFACE = Pattern.compile("^(?:public\\s+)?(?:non-sealed\\s+)?interface\\s+\\w+Api\\b");
 
-    // Every interface in a feature's api package is provided by a feature that BarnyardFeatures lists, so a forgotten
-    // registration fails here rather than in a world.
+    // Every <Name>Api interface in a feature's api package is provided by a feature that BarnyardFeatures lists, so a
+    // forgotten registration fails here rather than in a world.
     @Test
     void everyApiHasAProvider() throws ClassNotFoundException {
         FeatureSet features = FeatureSet.of(BarnyardFeatures.all());
@@ -38,6 +39,12 @@ class BarnyardFeaturesTest {
             }
         }
         assertTrue(missing.isEmpty(), () -> "no feature in BarnyardFeatures provides " + missing);
+    }
+
+    // The game's set checks this at install; every entry the creative tab shows is registered by a listed feature.
+    @Test
+    void everyTabEntryIsRegistered() {
+        TabEntries.checkRegistered(FeatureSet.of(BarnyardFeatures.all()).tabEntries().keySet());
     }
 
     // Listeners run in registration order, so herd must come before advancement.

@@ -5,7 +5,6 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -68,8 +67,12 @@ class HerdRecordsSizeRangeTest {
     }
 
     private static Pregnancy pregnancy(String fatherSpecies) {
-        return new Pregnancy(1_000L, 48_000L, fatherSpecies, 1.25, 1, 0.5, 30_000, 0.75,
-                List.of(new CompoundTag()), PregnancyCare.NONE);
+        return Pregnancy.builder(1_000L, 48_000L, fatherSpecies, 1.25)
+                .motherFamiliarity(0.5)
+                .fatherGrowthTicks(30_000)
+                .fatherWeight(0.75)
+                .litter(List.of(new CompoundTag()))
+                .build();
     }
 
     private static HerdRecord record(String species, AnimalTraits traits, @Nullable Pregnancy pregnancy) {

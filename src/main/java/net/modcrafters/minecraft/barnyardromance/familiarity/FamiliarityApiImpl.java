@@ -1,17 +1,19 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.core.config.HungerSettings;
+import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.UpkeepOutcome;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 
@@ -142,12 +144,24 @@ final class FamiliarityApiImpl implements FamiliarityApi {
     }
 
     @Override
-    public long daysCounted(long missedDays, HungerSettings.CatchUp mode) {
-        return DailyUpkeep.daysToSettle(missedDays, mode);
+    public OptionalLong catchUpFrom(Animal animal, AnimalTraits traits, long today) {
+        long first = traits.get(CARE).hunger().settledDay();
+        if (first < 0L || first >= today) {
+            return OptionalLong.empty();
+        }
+        long counted = DailyUpkeep.daysToSettle(today - first, BarnyardConfig.current().hunger().catchUp());
+        if (counted < today - first) {
+            first = today - counted;
+            Services.DATA.set(animal, skippingDaysBefore(traits, first));
+            if (counted == 0L) {
+                return OptionalLong.empty();
+            }
+        }
+        return OptionalLong.of(first);
     }
 
-    @Override
-    public AnimalTraits skippingDaysBefore(AnimalTraits traits, long day) {
+    // The traits with the days before day passed over uncounted, as the catch-up mode passes them over.
+    private static AnimalTraits skippingDaysBefore(AnimalTraits traits, long day) {
         Hunger hunger = traits.get(CARE).hunger();
         return traits.with(CARE, traits.get(CARE).withHunger(new Hunger(day, hunger.lastAteDay(), hunger.lastHungryDay())));
     }
@@ -183,23 +197,14 @@ final class FamiliarityApiImpl implements FamiliarityApi {
     }
 
     @Override
-    public boolean milkRefusedOn(AnimalTraits traits, long day) {
-        return traits.get(CARE).refusals().milkRefused(day);
+    public boolean refusedOn(AnimalTraits traits, Refusable what, long day) {
+        return traits.get(CARE).refusals().refused(what, day);
     }
 
     @Override
-    public boolean shearRefusedOn(AnimalTraits traits, long day) {
-        return traits.get(CARE).refusals().shearRefused(day);
-    }
-
-    @Override
-    public AnimalTraits withMilkRefusedOn(AnimalTraits traits, long day) {
-        return traits.with(CARE, traits.get(CARE).withRefusals(traits.get(CARE).refusals().withMilk(day)));
-    }
-
-    @Override
-    public AnimalTraits withShearRefusedOn(AnimalTraits traits, long day) {
-        return traits.with(CARE, traits.get(CARE).withRefusals(traits.get(CARE).refusals().withShear(day)));
+    public AnimalTraits withRefusedOn(AnimalTraits traits, Refusable what, long day) {
+        FamiliarityState care = traits.get(CARE);
+        return traits.with(CARE, care.withRefusals(care.refusals().with(what, day)));
     }
 
     @Override

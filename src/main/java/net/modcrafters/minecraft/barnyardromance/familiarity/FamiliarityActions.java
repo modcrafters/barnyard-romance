@@ -8,7 +8,6 @@ import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
-import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
@@ -19,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.modcrafters.minecraft.barnyardromance.naturalist.api.NaturalistApi;
 import net.minecraft.core.particles.ParticleTypes;
@@ -72,7 +72,7 @@ public final class FamiliarityActions {
         if (stack.isEmpty()) {
             return null;
         }
-        Optional<AnimalTraits> traits = tracked(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return null;
         }
@@ -167,7 +167,7 @@ public final class FamiliarityActions {
     // Only matters for animals that shy away from players at all. A familiar one has no reason to, and a wild one holds
     // still for someone sneaking up with its food, or feeding it could never start.
     public static boolean runsFrom(Animal animal, Player player) {
-        Optional<AnimalTraits> traits = tracked(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return true;
         }
@@ -210,7 +210,7 @@ public final class FamiliarityActions {
 
     // Bones would tame a wolf behind familiarity's back, so a tracked wild wolf turns them down.
     public static InteractionResult blocksVanillaTaming(Animal animal, Player player, ItemStack stack) {
-        if (!(animal instanceof Wolf wolf) || wolf.isTame() || !stack.is(Items.BONE) || tracked(animal).isEmpty()) {
+        if (!(animal instanceof Wolf wolf) || wolf.isTame() || !stack.is(Items.BONE) || Tracked.traits(animal).isEmpty()) {
             return null;
         }
         if (!animal.level().isClientSide()) {
@@ -231,7 +231,7 @@ public final class FamiliarityActions {
     }
 
     public static boolean ignoresFood(Animal animal) {
-        Optional<AnimalTraits> traits = tracked(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return false;
         }
@@ -246,7 +246,7 @@ public final class FamiliarityActions {
     }
 
     public static boolean allowsLove(Animal animal) {
-        Optional<AnimalTraits> traits = tracked(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return true;
         }
@@ -290,7 +290,7 @@ public final class FamiliarityActions {
     }
 
     public static boolean denies(Animal animal) {
-        Optional<AnimalTraits> traits = tracked(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return false;
         }
@@ -311,12 +311,5 @@ public final class FamiliarityActions {
         return stack.is(Items.BUCKET) && (animal instanceof AbstractCow || animal instanceof Goat || animal instanceof Sheep);
         //?} else
         //return stack.is(Items.BUCKET) && (animal instanceof Cow || animal instanceof Goat || animal instanceof Sheep);
-    }
-
-    private static Optional<AnimalTraits> tracked(Animal animal) {
-        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
     }
 }

@@ -33,7 +33,7 @@ public interface FeatureRegistrar {
     // supplier may class-init the feature's block and item holders, so content is only ever walked from registration.
     void content(Consumer<BarnyardRegistrations.Sink> content);
 
-    // Stacks the creative tab shows under a name its order list uses (see BarnyardTab).
+    // Stacks the creative tab shows under a name its order list uses (see BarnyardTab); the name must be in TabEntries.
     void tabEntry(String name, Supplier<List<ItemStack>> stacks);
 
     // Species the mod leaves alone unless the config says otherwise.

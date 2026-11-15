@@ -43,6 +43,8 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
@@ -299,7 +301,7 @@ public final class EggGameTests {
 
     public static void oldChickenPregnancyIsCleared(GameTestHelper helper) {
         Animal hen = hen(helper, mediumHen(), 0.5);
-        Services.DATA.set(hen, PregnancyFeature.PREGNANCY, new Pregnancy(0L, 1L, "minecraft:chicken", 1.2, 1, 0.5));
+        Services.DATA.set(hen, PregnancyFeature.PREGNANCY, Pregnancy.builder(0L, 1L, "minecraft:chicken", 1.2).motherFamiliarity(0.5).build());
 
         EggLaying.serverTick(hen, helper.getLevel());
 
@@ -392,6 +394,7 @@ public final class EggGameTests {
         helper.assertTrue(traits.weight() == 0.25, "a tainted chick weighs " + traits.weight());
         helper.assertTrue(traits.lineage().equals(Lineage.UNKNOWN), "a tainted chick knows its parents: " + traits.lineage());
         helper.assertTrue(traits.bornTick() >= 0L, "a tainted chick has no birth time");
+        assertStampedInTheChickenRange(helper, traits);
         helper.succeed();
     }
 
@@ -607,6 +610,7 @@ public final class EggGameTests {
             AnimalTraits traits = traits(helper, chicks.getFirst());
             helper.assertTrue(traits.lineage().equals(Lineage.UNKNOWN), "a wild egg's chick knows its parents: " + traits.lineage());
             helper.assertTrue(traits.bornTick() >= 0L, "a wild egg's chick has no birth time");
+            assertStampedInTheChickenRange(helper, traits);
             helper.succeed();
         });
     }
@@ -621,7 +625,14 @@ public final class EggGameTests {
         SizeClass size = SizeClass.of(traits.sex(), traits.scale(), BarnyardConfig.current().sizeFor("minecraft:chicken"));
         helper.assertTrue(chick.isBaby() && size == SizeClass.S, "a thrown wild egg's chick is " + size);
         helper.assertTrue(traits.weight() == 0.25 && traits.lineage().equals(Lineage.UNKNOWN), "a thrown wild egg's chick is " + traits);
+        assertStampedInTheChickenRange(helper, traits);
         helper.succeed();
+    }
+
+    // A chick from a thrown or wild egg is saved with the range it was sized in, so it keeps its band when the range changes.
+    private static void assertStampedInTheChickenRange(GameTestHelper helper, AnimalTraits traits) {
+        SizeSettings current = BarnyardConfig.current().sizeFor("minecraft:chicken");
+        helper.assertTrue(traits.sizeRange().equals(Optional.of(current)), "the chick was saved in " + traits.sizeRange() + ", not " + current);
     }
 
     public static void onlyABoxEggWarnsAboutTakingItOut(GameTestHelper helper) {
@@ -1562,8 +1573,7 @@ public final class EggGameTests {
     }
 
     private static double henAt(double point) {
-        SizeSettings size = BarnyardConfig.current().sizeFor("minecraft:chicken");
-        return size.femaleScale() - size.variation() + 2.0 * size.variation() * point;
+        return FeaturesRepository.get(BreedingApi.class).scaleAt(Sex.FEMALE, BarnyardConfig.current().sizeFor("minecraft:chicken"), point);
     }
 
     static Animal hen(GameTestHelper helper, double scale, double familiarity) {

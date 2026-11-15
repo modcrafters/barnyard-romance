@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core;
 
+import net.modcrafters.minecraft.barnyardromance.core.registry.TabEntries;
+
 import java.util.List;
 
 // The features the game runs with: installed once at start-up (see BarnyardFeatures) and kept for the whole game.
@@ -13,7 +15,10 @@ public final class FeaturesRepository {
         if (features != null) {
             throw new IllegalStateException("Features are already installed");
         }
-        features = FeatureSet.of(list);
+        FeatureSet set = FeatureSet.of(list);
+        // Only the game's set has every feature, so only it is checked for the tab's entries.
+        TabEntries.checkRegistered(set.tabEntries().keySet());
+        features = set;
     }
 
     public static boolean installed() {

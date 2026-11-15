@@ -215,7 +215,7 @@ public final class FoodGameTests {
 
     // A pregnancy saved before Stage 4 has no care and carries on as before.
     public static void oldPregnancyLoadsWithoutCare(GameTestHelper helper) {
-        Pregnancy saved = new Pregnancy(10L, 24_000L, "minecraft:cow", 1.0, 1, 0.5);
+        Pregnancy saved = Pregnancy.builder(10L, 24_000L, "minecraft:cow", 1.0).motherFamiliarity(0.5).build();
         CompoundTag tag = (CompoundTag) PregnancyCodecs.CODEC.encodeStart(NbtOps.INSTANCE, saved).getOrThrow();
         tag.remove("care");
 
@@ -228,7 +228,7 @@ public final class FoodGameTests {
 
     public static void pregnancyCareSavesAndSyncs(GameTestHelper helper) {
         PregnancyCare care = PregnancyCare.NONE.boost(100L, 2.0, 24_000L).progress(24_000L, -0.1).improve(0.25);
-        Pregnancy pregnancy = new Pregnancy(10L, 24_000L, "minecraft:cow", 1.0, 1, 0.5).withCare(care);
+        Pregnancy pregnancy = Pregnancy.builder(10L, 24_000L, "minecraft:cow", 1.0).motherFamiliarity(0.5).care(care).build();
 
         Pregnancy saved = PregnancyCodecs.CODEC.parse(NbtOps.INSTANCE, PregnancyCodecs.CODEC.encodeStart(NbtOps.INSTANCE, pregnancy).getOrThrow()).getOrThrow();
         ByteBuf buffer = Unpooled.buffer();
@@ -501,7 +501,7 @@ public final class FoodGameTests {
 
     static Animal pregnantCow(GameTestHelper helper, double motherFamiliarity) {
         Animal cow = BreedingGameTests.female(helper, EntityTypes.COW);
-        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:cow", 1.0, 1, motherFamiliarity));
+        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, Pregnancy.builder(helper.getLevel().getGameTime(), 66_000L, "minecraft:cow", 1.0).motherFamiliarity(motherFamiliarity).build());
         return cow;
     }
 

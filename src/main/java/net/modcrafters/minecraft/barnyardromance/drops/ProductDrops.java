@@ -4,9 +4,9 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -31,7 +31,7 @@ public final class ProductDrops {
     public static ItemStack resize(Animal animal, ItemStack stack, RandomSource random) {
         BarnyardConfig config = BarnyardConfig.current();
         String speciesId = AnimalSex.speciesId(animal);
-        Optional<AnimalTraits> tracked = config.speciesEnabled(speciesId) ? Services.DATA.get(animal) : Optional.empty();
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || stack.isEmpty()) {
             return stack;
         }

@@ -53,6 +53,11 @@ class BarnyardTabTest {
         // herd_sticks is the sticks, with the config read when the tab is filled.
         assertTrue(lines(HERD).contains("registrar.tabEntry(\"herd_sticks\", () -> HerdStick.tabStacks(BarnyardConfig.current().herdSticks()));"),
                 "HerdFeature no longer registers herd_sticks as the sticks the loaded config allows");
+        // The entries the tab shows are the ones start-up checks for.
+        assertEquals(TabEntries.names(), declared(TAB, "public static List<ItemStack> contents() {", "contents").stream()
+                .filter(add -> add.startsWith("entry(\""))
+                .map(add -> add.substring("entry(\"".length(), add.length() - "\")".length()))
+                .toList());
         // The tab names the feeders in FeederKind's order, as when it went through FeederKind.values().
         assertEquals(List.of("bird_feeder", "trough", "feeder", "manger", "pet_bowl"),
                 Arrays.stream(FeederKind.values()).map(FeederKind::id).toList());

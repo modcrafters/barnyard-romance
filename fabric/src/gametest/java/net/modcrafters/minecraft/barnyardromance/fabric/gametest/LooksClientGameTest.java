@@ -164,7 +164,7 @@ public class LooksClientGameTest implements FabricClientGameTest {
                 }
                 if (spec.pregnancy() >= 0.0) {
                     long duration = 66_000L;
-                    Services.DATA.set(animal, PregnancyFeature.PREGNANCY, new Pregnancy(level.getGameTime() - Math.round(duration * spec.pregnancy()), duration, "minecraft:cow", 1.0, 1, 1.0));
+                    Services.DATA.set(animal, PregnancyFeature.PREGNANCY, Pregnancy.builder(level.getGameTime() - Math.round(duration * spec.pregnancy()), duration, "minecraft:cow", 1.0).motherFamiliarity(1.0).build());
                 }
                 spec.extra().accept(animal);
                 spawned.add(animal.getUUID());

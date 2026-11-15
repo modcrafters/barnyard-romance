@@ -16,7 +16,6 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
-import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCare;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -263,7 +262,7 @@ public final class BreedingGameTests {
         Animal cow = female(helper, EntityTypes.COW);
         Lineage lineage = new Lineage(UUID.randomUUID(), UUID.randomUUID());
         Services.DATA.set(cow, AnimalTraits.of(Sex.FEMALE, 1.2).with(CARE, FamiliarityState.NONE.fed(0.75, 42L)).withLineage(lineage));
-        Pregnancy pregnancy = new Pregnancy(100L, 72_000L, "minecraft:cow", 1.1, 2, 0.75, 24_000, 0.6, List.of(), PregnancyCare.NONE);
+        Pregnancy pregnancy = Pregnancy.builder(100L, 72_000L, "minecraft:cow", 1.1).litterSize(2).motherFamiliarity(0.75).fatherGrowthTicks(24_000).fatherWeight(0.6).build();
         Services.DATA.set(cow, PregnancyFeature.PREGNANCY, pregnancy);
 
         Animal loaded = GameTestCompat.reloaded(helper, cow);
@@ -299,7 +298,7 @@ public final class BreedingGameTests {
     public static void timeSkipMovesPregnanciesOn(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         long now = helper.getLevel().getGameTime();
-        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, new Pregnancy(now, 66_000L, "minecraft:cow", 1.0, 1, 0.5));
+        Services.DATA.set(cow, PregnancyFeature.PREGNANCY, Pregnancy.builder(now, 66_000L, "minecraft:cow", 1.0).motherFamiliarity(0.5).build());
         PregnancyController.catchUp(cow, helper.getLevel());
         long before = helper.getLevel().getOverworldClockTime();
         try {
@@ -431,7 +430,7 @@ public final class BreedingGameTests {
         Animal mother = female(helper, EntityTypes.COW);
         Services.DATA.set(mother, AnimalTraits.of(Sex.FEMALE, 0.85).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
         Services.DATA.set(mother, PregnancyFeature.PREGNANCY,
-                new Pregnancy(helper.getLevel().getGameTime(), 66_000L, "minecraft:mooshroom", 1.35, 1, 1.0));
+                Pregnancy.builder(helper.getLevel().getGameTime(), 66_000L, "minecraft:mooshroom", 1.35).motherFamiliarity(1.0).build());
         BarnyardConfig config = BarnyardConfig.current();
         SizeSettings joinedIn;
         SizeSettings current;
@@ -473,7 +472,7 @@ public final class BreedingGameTests {
         try {
             BarnyardConfig.set(muleConfig);
             Services.DATA.set(mother, PregnancyFeature.PREGNANCY,
-                    new Pregnancy(0L, 72_000L, "minecraft:donkey", 1.0, 1, 1.0, 24_000, 0.5, List.of(mule)));
+                    Pregnancy.builder(0L, 72_000L, "minecraft:donkey", 1.0).motherFamiliarity(1.0).fatherGrowthTicks(24_000).litter(List.of(mule)).build());
             young = bornMules(helper, mother);
         } finally {
             BarnyardConfig.set(config);

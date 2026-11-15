@@ -19,10 +19,10 @@ One codebase builds three jars: Fabric and NeoForge for 26.3, and NeoForge for 1
 The common code is split into core, features and hooks.
 
 - **Core** (`core` and the packages under it) is what the whole mod shares: the config, text, age, the animal record, events, tick order and registration. Core imports only core.
-- A **feature** is a top-level package such as `eggs`, `milk` or `herd`. Other features talk to it only through its `api` package, which holds an interface and the values it passes. A feature imports core, its own classes and other features' `api` packages. An `api` package imports only core and other `api` packages.
+- A **feature** is a top-level package such as `eggs`, `milk` or `herd`. Other features talk to it only through its `api` package, which holds a `<Name>Api` interface and the values it passes (some are interfaces callers implement, such as stats' `AnimalSubject`). A feature imports core, its own classes and other features' `api` packages. An `api` package imports only core and other `api` packages.
 - A **hook** plugs the mod into the game: mixins, `client`, `look`, `command`, the Jade plugin, the `fabric` and `neoforge` modules, `BarnyardRomance` and `BarnyardFeatures`. Hooks and tests may import anything.
 - `FeatureBoundaryScanTest` checks every import against these rules, with no exceptions. When an import breaks them, add a method to an `api`, post an event, or move the class.
-- To add a feature, write a `<Name>Feature` class in its package and add it to the list in `BarnyardFeatures`. It registers everything the feature brings: items and blocks, its fields in the animal record, attachments, event listeners and tick hooks. List its items by id in `BarnyardTab`; a stack that needs more than an id is registered with `registrar.tabEntry` and named in `BarnyardTab`.
+- To add a feature, write a `<Name>Feature` class in its package and add it to the list in `BarnyardFeatures`. It registers everything the feature brings: items and blocks, its fields in the animal record, attachments, event listeners and tick hooks. List its items by id in `BarnyardTab`; a stack that needs more than an id is registered with `registrar.tabEntry`, named in `BarnyardTab` and listed in `TabEntries`, which start-up checks.
 - Give a feature an `api` package only when core or another feature calls into it. Callers get it with `FeaturesRepository.get(<Name>Api.class)`.
 - A tick hook's name must also be placed in the order in `AnimalTicks`. A tick hook with no place there stops the game at start-up.
 

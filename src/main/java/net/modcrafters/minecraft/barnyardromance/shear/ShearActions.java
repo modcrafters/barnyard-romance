@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.shear;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
@@ -9,8 +10,8 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.world.InteractionResult;
@@ -41,7 +42,7 @@ public final class ShearActions {
     }
 
     public static boolean refusedToday(Animal animal) {
-        return tracked(animal).map(traits -> FeaturesRepository.get(FamiliarityApi.class).shearRefusedOn(traits, GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
+        return tracked(animal).map(traits -> FeaturesRepository.get(FamiliarityApi.class).refusedOn(traits, Refusable.SHEARING, GameDay.of(animal.level().getOverworldClockTime()))).orElse(false);
     }
 
     // Sheared or refused today: no more shearing until midnight. Rolls nothing.
@@ -97,7 +98,7 @@ public final class ShearActions {
     public static void refuseShearing(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withShearRefusedOn(traits, today)));
+        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withRefusedOn(traits, Refusable.SHEARING, today)));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(REFUSED));
         }
@@ -126,9 +127,6 @@ public final class ShearActions {
     }
 
     private static Optional<AnimalTraits> tracked(Animal animal) {
-        if (!(animal instanceof Sheep) || !BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
+        return animal instanceof Sheep ? Tracked.traits(animal) : Optional.empty();
     }
 }

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkStatus;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -17,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
@@ -82,7 +84,7 @@ public final class MilkActions {
         if (!stack.is(Items.BUCKET) || milk.isEmpty() || animal.isBaby()) {
             return null;
         }
-        Optional<AnimalTraits> tracked = tracked(animal);
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty()) {
             return null;
         }
@@ -104,7 +106,7 @@ public final class MilkActions {
             }
             return InteractionResult.CONSUME;
         }
-        if (familiarityApi.milkRefusedOn(traits, GameDay.of(clock))) {
+        if (familiarityApi.refusedOn(traits, Refusable.MILKING, GameDay.of(clock))) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
             }
@@ -136,7 +138,7 @@ public final class MilkActions {
         if (animal.level().isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        Optional<AnimalTraits> tracked = tracked(animal);
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty()) {
             return null;
         }
@@ -164,7 +166,7 @@ public final class MilkActions {
     // An ordinary food with startsMilk (a mod's or a pack's) starts a dry, familiar female's milk when she eats it, and
     // says nothing when it can't: it was a meal either way.
     public static void startMilkWithMeal(Animal animal) {
-        Optional<AnimalTraits> tracked = tracked(animal);
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || animal.level().isClientSide()) {
             return;
         }
@@ -180,7 +182,7 @@ public final class MilkActions {
 
     // Females from before Stage 5 and wild spawns get their milk on their first join (see MilkRules.firstJoin).
     public static void onJoin(Animal animal) {
-        Optional<AnimalTraits> tracked = tracked(animal);
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || tracked.get().get(LACTATION).graceGiven()) {
             return;
         }
@@ -197,7 +199,7 @@ public final class MilkActions {
     }
 
     public static Optional<MilkStatus> status(Animal animal, AnimalTraits traits, long now, long clock) {
-        if (traits.sex() != Sex.FEMALE || milkFor(animal).isEmpty() || tracked(animal).isEmpty()) {
+        if (traits.sex() != Sex.FEMALE || milkFor(animal).isEmpty() || Tracked.traits(animal).isEmpty()) {
             return Optional.empty();
         }
         return status(traits, sizeClass(animal, traits), now, clock);
@@ -237,7 +239,7 @@ public final class MilkActions {
     public static void refuseMilking(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
-        tracked(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withMilkRefusedOn(traits, today)));
+        Tracked.traits(animal).ifPresent(traits -> Services.DATA.set(animal, familiarityApi.withRefusedOn(traits, Refusable.MILKING, today)));
         if (player != null) {
             VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TEXT));
         }
@@ -246,14 +248,14 @@ public final class MilkActions {
 
     // A bowl held out to a mooshroom: null lets vanilla give the stew. Unfamiliar mooshrooms are turned away earlier.
     public static @Nullable InteractionResult refusesStew(Animal animal, Player player) {
-        Optional<AnimalTraits> tracked = tracked(animal);
+        Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || animal.isBaby()) {
             return null;
         }
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         AnimalTraits traits = familiarityApi.settle(animal).orElse(tracked.get());
         long clock = animal.level().getOverworldClockTime();
-        if (familiarityApi.milkRefusedOn(traits, GameDay.of(clock))) {
+        if (familiarityApi.refusedOn(traits, Refusable.MILKING, GameDay.of(clock))) {
             if (!animal.level().isClientSide()) {
                 VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.REFUSED_TODAY_TEXT));
             }
@@ -265,12 +267,5 @@ public final class MilkActions {
             return InteractionResult.CONSUME;
         }
         return null;
-    }
-
-    private static Optional<AnimalTraits> tracked(Animal animal) {
-        if (!BarnyardConfig.current().speciesEnabled(AnimalSex.speciesId(animal))) {
-            return Optional.empty();
-        }
-        return Services.DATA.get(animal);
     }
 }
