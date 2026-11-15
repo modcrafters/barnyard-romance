@@ -22,7 +22,8 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricStatGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricEggGameTests",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricNaturalistGameTests",
-            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricApiGameTests"
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricApiGameTests",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricOnlyApiGameTests"
         ],
         "fabric-client-gametest": [
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.BarnyardClientGameTest",
