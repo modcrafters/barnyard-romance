@@ -5,7 +5,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-// 1.21.1 only: the chicken model keeps its head, beak and wattle as separate fields, with no root part above them.
+// 1.21.1 only: the chicken model keeps its head, beak, wattle and body as separate fields, with no root part above them.
 @Mixin(ChickenModel.class)
 public interface ChickenModelAccessor {
     @Accessor("head")
@@ -16,4 +16,8 @@ public interface ChickenModelAccessor {
 
     @Accessor("redThing")
     ModelPart barnyardromance$redThing();
+
+    // Fresh Animations hangs the chicken's real head under the body.
+    @Accessor("body")
+    ModelPart barnyardromance$body();
 }
