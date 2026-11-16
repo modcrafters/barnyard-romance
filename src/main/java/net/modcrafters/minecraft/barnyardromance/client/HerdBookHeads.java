@@ -4,6 +4,9 @@ package net.modcrafters.minecraft.barnyardromance.client;
 //? if >=26.1 {
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.modcrafters.minecraft.barnyardromance.look.HeadShapes;
+import net.modcrafters.minecraft.barnyardromance.look.ModelParts;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -26,13 +29,15 @@ import org.jspecify.annotations.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
 // Draws a close-up of an animal's head into a small square of the herd book, from its own model: a loaded animal
-// as it looks now, anything else as a stand-in of its species. The model's part named "head" (with its ears, horns
-// and snout) is framed, so modded animals work as long as their model names it that.
+// as it looks now, anything else as a stand-in of its species. The head part (with its ears, horns and snout) is
+// framed: the first of the barnyard_heads paths the model has, which ends with vanilla's "head", so modded animals
+// work as long as their model names it that, and Fresh Animations' head (body/EMF_body/EMF_head2) is found first.
 public final class HerdBookHeads {
     public static final boolean AVAILABLE = true;
     // Turned a little, so the face doesn't look flat.
@@ -67,7 +72,7 @@ public final class HerdBookHeads {
         living.boundingBoxHeight = living.boundingBoxHeight / living.scale;
         living.scale = 1.0F;
         float[] box = BOXES.computeIfAbsent(entity, key -> {
-            float[] found = headBox(renderer, living);
+            float[] found = headBox(renderer, living, species);
             return found == null ? new float[0] : found;
         });
         if (box.length == 0) {
@@ -89,10 +94,10 @@ public final class HerdBookHeads {
         graphics.entity(living, scale, translation, rotation, null, x, y, x + size, y + size);
     }
 
-    // The box around the model's "head" part (with its ears, horns and snout) in blocks, posed and turned like the drawing:
-    // {minX, minY, minZ, maxX, maxY, maxZ}, or null when the model has no head part.
+    // The box around the model's head part (with its ears, horns and snout) in blocks, posed and turned like the drawing:
+    // {minX, minY, minZ, maxX, maxY, maxZ}, or null when the model has none of the head parts.
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static float @Nullable [] headBox(EntityRenderer renderer, LivingEntityRenderState state) {
+    private static float @Nullable [] headBox(EntityRenderer renderer, LivingEntityRenderState state, String species) {
         // Let the renderer pick its model (variant, baby) and place it, and catch the first model it hands over.
         Model[] model = new Model[1];
         Matrix4f[] placed = new Matrix4f[1];
@@ -122,11 +127,25 @@ public final class HerdBookHeads {
             return null;
         }
         model[0].setupAnim(state);
+        // Animation mods such as Entity Model Features pose a model only while it is drawn, so draw it into nothing.
+        model[0].renderToBuffer(new PoseStack(), NOTHING, 0, 0, -1);
+        List<String> head = null;
+        for (List<String> candidate : HeadShapes.candidates(species)) {
+            if (ModelParts.find(model[0], candidate) != null) {
+                head = candidate;
+                break;
+            }
+        }
+        if (head == null) {
+            model[0].resetPose();
+            return null;
+        }
+        String prefix = "/" + String.join("/", head) + "/";
         PoseStack pose = new PoseStack();
         pose.last().pose().set(placed[0]);
         float[] box = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
         model[0].root().visit(pose, (cubePose, partPath, index, cube) -> {
-            if (!(partPath + "/").contains("/head/")) {
+            if (!(partPath + "/").startsWith(prefix)) {
                 return;
             }
             for (int corner = 0; corner < 8; corner++) {
@@ -145,6 +164,54 @@ public final class HerdBookHeads {
         model[0].resetPose();
         return box[0] <= box[3] ? box : null;
     }
+
+    // Takes vertices and keeps none.
+    private static final VertexConsumer NOTHING = new VertexConsumer() {
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int r, int g, int b, int a) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int color) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv3(float u, float v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setLineWidth(float width) {
+            return this;
+        }
+    };
 
     private static @Nullable LivingEntity entity(UUID id, String species, boolean kid) {
         Minecraft minecraft = Minecraft.getInstance();

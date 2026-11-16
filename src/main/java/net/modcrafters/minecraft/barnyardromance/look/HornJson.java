@@ -196,7 +196,7 @@ public final class HornJson {
         };
     }
 
-    private static List<String> path(String path) {
+    static List<String> path(String path) {
         List<String> parts = Arrays.stream(path.split("/")).filter(part -> !part.isEmpty()).toList();
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("a part path must not be empty");
