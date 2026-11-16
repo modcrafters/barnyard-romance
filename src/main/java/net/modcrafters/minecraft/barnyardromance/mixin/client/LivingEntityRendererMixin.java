@@ -3,8 +3,6 @@ package net.modcrafters.minecraft.barnyardromance.mixin.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.modcrafters.minecraft.barnyardromance.look.AnimalLookState;
 import net.modcrafters.minecraft.barnyardromance.look.AnimalLooks;
-import net.modcrafters.minecraft.barnyardromance.look.HornDraw;
-import net.modcrafters.minecraft.barnyardromance.look.HornRenderer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -49,17 +47,14 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, S extend
         }
     }
 
+    // The horns are drawn later, right after this model in the model pass (ModelFeatureRendererMixin), where its
+    // parts hold the pose they were drawn with; animation mods such as Entity Model Features only pose it there.
+    // Renderers pick their model in submit (adult or baby), so it is recorded here.
     @Inject(
             method = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V",
             at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V")
     )
-    private void barnyardromance$submitHorns(S state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera, CallbackInfo ci) {
-        HornDraw draw = ((AnimalLookState) state).barnyardromance$horns();
-        if (draw == null || draw.parts().isEmpty() || state.isInvisible) {
-            return;
-        }
-        // Layers set this up too, but only when the renderer has any; the horns need the head where it is now.
-        model.setupAnim(state);
-        HornRenderer.submit(draw, model, poseStack, collector, state.lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0f));
+    private void barnyardromance$recordHornModel(S state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera, CallbackInfo ci) {
+        ((AnimalLookState) state).barnyardromance$setHornModel(model);
     }
 }

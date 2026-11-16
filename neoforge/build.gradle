@@ -5,6 +5,7 @@ plugins {
 
 apply from: rootProject.file('gradle/naturalist-runs.gradle')
 apply from: rootProject.file('gradle/jade-runs.gradle')
+apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
 
 dependencies {
     // The common sources are compiled again here, compat/jade with them. Optional: nothing ships with Jade or needs it.
@@ -82,6 +83,13 @@ neoForge {
             programArguments.addAll '--width', '2560', '--height', '1440'
             systemProperty('barnyard_romance.herd_sticks', 'true')
         }
+        // Our horns on Fresh Animations' models, see gradle/fresh-animations-runs.gradle.
+        clientFreshAnimations {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/fresh-animations-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
     }
 }
 
@@ -89,6 +97,7 @@ neoForge {
 neoForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
 neoForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
 neoForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
+freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client').each { neoForge.runs.clientFreshAnimations.taskBefore(it) }
 
 // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
 // midnight partway through and hunger or Vigour refills would hit unrelated tests. 1.21.1 saves the world

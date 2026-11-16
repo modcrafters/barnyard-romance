@@ -5,8 +5,7 @@ import java.util.List;
 // One assets/<ns>/barnyard_horns/*.json file. Mirrored parts are already expanded, so male and female are plain parts.
 public record HornFile(
         List<String> entities,
-        List<String> attach,
-        Xyz offset,
+        List<HornAttach> attach,
         String texture,
         int textureWidth,
         int textureHeight,

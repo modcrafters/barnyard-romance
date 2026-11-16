@@ -35,7 +35,8 @@ class FeatureBoundaryScanTest {
             "1.21.1/mixin/client/ChickenModelAccessor",
             "1.21.1/mixin/client/QuadrupedModelAccessor",
             "26.3/mixin/client/LivingEntityRenderStateMixin",
-            "26.3/mixin/client/ModelFeatureRendererMixin"
+            "26.3/mixin/client/ModelFeatureRendererMixin",
+            "26.3/mixin/client/RenderTypeFeatureRendererInvoker"
     );
     private static final String MOD_PACKAGE = "net.modcrafters.minecraft.barnyardromance.";
     private static final Pattern IMPORT = Pattern.compile(

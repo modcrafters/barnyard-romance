@@ -12,8 +12,8 @@ import net.minecraft.client.model.geom.ModelPart;
 import java.util.List;
 
 // 1.21.1's copy: a path starts at the root of a hierarchical model, at the head or body of a quadruped model, or at
-// the head, beak or red_thing (wattle) of the chicken model; those last two kinds draw their parts straight in model
-// space.
+// the head, beak, red_thing (wattle) or body of the chicken model; those last two kinds draw their parts straight in
+// model space.
 public final class ModelParts {
     private ModelParts() {
     }
@@ -49,6 +49,7 @@ public final class ModelParts {
                 case "head" -> parts.barnyardromance$head();
                 case "beak" -> parts.barnyardromance$beak();
                 case "red_thing" -> parts.barnyardromance$redThing();
+                case "body" -> parts.barnyardromance$body();
                 default -> null;
             };
         }

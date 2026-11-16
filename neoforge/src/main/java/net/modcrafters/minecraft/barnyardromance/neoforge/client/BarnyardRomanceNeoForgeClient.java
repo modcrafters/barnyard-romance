@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
+import net.modcrafters.minecraft.barnyardromance.look.HeadShapes;
 import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -59,10 +60,12 @@ public final class BarnyardRomanceNeoForgeClient {
     //? if >=1.21.2 {
     private static void registerReloadListeners(AddClientReloadListenersEvent event) {
         event.addListener(HornShapes.ID, HornShapes.listener());
+        event.addListener(HeadShapes.ID, HeadShapes.listener());
     }
     //?} else {
     /*private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(HornShapes.listener());
+        event.registerReloadListener(HeadShapes.listener());
     }
     *///?}
 

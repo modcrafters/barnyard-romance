@@ -40,11 +40,16 @@ Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>
 
 - Every number is in model pixels or degrees, like vanilla model code and Blockbench.
 - `attach` is the model part the horns hang from, as a `/`-separated path from the model's root. `offset` moves the horns' centre, for heads that are not centred on x = 0 (a goat's head is at −0.5).
+- `attach` can also be a list, tried in order: the first part the model has wins, and each entry carries its own offset, as in `"attach": [{ "part": "body/EMF_body/EMF_head2", "offset": [0, 7, 6] }, { "part": "head", "offset": [-0.5, 0, 0] }]`. A plain path in the list has no offset. With a list, leave out the top-level `offset`. The shipped files put Fresh Animations' head first, since Entity Model Features draws its real head there and leaves vanilla's `head` empty.
 - A part has a `pivot` and a `rotation` (applied Z, then Y, then X), cubes placed relative to the pivot, and optional `children` placed relative to it. Each horn part grows from its pivot.
 - `mirror: true` adds the same part mirrored onto the other side, so each pair is written once. `side` (`left` is +X, the animal's own left) lets a goat that has lost one horn skip that side.
 - A female has horns when a fixed random number from her UUID is below `female_chance`, so she keeps the same horns for life.
-- `hide` lists vanilla horns to hide whenever the mod draws this animal's horns. It takes either a part path or the cubes of one part matching `size` (and `from`, if given). Entries a model doesn't have are ignored, so one list can cover every variant on every version.
-- Models built some other way, such as GeckoLib, can't take horns from these files. A file whose `attach` part is missing logs one warning and draws nothing.
+- `hide` lists vanilla horns (and a resource pack's, such as Fresh Animations') to hide whenever the mod draws this animal's horns. It takes either a part path or the cubes of one part matching `size` (and `from`, if given). Entries a model doesn't have are ignored, so one list can cover every variant on every version.
+- Models built some other way, such as GeckoLib, can't take horns from these files. A file whose `attach` parts are all missing logs one warning and draws nothing.
+
+### Head files
+
+The herd book's close-ups frame the animal's head. Files at `assets/<namespace>/barnyard_heads/<name>.json` say where it is: `{ "entities": ["examplemod:yak"], "head": ["body/neck/head", "head"] }`. The first path the model has is framed, with everything under it. Files that name the animal come first, then files without `entities`, which are for every animal. The mod ships `default.json`, which tries Fresh Animations' heads before vanilla's `head`. A model with none of the paths frames every part named `head`.
 
 ## Looking after animals
 

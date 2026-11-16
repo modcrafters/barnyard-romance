@@ -33,8 +33,7 @@ public final class HornJson {
         int[] textureSize = textureSize(object);
         return new HornFile(
                 entities,
-                object.has("attach") ? path(string(object.get("attach"), "attach")) : List.of("head"),
-                object.has("offset") ? xyz(object.get("offset"), "offset") : Xyz.ZERO,
+                attach(object),
                 string(required(object, "texture"), "texture"),
                 textureSize[0],
                 textureSize[1],
@@ -79,6 +78,40 @@ public final class HornJson {
             throw new IllegalArgumentException("texture_size must be positive");
         }
         return new int[]{width, height};
+    }
+
+    // "attach" is a part path with the file's "offset" (the form from before lists), or a list of paths and
+    // {part, offset} objects, each with its own offset.
+    private static List<HornAttach> attach(JsonObject object) {
+        Xyz fileOffset = object.has("offset") ? xyz(object.get("offset"), "offset") : Xyz.ZERO;
+        if (!object.has("attach")) {
+            return List.of(new HornAttach(List.of("head"), fileOffset));
+        }
+        JsonElement attach = object.get("attach");
+        if (!attach.isJsonArray()) {
+            return List.of(new HornAttach(path(string(attach, "attach")), fileOffset));
+        }
+        if (object.has("offset")) {
+            throw new IllegalArgumentException("with an attach list, each entry has its own offset");
+        }
+        List<HornAttach> entries = new ArrayList<>();
+        for (JsonElement entry : attach.getAsJsonArray()) {
+            if (entry.isJsonPrimitive() && entry.getAsJsonPrimitive().isString()) {
+                entries.add(new HornAttach(path(entry.getAsString()), Xyz.ZERO));
+            } else if (entry.isJsonObject()) {
+                JsonObject place = entry.getAsJsonObject();
+                entries.add(new HornAttach(
+                        path(string(required(place, "part"), "part")),
+                        place.has("offset") ? xyz(place.get("offset"), "offset") : Xyz.ZERO
+                ));
+            } else {
+                throw new IllegalArgumentException("attach entries must be a part path or {part, offset}");
+            }
+        }
+        if (entries.isEmpty()) {
+            throw new IllegalArgumentException("attach must name at least one part");
+        }
+        return entries;
     }
 
     private static List<HideRule> hide(JsonObject object) {
@@ -163,7 +196,7 @@ public final class HornJson {
         };
     }
 
-    private static List<String> path(String path) {
+    static List<String> path(String path) {
         List<String> parts = Arrays.stream(path.split("/")).filter(part -> !part.isEmpty()).toList();
         if (parts.isEmpty()) {
             throw new IllegalArgumentException("a part path must not be empty");

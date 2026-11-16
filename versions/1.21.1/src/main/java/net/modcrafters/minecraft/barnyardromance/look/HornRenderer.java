@@ -18,8 +18,9 @@ public final class HornRenderer {
         }
         HornFile file = draw.horns().file();
         poseStack.pushPose();
-        if (ModelParts.poseTo(model, file.attach(), poseStack)) {
-            poseStack.translate(file.offset().x() / 16.0f, file.offset().y() / 16.0f, file.offset().z() / 16.0f);
+        HornAttach attach = HornAttach.first(file.attach(), path -> ModelParts.find(model, path) != null);
+        if (attach != null && ModelParts.poseTo(model, attach.path(), poseStack)) {
+            poseStack.translate(attach.offset().x() / 16.0f, attach.offset().y() / 16.0f, attach.offset().z() / 16.0f);
             VertexConsumer buffer = buffers.getBuffer(RenderType.entityCutoutNoCull(draw.horns().texture()));
             for (LoadedHorns.Baked baked : draw.parts()) {
                 poseStack.pushPose();
@@ -28,7 +29,7 @@ public final class HornRenderer {
                 poseStack.popPose();
             }
         } else {
-            AnimalLooks.warnOnce("attach " + draw.entityId(), "The model of {} has no part {} to hang horns from", draw.entityId(), String.join("/", file.attach()));
+            AnimalLooks.warnOnce("attach " + draw.entityId(), "The model of {} has none of the parts {} to hang horns from", draw.entityId(), HornAttach.paths(file.attach()));
         }
         poseStack.popPose();
     }

@@ -1,34 +1,33 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 
-// Sends an animal's horns to be drawn, attached to its model. versions/1.21.1 has its own copy that draws at once.
+// Draws an animal's horns onto its model, in the model pass right after the model itself (ModelFeatureRendererMixin),
+// so they follow the pose the model was just drawn with. versions/1.21.1 has its own copy.
 public final class HornRenderer {
     private HornRenderer() {
     }
 
-    // The pose must be in model space, with the model's pose already set up for this animal.
-    public static void submit(HornDraw draw, Model<?> model, PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay) {
+    // The pose must be in model space, and the buffer one for the horns' own texture.
+    public static void render(HornDraw draw, Model<?> model, PoseStack poseStack, VertexConsumer buffer, int light, int overlay, int color) {
         if (draw.parts().isEmpty()) {
             return;
         }
         HornFile file = draw.horns().file();
         poseStack.pushPose();
-        if (ModelParts.poseTo(model, file.attach(), poseStack)) {
-            poseStack.translate(file.offset().x() / 16.0f, file.offset().y() / 16.0f, file.offset().z() / 16.0f);
-            RenderType type = RenderTypes.entityCutout(draw.horns().texture());
+        HornAttach attach = HornAttach.first(file.attach(), path -> ModelParts.find(model, path) != null);
+        if (attach != null && ModelParts.poseTo(model, attach.path(), poseStack)) {
+            poseStack.translate(attach.offset().x() / 16.0f, attach.offset().y() / 16.0f, attach.offset().z() / 16.0f);
             for (LoadedHorns.Baked baked : draw.parts()) {
                 poseStack.pushPose();
                 baked.pose(poseStack, draw.growth());
-                collector.submitModelPart(baked.model(), poseStack, type, light, overlay, null);
+                baked.model().render(poseStack, buffer, light, overlay, color);
                 poseStack.popPose();
             }
         } else {
-            AnimalLooks.warnOnce("attach " + draw.entityId(), "The model of {} has no part {} to hang horns from", draw.entityId(), String.join("/", file.attach()));
+            AnimalLooks.warnOnce("attach " + draw.entityId(), "The model of {} has none of the parts {} to hang horns from", draw.entityId(), HornAttach.paths(file.attach()));
         }
         poseStack.popPose();
     }

@@ -46,7 +46,7 @@ class HornJsonTest {
         HornFile file = parse(FULL);
 
         assertEquals(List.of("minecraft:cow", "minecraft:mooshroom"), file.entities());
-        assertEquals(List.of("head"), file.attach());
+        assertEquals(List.of(new HornAttach(List.of("head"), Xyz.ZERO)), file.attach());
         assertEquals("barnyard_romance:textures/entity/horns/cattle.png", file.texture());
         assertEquals(32, file.textureWidth());
         assertEquals(32, file.textureHeight());
@@ -65,8 +65,7 @@ class HornJsonTest {
     void defaults() {
         HornFile file = minimal("");
 
-        assertEquals(List.of("head"), file.attach());
-        assertEquals(new Xyz(0, 0, 0), file.offset());
+        assertEquals(List.of(new HornAttach(List.of("head"), Xyz.ZERO)), file.attach());
         assertTrue(file.male().isEmpty());
         assertTrue(file.female().isEmpty());
         assertTrue(file.hide().isEmpty());
@@ -75,15 +74,56 @@ class HornJsonTest {
 
     @Test
     void attachPathsAreSplitOnSlashes() {
-        assertEquals(List.of("body", "neck", "head"), minimal(", \"attach\": \"body/neck/head\"").attach());
+        assertEquals(List.of("body", "neck", "head"), minimal(", \"attach\": \"body/neck/head\"").attach().getFirst().path());
     }
 
     @Test
     void readsOffsetAndHideFrom() {
         HornFile file = minimal(", \"offset\": [-0.5, 0, 0], \"hide\": [{\"part\": \"head\", \"size\": [1, 2, 1], \"from\": [3, -5.5, -4]}]");
 
-        assertEquals(new Xyz(-0.5f, 0, 0), file.offset());
+        assertEquals(new Xyz(-0.5f, 0, 0), file.attach().getFirst().offset());
         assertEquals(new Xyz(3, -5.5f, -4), file.hide().get(0).from());
+    }
+
+    // Resource packs written before attach lists: one path, with the file's offset.
+    @Test
+    void oldFormIsOneEntry() {
+        HornFile file = minimal(", \"attach\": \"head\", \"offset\": [-0.5, 0, 0]");
+
+        assertEquals(List.of(new HornAttach(List.of("head"), new Xyz(-0.5f, 0, 0))), file.attach());
+    }
+
+    @Test
+    void attachListKeepsOrderAndOffsets() {
+        HornFile file = minimal(", \"attach\": [{\"part\": \"body/EMF_body/EMF_head2\", \"offset\": [0, 1, 2]}, \"head\"]");
+
+        assertEquals(List.of(
+                new HornAttach(List.of("body", "EMF_body", "EMF_head2"), new Xyz(0, 1, 2)),
+                new HornAttach(List.of("head"), Xyz.ZERO)
+        ), file.attach());
+    }
+
+    @Test
+    void attachListEntryWithoutOffsetIsAtZero() {
+        HornFile file = minimal(", \"attach\": [{\"part\": \"head\"}]");
+
+        assertEquals(List.of(new HornAttach(List.of("head"), Xyz.ZERO)), file.attach());
+    }
+
+    // The top-level offset belongs to the old one-path form; a list carries its own offsets.
+    @Test
+    void topLevelOffsetWithAttachListIsAnError() {
+        assertThrows(IllegalArgumentException.class, () -> minimal(", \"attach\": [\"head\"], \"offset\": [1, 0, 0]"));
+    }
+
+    @Test
+    void attachListEntryNeedsPart() {
+        assertThrows(IllegalArgumentException.class, () -> minimal(", \"attach\": [{\"offset\": [0, 0, 0]}]"));
+    }
+
+    @Test
+    void emptyAttachListIsAnError() {
+        assertThrows(IllegalArgumentException.class, () -> minimal(", \"attach\": []"));
     }
 
     @Test

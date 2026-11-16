@@ -10,7 +10,6 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 //? if >=1.21.6
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -59,6 +58,7 @@ public final class HerdCard {
             Animal animal,
             AnimalTraits traits,
             long gameTime,
+            float partialTick,
             SizeSettings size,
             ScreenPoint anchor,
             int screenWidth,
@@ -76,7 +76,7 @@ public final class HerdCard {
         int cardWidth = HerdCardLayout.width(titleWidth, barRow, heartRow);
         int cardHeight = HerdCardLayout.height(rows);
         ScreenPoint origin = TooltipPlacement.place(anchor.x(), anchor.y(), cardWidth, cardHeight, screenWidth, screenHeight);
-        paint(graphics, font, animal, traits, gameTime, origin.x(), origin.y(), cardWidth, cardHeight, sign, letter, name);
+        paint(graphics, font, animal, traits, gameTime, partialTick, origin.x(), origin.y(), cardWidth, cardHeight, sign, letter, name);
     }
 
     private static void paint(
@@ -85,6 +85,7 @@ public final class HerdCard {
             Animal animal,
             AnimalTraits traits,
             long gameTime,
+            float partialTick,
             int x,
             int y,
             int width,
@@ -94,7 +95,7 @@ public final class HerdCard {
             String name
     ) {
         frame(graphics, x, y, width, height);
-        portrait(graphics, animal, x + HerdCardLayout.PAD, y + HerdCardLayout.PAD);
+        portrait(graphics, animal, x + HerdCardLayout.PAD, y + HerdCardLayout.PAD, partialTick);
         int textX = HerdCardLayout.textX(x);
         int textY = y + HerdCardLayout.PAD;
         int signColor = traits.sex() == Sex.FEMALE ? FEMALE : MALE;
@@ -139,7 +140,7 @@ public final class HerdCard {
         }
     }
 
-    private static void portrait(GuiGraphicsExtractor graphics, Animal animal, int x, int y) {
+    private static void portrait(GuiGraphicsExtractor graphics, Animal animal, int x, int y, float partialTick) {
         graphics.fill(x, y, x + HerdCardLayout.PORTRAIT, y + HerdCardLayout.PORTRAIT, GOLD_DARK);
         graphics.fill(x + 1, y + 1, x + HerdCardLayout.PORTRAIT - 1, y + HerdCardLayout.PORTRAIT - 1, GOLD);
         int inner = 2;
@@ -152,18 +153,7 @@ public final class HerdCard {
         int entityScale = Math.max(8, Math.round((y1 - y0 - 2) / body));
         graphics.enableScissor(x0, y0, x1, y1);
         try {
-            InventoryScreen.extractEntityInInventoryFollowsMouse(
-                    graphics,
-                    x0,
-                    y0,
-                    x1,
-                    y1,
-                    entityScale,
-                    0.0625F,
-                    (x0 + x1) / 2.0F,
-                    (y0 + y1) / 2.0F,
-                    animal
-            );
+            EntityPreview.draw(graphics, x0, y0, x1, y1, entityScale, 0.0625F, animal, partialTick);
         } catch (RuntimeException ignored) {
             // A modded renderer that cannot draw in a GUI leaves the empty frame.
         }

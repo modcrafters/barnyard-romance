@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.client.HerdBookClient;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
+import net.modcrafters.minecraft.barnyardromance.look.HeadShapes;
 import net.modcrafters.minecraft.barnyardromance.look.HornShapes;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookPayloads;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -30,6 +31,7 @@ public class BarnyardRomanceFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientConfig.load(Services.PLATFORM.configDirectory().resolve("barnyard_romance-client.json"));
         ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(HornShapes.ID, HornShapes.listener());
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(HeadShapes.ID, HeadShapes.listener());
         ParticleProviderRegistry.getInstance().register(
                 BarnyardParticles.PREGNANCY_HEART,
                 PregnancyHeartParticle.Provider::new

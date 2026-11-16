@@ -1,13 +1,17 @@
 {
   "entities": ["minecraft:goat"],
-  "attach": "head",
-  "offset": [-0.5, 0, 0],
+  "attach": [
+    { "part": "body/EMF_body/EMF_head2", "offset": [0, 7, 6] },
+    { "part": "head", "offset": [-0.5, 0, 0] }
+  ],
   "texture": "barnyard_romance:textures/entity/horns/goat.png",
   "texture_size": [32, 32],
   "female_chance": 0.8,
   "hide": [
     "head/right_horn",
-    "head/left_horn"
+    "head/left_horn",
+    "body/EMF_body/EMF_head2/EMF_right_horn2",
+    "body/EMF_body/EMF_head2/EMF_left_horn2"
   ],
   "male": [
     {

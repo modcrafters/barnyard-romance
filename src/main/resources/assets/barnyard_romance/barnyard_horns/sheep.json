@@ -1,6 +1,9 @@
 {
   "entities": ["minecraft:sheep"],
-  "attach": "head",
+  "attach": [
+    { "part": "body/EMF_body/EMF_head2", "offset": [0, 0, -2] },
+    "head"
+  ],
   "texture": "barnyard_romance:textures/entity/horns/sheep.png",
   "texture_size": [32, 32],
   "female_chance": 0.25,
