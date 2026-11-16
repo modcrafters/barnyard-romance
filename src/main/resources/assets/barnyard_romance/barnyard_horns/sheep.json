@@ -1,7 +1,7 @@
 {
   "entities": ["minecraft:sheep"],
   "attach": [
-    { "part": "body/EMF_body/EMF_head2", "offset": [0, 0, 0] },
+    { "part": "body/EMF_body/EMF_head2", "offset": [0, 0, -2] },
     "head"
   ],
   "texture": "barnyard_romance:textures/entity/horns/sheep.png",

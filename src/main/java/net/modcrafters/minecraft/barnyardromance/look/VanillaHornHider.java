@@ -32,6 +32,7 @@ public final class VanillaHornHider {
             return NOTHING;
         }
         List<ModelPart> parts = new ArrayList<>();
+        List<ModelPart> skipped = new ArrayList<>();
         List<ModelPart.Cube> cubes = new ArrayList<>();
         for (HideRule rule : rules) {
             ModelPart part = find.apply(rule.path());
@@ -43,6 +44,14 @@ public final class VanillaHornHider {
                     part.visible = false;
                     parts.add(part);
                 }
+                // Animation packs can set visible again while drawing (Fresh Animations' cow horns), but not
+                // skipDraw, which Entity Model Features honours; getAllParts is the part and all under it.
+                for (ModelPart each : (Iterable<ModelPart>) part.getAllParts()::iterator) {
+                    if (!each.skipDraw) {
+                        each.skipDraw = true;
+                        skipped.add(each);
+                    }
+                }
                 continue;
             }
             for (ModelPart.Cube cube : ((ModelPartAccessor) (Object) part).barnyardromance$cubes()) {
@@ -51,11 +60,12 @@ public final class VanillaHornHider {
                 }
             }
         }
-        if (parts.isEmpty() && cubes.isEmpty()) {
+        if (parts.isEmpty() && skipped.isEmpty() && cubes.isEmpty()) {
             return NOTHING;
         }
         return () -> {
             parts.forEach(part -> part.visible = true);
+            skipped.forEach(part -> part.skipDraw = false);
             cubes.forEach(HIDDEN::remove);
         };
     }
