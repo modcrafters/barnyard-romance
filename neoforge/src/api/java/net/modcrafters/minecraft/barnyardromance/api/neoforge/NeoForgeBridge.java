@@ -36,10 +36,17 @@ public final class NeoForgeBridge {
         announce(BarnyardEvents.HATCHED, HatchedEvent::new);
     }
 
+    // NeoForge stops a post at a listener that throws, and the later listeners never hear it; a cancel from before the
+    // throw still counts.
     private static <E extends Cancellable> void cancellable(BarnyardEvent<E> event, Function<E, CancellableBarnyardNeoForgeEvent<E>> wrap) {
         event.registerLate(fired -> {
-            if (NeoForge.EVENT_BUS.post(wrap.apply(fired)).isCanceled()) {
-                fired.cancel();
+            CancellableBarnyardNeoForgeEvent<E> wrapped = wrap.apply(fired);
+            try {
+                NeoForge.EVENT_BUS.post(wrapped);
+            } finally {
+                if (wrapped.isCanceled()) {
+                    fired.cancel();
+                }
             }
         });
     }

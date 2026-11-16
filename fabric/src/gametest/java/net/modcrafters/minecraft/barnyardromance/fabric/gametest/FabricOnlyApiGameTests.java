@@ -27,14 +27,39 @@ import static net.modcrafters.minecraft.barnyardromance.fabric.gametest.FabricBr
 public class FabricOnlyApiGameTests {
     // As ApiGameTests.Handlers: one callback, handing events to the test that owns the animal.
     private static final Map<UUID, Consumer<Milking>> MILKINGS = new ConcurrentHashMap<>();
+    // Called after MILKINGS, as registered after it.
+    private static final Map<UUID, Consumer<Milking>> LATE_MILKINGS = new ConcurrentHashMap<>();
 
     static {
-        BarnyardFabricEvents.MILKING.register(milking -> {
-            Consumer<Milking> handler = MILKINGS.get(milking.animal().getUUID());
-            if (handler != null) {
-                handler.accept(milking);
-            }
+        BarnyardFabricEvents.MILKING.register(milking -> dispatch(MILKINGS, milking));
+        BarnyardFabricEvents.MILKING.register(milking -> dispatch(LATE_MILKINGS, milking));
+    }
+
+    private static void dispatch(Map<UUID, Consumer<Milking>> handlers, Milking milking) {
+        Consumer<Milking> handler = handlers.get(milking.animal().getUUID());
+        if (handler != null) {
+            handler.accept(milking);
+        }
+    }
+
+    // A callback that throws is skipped, and the callbacks after it still run.
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aThrowingFabricCallbackDoesNotStopTheRest(GameTestHelper helper) {
+        Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
+        Player player = FoodGameTests.holding(helper, Items.BUCKET);
+        MILKINGS.put(cow.getUUID(), milking -> {
+            throw new IllegalStateException("a broken callback, on purpose");
         });
+        LATE_MILKINGS.put(cow.getUUID(), milking -> milking.setResult(new ItemStack(Items.HONEY_BOTTLE)));
+        try {
+            GameTestCompat.interact(cow, player);
+        } finally {
+            MILKINGS.remove(cow.getUUID());
+            LATE_MILKINGS.remove(cow.getUUID());
+        }
+
+        helper.assertTrue(player.getMainHandItem().is(Items.HONEY_BOTTLE), "the callback after a throwing one gave " + player.getMainHandItem());
+        helper.succeed();
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
