@@ -123,9 +123,10 @@ public final class MilkActions {
             refuseMilking(animal, player);
             return InteractionResult.CONSUME;
         }
-        // Other mods may stop the milking or change what the bucket becomes; stopped, nothing happens at all.
+        // Other mods may stop the milking or change what the bucket becomes; stopped, nothing happens at all. A result
+        // a listener emptied in place, rather than cancelling, stops it too, so it doesn't use up the bucket for nothing.
         Milking milking = BarnyardEvents.MILKING.post(new Milking(animal, player, new ItemStack(milk.get())));
-        if (milking.isCancelled()) {
+        if (milking.isCancelled() || milking.result().isEmpty()) {
             return InteractionResult.CONSUME;
         }
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.

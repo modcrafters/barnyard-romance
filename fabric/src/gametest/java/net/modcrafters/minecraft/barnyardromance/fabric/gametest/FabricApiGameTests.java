@@ -38,6 +38,16 @@ public class FabricApiGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aMilkingResultEmptiedInPlaceKeepsTheBucket(GameTestHelper helper) {
+        ApiGameTests.aMilkingResultEmptiedInPlaceKeepsTheBucket(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theHerdStickLeavesAnExcludedWolfAlone(GameTestHelper helper) {
+        ApiGameTests.theHerdStickLeavesAnExcludedWolfAlone(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void milkingResultCanBeChanged(GameTestHelper helper) {
         ApiGameTests.milkingResultCanBeChanged(helper);
     }
