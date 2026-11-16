@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+## 0.0.5
+
 - Works with Fresh Animations: horns stay on the head while animals graze and look around, the pack's own cow and goat horns and chicken wattles give way to Barnyard Romance's, and herd book close-ups find the head.
 - Resource packs can list several places to hang horns, and say where a model's head is for the herd book. See "Horn files" and "Head files" in the README.
 - Other mods can now hook into Barnyard Romance: stop or change taming, milking, death drops, shearing and familiarity, hear about births and hatching, and read an animal's sex, size, age and familiarity. See "For mod developers" in the README.
