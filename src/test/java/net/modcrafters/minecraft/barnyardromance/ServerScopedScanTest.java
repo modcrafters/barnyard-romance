@@ -19,7 +19,7 @@ class ServerScopedScanTest {
     private static final Map<String, String> OUTLIVES_THE_SERVER = Map.ofEntries(
             Map.entry("core/ServerScoped.CLEARS", "the clears themselves, registered once per class"),
             Map.entry("client/HerdBookHeads.STAND_INS", "client only: stand-in entities for the herd book's heads"),
-            Map.entry("client/HerdBookHeads.BOXES", "client only, weak keys"),
+            Map.entry("client/HerdBookHeads.FRAMES", "client only, weak keys"),
             Map.entry("client/NestingBoxHen.COPIES", "client only, weak keys"),
             Map.entry("look/VanillaHornHider.HIDDEN", "client only: model cubes, which live as long as the models"),
             Map.entry("core/config/ExcludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),

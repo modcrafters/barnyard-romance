@@ -15,4 +15,9 @@ public interface AnimalLookState {
     Object barnyardromance$hornModel();
 
     void barnyardromance$setHornModel(Object model);
+
+    // Set on a herd book portrait's state: where the model pass reports the head it drew (HerdBookHeads.Measure).
+    Object barnyardromance$portrait();
+
+    void barnyardromance$setPortrait(Object portrait);
 }

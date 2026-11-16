@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.modcrafters.minecraft.barnyardromance.client.HerdBookHeads;
 import net.modcrafters.minecraft.barnyardromance.look.AnimalLookState;
 import net.modcrafters.minecraft.barnyardromance.look.HornDraw;
 import net.modcrafters.minecraft.barnyardromance.look.HornRenderer;
@@ -20,7 +21,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 // 26.3 only: models are drawn in a later pass, right after their pose is set up, so vanilla horns are hidden here, and
-// the mod's horns are drawn here right after the model: animation mods such as Entity Model Features pose the model only
+// right after the renderer's own model (not layers such as a sheep's wool, which share its state) the mod's horns are
+// drawn and a herd book portrait's head is measured: animation mods such as Entity Model Features pose the model only
 // while it is drawn, and the parts keep that pose until the next setupAnim.
 @Mixin(ModelFeatureRenderer.class)
 public abstract class ModelFeatureRendererMixin {
@@ -41,28 +43,31 @@ public abstract class ModelFeatureRendererMixin {
             Operation<Void> original,
             @Local(argsOnly = true) ModelFeatureRenderer.Submit<?> submit
     ) {
-        HornDraw draw = submit.state() instanceof AnimalLookState look ? look.barnyardromance$horns() : null;
-        if (draw == null) {
-            original.call(model, poseStack, buffer, light, overlay, color);
-            return;
-        }
-        Runnable undo = VanillaHornHider.hide(path -> ModelParts.find(model, path), draw.horns().file().hide());
+        AnimalLookState look = submit.state() instanceof AnimalLookState state ? state : null;
+        HornDraw draw = look == null ? null : look.barnyardromance$horns();
+        Runnable undo = draw == null ? () -> {
+        } : VanillaHornHider.hide(path -> ModelParts.find(model, path), draw.horns().file().hide());
         try {
             original.call(model, poseStack, buffer, light, overlay, color);
         } finally {
             undo.run();
         }
-        barnyardromance$drawHorns(draw, model, poseStack, submit);
+        if (look == null || look.barnyardromance$hornModel() != model) {
+            return;
+        }
+        if (look.barnyardromance$portrait() != null) {
+            HerdBookHeads.measureDrawn(look.barnyardromance$portrait(), model);
+        }
+        if (draw != null) {
+            barnyardromance$drawHorns(draw, model, poseStack, submit);
+        }
     }
 
-    // Only on the renderer's own model: layers (a sheep's wool) draw other models with the same state. A glowing
-    // animal's outline is a second submit of that model, with an outline render type, so the outline takes in the horns.
+    // A glowing animal's outline is a second submit of the model, with an outline render type, so the outline takes in
+    // the horns.
     @Unique
     private void barnyardromance$drawHorns(HornDraw draw, Model<?> model, PoseStack poseStack, ModelFeatureRenderer.Submit<?> submit) {
-        if (draw.parts().isEmpty()
-                || !(submit.state() instanceof LivingEntityRenderState living)
-                || living.isInvisible
-                || ((AnimalLookState) living).barnyardromance$hornModel() != model) {
+        if (draw.parts().isEmpty() || !(submit.state() instanceof LivingEntityRenderState living) || living.isInvisible) {
             return;
         }
         boolean outline = submit.renderType().isOutline();
