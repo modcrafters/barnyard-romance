@@ -10,12 +10,19 @@ import net.modcrafters.minecraft.barnyardromance.api.event.ShearYield;
 import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
 
 /**
  * Barnyard Romance's events as Fabric API events. Each callback gets the public API's own event: change or cancel it
- * there. They fire after every listener on the API's own events, in the order callbacks registered.
+ * there. They fire after every listener on the API's own events, in the order callbacks registered. A callback that
+ * throws is logged and the rest still run, as on the API's own events.
  */
 public final class BarnyardFabricEvents {
+    private static final Logger LOG = LoggerFactory.getLogger("barnyard_romance");
+
     /** Receives a {@link Taming}: change or cancel it there. */
     @FunctionalInterface
     public interface TamingCallback {
@@ -65,54 +72,33 @@ public final class BarnyardFabricEvents {
     }
 
     public static final Event<TamingCallback> TAMING = EventFactory.createArrayBacked(TamingCallback.class,
-            callbacks -> event -> {
-                for (TamingCallback callback : callbacks) {
-                    callback.onTaming(event);
-                }
-            });
+            callbacks -> event -> each("Taming", callbacks, callback -> callback.onTaming(event)));
     public static final Event<MilkingCallback> MILKING = EventFactory.createArrayBacked(MilkingCallback.class,
-            callbacks -> event -> {
-                for (MilkingCallback callback : callbacks) {
-                    callback.onMilking(event);
-                }
-            });
+            callbacks -> event -> each("Milking", callbacks, callback -> callback.onMilking(event)));
     public static final Event<DeathDropCallback> DEATH_DROP = EventFactory.createArrayBacked(DeathDropCallback.class,
-            callbacks -> event -> {
-                for (DeathDropCallback callback : callbacks) {
-                    callback.onDeathDrop(event);
-                }
-            });
+            callbacks -> event -> each("DeathDrop", callbacks, callback -> callback.onDeathDrop(event)));
     public static final Event<ShearYieldCallback> SHEAR_YIELD = EventFactory.createArrayBacked(ShearYieldCallback.class,
-            callbacks -> event -> {
-                for (ShearYieldCallback callback : callbacks) {
-                    callback.onShearYield(event);
-                }
-            });
+            callbacks -> event -> each("ShearYield", callbacks, callback -> callback.onShearYield(event)));
     public static final Event<FamiliarityChangeCallback> FAMILIARITY_CHANGE = EventFactory.createArrayBacked(FamiliarityChangeCallback.class,
-            callbacks -> event -> {
-                for (FamiliarityChangeCallback callback : callbacks) {
-                    callback.onFamiliarityChange(event);
-                }
-            });
+            callbacks -> event -> each("FamiliarityChange", callbacks, callback -> callback.onFamiliarityChange(event)));
     public static final Event<BefriendedCallback> BEFRIENDED = EventFactory.createArrayBacked(BefriendedCallback.class,
-            callbacks -> event -> {
-                for (BefriendedCallback callback : callbacks) {
-                    callback.onBefriended(event);
-                }
-            });
+            callbacks -> event -> each("Befriended", callbacks, callback -> callback.onBefriended(event)));
     public static final Event<BornCallback> BORN = EventFactory.createArrayBacked(BornCallback.class,
-            callbacks -> event -> {
-                for (BornCallback callback : callbacks) {
-                    callback.onBorn(event);
-                }
-            });
+            callbacks -> event -> each("Born", callbacks, callback -> callback.onBorn(event)));
     public static final Event<HatchedCallback> HATCHED = EventFactory.createArrayBacked(HatchedCallback.class,
-            callbacks -> event -> {
-                for (HatchedCallback callback : callbacks) {
-                    callback.onHatched(event);
-                }
-            });
+            callbacks -> event -> each("Hatched", callbacks, callback -> callback.onHatched(event)));
 
     private BarnyardFabricEvents() {
+    }
+
+    // As on the API's own events: a callback that throws is logged, and the ones after it still run.
+    private static <C> void each(String name, C[] callbacks, Consumer<C> call) {
+        for (C callback : callbacks) {
+            try {
+                call.accept(callback);
+            } catch (Exception | LinkageError exception) {
+                LOG.warn("A {} callback failed", name, exception);
+            }
+        }
     }
 }

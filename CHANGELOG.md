@@ -8,6 +8,15 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- The creative herd stick leaves excluded animals alone: it no longer changes their familiarity or tames them.
+
+### API
+
+- A Milking listener that empties the result in place, instead of cancelling, now counts as cancelling: the player keeps the bucket.
+- A listener that throws an error, such as a class missing because a mod isn't installed, is logged and skipped like one that throws an exception.
+- A Fabric callback that throws no longer stops the callbacks after it. On NeoForge, a cancel from before a throwing listener now sticks.
+- The loader mod sources jars include the loader's own API sources, and only the API jars go to the maven.
+
 ## 0.0.5
 
 - Works with Fresh Animations: horns stay on the head while animals graze and look around, the pack's own cow and goat horns and chicken wattles give way to Barnyard Romance's, and herd book close-ups find the head.

@@ -7,7 +7,8 @@ import net.modcrafters.minecraft.barnyardromance.api.Cancellable;
 
 /**
  * A player is about to milk an animal, and every rule has let them. result is what the bucket becomes. Cancelled,
- * nothing happens: the bucket stays a bucket and she counts as not milked today.
+ * nothing happens: the bucket stays a bucket and she counts as not milked today. A result emptied in place counts as
+ * cancelled.
  */
 public final class Milking implements Cancellable {
     private final Animal animal;

@@ -4,7 +4,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -36,6 +35,8 @@ import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
 import net.modcrafters.minecraft.barnyardromance.api.event.Taming;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdStick;
+import net.modcrafters.minecraft.barnyardromance.herd.HerdTool;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.api.event.Milking;
@@ -59,6 +60,7 @@ import java.util.function.Function;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.female;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.male;
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
+import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
 
 // The public API, as another mod sees it.
@@ -70,6 +72,8 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("info_agrees_with_the_stat_card", 20, ApiGameTests::infoAgreesWithTheStatCard),
             new BreedingGameTests.Case("untracked_animals_have_no_info", 20, ApiGameTests::untrackedAnimalsHaveNoInfo),
             new BreedingGameTests.Case("cancelled_milking_keeps_the_bucket", 20, ApiGameTests::cancelledMilkingKeepsTheBucket),
+            new BreedingGameTests.Case("a_milking_result_emptied_in_place_keeps_the_bucket", 20,
+                    ApiGameTests::aMilkingResultEmptiedInPlaceKeepsTheBucket),
             new BreedingGameTests.Case("milking_result_can_be_changed", 20, ApiGameTests::milkingResultCanBeChanged),
             new BreedingGameTests.Case("death_drop_can_be_replaced", 20, ApiGameTests::deathDropCanBeReplaced),
             new BreedingGameTests.Case("a_huge_death_drop_splits_into_stacks", 20, ApiGameTests::aHugeDeathDropSplitsIntoStacks),
@@ -79,6 +83,7 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("disabled_species_fire_no_milking", 20, ApiGameTests::disabledSpeciesFireNoMilking),
             new BreedingGameTests.Case("cancelled_familiarity_change_keeps_familiarity", 20, ApiGameTests::cancelledFamiliarityChangeKeepsFamiliarity),
             new BreedingGameTests.Case("cancelled_taming_leaves_a_wolf_wild", 20, ApiGameTests::cancelledTamingLeavesAWolfWild),
+            new BreedingGameTests.Case("the_herd_stick_leaves_an_excluded_wolf_alone", 20, ApiGameTests::theHerdStickLeavesAnExcludedWolfAlone),
             new BreedingGameTests.Case("befriended_fires_once_when_a_cow_becomes_familiar", 20, ApiGameTests::befriendedFiresOnceWhenACowBecomesFamiliar),
             new BreedingGameTests.Case("born_fires_with_the_mother_and_her_young", 200, ApiGameTests::bornFiresWithTheMotherAndHerYoung),
             new BreedingGameTests.Case("hatched_fires_with_the_parents", 20, ApiGameTests::hatchedFiresWithTheParents),
@@ -180,6 +185,23 @@ public final class ApiGameTests {
 
         helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "a cancelled milking left " + player.getMainHandItem());
         helper.assertTrue(traits(helper, cow).get(LACTATION).equals(before), "a cancelled milking counted as milked");
+        helper.succeed();
+    }
+
+    // setResult refuses an empty stack, but a listener can still empty the one it's given; that gives nothing too.
+    public static void aMilkingResultEmptiedInPlaceKeepsTheBucket(GameTestHelper helper) {
+        Animal cow = ProductGameTests.mother(helper, EntityTypes.COW, 0.5);
+        Lactation before = traits(helper, cow).get(LACTATION);
+        Player player = FoodGameTests.holding(helper, Items.BUCKET);
+        MILKINGS.add(cow.getUUID(), milking -> milking.result().setCount(0));
+        try {
+            GameTestCompat.interact(cow, player);
+        } finally {
+            MILKINGS.remove(cow.getUUID());
+        }
+
+        helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "an emptied milking left " + player.getMainHandItem());
+        helper.assertTrue(traits(helper, cow).get(LACTATION).equals(before), "an emptied milking counted as milked");
         helper.succeed();
     }
 
@@ -335,6 +357,31 @@ public final class ApiGameTests {
         helper.succeed();
     }
 
+    // An excluded species is left alone, by the creative herd stick too: no events, no familiarity, no taming.
+    public static void theHerdStickLeavesAnExcludedWolfAlone(GameTestHelper helper) {
+        TamableAnimal wolf = (TamableAnimal) CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.WOLF), 0.2);
+        Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
+        AtomicInteger heard = new AtomicInteger();
+        BarnyardConfig config = BarnyardConfig.current();
+        FAMILIARITY_CHANGES.add(wolf.getUUID(), change -> heard.incrementAndGet());
+        TAMINGS.add(wolf.getUUID(), taming -> heard.incrementAndGet());
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:wolf\"]}"));
+            HerdTool tool = HerdTool.familiaritySet(100);
+            HerdStick.use(HerdStick.create(tool), tool, player, wolf);
+        } finally {
+            BarnyardConfig.set(config);
+            FAMILIARITY_CHANGES.remove(wolf.getUUID());
+            TAMINGS.remove(wolf.getUUID());
+        }
+
+        helper.assertTrue(heard.get() == 0, "the stick fired " + heard.get() + " events for an excluded wolf");
+        double familiarity = traits(helper, wolf).get(CARE).familiarity();
+        helper.assertTrue(Math.abs(familiarity - 0.2) < 1.0e-9, "the stick set an excluded wolf to " + familiarity);
+        helper.assertTrue(!wolf.isTame(), "the stick tamed an excluded wolf");
+        helper.succeed();
+    }
+
     public static void befriendedFiresOnceWhenACowBecomesFamiliar(GameTestHelper helper) {
         Animal cow = CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.COW), Familiarity.threshold() - 0.05);
         AtomicInteger heard = new AtomicInteger();
@@ -399,12 +446,8 @@ public final class ApiGameTests {
         wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
-        helper.runAfterDelay(EggGameTests.COUNT_AND_HATCH, () -> {
-            // Where EggGameTests.aWildEggHatchesAChickWithNoParents finds it: in front of the hole, or fallen below.
-            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class,
-                    new AABB(helper.absolutePos(EggGameTests.BOX.north())).expandTowards(0.0, -2.0, 0.0));
-            helper.assertTrue(chicks.size() == 1, "in front of the hole: " + chicks);
-            Hatched hatched = hatchOf(helper, chicks.getFirst());
+        EggGameTests.onceHatched(helper, chick -> {
+            Hatched hatched = hatchOf(helper, chick);
             helper.assertTrue(hatched.mother() == null && hatched.father() == null,
                     "a wild egg's Hatched named " + hatched.mother() + " and " + hatched.father());
             helper.succeed();

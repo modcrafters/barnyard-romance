@@ -15,6 +15,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -116,7 +117,8 @@ public class HerdStick extends Item {
             return new Outcome(true, text);
         }
         if (tool.kind() == HerdTool.Kind.FAMILIARITY) {
-            AnimalTraits traits = Services.DATA.get(animal).orElse(null);
+            // Only a tracked animal: an excluded species is left alone, and fires no familiarity or taming events.
+            AnimalTraits traits = Tracked.traits(animal).orElse(null);
             if (traits == null) {
                 return new Outcome(false, Text.of("message.barnyard_romance.herd_stick.no_familiarity"));
             }
