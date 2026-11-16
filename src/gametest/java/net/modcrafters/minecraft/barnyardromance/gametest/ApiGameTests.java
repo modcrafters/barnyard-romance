@@ -4,7 +4,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -447,12 +446,8 @@ public final class ApiGameTests {
         wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
-        helper.runAfterDelay(EggGameTests.COUNT_AND_HATCH, () -> {
-            // Where EggGameTests.aWildEggHatchesAChickWithNoParents finds it: in front of the hole, or fallen below.
-            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class,
-                    new AABB(helper.absolutePos(EggGameTests.BOX.north())).expandTowards(0.0, -2.0, 0.0));
-            helper.assertTrue(chicks.size() == 1, "in front of the hole: " + chicks);
-            Hatched hatched = hatchOf(helper, chicks.getFirst());
+        EggGameTests.onceHatched(helper, chick -> {
+            Hatched hatched = hatchOf(helper, chick);
             helper.assertTrue(hatched.mother() == null && hatched.father() == null,
                     "a wild egg's Hatched named " + hatched.mother() + " and " + hatched.father());
             helper.succeed();

@@ -93,6 +93,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
 import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests.traits;
 import static net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests.clock;
@@ -604,11 +605,9 @@ public final class EggGameTests {
         wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
-        helper.runAfterDelay(COUNT_AND_HATCH, () -> {
+        onceHatched(helper, chick -> {
             helper.assertTrue(box.getItem(0).isEmpty(), "the wild egg is still in the box: " + box.getItem(0));
-            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())).expandTowards(0.0, -2.0, 0.0));
-            helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
-            AnimalTraits traits = traits(helper, chicks.getFirst());
+            AnimalTraits traits = traits(helper, chick);
             helper.assertTrue(traits.lineage().equals(Lineage.UNKNOWN), "a wild egg's chick knows its parents: " + traits.lineage());
             helper.assertTrue(traits.bornTick() >= 0L, "a wild egg's chick has no birth time");
             assertStampedInTheChickenRange(helper, traits);
@@ -704,11 +703,8 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         box.setItem(0, FertilizedEggItem.create(eggData(largeHen(), 1.2, 5L)));
 
-        helper.runAfterDelay(COUNT_AND_HATCH, () -> {
+        onceHatched(helper, chick -> {
             helper.assertTrue(box.getItem(0).isEmpty(), "the egg is still in the box: " + box.getItem(0));
-            // The test box stands a block above the floor, so the chick may have dropped down by now.
-            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())).expandTowards(0.0, -2.0, 0.0));
-            helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
             helper.succeed();
         });
     }
@@ -1514,6 +1510,23 @@ public final class EggGameTests {
     }
 
     // Runs then once, on the first tick when is true.
+    // The chick the box at BOX hatches, taken the tick it turns up in front of the hole (or below it: the test box
+    // stands a block above the floor), as it soon walks off. It must have hatched by COUNT_AND_HATCH.
+    static void onceHatched(GameTestHelper helper, Consumer<Chicken> then) {
+        boolean[] done = {false};
+        helper.onEachTick(() -> {
+            if (done[0]) {
+                return;
+            }
+            List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())).expandTowards(0.0, -2.0, 0.0));
+            if (!chicks.isEmpty() || helper.getTick() >= COUNT_AND_HATCH) {
+                done[0] = true;
+                helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
+                then.accept(chicks.getFirst());
+            }
+        });
+    }
+
     static void once(GameTestHelper helper, BooleanSupplier is, Runnable then) {
         boolean[] done = {false};
         helper.onEachTick(() -> {

@@ -215,7 +215,9 @@ public final class FightGameTests {
     public static void bystandersAreNotHurt(GameTestHelper helper) {
         Animal first = bull(helper, 3, 4, 1.0);
         Animal second = bull(helper, 5, 4, 1.0);
-        Animal sheep = female(helper, EntityTypes.SHEEP);
+        // Fed like the bulls: a familiar animal that hasn't eaten loses health at midnight, and the test clock may
+        // pass one during the fight.
+        Animal sheep = fed(female(helper, EntityTypes.SHEEP));
         Fights.start(first, second, null);
 
         helper.succeedWhen(() -> {
