@@ -60,7 +60,7 @@ public final class AnimalHoverTooltip {
                 return;
             }
         }
-        HerdCard.draw(graphics, minecraft.font, animal, traits.get(), animal.level().getGameTime(), size,
+        HerdCard.draw(graphics, minecraft.font, animal, traits.get(), animal.level().getGameTime(), partialTick, size,
                 anchor.get(), graphics.guiWidth(), graphics.guiHeight());
     }
 
