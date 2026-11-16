@@ -52,6 +52,10 @@ These runs test compatibility with [Naturalist](https://modrinth.com/mod/natural
 
 Naturalist needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.101` to the `:neoforge:26.3` versions of these commands.
 
+### With Fresh Animations
+
+`gradlew :fabric:26.3:runClientFreshAnimations`, `gradlew :neoforge:26.3:runClientFreshAnimations` or `gradlew :neoforge:1.21.1:runClientFreshAnimations` starts the game with [Fresh Animations](https://modrinth.com/resourcepack/fresh-animations) and the two mods it needs, Entity Texture Features and Entity Model Features. The run has its own game folder, `runs/fresh-animations-client`. Gradle copies the two jars into its `mods` and the pack into its `resourcepacks`, and switches the pack on in its `options.txt`. On NeoForge the IntelliJ run config does the same after a Gradle sync.
+
 ## Before a release
 
 CI runs client tests only on Fabric 26.3. NeoForge 1.21.1 has its own copy of the renderer mixin, which shares almost no lines with 26.3's, so check it by eye before you push a release tag. Start the game with `gradlew :neoforge:1.21.1:runClient` in a creative world:

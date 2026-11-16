@@ -5,6 +5,7 @@ plugins {
 
 apply from: rootProject.file('gradle/naturalist-runs.gradle')
 apply from: rootProject.file('gradle/jade-runs.gradle')
+apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
 
 dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
@@ -87,12 +88,21 @@ loom {
             programArgs('--width', '2560', '--height', '1440')
             vmArg('-Dbarnyard_romance.herd_sticks=true')
         }
+        // Our horns on Fresh Animations' models, see gradle/fresh-animations-runs.gradle.
+        clientFreshAnimations {
+            client()
+            setConfigName('Fabric Client (Fresh Animations)')
+            runDir('runs/fresh-animations-client')
+            programArgs('--width', '2560', '--height', '1440')
+            vmArg('-Dbarnyard_romance.herd_sticks=true')
+        }
     }
 }
 
 naturalistInRun('clientNaturalist', 'runs/naturalist-client')
 naturalistInRun('gametestNaturalist', 'runs/naturalist-gametest')
 jadeInRun('clientJade', 'runs/jade-client')
+freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client')
 
 // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
 // midnight partway through and hunger or Vigour refills would hit unrelated tests.

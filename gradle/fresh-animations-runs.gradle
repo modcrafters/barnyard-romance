@@ -1,0 +1,72 @@
+// Fresh Animations, for the clientFreshAnimations run: does our horn layer survive EMF's replacement models? The mod
+// never compiles or ships against any of it: Gradle resolves Entity Texture Features and Entity Model Features (the
+// two mods the pack needs) and the pack itself when the run starts and copies them to that run's own folder, so the
+// normal runs, the tests and the published jars don't see them.
+
+apply from: rootProject.file('gradle/modrinth-maven.gradle')
+
+configurations {
+    freshAnimationsMods {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    freshAnimationsPack {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+dependencies {
+    freshAnimationsMods "maven.modrinth:entitytexturefeatures:${etf_loader_version}"
+    freshAnimationsMods "maven.modrinth:entity-model-features:${emf_loader_version}"
+    freshAnimationsPack "maven.modrinth:fresh-animations:${fresh_animations_version}@zip"
+}
+
+// The pack's file name in resourcepacks, and so its id in options.txt.
+def freshAnimationsPackFile = 'FreshAnimations.zip'
+
+// Call for each Fresh Animations run. The mods folder is synced, so it holds exactly these jars. The pack is copied to
+// resourcepacks and switched on in options.txt, which keeps every other setting the run has saved.
+ext.freshAnimationsInRun = { String runName, String gameDirectory ->
+    def mods = tasks.register("sync${runName.capitalize()}Mods", Sync) {
+        group = 'fresh animations'
+        description = "Copies Entity Texture Features and Entity Model Features to ${gameDirectory}/mods."
+        from configurations.freshAnimationsMods
+        into file("${gameDirectory}/mods")
+    }
+    def pack = tasks.register("copy${runName.capitalize()}Pack", Copy) {
+        group = 'fresh animations'
+        description = "Copies the Fresh Animations pack to ${gameDirectory}/resourcepacks and switches it on."
+        from configurations.freshAnimationsPack
+        into file("${gameDirectory}/resourcepacks")
+        rename { freshAnimationsPackFile }
+        def options = file("${gameDirectory}/options.txt")
+        // The jar alone would leave this up to date, and the pack switched off if it was turned off in game.
+        outputs.upToDateWhen { false }
+        doLast {
+            def packId = "\"file/${freshAnimationsPackFile}\"".toString()
+            def lines = options.exists() ? options.readLines('UTF-8') : []
+            def entries = { String line -> line.substring(line.indexOf(':') + 2, line.length() - 1).split(',')*.trim().findAll() }
+            def index = lines.findIndexOf { it.startsWith('resourcePacks:') }
+            if (index < 0) {
+                lines << "resourcePacks:[\"vanilla\",${packId}]".toString()
+            } else if (!entries(lines[index]).contains(packId)) {
+                lines[index] = "resourcePacks:[${(entries(lines[index]) + packId).join(',')}]".toString()
+            }
+            // The game skips a compatible pack it finds on this list for one launch (both of the pack's builds are).
+            index = lines.findIndexOf { it.startsWith('incompatibleResourcePacks:') }
+            if (index >= 0 && entries(lines[index]).contains(packId)) {
+                lines[index] = "incompatibleResourcePacks:[${(entries(lines[index]) - packId).join(',')}]".toString()
+            }
+            options.parentFile.mkdirs()
+            options.write(lines.join('\n') + '\n', 'UTF-8')
+        }
+    }
+    tasks.matching { it.name == "run${runName.capitalize()}" }.configureEach {
+        group = 'fresh animations'
+        dependsOn mods, pack
+    }
+    return [mods, pack]
+}
