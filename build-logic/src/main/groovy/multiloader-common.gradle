@@ -205,7 +205,8 @@ publishing {
         }
     }
     // The release maven: set MAVEN_URL, MAVEN_USERNAME and MAVEN_PASSWORD to publish the API jars there with
-    // publishApiPublicationToReleaseRepository. Without MAVEN_URL there is no such repository.
+    // publishApiPublicationToReleaseRepository. Without MAVEN_URL there is no such repository. Only the API goes
+    // there, even from a plain publish (see the onlyIf below).
     repositories {
         if (System.getenv('MAVEN_URL')) {
             maven {
@@ -219,5 +220,12 @@ publishing {
                 }
             }
         }
+    }
+}
+
+// The release maven is for the API jars other mods compile against; players get the mod jars from the mod sites.
+tasks.withType(PublishToMavenRepository).configureEach {
+    onlyIf('only the API goes to the release maven') {
+        repository.name != 'release' || publication.name == 'api'
     }
 }

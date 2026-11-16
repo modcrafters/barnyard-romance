@@ -80,10 +80,13 @@ tasks.named('javadoc', Javadoc).configure {
     source(configurations.commonJava, configurations.commonApiJava)
 }
 
+// The mod's sources: the common code and API, and this loader's own main and API (its native events).
 tasks.named('sourcesJar', Jar) {
     dependsOn(configurations.commonJava, configurations.commonApiJava)
+    dependsOn(tasks.matching { it.name == 'stonecutterGenerateApi' })
     from(configurations.commonJava)
     from(configurations.commonApiJava)
+    from(sourceSets.api.allSource)
     dependsOn(configurations.commonResources)
     from(configurations.commonResources)
 }
