@@ -159,7 +159,7 @@ public class FabricFeederGameTests {
         FeederGameTests.cowsWalkToTheMangerAndEat(helper);
     }
 
-    @GameTest(structure = PEN, maxTicks = 800)
+    @GameTest(structure = PEN, maxTicks = FeederGameTests.CROWD_TICKS)
     public void noMoreThanFourWalkAtOnce(GameTestHelper helper) {
         FeederGameTests.noMoreThanFourWalkAtOnce(helper);
     }

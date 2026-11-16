@@ -103,6 +103,10 @@ public final class FeederGameTests {
     // a busy machine the wait can take well over 100 ticks. The wait checks a condition, so the extra ticks only
     // matter when a test is running late.
     public static final int LOADING_TICKS = 600;
+    // For ten cows round one Manger. Those that have eaten walk off and mill about where the last ones wait, and a cow
+    // they hem in only eats where it stands after 600 ticks, or rests 600 more and is sent again (see EatAtFeederGoal).
+    // The last one is sent by about tick 300, so this covers both, with time for the walk.
+    public static final int CROWD_TICKS = 2000;
     // Far past the test world's own clock, so the animals' own ticks never settle these days for them.
     private static final long DAY = 10_000L;
     private static final long SUNRISE = clock(DAY);
@@ -143,7 +147,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("a_herd_hen_hungry_yesterday_lays_nothing", LOADING_TICKS, FeederGameTests::aHerdHenHungryYesterdayLaysNothing),
             new BreedingGameTests.Case("cows_walk_to_the_manger_and_eat", 400, FeederGameTests::cowsWalkToTheMangerAndEat),
             new BreedingGameTests.Case("a_morning_feeder_meal_earns_self_service", 400, FeederGameTests::aMorningFeederMealEarnsSelfService),
-            new BreedingGameTests.Case("no_more_than_four_walk_at_once", 800, FeederGameTests::noMoreThanFourWalkAtOnce),
+            new BreedingGameTests.Case("no_more_than_four_walk_at_once", CROWD_TICKS, FeederGameTests::noMoreThanFourWalkAtOnce),
             new BreedingGameTests.Case("a_hand_fed_cow_stays_put", 400, FeederGameTests::aHandFedCowStaysPut),
             new BreedingGameTests.Case("a_feeder_meal_is_not_love", 400, FeederGameTests::aFeederMealIsNotLove),
             new BreedingGameTests.Case("food_added_at_noon_feeds_the_hungry", 400, FeederGameTests::foodAddedAtNoonFeedsTheHungry),
@@ -1090,7 +1094,11 @@ public final class FeederGameTests {
                                 Consumer<Morning> setUp, Consumer<Morning> each) {
         List<Animal> animals = new ArrayList<>();
         for (int[] column : columns) {
-            animals.add(GameTestCompat.spawn(helper, type, column[0], 1, column[1]));
+            Animal animal = GameTestCompat.spawn(helper, type, column[0], 1, column[1]);
+            // Familiar females from the first tick: spawned wild, two males could start a fight to the death while
+            // they land, and the setup below wouldn't stop it.
+            unsettled(animal, 0.8, DAY, Upkeep.NONE);
+            animals.add(animal);
         }
         Morning[] morning = {null};
         helper.onEachTick(() -> {
