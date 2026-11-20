@@ -1,4 +1,4 @@
-package net.modcrafters.minecraft.barnyardromance.naturalist;
+package net.modcrafters.minecraft.barnyardromance.core.compat;
 
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -7,12 +7,10 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import java.util.List;
 import java.util.Set;
 
-// Registers the mixins that target Naturalist's classes only when Naturalist is there. Mixin warns about a missing target
-// even when it's marked @Pseudo, and a player without Naturalist shouldn't see that on every start. This runs too early
-// to ask the loader which mods are installed, so it looks for the class file instead.
-public final class NaturalistMixinPlugin implements IMixinConfigPlugin {
-    private static final String DUCK = "com/crispytwig/naturalist/world/entity/animal/duck/Duck.class";
-
+// Registers the mixins that target another mod's classes only when that mod is there. Mixin warns about a missing
+// target even when it's marked @Pseudo, and a player without the mod shouldn't see that on every start. This runs too
+// early to ask the loader which mods are installed, so each mixin names one class file of its mod to look for instead.
+public final class CompatMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
     }
@@ -33,9 +31,8 @@ public final class NaturalistMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        return NaturalistMixinPlugin.class.getClassLoader().getResource(DUCK) != null
-                ? List.of("NaturalistDuckEggTimerMixin", "NaturalistOstrichHatchMixin")
-                : List.of();
+        ClassLoader loader = CompatMixinPlugin.class.getClassLoader();
+        return CompatMixins.mixinsFor(probe -> loader.getResource(probe) != null);
     }
 
     @Override

@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.modcrafters.minecraft.barnyardromance.mixin",
-  "plugin": "net.modcrafters.minecraft.barnyardromance.naturalist.NaturalistMixinPlugin",
+  "plugin": "net.modcrafters.minecraft.barnyardromance.core.compat.CompatMixinPlugin",
   "compatibilityLevel": "JAVA_${java_version}",
   "mixins": [
     ${extra_mixins}"AgeableMobMixin",

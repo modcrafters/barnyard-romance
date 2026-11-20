@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
 
 // Naturalist's ostriches hatch from its own egg block, which the mod leaves alone; this only sees the chick come out,
-// for the advancements. NaturalistMixinPlugin only registers this when Naturalist is there, and require = 0 means a
+// for the advancements. CompatMixinPlugin only registers this when Naturalist is there, and require = 0 means a
 // future Naturalist that changes the method loses this hook instead of crashing the game.
 @Pseudo
 @Mixin(targets = "com.crispytwig.naturalist.world.level.block.OstrichEggBlock", remap = false)

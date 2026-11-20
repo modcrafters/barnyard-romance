@@ -4,6 +4,7 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/naturalist-runs.gradle')
+apply from: rootProject.file('gradle/farm-mods-runs.gradle')
 apply from: rootProject.file('gradle/jade-runs.gradle')
 apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
 
@@ -80,6 +81,23 @@ loom {
             vmArg("-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get().asFile}/gametest-naturalist/junit.xml")
             runDir('runs/naturalist-gametest')
         }
+        // Compatibility testing with the farm-animal mods, see gradle/farm-mods-runs.gradle.
+        clientFarmMods {
+            client()
+            setConfigName('Fabric Client (Farm Mods)')
+            runDir('runs/farm-mods-client')
+            programArgs('--width', '2560', '--height', '1440')
+            vmArg('-Dbarnyard_romance.herd_sticks=true')
+        }
+        gametestFarmMods {
+            server()
+            setConfigName('Fabric Game Test (Farm Mods)')
+            source sourceSets.gametest
+            vmArg('-Dfabric-api.gametest')
+            vmArg("-Dbarnyard_romance.expect_mods=${farmModIds}")
+            vmArg("-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get().asFile}/gametest-farm-mods/junit.xml")
+            runDir('runs/farm-mods-gametest')
+        }
         // Our stats in Jade's tooltip, see gradle/jade-runs.gradle.
         clientJade {
             client()
@@ -101,12 +119,15 @@ loom {
 
 naturalistInRun('clientNaturalist', 'runs/naturalist-client')
 naturalistInRun('gametestNaturalist', 'runs/naturalist-gametest')
+farmModsInRun('clientFarmMods', 'runs/farm-mods-client')
+farmModsInRun('gametestFarmMods', 'runs/farm-mods-gametest')
 jadeInRun('clientJade', 'runs/jade-client')
 freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client')
 
 // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
 // midnight partway through and hunger or Vigour refills would hit unrelated tests.
-['gametest': 'runs/gametest', 'gametestNaturalist': 'runs/naturalist-gametest'].each { runName, runDir ->
+['gametest': 'runs/gametest', 'gametestNaturalist': 'runs/naturalist-gametest',
+ 'gametestFarmMods': 'runs/farm-mods-gametest'].each { runName, runDir ->
     def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
         description = "Deletes the ${runDir} world so the run starts fresh."
         delete file("${runDir}/world")
