@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.ExcludedTag;
+import net.modcrafters.minecraft.barnyardromance.core.config.IncludedTag;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsItems;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -27,6 +28,7 @@ public final class BarnyardRomance {
         BarnyardFeatures.ensureInstalled();
         BarnyardConfig.load(Services.PLATFORM.configDirectory().resolve("barnyard_romance.json"));
         ExcludedTag.install();
+        IncludedTag.install();
         Constants.LOG.info(
                 "Barnyard Romance common init on {} ({})",
                 Services.PLATFORM.getPlatformName(),

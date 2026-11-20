@@ -64,6 +64,14 @@ final class SpeciesPresets {
         return FIGHTERS.contains(speciesId);
     }
 
+    // Animals that stay wild under their mod's own feeding, so familiarity tames them.
+    private static final Set<String> TAMES = Set.of(
+            "naturalist:duck", "naturalist:ostrich", "untitledduckmod:duck", "untitledduckmod:goose");
+
+    static boolean tames(String speciesId) {
+        return TAMES.contains(speciesId);
+    }
+
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {
         return new Preset(new Range(pregnancyMin, pregnancyMax), new Range(litterMin, litterMax));
     }

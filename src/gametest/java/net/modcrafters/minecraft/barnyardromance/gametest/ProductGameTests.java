@@ -433,10 +433,13 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // Ocelots aren't tracked unless a pack switches them on.
+    private static final String OCELOTS = "{\"species\": {\"minecraft:ocelot\": {\"enabled\": true}}}";
+
     public static void ocelotTrustsByFamiliarity(GameTestHelper helper) {
         Animal ocelot = FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.OCELOT), 0.25);
 
-        FamiliarityActions.interact(ocelot, sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND);
+        UpkeepGameTests.withConfig(OCELOTS, () -> FamiliarityActions.interact(ocelot, sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND));
 
         helper.assertTrue(((OcelotAccessor) ocelot).barnyardromance$isTrusting(), "a familiar ocelot does not trust its feeder");
         helper.succeed();
@@ -528,7 +531,7 @@ public final class ProductGameTests {
         helper.assertTrue(!cat.isPersistenceRequired() && !ocelot.isPersistenceRequired(), "the test felines started out persistent");
 
         GameTestCompat.interact(cat, sneaking(helper, Items.COD));
-        GameTestCompat.interact(ocelot, sneaking(helper, Items.SALMON));
+        UpkeepGameTests.withConfig(OCELOTS, () -> GameTestCompat.interact(ocelot, sneaking(helper, Items.SALMON)));
 
         helper.assertTrue(cat.isPersistenceRequired(), "a fed stray cat can still despawn");
         helper.assertTrue(ocelot.isPersistenceRequired(), "a fed ocelot can still despawn");

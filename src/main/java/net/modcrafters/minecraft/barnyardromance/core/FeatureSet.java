@@ -10,11 +10,12 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraitCodecs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 // What a list of features registered, kept in their order. FeaturesRepository builds the game's one; tests build their own.
@@ -31,7 +32,7 @@ public final class FeatureSet {
     private final Map<Class<?>, List<Consumer<?>>> listeners = new LinkedHashMap<>();
     private final List<Consumer<BarnyardRegistrations.Sink>> content = new ArrayList<>();
     private final Map<String, Supplier<List<ItemStack>>> tabEntries = new LinkedHashMap<>();
-    private final List<Predicate<String>> ignoredByDefault = new ArrayList<>();
+    private final Set<String> trackedByDefault = new HashSet<>();
 
     private FeatureSet() {
         AnimalTraitCodecs.coreFields().forEach(field -> sliceFields.put(field, "the core record"));
@@ -88,8 +89,8 @@ public final class FeatureSet {
         return orderedHooks.get(phase);
     }
 
-    public boolean ignoredByDefault(String speciesId) {
-        return ignoredByDefault.stream().anyMatch(ignored -> ignored.test(speciesId));
+    public boolean trackedByDefault(String speciesId) {
+        return trackedByDefault.contains(speciesId);
     }
 
     private final class Registrar implements FeatureRegistrar {
@@ -165,9 +166,9 @@ public final class FeatureSet {
         }
 
         @Override
-        public void ignoredByDefault(Predicate<String> speciesId) {
+        public void trackedByDefault(String... speciesIds) {
             open();
-            ignoredByDefault.add(speciesId);
+            trackedByDefault.addAll(List.of(speciesIds));
         }
 
         private void open() {

@@ -560,7 +560,8 @@ public final class CareGameTests {
         parrot.tame(MockPlayers.inLevel(helper));
         Services.DATA.set(parrot, traits(helper, parrot).with(CARE, traits(helper, parrot).get(CARE).fed(0.0, -1L)));
 
-        helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy");
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:parrot\": {\"enabled\": true}}}", () ->
+                helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy"));
         helper.succeed();
     }
 

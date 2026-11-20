@@ -38,8 +38,8 @@ public final class FeaturesRepository {
     }
 
     // False before install, so unit tests that load the config without features still work.
-    public static boolean ignoredByDefault(String speciesId) {
+    public static boolean trackedByDefault(String speciesId) {
         FeatureSet installed = features;
-        return installed != null && installed.ignoredByDefault(speciesId);
+        return installed != null && installed.trackedByDefault(speciesId);
     }
 }

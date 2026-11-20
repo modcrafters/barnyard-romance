@@ -35,6 +35,8 @@ public final class BarnyardConfig {
     // Whether a species is in the barnyard_romance:excluded entity tag. Tags are Minecraft's, so the mod installs this
     // at start-up; until then (and in unit tests) nothing is excluded by tag.
     private static Predicate<String> excludedByTag = speciesId -> false;
+    // The same for the barnyard_romance:included tag.
+    private static Predicate<String> includedByTag = speciesId -> false;
 
     private final boolean enabled;
     private final boolean herdSticks;
@@ -100,6 +102,10 @@ public final class BarnyardConfig {
 
     public static void setExcludedByTag(Predicate<String> excluded) {
         excludedByTag = excluded;
+    }
+
+    public static void setIncludedByTag(Predicate<String> included) {
+        includedByTag = included;
     }
 
     // For game tests, which swap a config in and restore it within the same tick.
@@ -258,8 +264,19 @@ public final class BarnyardConfig {
         return defaults;
     }
 
-    // A species entry's own "enabled" wins, so one species of an excluded mod can be switched back on.
+    // In order: the species entry's own "enabled", then the exclude list and the excluded tag, then the included tag, then
+    // the built-in list (vanilla farm, working and pet animals, and what features track by default). A species entry's
+    // "enabled" wins, so one species of an excluded mod can be switched back on.
     public boolean speciesEnabled(String speciesId) {
+        return speciesEnabled(speciesId, true);
+    }
+
+    // The same without the two tags, for hooks that must tell "a pack switched this animal off" from "never tracked".
+    public boolean speciesEnabledIgnoringTags(String speciesId) {
+        return speciesEnabled(speciesId, false);
+    }
+
+    private boolean speciesEnabled(String speciesId, boolean useTags) {
         if (!enabled) {
             return false;
         }
@@ -267,7 +284,18 @@ public final class BarnyardConfig {
         if (settings != null && settings.enabled() != null) {
             return settings.enabled();
         }
-        return !excluded(speciesId) && !excludedByTag.test(speciesId) && !FeaturesRepository.ignoredByDefault(speciesId);
+        if (excluded(speciesId) || useTags && excludedByTag.test(speciesId)) {
+            return false;
+        }
+        if (useTags && includedByTag.test(speciesId)) {
+            return true;
+        }
+        return BuiltInSpecies.VANILLA.contains(speciesId) || FeaturesRepository.trackedByDefault(speciesId);
+    }
+
+    // Animals that stay wild under their mod's own feeding, so familiarity tames them.
+    public boolean tamesThroughFamiliarity(String speciesId) {
+        return SpeciesPresets.tames(speciesId) && speciesEnabled(speciesId);
     }
 
     public List<String> exclude() {

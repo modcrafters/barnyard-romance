@@ -1,6 +1,6 @@
 # Barnyard Romance
 
-A Minecraft Java mod for Fabric and NeoForge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla and (most) modded animals.
+A Minecraft Java mod for Fabric and NeoForge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla farm animals, working animals, dogs and cats, and for other animals a pack opts in (see [Leaving species out](#which-species-are-tracked)).
 
 Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby; only the female falls in love, and the mod finds her a male (see [Rival males](#rival-males)). The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
 
@@ -164,21 +164,43 @@ A pack can move a species to another block with the entity tags `barnyard_romanc
 
 ## Naturalist
 
-With [Naturalist](https://modrinth.com/mod/naturalist) installed, five of its creatures count as livestock. They get sexes, sizes and familiarity, and males are only different in size.
+With [Naturalist](https://modrinth.com/mod/naturalist) installed, four of its creatures count as livestock. They get sexes, sizes and familiarity, and males are only different in size.
 
 | Creature | How young arrive |
 | --- | --- |
-| Deer, boar | Pregnancy, like cows and pigs |
+| Boar | Pregnancy, like cows and pigs |
 | Duck, turkey | Eggs in a Nesting Box, like chickens |
 | Ostrich | Naturalist's own eggs, but it takes a male and a female |
 
 Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg still follows Naturalist's rules.
 
-Naturalist's other creatures are left alone, including any it adds later. To include one, give it a species entry with `"enabled": true`. To leave one of the five out, list it in `exclude`.
+Naturalist's other creatures, deer included, are left alone, along with any it adds later. To include one, give it a species entry with `"enabled": true`, or add it to the `barnyard_romance:included` tag. To leave one of the four out, list it in `exclude`.
 
-## Leaving species out
+## Which species are tracked
 
-Set `"enabled": false` in a species entry to leave one species vanilla. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:parrot", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead. An explicit `"enabled": true` in a species entry wins over both. Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
+Only these species are tracked by default:
+
+- Vanilla farm animals: cow, mooshroom, sheep, goat, pig, chicken, rabbit and hoglin.
+- Vanilla working animals: horse, donkey, mule, llama, trader llama and camel.
+- Vanilla dogs and cats: wolf and cat.
+- Naturalist's boar, duck, turkey and ostrich, when Naturalist is installed.
+
+Wild animals such as foxes, ocelots, pandas, polar bears, bees and parrots, and every animal from another mod, stay vanilla unless a pack opts them in. A mod or data pack adds animals to the entity tag `barnyard_romance:included` to opt them in, and a pack can also give a species entry `"enabled": true`.
+
+To leave a species vanilla, set `"enabled": false` in its species entry. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:cow", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead.
+
+The rules run in this order, and the first that applies decides:
+
+1. The species entry's `enabled`, true or false.
+2. The `exclude` list and the `barnyard_romance:excluded` tag: the animal is left out.
+3. The `barnyard_romance:included` tag: the animal is tracked.
+4. The built-in list above.
+
+Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
+
+### For mod authors
+
+To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:included` (`data/barnyard_romance/tags/entity_type/included.json`, with `"replace": false`). To tell males apart by their horns, also ship an `assets/<namespace>/barnyard_horns/<name>.json` that names the animal under `entities`; see `assets/barnyard_romance/barnyard_horns/cattle.json` for an example.
 
 ## Herd book
 

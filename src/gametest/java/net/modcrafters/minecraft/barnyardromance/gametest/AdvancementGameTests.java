@@ -416,7 +416,8 @@ public final class AdvancementGameTests {
         ServerPlayer player = MockPlayers.inLevel(helper);
         helper.assertTrue(Services.DATA.get(fox).isPresent(), "the fox isn't tracked, so this proves nothing");
 
-        fox.die(helper.getLevel().damageSources().playerAttack(player));
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:fox\": {\"enabled\": true}}}", () ->
+                fox.die(helper.getLevel().damageSources().playerAttack(player)));
 
         helper.assertTrue(!earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER), "killing a familiar fox earned the dinner advancement");
         helper.succeed();

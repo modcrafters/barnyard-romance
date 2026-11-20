@@ -18,8 +18,13 @@ public class FabricNaturalistGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void deerAndBoarGetPregnant(GameTestHelper helper) {
-        NaturalistGameTests.deerAndBoarGetPregnant(helper);
+    public void deerIsOut(GameTestHelper helper) {
+        NaturalistGameTests.deerIsOut(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void boarGetsPregnant(GameTestHelper helper) {
+        NaturalistGameTests.boarGetsPregnant(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

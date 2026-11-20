@@ -359,7 +359,7 @@ public final class UpkeepGameTests {
         parrot.tame(helper.makeMockPlayer(GameType.SURVIVAL));
         settledOn(parrot, traits(helper, parrot), 0.12, 6.0F, DAY - 5L, Upkeep.NONE.caredFor());
 
-        withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(parrot, clock(DAY)));
+        withConfig("{\"tuning\": {\"escapeChance\": 1.0}, \"species\": {\"minecraft:parrot\": {\"enabled\": true}}}", () -> FamiliarityCare.settle(parrot, clock(DAY)));
 
         Upkeep upkeep = traits(helper, parrot).get(CARE).upkeep();
         helper.assertTrue(!upkeep.ranAway() && !Escapes.queued(parrot), "a tamed parrot ran away: " + upkeep);

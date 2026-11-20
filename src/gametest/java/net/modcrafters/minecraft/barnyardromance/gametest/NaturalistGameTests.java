@@ -60,7 +60,8 @@ public final class NaturalistGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("naturalist_livestock_is_tracked", 20, NaturalistGameTests::livestockIsTracked),
             new BreedingGameTests.Case("naturalist_others_are_ignored", 20, NaturalistGameTests::othersAreIgnored),
-            new BreedingGameTests.Case("naturalist_deer_and_boar_get_pregnant", 20, NaturalistGameTests::deerAndBoarGetPregnant),
+            new BreedingGameTests.Case("naturalist_deer_is_out", 20, NaturalistGameTests::deerIsOut),
+            new BreedingGameTests.Case("naturalist_boar_gets_pregnant", 20, NaturalistGameTests::boarGetsPregnant),
             new BreedingGameTests.Case("naturalist_ostriches_need_a_male_and_a_female", 20, NaturalistGameTests::ostrichesNeedAMaleAndAFemale),
             new BreedingGameTests.Case("naturalist_ostriches_breed_by_courtship", 400, NaturalistGameTests::ostrichesBreedByCourtship),
             new BreedingGameTests.Case("naturalist_food_does_not_breed_ducks_or_turkeys", 20, NaturalistGameTests::foodDoesNotBreedDucksOrTurkeys),
@@ -120,24 +121,33 @@ public final class NaturalistGameTests {
         helper.succeed();
     }
 
-    public static void deerAndBoarGetPregnant(GameTestHelper helper) {
+    // Deer are wild game, not livestock, so they stay Naturalist's unless a pack switches them on.
+    public static void deerIsOut(GameTestHelper helper) {
         if (!naturalist(helper)) {
             return;
         }
-        for (String id : List.of(DEER, BOAR)) {
-            Animal mother = BreedingGameTests.female(helper, type(helper, id));
-            Animal father = BreedingGameTests.male(helper, type(helper, id));
-            Animal otherMale = BreedingGameTests.male(helper, type(helper, id));
-            mother.setInLove(null);
-            father.setInLove(null);
-            otherMale.setInLove(null);
-            helper.assertTrue(!father.isInLove(), "feeding put a male " + id + " in love");
-            helper.assertTrue(!father.canMate(otherMale), "two male " + id + " can mate");
+        helper.assertTrue(!BarnyardConfig.current().speciesEnabled(DEER), "deer are enabled");
+        Animal deer = GameTestCompat.spawn(helper, type(helper, DEER), 4, 1, 4);
+        helper.assertTrue(Services.DATA.get(deer).isEmpty(), "a deer has traits");
+        helper.succeed();
+    }
 
-            mother.spawnChildFromBreeding(helper.getLevel(), father);
-
-            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "a " + id + " isn't pregnant");
+    public static void boarGetsPregnant(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
         }
+        Animal mother = BreedingGameTests.female(helper, type(helper, BOAR));
+        Animal father = BreedingGameTests.male(helper, type(helper, BOAR));
+        Animal otherMale = BreedingGameTests.male(helper, type(helper, BOAR));
+        mother.setInLove(null);
+        father.setInLove(null);
+        otherMale.setInLove(null);
+        helper.assertTrue(!father.isInLove(), "feeding put a male boar in love");
+        helper.assertTrue(!father.canMate(otherMale), "two male boars can mate");
+
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+
+        helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "a boar isn't pregnant");
         helper.succeed();
     }
 
@@ -361,7 +371,7 @@ public final class NaturalistGameTests {
             return;
         }
         // All in the same spot: further along, the test's player would stand in the pen's wall, out of sight.
-        for (String id : List.of(DEER, BOAR, TURKEY)) {
+        for (String id : List.of(BOAR, TURKEY)) {
             Animal wild = bird(helper, id, Sex.FEMALE, 0.0, 2);
             Animal familiar = bird(helper, id, Sex.FEMALE, 1.0, 3);
             Player player = holding(helper, Items.STICK);

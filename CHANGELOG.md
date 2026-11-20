@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- The mod now tracks only farm animals, working animals, dogs and cats by default: foxes, ocelots, pandas, polar bears, Naturalist's deer and animals from other mods stay vanilla. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag. Animals the mod already saved keep their traits.
 - The creative herd stick leaves excluded animals alone: it no longer changes their familiarity or tames them.
 
 ### API

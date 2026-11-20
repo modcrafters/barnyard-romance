@@ -8,7 +8,6 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSlice;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 // What a feature hands over while it registers. Registration closes once every feature has registered; a call after
@@ -36,6 +35,6 @@ public interface FeatureRegistrar {
     // Stacks the creative tab shows under a name its order list uses (see BarnyardTab); the name must be in TabEntries.
     void tabEntry(String name, Supplier<List<ItemStack>> stacks);
 
-    // Species the mod leaves alone unless the config says otherwise.
-    void ignoredByDefault(Predicate<String> speciesId);
+    // Species the mod tracks by default, on top of the vanilla farm, working and pet animals.
+    void trackedByDefault(String... speciesIds);
 }

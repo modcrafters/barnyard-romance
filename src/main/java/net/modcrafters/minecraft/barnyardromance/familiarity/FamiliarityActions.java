@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
@@ -24,7 +25,6 @@ import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
-import net.modcrafters.minecraft.barnyardromance.naturalist.api.NaturalistApi;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -206,7 +206,7 @@ public final class FamiliarityActions {
             pet.setTarget(null);
             pet.setOrderedToSit(true);
             pet.level().broadcastEntityEvent(pet, (byte) 7);
-        } else if (animal instanceof TamableAnimal pet && FeaturesRepository.get(NaturalistApi.class).isLivestock(AnimalSex.speciesId(animal))
+        } else if (animal instanceof TamableAnimal pet && BarnyardConfig.current().tamesThroughFamiliarity(AnimalSex.speciesId(animal))
                 && Familiarity.tames(pet.isTame(), familiarity)) {
             if (!allowsTaming(animal, player, Taming.Kind.TAME)) {
                 return;

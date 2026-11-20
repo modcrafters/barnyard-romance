@@ -23,6 +23,7 @@ class ServerScopedScanTest {
             Map.entry("client/NestingBoxHen.COPIES", "client only, weak keys"),
             Map.entry("look/VanillaHornHider.HIDDEN", "client only: model cubes, which live as long as the models"),
             Map.entry("core/config/ExcludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),
+            Map.entry("core/config/IncludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),
             Map.entry("food/MinecraftItemFacts.MATCHERS", "item id or tag to matcher; tag contents are read fresh"),
             Map.entry("core/animal/AnimalSex.SPECIES_IDS", "entity type to species id, from the built-in registry"),
             Map.entry("food/FoodData.WARNED", "log messages already shown, cleared on reload"),
