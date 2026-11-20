@@ -1,7 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
@@ -93,8 +92,8 @@ public final class LiveFacts {
 
         @Override
         public ShearState shear() {
-            return FeaturesRepository.get(ShearApi.class).shearState(
-                    animal instanceof Sheep, !(animal instanceof Sheep sheep && sheep.isSheared()), animal.isBaby(), traits, clock);
+            ShearApi shear = FeaturesRepository.get(ShearApi.class);
+            return shear.shearState(shear.tracksShearing(animal), shear.readyForShearing(animal), animal.isBaby(), traits, clock);
         }
 
         // A loaded animal is either familiar or not yet; only the herd book remembers one that was.

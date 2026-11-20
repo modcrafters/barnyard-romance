@@ -14,7 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.modcrafters.minecraft.barnyardromance.shear.api.ShearApi;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -33,12 +33,13 @@ public final class HerdRecords {
         Pregnancy pregnancy = FeaturesRepository.get(PregnancyApi.class).pregnancy(animal).map(HerdRecords::withoutLitter).orElse(null);
         String name = animal.hasCustomName() && animal.getCustomName() != null ? animal.getCustomName().getString() : "";
         EggsApi eggs = FeaturesRepository.get(EggsApi.class);
+        ShearApi shear = FeaturesRepository.get(ShearApi.class);
         NestCheck nest = eggs.isLayingHen(animal) && animal.level() instanceof ServerLevel level
                 ? new NestCheck(eggs.roosterNear(animal, level), eggs.hasBoxWithRoomNear(animal, level))
                 : NestCheck.NONE;
         return Optional.of(new HerdRecord(AnimalSex.speciesId(animal), name, traits.get(), pregnancy, animal.isBaby(),
-                FeaturesRepository.get(MilkApi.class).givesMilk(animal), animal instanceof Sheep,
-                animal instanceof Sheep sheep && !sheep.isSheared(), now, -1L, -1L,
+                FeaturesRepository.get(MilkApi.class).givesMilk(animal), shear.tracksShearing(animal),
+                shear.readyForShearing(animal), now, -1L, -1L,
                 AnimalSex.tamed(animal), nest, DeathCause.NONE,
                 new RecordSheet(animal.getHealth(), animal.getMaxHealth(), AnimalSex.needsTaming(animal), eggs.laying(animal).orElse(Laying.NONE))));
     }

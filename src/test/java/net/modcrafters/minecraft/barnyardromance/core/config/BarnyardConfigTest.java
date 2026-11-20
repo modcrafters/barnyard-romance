@@ -555,6 +555,19 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void shearingDefaultsOnAndCanBeSwitchedOff() {
+        BarnyardConfig defaults = BarnyardConfig.parse("{}");
+        BarnyardConfig off = BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"shearing\":false}}}");
+
+        assertTrue(defaults.shearingFor("minecraft:cow"));
+        assertTrue(defaults.shearingFor("minecraft:mooshroom"));
+        assertFalse(off.shearingFor("minecraft:mooshroom"));
+        assertTrue(off.shearingFor("minecraft:sheep"));
+        assertFalse(BarnyardConfig.parse(off.toJson()).shearingFor("minecraft:mooshroom"));
+        assertFalse(BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"enabled\":false}}}").shearingFor("minecraft:mooshroom"));
+    }
+
+    @Test
     void chickenLaysByDefault() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

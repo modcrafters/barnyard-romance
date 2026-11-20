@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -31,6 +32,10 @@ public final class FamiliarShearing {
                 continue;
             }
             shearable.shear(level, SoundSource.BLOCKS, tool);
+            // Sheep count themselves in SheepShearMixin.
+            if (entity instanceof Animal animal && !(entity instanceof Sheep)) {
+                ShearActions.recordAfterShear(animal);
+            }
             level.gameEvent(null, GameEvent.SHEAR, pos);
             return true;
         }

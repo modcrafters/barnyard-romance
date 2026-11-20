@@ -447,6 +447,16 @@ public final class BarnyardConfig {
         return SpeciesPresets.stew(speciesId);
     }
 
+    // Whether the once-a-day shearing (and its familiarity cost) counts for this species: the species entry's
+    // "shearing", else on. False for a species the mod leaves alone.
+    public boolean shearingFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return false;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        return settings == null || settings.shearing() == null || settings.shearing();
+    }
+
     // Every item that milks some species, in a preset or in any config list, whichever species is on.
     public Set<String> milkingItems() {
         Set<String> items = milkingItems;
@@ -600,7 +610,8 @@ public final class BarnyardConfig {
             JsonObject eggs,
             Boolean fights,
             List<MilkEntry> milk,
-            Boolean stew
+            Boolean stew,
+            Boolean shearing
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -627,7 +638,8 @@ public final class BarnyardConfig {
                     object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null,
                     object.has("fights") ? bool(object, "fights", false) : null,
                     milk(object),
-                    object.has("stew") ? bool(object, "stew", false) : null
+                    object.has("stew") ? bool(object, "stew", false) : null,
+                    object.has("shearing") ? bool(object, "shearing", true) : null
             );
         }
 
@@ -730,6 +742,9 @@ public final class BarnyardConfig {
             }
             if (stew != null) {
                 object.addProperty("stew", stew);
+            }
+            if (shearing != null) {
+                object.addProperty("shearing", shearing);
             }
             return object;
         }
