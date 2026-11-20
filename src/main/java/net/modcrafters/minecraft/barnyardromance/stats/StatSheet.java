@@ -71,7 +71,9 @@ public final class StatSheet {
             lines.add(StatLine.of(StatKind.MILK, facts.milk()));
         }
         switch (facts.shear()) {
-            case READY -> lines.add(StatLine.of(StatKind.SHEAR, Text.of("gui.barnyard_romance.herd_book.shear_ready")));
+            case READY -> lines.add(StatLine.of(StatKind.SHEAR, facts.shearsInto().isEmpty()
+                    ? Text.of("gui.barnyard_romance.herd_book.shear_ready")
+                    : Text.of("gui.barnyard_romance.herd_book.shear_converts", facts.shearsInto())));
             case SHEARED_TODAY -> lines.add(StatLine.of(StatKind.SHEAR, Text.of("gui.barnyard_romance.herd_book.sheared_today")));
             case REGROWING -> lines.add(StatLine.of(StatKind.SHEAR, Text.of("gui.barnyard_romance.herd_book.wool_regrowing")));
             case NONE -> {

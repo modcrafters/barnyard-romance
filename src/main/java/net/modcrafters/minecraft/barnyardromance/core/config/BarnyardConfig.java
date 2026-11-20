@@ -415,6 +415,11 @@ public final class BarnyardConfig {
         });
     }
 
+    // The entity id shearing turns this species into for good, if it does (a mooshroom shears into a cow).
+    public Optional<String> shearsInto(String speciesId) {
+        return SpeciesPresets.shearsInto(speciesId);
+    }
+
     // Whether males of this species fight their rivals: the species entry's "fights", else the built-in livestock list.
     public boolean fightsFor(String speciesId) {
         if (!speciesEnabled(speciesId)) {

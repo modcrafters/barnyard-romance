@@ -94,6 +94,8 @@ class StatSheetTest {
         AnimalFacts.Builder ewe = AnimalFacts.builder("M", AgeStage.ADULT).fedToday(true).ticksSinceFed(0L).familiarity(0.8).fertility(0.9);
 
         assertEquals(List.of("Size M · Adult", "Familiar 80%", "Fed today", "Fertile 90%", "Ready to shear"), english(ewe.shear(ShearState.READY)));
+        assertEquals("Shear to turn it into a Cow", english(ewe.shear(ShearState.READY).shearsInto(Text.plain("Cow"))).get(4));
+        assertEquals("Sheared today", english(ewe.shear(ShearState.SHEARED_TODAY).shearsInto(Text.plain("Cow"))).get(4));
         assertEquals("Sheared today", english(ewe.shear(ShearState.SHEARED_TODAY)).get(4));
         assertEquals("Wool growing back", english(ewe.shear(ShearState.REGROWING)).get(4));
         assertEquals(SHEAR, kinds(ewe.shear(ShearState.READY)).get(4));

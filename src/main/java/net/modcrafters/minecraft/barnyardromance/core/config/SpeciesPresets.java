@@ -52,6 +52,15 @@ final class SpeciesPresets {
         return PRESETS.get(speciesId);
     }
 
+    // Animals that shearing turns into another animal for good, and what into.
+    private static final Map<String, String> SHEARS_INTO = Map.of(
+            "minecraft:mooshroom", "minecraft:cow",
+            "friendsandfoes:moobloom", "minecraft:cow");
+
+    static Optional<String> shearsInto(String speciesId) {
+        return Optional.ofNullable(SHEARS_INTO.get(speciesId));
+    }
+
     // Birds that lay eggs instead of giving birth. A Naturalist turkey has no egg of its own, so it lays vanilla's.
     static EggSettings eggs(String speciesId) {
         return switch (speciesId) {

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,6 +50,15 @@ class BarnyardConfigTest {
                 "strider", "parrot", "skeleton_horse", "zombie_horse")) {
             assertFalse(config.speciesEnabled("minecraft:" + id), id);
         }
+    }
+
+    @Test
+    void shearingTurnsMooshroomsAndMoobloomsIntoCows() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertEquals(Optional.of("minecraft:cow"), config.shearsInto("minecraft:mooshroom"));
+        assertEquals(Optional.of("minecraft:cow"), config.shearsInto("friendsandfoes:moobloom"));
+        assertEquals(Optional.empty(), config.shearsInto("minecraft:sheep"));
     }
 
     @Test

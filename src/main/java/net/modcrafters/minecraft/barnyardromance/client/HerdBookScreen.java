@@ -572,7 +572,7 @@ public class HerdBookScreen extends Screen {
         if (entry.shear() != ShearState.NONE) {
             x -= ICON;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, y - 1, ICON, ICON);
-            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, Component.translatable(shearKey(entry.shear()))));
+            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, shearTip(entry)));
             x -= 1;
         }
         x -= ICON;
@@ -897,6 +897,13 @@ public class HerdBookScreen extends Screen {
             case PLAIN -> EGG_PLAIN;
             case NO_EGGS -> EGG_NONE;
         };
+    }
+
+    // The shear row's own words, so a mooshroom's icon says it turns it into a cow like its page does.
+    private static Component shearTip(HerdEntry entry) {
+        return entry.lines().stream().filter(line -> line.kind() == StatKind.SHEAR).findFirst()
+                .map(HerdEntry.Line::text)
+                .orElseGet(() -> Component.translatable(shearKey(entry.shear())));
     }
 
     private static String shearKey(ShearState state) {

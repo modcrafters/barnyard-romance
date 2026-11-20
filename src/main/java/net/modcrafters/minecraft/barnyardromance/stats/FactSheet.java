@@ -74,6 +74,7 @@ final class FactSheet {
                 .familiar(subject.familiar())
                 .diedDay(subject.diedDay())
                 .shear(subject.shear())
+                .shearsInto(BarnyardConfig.current().shearsInto(species).map(FactSheet::entityName).orElse(Text.EMPTY))
                 .grumpy(subject.alive() && subject.tamed() && !familiarityApi.isFamiliar(traits))
                 .eggs(subject.eggsTomorrow())
                 .cap(subject.cap())
@@ -110,6 +111,15 @@ final class FactSheet {
         return BuiltInRegistries.ENTITY_TYPE.getOptional(id)
                 .map(type -> type.getDescription().getString())
                 .orElse("");
+    }
+
+    // The translatable name of the entity shearing turns an animal into; empty when it isn't registered, so the row says
+    // what it always did.
+    private static Text entityName(String entityId) {
+        Identifier id = Identifier.tryParse(entityId);
+        return id == null ? Text.EMPTY : BuiltInRegistries.ENTITY_TYPE.getOptional(id)
+                .map(type -> Text.of(type.getDescriptionId()))
+                .orElse(Text.EMPTY);
     }
 
     // A hen counts the eggs she laid today; a rooster says whether he makes them fertile today.

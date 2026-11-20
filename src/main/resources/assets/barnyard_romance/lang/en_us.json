@@ -48,6 +48,7 @@
   "gui.barnyard_romance.herd_book.eggs_no_box": "No nesting box with room nearby",
   "gui.barnyard_romance.herd_book.eggs_not_familiar": "Not familiar: one egg fewer",
   "gui.barnyard_romance.herd_book.shear_ready": "Ready to shear",
+  "gui.barnyard_romance.herd_book.shear_converts": "Shear to turn it into a %s",
   "gui.barnyard_romance.herd_book.sheared_today": "Sheared today",
   "gui.barnyard_romance.herd_book.wool_regrowing": "Wool growing back",
   "gui.barnyard_romance.herd_book.family": "Family",
