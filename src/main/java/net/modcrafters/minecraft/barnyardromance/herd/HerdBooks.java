@@ -9,6 +9,7 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Conversions;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.server.MinecraftServer;
@@ -115,11 +116,24 @@ public final class HerdBooks {
         data.setDirty();
     }
 
-    // Killed and discarded animals (deaths, and conversions to a new animal) are dead to the book;
-    // any other way of leaving just refreshes the record. A chunk unload arrives before the entity has
+    // The animal's record moves to the animal it was turned into, and is re-recorded as that animal.
+    public static void converted(Animal from, Animal to) {
+        if (!(to.level() instanceof ServerLevel level)) {
+            return;
+        }
+        HerdBookData data = HerdBookData.get(level.getServer());
+        if (data.ledger().node(from.getUUID()) == null) {
+            return;
+        }
+        data.rename(from.getUUID(), to.getUUID());
+        refresh(data, to, level.getGameTime());
+    }
+
+    // Killed and discarded animals (deaths) are dead to the book; an animal that was converted is its successor now,
+    // and any other way of leaving just refreshes the record. A chunk unload arrives before the entity has
     // a removal reason, so a missing reason is an unload.
     public static void leftLevel(Animal animal, Entity.@Nullable RemovalReason reason) {
-        if (!(animal.level() instanceof ServerLevel level)) {
+        if (!(animal.level() instanceof ServerLevel level) || Conversions.converted(animal.getUUID())) {
             return;
         }
         HerdBookData data = HerdBookData.get(level.getServer());

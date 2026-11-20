@@ -24,6 +24,8 @@
     "HorseTamingGraceMixin",
     "LivingEntityDropsMixin",
     "MateOverridesMixin",
+    "MobConversionMixin",
+    "MushroomCowShearMixin",
     "MobGoalsAccessor",
     "MobProductMixin",
     "OcelotAccessor",

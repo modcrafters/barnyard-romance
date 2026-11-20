@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- A mooshroom sheared into a cow keeps its record: its sex, size, familiarity, pregnancy and place in the herd book carry over to the cow instead of the book marking a death.
 - The mod now tracks only farm animals, working animals, dogs and cats by default: foxes, ocelots, pandas, polar bears, Naturalist's deer and animals from other mods stay vanilla. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag. Animals the mod already saved keep their traits.
 - The creative herd stick leaves excluded animals alone: it no longer changes their familiarity or tames them.
 - Milk is a species setting: a species entry's `milk` list says which items milk the animal and what they become, so a pack can take a bucket off cows or milk a pig with a bottle. See "Milk" in the README.

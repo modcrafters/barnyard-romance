@@ -24,6 +24,7 @@ public final class HerdFeature implements Feature {
         registrar.provide(HerdApi.class, new HerdApiImpl());
         registrar.listen(AnimalEvent.Born.class, HerdFeature::born);
         registrar.listen(AnimalEvent.Hatched.class, HerdFeature::hatched);
+        registrar.listen(AnimalEvent.Converted.class, HerdFeature::converted);
         // Lambdas, so the holders (and the items in them) load only once the registries are open, and the config is
         // read each time the tab is filled.
         registrar.content(sink -> {
@@ -40,6 +41,15 @@ public final class HerdFeature implements Feature {
             HerdBooks.born(event.mother(), event.young());
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to add {} young to herd books", AnimalSex.speciesId(event.mother()), exception);
+        }
+    }
+
+    // The book follows the animal to its new body; a herd book problem mustn't undo the conversion.
+    private static void converted(AnimalEvent.Converted event) {
+        try {
+            HerdBooks.converted(event.from(), event.to());
+        } catch (RuntimeException exception) {
+            Constants.LOG.warn("Failed to move {} in herd books to its new body", AnimalSex.speciesId(event.from()), exception);
         }
     }
 

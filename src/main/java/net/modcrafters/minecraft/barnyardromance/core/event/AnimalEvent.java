@@ -62,6 +62,11 @@ public interface AnimalEvent {
     record Died(Animal animal, DamageSource source) implements AnimalEvent {
     }
 
+    // The animal was turned into another animal (a sheared mooshroom into a cow). Its record, if it had one, is on the
+    // new animal by now.
+    record Converted(Animal from, Animal to) implements AnimalEvent {
+    }
+
     // The animal ate at a feeding block.
     record FeederMeal(Animal animal) implements AnimalEvent {
     }

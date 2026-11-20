@@ -105,6 +105,27 @@ public final class HerdLedger {
         return true;
     }
 
+    // The animal became another one (a sheared mooshroom is a new cow): its node, its parents' references to it and its
+    // place in every book move to the new id, in the same order.
+    public void renamed(UUID from, UUID to) {
+        Node node = nodes.remove(from);
+        if (node == null) {
+            return;
+        }
+        nodes.put(to, new Node(to, node.mother(), node.father(), node.alive(), node.everFamiliar()));
+        nodes.replaceAll((id, other) -> from.equals(other.mother()) || from.equals(other.father())
+                ? new Node(id, from.equals(other.mother()) ? to : other.mother(), from.equals(other.father()) ? to : other.father(), other.alive(), other.everFamiliar())
+                : other);
+        books.replaceAll((book, members) -> {
+            if (!members.contains(from)) {
+                return members;
+            }
+            Set<UUID> moved = new LinkedHashSet<>();
+            members.forEach(member -> moved.add(from.equals(member) ? to : member));
+            return moved;
+        });
+    }
+
     public void familiar(UUID animal, boolean familiar) {
         Node node = nodes.get(animal);
         if (familiar && node != null && !node.everFamiliar()) {
