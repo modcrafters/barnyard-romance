@@ -291,6 +291,11 @@ public final class FamiliarityActions {
         if (!isProduct(animal, stack)) {
             return false;
         }
+        // A species switched off for shearing has its shears left to vanilla.
+        if (stack.is(Items.SHEARS) && animal instanceof Shearable
+                && !BarnyardConfig.current().shearingFor(AnimalSex.speciesId(animal))) {
+            return false;
+        }
         return denies(animal);
     }
 

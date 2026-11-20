@@ -51,12 +51,18 @@ public final class ShearActions {
         return shearedToday(animal) || refusedToday(animal);
     }
 
+    // Whether an animal's unfamiliarity keeps shears off it. A species switched off for shearing is left to vanilla.
+    public static boolean denied(Animal animal) {
+        return BarnyardConfig.current().shearingFor(AnimalSex.speciesId(animal))
+                && FeaturesRepository.get(FamiliarityApi.class).deniesProducts(animal);
+    }
+
     // For dispensers: blocked, or a sheep with wool that rolls a refusal now.
     public static boolean withholds(Animal animal) {
         if (blocked(animal)) {
             return true;
         }
-        if (animal instanceof Shearable shearable && shearable.readyForShearing() && rollsRefusal(animal)) {
+        if (tracksShearing(animal) && readyForShearing(animal) && rollsRefusal(animal)) {
             refuseShearing(animal, null);
             return true;
         }
@@ -75,7 +81,7 @@ public final class ShearActions {
             }
             return InteractionResult.FAIL;
         }
-        if (!animal.level().isClientSide() && animal instanceof Shearable shearable && shearable.readyForShearing() && rollsRefusal(animal)) {
+        if (!animal.level().isClientSide() && tracksShearing(animal) && readyForShearing(animal) && rollsRefusal(animal)) {
             refuseShearing(animal, player);
             return InteractionResult.FAIL;
         }

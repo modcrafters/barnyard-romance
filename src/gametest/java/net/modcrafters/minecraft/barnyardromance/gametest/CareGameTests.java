@@ -106,6 +106,8 @@ public final class CareGameTests {
             new BreedingGameTests.Case("shearing_a_mooshroom_counts_on_its_cow", 20, CareGameTests::shearingAMooshroomCountsOnItsCow),
             new BreedingGameTests.Case("shearing_a_mooshroom_earns_no_fleece_navidad", 20, CareGameTests::shearingAMooshroomEarnsNoFleeceNavidad),
             new BreedingGameTests.Case("a_dispenser_shearing_a_mooshroom_counts_on_its_cow", 20, CareGameTests::aDispenserShearingAMooshroomCountsOnItsCow),
+            new BreedingGameTests.Case("shearing_switched_off_rolls_no_refusal", 20, CareGameTests::shearingSwitchedOffRollsNoRefusal),
+            new BreedingGameTests.Case("shearing_switched_off_never_asks_for_familiarity", 20, CareGameTests::shearingSwitchedOffNeverAsksForFamiliarity),
             new BreedingGameTests.Case("a_snow_golem_is_left_alone", 20, CareGameTests::aSnowGolemIsLeftAlone),
             new BreedingGameTests.Case("shearing_switched_off_leaves_it_to_vanilla", 20, CareGameTests::shearingSwitchedOffLeavesItToVanilla),
             new BreedingGameTests.Case("mooshroom_stew_costs_familiarity", 20, CareGameTests::mooshroomStewCostsFamiliarity),
@@ -391,6 +393,37 @@ public final class CareGameTests {
             helper.assertTrue(!ShearRule.shearedToday(traits(helper, cow), helper.getLevel().getOverworldClockTime()),
                     "the cow counts as sheared today");
             assertFamiliarity(helper, cow, 0.8);
+        });
+        helper.succeed();
+    }
+
+    // Below refusalBelow, with the roll forced to always refuse (refusalChance 1): a species switched off for shearing
+    // still shears every time, by hand and from a dispenser.
+    public static void shearingSwitchedOffRollsNoRefusal(GameTestHelper helper) {
+        switchedOffMooshroomShears(helper, 0.45);
+    }
+
+    // Under the familiarity threshold the animal would be turned away as not familiar; switched off, it isn't.
+    public static void shearingSwitchedOffNeverAsksForFamiliarity(GameTestHelper helper) {
+        switchedOffMooshroomShears(helper, 0.1);
+    }
+
+    private static void switchedOffMooshroomShears(GameTestHelper helper, double familiarity) {
+        UpkeepGameTests.withConfig("{\"tuning\": {\"refusalBelow\": 0.5, \"refusalChance\": 1.0, \"familiarityThreshold\": 0.3}, "
+                + "\"species\": {\"minecraft:mooshroom\": {\"shearing\": false}}}", () -> {
+            Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), familiarity);
+            helper.assertTrue(!ShearActions.withholds(mooshroom), "a dispenser is withheld from a mooshroom switched off for shearing");
+            helper.assertTrue(!ShearActions.denied(mooshroom), "an unfamiliar mooshroom switched off for shearing is denied shears");
+            Player player = MockPlayers.inLevel(helper);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+            GameTestCompat.useOn(mooshroom, player);
+
+            helper.assertTrue(mooshroom.isRemoved(), "the mooshroom was not sheared");
+            Animal cow = cowNear(helper, mooshroom);
+            long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+            helper.assertTrue(!traits(helper, cow).get(CARE).refusals().refused(Refusable.SHEARING, today), "the shearing was refused");
+            assertFamiliarity(helper, cow, familiarity);
         });
         helper.succeed();
     }

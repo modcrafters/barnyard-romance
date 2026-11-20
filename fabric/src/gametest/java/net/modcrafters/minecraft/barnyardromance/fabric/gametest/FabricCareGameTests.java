@@ -83,6 +83,16 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingSwitchedOffRollsNoRefusal(GameTestHelper helper) {
+        CareGameTests.shearingSwitchedOffRollsNoRefusal(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingSwitchedOffNeverAsksForFamiliarity(GameTestHelper helper) {
+        CareGameTests.shearingSwitchedOffNeverAsksForFamiliarity(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void aSnowGolemIsLeftAlone(GameTestHelper helper) {
         CareGameTests.aSnowGolemIsLeftAlone(helper);
     }

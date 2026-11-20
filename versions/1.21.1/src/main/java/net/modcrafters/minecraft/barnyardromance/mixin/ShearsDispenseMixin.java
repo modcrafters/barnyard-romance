@@ -2,7 +2,6 @@ package net.modcrafters.minecraft.barnyardromance.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
@@ -29,7 +28,7 @@ public class ShearsDispenseMixin {
             )
     )
     private static boolean barnyardromance$familiar(boolean shearable, @Local LivingEntity entity) {
-        return shearable && !(entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.withholds(animal)));
+        return shearable && !(entity instanceof Animal animal && (ShearActions.denied(animal) || ShearActions.withholds(animal)));
     }
 
     // Sheep count themselves in SheepShearMixin; any other tracked animal is counted once NeoForge has sheared it (a
