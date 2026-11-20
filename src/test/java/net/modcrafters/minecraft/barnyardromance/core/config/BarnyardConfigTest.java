@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardConfigTest {
-    // Naturalist hands config its default ignore list when it registers.
+    // Naturalist registers its tracked-by-default species.
     @BeforeAll
     static void installFeatures() {
         BarnyardFeatures.ensureInstalled();
