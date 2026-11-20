@@ -543,6 +543,12 @@ public class HerdBookScreen extends Screen {
     // Draws the status icons right-aligned to `right` and returns where they start.
     private int drawIcons(GuiGraphicsExtractor graphics, HerdEntry entry, int right, int y) {
         int x = right;
+        if (!entry.tracked()) {
+            x -= this.font.width("-");
+            graphics.text(this.font, "-", x, y, FROZEN, false);
+            this.hits.add(new Hit(x, y, x + 6, y + 8, null, Component.translatable("gui.barnyard_romance.herd_book.not_tracked")));
+            return x;
+        }
         if (entry.familiar() != Familiar.FAMILIAR) {
             x -= this.font.width("?");
             graphics.text(this.font, "?", x, y, FROZEN, false);

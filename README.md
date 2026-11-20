@@ -245,7 +245,7 @@ To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:in
 
 ## Herd book
 
-Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
+Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves. An animal whose species isn't tracked any more (see [Which species are tracked](#which-species-are-tracked)) stays in the book with its name and family, but its page says "Not tracked" instead of its status; its record comes back the day the species is switched on again.
 
 **Copies:** a herd book with a herd, a book, a feather and an ink sac, anywhere in the crafting grid, make a copy, and the herd book stays in the grid. The copy is the same herd, not a snapshot: an animal added or removed with either book shows in both. Give one to someone you farm with, or keep a spare in a chest. Each book's tooltip shows its herd's mark, such as "Herd 3FA2C1", which its copies share. A new book with no animals yet has nothing to copy.
 

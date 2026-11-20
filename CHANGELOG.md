@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Herd books show animals whose species isn't tracked any more as not tracked.
 - Shearing a mooshroom or moobloom says it turns it into a cow.
 - The mod now tracks only farm animals, working animals, dogs and cats by default. Foxes, pandas, bees, parrots, Naturalist's deer and every animal from mods Barnyard doesn't support go back to their own behaviour: they breed by vanilla's rules again, return to their normal size and show no stats, and a pregnancy one was carrying waits. They keep what Barnyard saved on them, so switching a species back on brings it all back. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag.
 - Support for Untitled Duck Mod, Friends&Foes, [Let's Do] Meadow, Autumnity and Environmental, each with its own bullet below.

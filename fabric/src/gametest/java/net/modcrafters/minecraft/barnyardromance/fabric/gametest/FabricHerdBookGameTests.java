@@ -183,4 +183,9 @@ public class FabricHerdBookGameTests {
     public void aCopySharesTheHerd(GameTestHelper helper) {
         HerdBookGameTests.aCopySharesTheHerd(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMemberWhoseSpeciesLeftTrackingShowsNotTracked(GameTestHelper helper) {
+        HerdBookGameTests.aMemberWhoseSpeciesLeftTrackingShowsNotTracked(helper);
+    }
 }
