@@ -98,6 +98,10 @@ public final class MilkActions {
             return false;
         }
         BarnyardConfig config = BarnyardConfig.current();
+        // A bowl on a stew animal is the stew's, even when a pack milks some other species with a bowl.
+        if (held.is(Items.BOWL) && givesStew(animal)) {
+            return false;
+        }
         MilkSettings settings = config.milkFor(AnimalSex.speciesId(animal));
         String heldId = itemId(held);
         // A list from the config counts even when empty: it says the species gives no milk, with anything.
@@ -105,6 +109,11 @@ public final class MilkActions {
             return false;
         }
         return settings.entries().stream().noneMatch(entry -> entry.bucket().equals(heldId));
+    }
+
+    // Whether a bowl held out to this animal gives stew: the species' stew setting (built in: the mooshroom).
+    public static boolean givesStew(Animal animal) {
+        return BarnyardConfig.current().stewFor(AnimalSex.speciesId(animal));
     }
 
     private static String itemId(ItemStack stack) {
@@ -309,7 +318,7 @@ public final class MilkActions {
     }
 
     // A refused milking gives nothing and costs no familiarity, but the animal's milking is over until midnight. A
-    // mooshroom's stew counts as milking.
+    // stew animal's stew counts as milking.
     public static void refuseMilking(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
@@ -320,7 +329,7 @@ public final class MilkActions {
         familiarityApi.showRefusal(animal);
     }
 
-    // A bowl held out to a mooshroom: null lets vanilla give the stew. Unfamiliar mooshrooms are turned away earlier.
+    // A bowl held out to an animal that gives stew: null lets the stew come. Unfamiliar animals are turned away earlier.
     public static @Nullable InteractionResult refusesStew(Animal animal, Player player) {
         Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || animal.isBaby()) {

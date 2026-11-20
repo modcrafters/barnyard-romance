@@ -33,7 +33,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.feline.Ocelot;
@@ -319,7 +318,7 @@ public final class FamiliarityActions {
         if (stack.is(Items.SHEARS) && animal instanceof Shearable) {
             return true;
         }
-        if (stack.is(Items.BOWL) && animal instanceof MushroomCow) {
+        if (stack.is(Items.BOWL) && FeaturesRepository.get(MilkApi.class).givesStew(animal)) {
             return true;
         }
         return FeaturesRepository.get(MilkApi.class).milksWith(animal, stack);

@@ -434,6 +434,19 @@ public final class BarnyardConfig {
         return new MilkSettings(SpeciesPresets.milk(speciesId), false);
     }
 
+    // Whether a bowl held out to this species gives mushroom stew: the species entry's "stew", else the built-in
+    // mooshroom. False for a species the mod leaves alone.
+    public boolean stewFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return false;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings != null && settings.stew() != null) {
+            return settings.stew();
+        }
+        return SpeciesPresets.stew(speciesId);
+    }
+
     // Every item that milks some species, in a preset or in any config list, whichever species is on.
     public Set<String> milkingItems() {
         Set<String> items = milkingItems;
@@ -586,7 +599,8 @@ public final class BarnyardConfig {
             Double bellyStart,
             JsonObject eggs,
             Boolean fights,
-            List<MilkEntry> milk
+            List<MilkEntry> milk,
+            Boolean stew
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -612,7 +626,8 @@ public final class BarnyardConfig {
                     optionalDouble(object, "bellyStart"),
                     object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null,
                     object.has("fights") ? bool(object, "fights", false) : null,
-                    milk(object)
+                    milk(object),
+                    object.has("stew") ? bool(object, "stew", false) : null
             );
         }
 
@@ -712,6 +727,9 @@ public final class BarnyardConfig {
                     array.add(item);
                 }
                 object.add("milk", array);
+            }
+            if (stew != null) {
+                object.addProperty("stew", stew);
             }
             return object;
         }

@@ -18,6 +18,10 @@ public interface MilkApi {
     // can add or take away).
     boolean givesMilk(Animal animal);
 
+    // Whether a bowl held out to the animal gives stew (built in: mooshrooms; a species entry's stew setting can add or
+    // take away).
+    boolean givesStew(Animal animal);
+
     // Whether the held item milks this animal: it's on the species' milk list and what it makes exists.
     boolean milksWith(Animal animal, ItemStack held);
 

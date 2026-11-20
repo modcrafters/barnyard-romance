@@ -93,6 +93,11 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aBowlMilkEntryElsewhereLeavesTheMooshroomStew(GameTestHelper helper) {
+        ProductGameTests.aBowlMilkEntryElsewhereLeavesTheMooshroomStew(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void sizedDropsFollowTheRule(GameTestHelper helper) {
         ProductGameTests.sizedDropsFollowTheRule(helper);
     }

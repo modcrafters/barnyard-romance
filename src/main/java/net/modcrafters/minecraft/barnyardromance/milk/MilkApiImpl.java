@@ -24,6 +24,11 @@ final class MilkApiImpl implements MilkApi {
     }
 
     @Override
+    public boolean givesStew(Animal animal) {
+        return MilkActions.givesStew(animal);
+    }
+
+    @Override
     public boolean milksWith(Animal animal, ItemStack held) {
         return MilkActions.milkFor(animal, held).isPresent();
     }

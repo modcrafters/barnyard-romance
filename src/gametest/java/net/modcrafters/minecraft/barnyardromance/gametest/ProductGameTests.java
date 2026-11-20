@@ -88,6 +88,7 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("birth_starts_milk", 200, ProductGameTests::birthStartsMilk),
             new BreedingGameTests.Case("wild_cow_gets_one_milk_window", 20, ProductGameTests::wildCowGetsOneMilkWindow),
             new BreedingGameTests.Case("mooshroom_bowl_stays_vanilla", 20, ProductGameTests::mooshroomBowlStaysVanilla),
+            new BreedingGameTests.Case("a_bowl_milk_entry_elsewhere_leaves_the_mooshroom_stew", 20, ProductGameTests::aBowlMilkEntryElsewhereLeavesTheMooshroomStew),
             new BreedingGameTests.Case("sized_drops_follow_the_rule", 20, ProductGameTests::sizedDropsFollowTheRule),
             new BreedingGameTests.Case("meat_keeps_its_curve", 20, ProductGameTests::meatKeepsItsCurve),
             new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool),
@@ -369,6 +370,23 @@ public final class ProductGameTests {
         Player player = FoodGameTests.holding(helper, Items.BOWL);
         GameTestCompat.interact(mooshroom, player);
         helper.assertTrue(player.getMainHandItem().is(Items.MUSHROOM_STEW), "a dry mooshroom gave " + player.getMainHandItem());
+        helper.succeed();
+    }
+
+    // A pack that milks a pig with a bowl makes the bowl a milking item everywhere; the mooshroom's stew must not be
+    // swallowed as a bowl its milk list doesn't have.
+    public static void aBowlMilkEntryElsewhereLeavesTheMooshroomStew(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:pig\":{\"milk\":"
+                    + "[{\"bucket\":\"minecraft:bowl\",\"result\":\"minecraft:mushroom_stew\"}]}}}"));
+            Animal mooshroom = mother(helper, EntityTypes.MOOSHROOM, 0.5);
+            Player player = FoodGameTests.holding(helper, Items.BOWL);
+            GameTestCompat.interact(mooshroom, player);
+            helper.assertTrue(player.getMainHandItem().is(Items.MUSHROOM_STEW), "a familiar mooshroom gave " + player.getMainHandItem());
+        } finally {
+            BarnyardConfig.set(before);
+        }
         helper.succeed();
     }
 

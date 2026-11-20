@@ -96,6 +96,11 @@ final class SpeciesPresets {
         return MILK.getOrDefault(speciesId, List.of());
     }
 
+    // Bowls give mushroom stew from the mooshroom; a species entry's "stew" can add or take away.
+    static boolean stew(String speciesId) {
+        return "minecraft:mooshroom".equals(speciesId);
+    }
+
     // Every item a built-in entry milks with, taken from the rows above.
     static Set<String> milkingItems() {
         return MILK.values().stream().flatMap(List::stream).map(MilkEntry::bucket).collect(java.util.stream.Collectors.toSet());

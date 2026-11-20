@@ -537,6 +537,24 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void stewPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.stewFor("minecraft:mooshroom"));
+        assertFalse(config.stewFor("minecraft:cow"));
+    }
+
+    @Test
+    void stewFromConfig() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"stew\":true}}}");
+
+        assertTrue(config.stewFor("minecraft:cow"));
+        assertTrue(BarnyardConfig.parse(config.toJson()).stewFor("minecraft:cow"));
+        assertFalse(BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"stew\":false}}}").stewFor("minecraft:mooshroom"));
+        assertFalse(BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"enabled\":false}}}").stewFor("minecraft:mooshroom"));
+    }
+
+    @Test
     void chickenLaysByDefault() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 
