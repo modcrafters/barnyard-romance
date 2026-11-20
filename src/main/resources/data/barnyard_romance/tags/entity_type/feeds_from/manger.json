@@ -9,6 +9,10 @@
     "minecraft:llama",
     "minecraft:camel",
     {
+      "id": "friendsandfoes:moobloom",
+      "required": false
+    },
+    {
       "id": "naturalist:deer",
       "required": false
     },

@@ -662,6 +662,24 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void moobloomPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+        String id = "friendsandfoes:moobloom";
+
+        assertTrue(config.speciesEnabled(id));
+        assertEquals(config.pregnancyRange("minecraft:cow"), config.pregnancyRange(id));
+        assertEquals(config.litterRange("minecraft:cow"), config.litterRange(id));
+        assertEquals(new Range(60_000, 72_000), config.pregnancyRange(id));
+        assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
+                new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
+                java.util.Set.copyOf(config.milkFor(id).entries()));
+        assertTrue(config.stewFor(id));
+        assertTrue(config.fightsFor(id));
+        assertFalse(config.speciesEnabled("friendsandfoes:crab"));
+        assertFalse(config.speciesEnabled("friendsandfoes:penguin"));
+    }
+
+    @Test
     void naturalistLivestockIsTracked() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

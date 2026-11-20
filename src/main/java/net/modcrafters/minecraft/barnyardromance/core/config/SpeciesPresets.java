@@ -21,6 +21,7 @@ final class SpeciesPresets {
     private static final Map<String, Preset> PRESETS = Map.ofEntries(
             Map.entry("minecraft:cow", CATTLE),
             Map.entry("minecraft:mooshroom", CATTLE),
+            Map.entry("friendsandfoes:moobloom", CATTLE),
             Map.entry("minecraft:horse", EQUINE),
             Map.entry("minecraft:donkey", EQUINE),
             Map.entry("minecraft:llama", CATTLE),
@@ -63,7 +64,7 @@ final class SpeciesPresets {
     private static final Set<String> FIGHTERS = Set.of(
             "minecraft:cow", "minecraft:mooshroom", "minecraft:sheep", "minecraft:goat", "minecraft:pig", "minecraft:rabbit",
             "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich",
-            "untitledduckmod:duck", "untitledduckmod:goose");
+            "untitledduckmod:duck", "untitledduckmod:goose", "friendsandfoes:moobloom");
 
     static boolean fights(String speciesId) {
         return FIGHTERS.contains(speciesId);
@@ -103,6 +104,7 @@ final class SpeciesPresets {
     private static final Map<String, List<MilkEntry>> MILK = Map.of(
             "minecraft:cow", COW_MILK,
             "minecraft:mooshroom", COW_MILK,
+            "friendsandfoes:moobloom", COW_MILK,
             "minecraft:goat", GOAT_MILK,
             "minecraft:sheep", SHEEP_MILK);
 
@@ -110,9 +112,10 @@ final class SpeciesPresets {
         return MILK.getOrDefault(speciesId, List.of());
     }
 
-    // Bowls give mushroom stew from the mooshroom; a species entry's "stew" can add or take away.
+    // Bowls give stew from the mooshroom (mushroom stew) and the moobloom (suspicious stew); a species entry's "stew"
+    // can add or take away.
     static boolean stew(String speciesId) {
-        return "minecraft:mooshroom".equals(speciesId);
+        return "minecraft:mooshroom".equals(speciesId) || "friendsandfoes:moobloom".equals(speciesId);
     }
 
     // Every item a built-in entry milks with, taken from the rows above.

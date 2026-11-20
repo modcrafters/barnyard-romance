@@ -47,6 +47,12 @@ class LaddersTest {
     }
 
     @Test
+    void theMoobloomHasItsOwnLadder() {
+        assertEquals(Optional.of("moobloom"), Ladders.ladderFor("friendsandfoes:moobloom"));
+        assertEquals(Optional.empty(), Ladders.ladderFor("friendsandfoes:crab"));
+    }
+
+    @Test
     void twinsCrossTheStepOnce() {
         assertEquals(List.of(10), Ladders.crossed(9, 11));
         assertEquals(List.of(), Ladders.crossed(10, 11));

@@ -16,6 +16,8 @@ public final class Ladders {
     private static final Set<String> NATURALIST = Set.of("deer", "boar", "duck", "turkey", "ostrich");
     // Untitled Duck Mod's birds, which share ducks' ladder with Naturalist's.
     private static final Set<String> UNTITLED_DUCK_MOD = Set.of("duck", "goose");
+    // Friends&Foes' flower cow.
+    private static final Set<String> FRIENDS_AND_FOES = Set.of("moobloom");
     private static final Map<String, String> SHARED = Map.of(
             "minecraft:donkey", "horse",
             "minecraft:mule", "horse",
@@ -37,6 +39,7 @@ public final class Ladders {
             case "minecraft" -> VANILLA;
             case "naturalist" -> NATURALIST;
             case "untitledduckmod" -> UNTITLED_DUCK_MOD;
+            case "friendsandfoes" -> FRIENDS_AND_FOES;
             default -> Set.of();
         };
         return ladders.contains(path) ? Optional.of(path) : Optional.empty();

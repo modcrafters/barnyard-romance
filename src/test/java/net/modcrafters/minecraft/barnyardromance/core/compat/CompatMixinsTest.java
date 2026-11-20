@@ -30,6 +30,12 @@ class CompatMixinsTest {
     }
 
     @Test
+    void theMoobloomMixinComesWithItsEntityClass() {
+        List<String> mixins = CompatMixins.mixinsFor("com/faboslav/friendsandfoes/common/entity/MoobloomEntity.class"::equals);
+        assertEquals(Set.of("MoobloomConversionMixin"), Set.copyOf(mixins));
+    }
+
+    @Test
     void theTestClassLoaderHasNoModClassesSoNothingIsListed() {
         ClassLoader loader = CompatMixinsTest.class.getClassLoader();
         assertTrue(CompatMixins.mixinsFor(probe -> loader.getResource(probe) != null).isEmpty());

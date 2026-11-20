@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Works with Friends&Foes: its moobloom is tracked like a cow. It gives milk to a bucket and suspicious stew to a bowl by Barnyard Romance's rules, males fight, it eats from a manger, and it has a breeding ladder. A moobloom sheared into a cow keeps its sex, size, familiarity, pregnancy and place in the herd book instead of the book marking a death, and the cow counts as sheared today. Its crab and penguin stay untracked.
 - Works with Untitled Duck Mod: its ducks and geese are tracked like other farm birds. They lay by Barnyard Romance's rules, in a nesting box with fertilized eggs, instead of dropping an egg on the mod's own timer, and its thrown eggs no longer hatch ducklings. Seeds no longer breed them, and fish or kelp no longer tame them: familiarity does, and the bird says to feed it every day. A pack that switches a bird off gets the mod's own egg timer, hatching and taming back.
 - Wild trader llamas are bigger and stronger, and their babies are llamas.
 - Once-a-day shearing, and its familiarity cost, now covers mooshrooms and any tracked animal that can be sheared, not only sheep. A sheared mooshroom's cow counts as sheared today. A species entry's `"shearing": false` leaves an animal's shearing to vanilla.
