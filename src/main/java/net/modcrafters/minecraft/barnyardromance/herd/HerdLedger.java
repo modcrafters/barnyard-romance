@@ -57,10 +57,22 @@ public final class HerdLedger {
         if (known == null) {
             nodes.put(animal.id(), animal);
         } else {
-            Node updated = known.withParents(animal.mother(), animal.father());
+            Node updated = known.withParents(parent(known.mother(), animal.mother()), parent(known.father(), animal.father()));
             nodes.put(animal.id(), animal.everFamiliar() ? updated.familiar() : updated);
         }
         return books.computeIfAbsent(book, key -> new LinkedHashSet<>()).add(animal.id());
+    }
+
+    // A parent the ledger knows is kept over one it doesn't: an animal's own record can still name a parent's old id
+    // after she was renamed (see renamed), and taking that would cut her off from her young.
+    private @Nullable UUID parent(@Nullable UUID known, @Nullable UUID incoming) {
+        if (incoming != null && nodes.containsKey(incoming)) {
+            return incoming;
+        }
+        if (known != null && nodes.containsKey(known)) {
+            return known;
+        }
+        return incoming != null ? incoming : known;
     }
 
     // Young join every book their mother is in at the moment of birth; the father doesn't matter.

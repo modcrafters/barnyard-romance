@@ -246,6 +246,46 @@ class HerdLedgerTest {
         assertEquals(Set.of(id(7), id(2)), ledger.members(BOOK));
     }
 
+    // The calf's own record still names the mother's old id after she was renamed. Registering it into another book
+    // keeps the mother the ledger knows, so she isn't pruned from the first book when she dies.
+    @Test
+    void registeringAfterARenameKeepsTheKnownMother() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.born(id(1), List.of(child(2, 1, -1)));
+        ledger.renamed(id(1), id(7));
+
+        ledger.register(OTHER_BOOK, child(2, 1, -1));
+        ledger.died(id(7));
+
+        assertEquals(id(7), ledger.node(id(2)).mother());
+        assertTrue(ledger.isMember(BOOK, id(7)));
+    }
+
+    @Test
+    void registeringKeepsAKnownParentOverAMissingOne() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.register(BOOK, child(2, 1, -1));
+
+        ledger.register(OTHER_BOOK, child(2, -1, -1));
+        ledger.register(OTHER_BOOK, child(2, 5, -1));
+
+        assertEquals(id(1), ledger.node(id(2)).mother());
+    }
+
+    @Test
+    void registeringTakesANewParentTheLedgerKnows() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.register(BOOK, node(3));
+        ledger.register(BOOK, child(2, 1, -1));
+
+        ledger.register(OTHER_BOOK, child(2, 3, -1));
+
+        assertEquals(id(3), ledger.node(id(2)).mother());
+    }
+
     @Test
     void renamedKeepsTheOrderTheyJoinedIn() {
         HerdLedger ledger = new HerdLedger();
