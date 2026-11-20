@@ -21,7 +21,7 @@ import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShearsItem;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -72,7 +72,7 @@ public final class ShearActions {
     // Shears on a sheep already sheared today, or one that won't be sheared: refused, and the player is told why. The
     // hand roll happens here only; NeoForge's shears check blocked afterwards, so one click never rolls twice.
     public static @Nullable InteractionResult refuses(Animal animal, Player player, ItemStack stack) {
-        if (!stack.is(Items.SHEARS) || animal.isBaby()) {
+        if (!(stack.getItem() instanceof ShearsItem) || animal.isBaby()) {
             return null;
         }
         if (shearedToday(animal) || refusedToday(animal)) {

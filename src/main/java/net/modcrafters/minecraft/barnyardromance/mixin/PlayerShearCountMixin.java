@@ -6,7 +6,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShearsItem;
 //? if >=1.21.11
 import net.minecraft.world.phys.Vec3;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
@@ -35,7 +35,7 @@ public class PlayerShearCountMixin {
         Player player = (Player) (Object) this;
         barnyardromance$shorn = null;
         if (player.level().isClientSide() || !(entity instanceof Animal animal) || animal instanceof Sheep
-                || !player.getItemInHand(hand).is(Items.SHEARS) || !ShearActions.tracksShearing(animal)) {
+                || !(player.getItemInHand(hand).getItem() instanceof ShearsItem) || !ShearActions.tracksShearing(animal)) {
             return;
         }
         barnyardromance$shorn = animal;

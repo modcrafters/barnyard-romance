@@ -42,6 +42,7 @@ import net.minecraft.world.entity.animal.feline.Ocelot;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
@@ -312,7 +313,7 @@ public final class FamiliarityActions {
             return false;
         }
         // A species switched off for shearing has its shears left to vanilla.
-        if (stack.is(Items.SHEARS) && animal instanceof Shearable
+        if (stack.getItem() instanceof ShearsItem && animal instanceof Shearable
                 && !BarnyardConfig.current().shearingFor(AnimalSex.speciesId(animal))) {
             return false;
         }
@@ -340,7 +341,7 @@ public final class FamiliarityActions {
         if (animal.isBaby()) {
             return false;
         }
-        if (stack.is(Items.SHEARS) && animal instanceof Shearable) {
+        if (stack.getItem() instanceof ShearsItem && animal instanceof Shearable) {
             return true;
         }
         if (stack.is(Items.BOWL) && FeaturesRepository.get(MilkApi.class).givesStew(animal)) {
