@@ -128,7 +128,7 @@ final class SpeciesPresets {
     }
 
     // Bowls give stew from the mooshroom (mushroom stew) and the moobloom (suspicious stew); a species entry's "stew"
-    // can add or take away.
+    // puts that existing bowl interaction under the rules (or leaves it to the mod), it doesn't make an animal give stew.
     static boolean stew(String speciesId) {
         return "minecraft:mooshroom".equals(speciesId) || "friendsandfoes:moobloom".equals(speciesId);
     }

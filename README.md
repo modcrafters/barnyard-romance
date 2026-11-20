@@ -184,6 +184,17 @@ Only these species are tracked by default:
 - Vanilla working animals: horse, donkey, mule, llama, trader llama and camel.
 - Vanilla dogs and cats: wolf and cat.
 - Naturalist's boar, duck, turkey and ostrich, when Naturalist is installed.
+- Animals from the farm-animal mods below, when each is installed.
+
+| Mod | Animals | Loaders |
+| --- | --- | --- |
+| [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod) | Duck, goose | NeoForge 1.21.1, NeoForge and Fabric 26.3 |
+| [Friends&Foes](https://modrinth.com/mod/friends-and-foes) | Moobloom (crab and penguin stay untracked) | NeoForge 1.21.1, NeoForge and Fabric 26.3 |
+| [Let's Do] [Meadow](https://modrinth.com/mod/lets-do-meadow) | Water buffalo, wooly cow (highland, umbra and warped) | NeoForge 1.21.1 |
+| [Autumnity](https://modrinth.com/mod/autumnity) | Turkey | NeoForge 1.21.1 |
+| [Environmental](https://modrinth.com/mod/environmental) | Duck, yak | NeoForge 1.21.1 |
+
+Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight, eat from a manger and are sheared by the usual rules. A pack that switches one of these animals off gets the mod's own behaviour back.
 
 Wild animals such as foxes, ocelots, pandas, polar bears, bees and parrots, and every animal from another mod, stay vanilla unless a pack opts them in. A mod or data pack adds animals to the entity tag `barnyard_romance:included` to opt them in, and a pack can also give a species entry `"enabled": true`.
 
@@ -198,9 +209,18 @@ The rules run in this order, and the first that applies decides:
 
 Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
 
+A breeding ladder shows only for a species that is tracked. The limit: a species switched on only by the `included` tag gets no ladder, and one excluded only by the tag keeps its ladder.
+
+### Species settings: stew and shearing
+
+Besides `milk` (see below), a species entry has two more switches:
+
+- `"stew": true` puts the animal's own bowl interaction under Barnyard Romance's rules: it turns the bowl away from an unfamiliar animal, and it costs familiarity like milking does. Vanilla's mooshroom and Friends&Foes' moobloom have one built in. The setting doesn't make an animal that gives no stew give some, and `"stew": false` leaves the bowl to vanilla or the mod.
+- `"shearing"` is on for every tracked animal that can be sheared: it is once a day, costs familiarity, and the animal can refuse. `"shearing": false` leaves shearing entirely to vanilla or the mod.
+
 ## Milk
 
-Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows and mooshrooms into milk, goats into goat milk and sheep into sheep milk, and Meadow's wooden bucket does the same into its wooden milk buckets (these entries only count when Meadow is installed). Other species give no milk.
+Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows and mooshrooms into milk, goats into goat milk and sheep into sheep milk, and Meadow's wooden bucket does the same into its wooden milk buckets (these entries only count when Meadow is installed). Other species give no milk. With Meadow installed, its wooden bucket follows these rules on every animal that has them, and a `milk` list that leaves it out closes it on that species.
 
 A `milk` list in a species entry replaces the built-in one, it doesn't add to it. An item that milks some species but isn't in this species' list does nothing at all on it, never vanilla's milking, so the wooden bucket can be taken off cows:
 

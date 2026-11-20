@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- The mod now tracks only farm animals, working animals, dogs and cats by default. Foxes, pandas, bees, parrots, Naturalist's deer and every animal from mods Barnyard doesn't support go back to their own behaviour, and keep what Barnyard saved on them if switched back on. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag.
+- Support for Untitled Duck Mod, Friends&Foes, [Let's Do] Meadow, Autumnity and Environmental, each with its own bullet below.
 - Works with Autumnity and Environmental (NeoForge 1.21.1): Autumnity's turkey and Environmental's duck are tracked like other farm birds. They lay by Barnyard Romance's rules, in a nesting box with fertilized eggs, instead of dropping an egg on the mod's own timer, their breeding food no longer breeds them, their thrown eggs no longer hatch chicks of their own, and they eat from a bird feeder. Environmental's yak is tracked like a cow: it gives milk to a bucket by Barnyard Romance's rules, is sheared once a day by hand or from a dispenser, males fight, it eats from a manger, and it has a breeding ladder. Environmental's extra piglets and hoglets no longer join a litter Barnyard Romance already set, and a pack that switches pigs or hoglins off gets them back.
 - Naturalist's thrown duck eggs no longer hatch ducklings of their own while ducks lay by Barnyard Romance's rules, as the other farm birds' eggs already didn't. A duck a pack switches off keeps the mod's hatching.
 - Works with Let's Do Meadow: its water buffalo and wooly cows (highland, umbra and warped) are tracked like cattle. They give milk by Barnyard Romance's rules, males fight, they eat from a manger, wooly cows are sheared once a day, and water buffalo and highland cattle each have a breeding ladder. Meadow's wooden bucket now follows the milking rules on every animal that has them, instead of milking without limit: bulls, dry cows and cows already milked today turn it away, a warped cow still gives warped milk, and a pack that takes the wooden bucket off cows' milk list closes it.
@@ -15,13 +17,15 @@ After publishing, the action prepares the next development version and archives 
 - Works with Untitled Duck Mod: its ducks and geese are tracked like other farm birds. They lay by Barnyard Romance's rules, in a nesting box with fertilized eggs, instead of dropping an egg on the mod's own timer, and its thrown eggs no longer hatch ducklings. Its ducks count for the duck breeding ladder, and geese have a ladder of their own. Seeds no longer breed them, and fish or kelp no longer tame them: familiarity does, and the bird says to feed it every day. A pack that switches a bird off gets the mod's own egg timer, hatching and taming back.
 - Wild trader llamas are bigger and stronger, and their babies are llamas.
 - Once-a-day shearing, and its familiarity cost, now covers mooshrooms and any tracked animal that can be sheared, not only sheep. A sheared mooshroom's cow counts as sheared today. A species entry's `"shearing": false` leaves an animal's shearing to vanilla.
-- A mooshroom sheared into a cow keeps its record: its sex, size, familiarity, pregnancy and place in the herd book carry over to the cow instead of the book marking a death.
-- The mod now tracks only farm animals, working animals, dogs and cats by default: foxes, ocelots, pandas, polar bears, Naturalist's deer and animals from other mods stay vanilla. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag. Animals the mod already saved keep their traits.
+- A mooshroom (or moobloom) sheared into a cow keeps its record: its sex, size, familiarity, pregnancy and place in the herd book carry over to the cow instead of the book marking a death.
 - The creative herd stick leaves excluded animals alone: it no longer changes their familiarity or tames them.
-- Milk is a species setting: a species entry's `milk` list says which items milk the animal and what they become, so a pack can take a bucket off cows or milk a pig with a bottle. See "Milk" in the README.
+- Milk is a species setting: a species entry's `milk` list says which items milk the animal and what they become, so a pack can take a bucket off cows or milk a pig with a bottle. Stew and shearing are species settings too (`stew`, `shearing`), and packs can add any farm animal. See "Milk" and "Species settings" in the README.
+- New breeding ladders for geese, mooblooms, water buffalo, highland cattle and yaks, and ladders hide for species that aren't tracked. A species switched on only by the `included` tag gets no ladder, and one excluded only by the tag keeps its ladder.
 
 ### API
 
+- The `barnyard_romance:included` entity tag opts a mod's animals in.
+- The `barnyard_romance:species_tracked` load condition lets a pack's data load only while a species is tracked.
 - `MilkApi` has `milksWith` and `blocksMilkingItem`, for what milks an animal under its species' milk list.
 - A Milking listener that empties the result in place, instead of cancelling, now counts as cancelling: the player keeps the bucket.
 - A listener that throws an error, such as a class missing because a mod isn't installed, is logged and skipped like one that throws an exception.
