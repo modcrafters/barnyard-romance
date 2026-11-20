@@ -178,6 +178,7 @@
   "message.barnyard_romance.too_shy": "Sneak so you don't scare this animal.",
   "message.barnyard_romance.wont_eat": "It won't eat that.",
   "message.barnyard_romance.wants_meat": "Feed it meat to earn its trust.",
+  "message.barnyard_romance.wants_daily_feed": "Feed it every day to earn its trust.",
   "message.barnyard_romance.not_familiar": "It doesn't know you well enough yet.",
   "message.barnyard_romance.fed_again_in": "Can be fed again in %s.",
   "message.barnyard_romance.milk.male": "Only mothers give milk.",

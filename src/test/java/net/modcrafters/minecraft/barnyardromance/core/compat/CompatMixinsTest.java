@@ -24,6 +24,12 @@ class CompatMixinsTest {
     }
 
     @Test
+    void untitledDuckModMixinsComeWithItsWaterfowlClass() {
+        List<String> mixins = CompatMixins.mixinsFor("net/untitledduckmod/common/entity/WaterfowlEntity.class"::equals);
+        assertEquals(Set.of("UntitledDuckEggTimerMixin", "UntitledDuckThrownEggMixin"), Set.copyOf(mixins));
+    }
+
+    @Test
     void theTestClassLoaderHasNoModClassesSoNothingIsListed() {
         ClassLoader loader = CompatMixinsTest.class.getClassLoader();
         assertTrue(CompatMixins.mixinsFor(probe -> loader.getResource(probe) != null).isEmpty());

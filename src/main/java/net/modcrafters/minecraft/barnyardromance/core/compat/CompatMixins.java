@@ -10,10 +10,14 @@ final class CompatMixins {
     private CompatMixins() {
     }
 
+    private static final String UNTITLED_DUCK_MOD = "net/untitledduckmod/common/entity/WaterfowlEntity.class";
+
     // Mixin (a name in the mixin package) -> the class file of its mod that must be there for the mixin to be listed.
     private static final Map<String, String> PROBES = Map.of(
             "NaturalistDuckEggTimerMixin", "com/crispytwig/naturalist/world/entity/animal/duck/Duck.class",
-            "NaturalistOstrichHatchMixin", "com/crispytwig/naturalist/world/entity/animal/duck/Duck.class"
+            "NaturalistOstrichHatchMixin", "com/crispytwig/naturalist/world/entity/animal/duck/Duck.class",
+            "UntitledDuckEggTimerMixin", UNTITLED_DUCK_MOD,
+            "UntitledDuckThrownEggMixin", UNTITLED_DUCK_MOD
     );
 
     // The mixins whose probe class file is present.

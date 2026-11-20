@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.core.config;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 // Built-in pregnancy and litter ranges for vanilla mammals and Naturalist's livestock. A user's species entry beats
@@ -52,6 +53,8 @@ final class SpeciesPresets {
         return switch (speciesId) {
             case "minecraft:chicken", "naturalist:turkey" -> EggSettings.CHICKEN;
             case "naturalist:duck" -> EggSettings.CHICKEN.withPlainEgg("naturalist:duck_egg");
+            case "untitledduckmod:duck" -> EggSettings.CHICKEN.withPlainEgg("untitledduckmod:duck_egg");
+            case "untitledduckmod:goose" -> EggSettings.CHICKEN.withPlainEgg("untitledduckmod:goose_egg");
             default -> EggSettings.NONE;
         };
     }
@@ -59,7 +62,8 @@ final class SpeciesPresets {
     // Livestock males fight their rivals; pets, hunters and everything else are left out unless a species entry says.
     private static final Set<String> FIGHTERS = Set.of(
             "minecraft:cow", "minecraft:mooshroom", "minecraft:sheep", "minecraft:goat", "minecraft:pig", "minecraft:rabbit",
-            "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich");
+            "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich",
+            "untitledduckmod:duck", "untitledduckmod:goose");
 
     static boolean fights(String speciesId) {
         return FIGHTERS.contains(speciesId);
@@ -71,6 +75,16 @@ final class SpeciesPresets {
 
     static boolean tames(String speciesId) {
         return TAMES.contains(speciesId);
+    }
+
+    // The item tag of food the species' own mod tames with. Familiarity tames them instead, so the mod's food is turned
+    // down (FamiliarityActions.blocksVanillaTaming).
+    static Optional<String> tamingFoodTag(String speciesId) {
+        return switch (speciesId) {
+            case "untitledduckmod:duck" -> Optional.of("untitledduckmod:duck_taming_food");
+            case "untitledduckmod:goose" -> Optional.of("untitledduckmod:goose_taming_food");
+            default -> Optional.empty();
+        };
     }
 
     private static final String BUCKET = "minecraft:bucket";

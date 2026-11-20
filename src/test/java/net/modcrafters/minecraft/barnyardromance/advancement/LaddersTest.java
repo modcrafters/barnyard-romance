@@ -41,6 +41,12 @@ class LaddersTest {
     }
 
     @Test
+    void duckModBirdsShareTheDuckAndGooseLadders() {
+        assertEquals(Optional.of("duck"), Ladders.ladderFor("untitledduckmod:duck"));
+        assertEquals(Optional.of("goose"), Ladders.ladderFor("untitledduckmod:goose"));
+    }
+
+    @Test
     void twinsCrossTheStepOnce() {
         assertEquals(List.of(10), Ladders.crossed(9, 11));
         assertEquals(List.of(), Ladders.crossed(10, 11));

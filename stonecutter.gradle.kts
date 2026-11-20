@@ -39,6 +39,7 @@ stonecutter parameters {
             for (type in listOf("AbstractHorse", "Donkey", "Horse", "Llama", "TraderLlama"))
                 replace("$animal.horse.$type;", "$animal.equine.$type;")
             replace("net.minecraft.world.entity.projectile.ThrownEgg;", "net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;")
+            replace("net.minecraft.world.entity.projectile.ThrowableItemProjectile;", "net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;")
             // The EntityType constants moved to EntityTypes. The import keeps a marker so it can turn back.
             replace("import net.minecraft.world.entity.EntityType /* EntityTypes */;", "import net.minecraft.world.entity.EntityTypes;")
         }

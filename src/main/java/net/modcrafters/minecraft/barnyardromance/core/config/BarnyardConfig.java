@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -300,6 +301,11 @@ public final class BarnyardConfig {
     // Animals that stay wild under their mod's own feeding, so familiarity tames them.
     public boolean tamesThroughFamiliarity(String speciesId) {
         return SpeciesPresets.tames(speciesId) && speciesEnabled(speciesId);
+    }
+
+    // The item tag of food this species' mod tames it with, for a species that familiarity tames instead.
+    public Optional<String> tamingFoodTag(String speciesId) {
+        return tamesThroughFamiliarity(speciesId) ? SpeciesPresets.tamingFoodTag(speciesId) : Optional.empty();
     }
 
     public List<String> exclude() {

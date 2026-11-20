@@ -26,6 +26,9 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -50,6 +53,7 @@ public final class FamiliarityActions {
     public static final Text TOO_SHY = Text.of("message.barnyard_romance.too_shy");
     public static final Text WONT_EAT = Text.of("message.barnyard_romance.wont_eat");
     public static final Text WANTS_MEAT = Text.of("message.barnyard_romance.wants_meat");
+    public static final Text WANTS_DAILY_FEED = Text.of("message.barnyard_romance.wants_daily_feed");
     public static final Text NOT_FAMILIAR = Text.of("message.barnyard_romance.not_familiar");
 
     private FamiliarityActions() {
@@ -223,14 +227,30 @@ public final class FamiliarityActions {
         return animal.level().isClientSide() || !BarnyardEvents.TAMING.post(new Taming(animal, player, kind)).isCancelled();
     }
 
+    // Their mod's taming food would tame these behind familiarity's back: bones for a wild wolf, and for the species
+    // that SpeciesPresets gives a taming food tag (Untitled Duck Mod's birds) an item from it.
     public static InteractionResult blocksVanillaTaming(Animal animal, Player player, ItemStack stack) {
-        if (!(animal instanceof Wolf wolf) || wolf.isTame() || !stack.is(Items.BONE) || Tracked.traits(animal).isEmpty()) {
+        if (!(animal instanceof TamableAnimal pet) || pet.isTame() || Tracked.traits(animal).isEmpty()) {
+            return null;
+        }
+        Text message;
+        if (animal instanceof Wolf && stack.is(Items.BONE)) {
+            message = WANTS_MEAT;
+        } else if (isTamingFood(animal, stack)) {
+            message = WANTS_DAILY_FEED;
+        } else {
             return null;
         }
         if (!animal.level().isClientSide()) {
-            VersionCompat.sendOverlay(player, TextComponents.of(WANTS_MEAT));
+            VersionCompat.sendOverlay(player, TextComponents.of(message));
         }
         return InteractionResult.CONSUME;
+    }
+
+    private static boolean isTamingFood(Animal animal, ItemStack stack) {
+        return BarnyardConfig.current().tamingFoodTag(AnimalSex.speciesId(animal))
+                .filter(tag -> stack.is(TagKey.create(Registries.ITEM, Identifier.parse(tag))))
+                .isPresent();
     }
 
     private static void scare(Animal animal, Player player) {

@@ -640,6 +640,28 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void duckModBirdsAreTrackedAndLay() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String bird : List.of("duck", "goose")) {
+            String id = "untitledduckmod:" + bird;
+            assertTrue(config.speciesEnabled(id), id);
+            assertTrue(config.eggsFor(id).enabled(), id);
+            assertEquals("untitledduckmod:" + bird + "_egg", config.eggsFor(id).plainEgg(), id);
+            assertTrue(config.fightsFor(id), id);
+            assertTrue(config.tamesThroughFamiliarity(id), id);
+        }
+        assertFalse(config.speciesEnabled("untitledduckmod:some_future_bird"));
+    }
+
+    @Test
+    void duckModBirdsHaveTamingFoodTags() {
+        assertEquals(java.util.Optional.of("untitledduckmod:duck_taming_food"), SpeciesPresets.tamingFoodTag("untitledduckmod:duck"));
+        assertEquals(java.util.Optional.of("untitledduckmod:goose_taming_food"), SpeciesPresets.tamingFoodTag("untitledduckmod:goose"));
+        assertEquals(java.util.Optional.empty(), SpeciesPresets.tamingFoodTag("naturalist:duck"));
+    }
+
+    @Test
     void naturalistLivestockIsTracked() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

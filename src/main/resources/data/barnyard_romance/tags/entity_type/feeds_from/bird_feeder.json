@@ -9,6 +9,14 @@
     {
       "id": "naturalist:turkey",
       "required": false
+    },
+    {
+      "id": "untitledduckmod:duck",
+      "required": false
+    },
+    {
+      "id": "untitledduckmod:goose",
+      "required": false
     }
   ]
 }
