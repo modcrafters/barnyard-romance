@@ -43,6 +43,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Shearable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -98,6 +104,8 @@ public final class CareGameTests {
             new BreedingGameTests.Case("shearing_costs_familiarity", 20, CareGameTests::shearingCostsFamiliarity),
             new BreedingGameTests.Case("dispenser_shearing_costs_familiarity", 20, CareGameTests::dispenserShearingCostsFamiliarity),
             new BreedingGameTests.Case("shearing_a_mooshroom_counts_on_its_cow", 20, CareGameTests::shearingAMooshroomCountsOnItsCow),
+            new BreedingGameTests.Case("shearing_a_mooshroom_earns_no_fleece_navidad", 20, CareGameTests::shearingAMooshroomEarnsNoFleeceNavidad),
+            new BreedingGameTests.Case("a_dispenser_shearing_a_mooshroom_counts_on_its_cow", 20, CareGameTests::aDispenserShearingAMooshroomCountsOnItsCow),
             new BreedingGameTests.Case("a_snow_golem_is_left_alone", 20, CareGameTests::aSnowGolemIsLeftAlone),
             new BreedingGameTests.Case("shearing_switched_off_leaves_it_to_vanilla", 20, CareGameTests::shearingSwitchedOffLeavesItToVanilla),
             new BreedingGameTests.Case("mooshroom_stew_costs_familiarity", 20, CareGameTests::mooshroomStewCostsFamiliarity),
@@ -323,6 +331,37 @@ public final class CareGameTests {
         Animal cow = cowNear(helper, mooshroom);
         helper.assertTrue(ShearRule.shearedToday(traits(helper, cow), helper.getLevel().getOverworldClockTime()),
                 "the cow does not count as sheared today");
+        assertFamiliarity(helper, cow, 0.75);
+        helper.succeed();
+    }
+
+    // Fleece Navidad is for sheep: a familiar mooshroom sheared by hand is counted, but earns nothing.
+    public static void shearingAMooshroomEarnsNoFleeceNavidad(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        ServerPlayer player = MockPlayers.inLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+        GameTestCompat.useOn(mooshroom, player);
+
+        helper.assertTrue(mooshroom.isRemoved(), "the mooshroom was not sheared");
+        helper.assertTrue(!AdvancementGameTests.earned(player, BarnyardAdvancements.FLEECE_NAVIDAD), "shearing a mooshroom earned Fleece Navidad");
+        helper.succeed();
+    }
+
+    // A real dispenser next to the mooshroom, so 26.3's FamiliarShearing and 1.21.1's IShearable hook both run.
+    public static void aDispenserShearingAMooshroomCountsOnItsCow(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        ServerLevel level = helper.getLevel();
+        BlockPos dispenserPos = mooshroom.blockPosition().east();
+        level.setBlock(dispenserPos, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.WEST), 3);
+        ((DispenserBlockEntity) level.getBlockEntity(dispenserPos)).setItem(0, new ItemStack(Items.SHEARS));
+
+        // The dispenser's own tick is what dispenses.
+        level.getBlockState(dispenserPos).tick(level, dispenserPos, level.getRandom());
+
+        helper.assertTrue(mooshroom.isRemoved(), "the dispenser did not shear the mooshroom");
+        Animal cow = cowNear(helper, mooshroom);
+        helper.assertTrue(ShearRule.shearedToday(traits(helper, cow), level.getOverworldClockTime()), "the cow does not count as sheared today");
         assertFamiliarity(helper, cow, 0.75);
         helper.succeed();
     }

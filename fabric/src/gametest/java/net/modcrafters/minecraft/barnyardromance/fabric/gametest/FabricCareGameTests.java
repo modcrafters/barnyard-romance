@@ -73,6 +73,16 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingAMooshroomEarnsNoFleeceNavidad(GameTestHelper helper) {
+        CareGameTests.shearingAMooshroomEarnsNoFleeceNavidad(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aDispenserShearingAMooshroomCountsOnItsCow(GameTestHelper helper) {
+        CareGameTests.aDispenserShearingAMooshroomCountsOnItsCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void aSnowGolemIsLeftAlone(GameTestHelper helper) {
         CareGameTests.aSnowGolemIsLeftAlone(helper);
     }
