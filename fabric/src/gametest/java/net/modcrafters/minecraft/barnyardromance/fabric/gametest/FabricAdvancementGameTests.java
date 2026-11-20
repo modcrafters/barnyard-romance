@@ -84,8 +84,13 @@ public class FabricAdvancementGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void naturalistLaddersLoadOnlyWithNaturalist(GameTestHelper helper) {
-        AdvancementGameTests.naturalistLaddersLoadOnlyWithNaturalist(helper);
+    public void laddersLoadForTrackedSpecies(GameTestHelper helper) {
+        AdvancementGameTests.laddersLoadForTrackedSpecies(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theConditionFollowsTheConfig(GameTestHelper helper) {
+        AdvancementGameTests.theConditionFollowsTheConfig(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

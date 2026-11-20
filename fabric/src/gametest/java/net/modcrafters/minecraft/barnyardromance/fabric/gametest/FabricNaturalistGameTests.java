@@ -18,6 +18,11 @@ public class FabricNaturalistGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void deerLadderIsHidden(GameTestHelper helper) {
+        NaturalistGameTests.deerLadderIsHidden(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void deerIsOut(GameTestHelper helper) {
         NaturalistGameTests.deerIsOut(helper);
     }

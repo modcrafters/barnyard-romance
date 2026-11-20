@@ -64,6 +64,7 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_livestock_is_tracked", 20, NaturalistGameTests::livestockIsTracked),
             new BreedingGameTests.Case("naturalist_others_are_ignored", 20, NaturalistGameTests::othersAreIgnored),
             new BreedingGameTests.Case("naturalist_deer_is_out", 20, NaturalistGameTests::deerIsOut),
+            new BreedingGameTests.Case("naturalist_deer_ladder_is_hidden", 20, NaturalistGameTests::deerLadderIsHidden),
             new BreedingGameTests.Case("naturalist_boar_gets_pregnant", 20, NaturalistGameTests::boarGetsPregnant),
             new BreedingGameTests.Case("naturalist_ostriches_need_a_male_and_a_female", 20, NaturalistGameTests::ostrichesNeedAMaleAndAFemale),
             new BreedingGameTests.Case("naturalist_ostriches_breed_by_courtship", 400, NaturalistGameTests::ostrichesBreedByCourtship),
@@ -134,6 +135,16 @@ public final class NaturalistGameTests {
         helper.assertTrue(!BarnyardConfig.current().speciesEnabled(DEER), "deer are enabled");
         Animal deer = GameTestCompat.spawn(helper, type(helper, DEER), 4, 1, 4);
         helper.assertTrue(Services.DATA.get(deer).isEmpty(), "a deer has traits");
+        helper.succeed();
+    }
+
+    // The deer's ladder needs a tracked deer; the duck's loads for Naturalist's duck.
+    public static void deerLadderIsHidden(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        helper.assertTrue(!AdvancementGameTests.ladderLoaded(helper, "deer", 10), "the deer ladder is loaded");
+        helper.assertTrue(AdvancementGameTests.ladderLoaded(helper, "duck", 10), "the duck ladder isn't loaded");
         helper.succeed();
     }
 

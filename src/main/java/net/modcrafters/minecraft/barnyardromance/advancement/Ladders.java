@@ -8,7 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 
 // The breeding ladders: an advancement at 10 births of a kind of livestock, and another at 100. The horse family
-// shares one ladder, and trader llamas count as llamas. Naturalist's ladders only load with Naturalist.
+// shares one ladder, and trader llamas count as llamas. A ladder loads only while one of its species is registered and
+// tracked (SpeciesTracked), so a mod's ladders never show without the mod. Duck and turkey ladders are shared by the mods'.
 public final class Ladders {
     public static final List<Integer> STEPS = List.of(10, 100);
 

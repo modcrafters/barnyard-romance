@@ -11,4 +11,9 @@ public class FabricFarmModsGameTests {
     public void expectedFarmModsAreLoaded(GameTestHelper helper) {
         FarmModsGameTests.expectedFarmModsAreLoaded(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void farmModLaddersLoad(GameTestHelper helper) {
+        FarmModsGameTests.farmModLaddersLoad(helper);
+    }
 }

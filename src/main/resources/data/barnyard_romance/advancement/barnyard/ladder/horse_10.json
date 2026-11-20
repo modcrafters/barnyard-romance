@@ -1,4 +1,24 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "minecraft:horse",
+        "minecraft:donkey",
+        "minecraft:mule"
+      ]
+    }
+  ],
+  "fabric:load_conditions": [
+    {
+      "condition": "barnyard_romance:species_tracked",
+      "species": [
+        "minecraft:horse",
+        "minecraft:donkey",
+        "minecraft:mule"
+      ]
+    }
+  ],
   "parent": "barnyard_romance:barnyard/special_delivery",
   "criteria": {
     "done": {
