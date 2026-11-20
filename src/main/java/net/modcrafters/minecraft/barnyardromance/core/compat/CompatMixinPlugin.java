@@ -41,5 +41,8 @@ public final class CompatMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        if (mixinClassName.endsWith(".MoobloomConversionMixin")) {
+            MoobloomSwap.record(targetClass);
+        }
     }
 }

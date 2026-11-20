@@ -13,7 +13,7 @@
       ]
     }
   ],
-  "parent": "barnyard_romance:barnyard/which_came_first",
+  "parent": "barnyard_romance:barnyard/special_delivery",
   "criteria": {
     "done": {
       "trigger": "minecraft:impossible"
