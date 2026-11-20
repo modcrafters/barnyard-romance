@@ -298,6 +298,10 @@ BarnyardEvents.DEATH_DROP.register(drop -> {
 
 Until 1.0, an API change that breaks callers can come in any release; the changelog lists them under **API**.
 
+## Known issues
+
+- On Fabric, shears from other mods that the game itself doesn't use for shearing can still use up an animal's shearing refusal for the day. Real vanilla shears are then refused until midnight.
+
 ## Contributing
 
 To build the mod or send a change, see [CONTRIBUTING.md](CONTRIBUTING.md).

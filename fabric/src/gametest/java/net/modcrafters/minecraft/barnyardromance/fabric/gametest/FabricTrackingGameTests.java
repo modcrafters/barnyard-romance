@@ -31,4 +31,14 @@ public class FabricTrackingGameTests {
     public void anUntrackedFoxGoesBackToItsVanillaSize(GameTestHelper helper) {
         TrackingGameTests.anUntrackedFoxGoesBackToItsVanillaSize(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theApiDoesNotReportAnUntrackedFoxPregnant(GameTestHelper helper) {
+        TrackingGameTests.theApiDoesNotReportAnUntrackedFoxPregnant(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theApiDoesNotReportAnUntrackedHensLaying(GameTestHelper helper) {
+        TrackingGameTests.theApiDoesNotReportAnUntrackedHensLaying(helper);
+    }
 }

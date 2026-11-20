@@ -10,7 +10,12 @@ import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.eggs.EggsFeature;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
+import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityState;
+import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyHearts;
 import net.modcrafters.minecraft.barnyardromance.stats.LiveFacts;
@@ -24,6 +29,7 @@ import static net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTes
 // Which animals the mod tracks out of the box, and what happens to one that stops being tracked.
 public final class TrackingGameTests {
     private static final String FOXES = "{\"species\": {\"minecraft:fox\": {\"enabled\": true}}}";
+    private static final String NO_CHICKENS = "{\"species\": {\"minecraft:chicken\": {\"enabled\": false}}}";
     private static final int WAIT_TICKS = 200;
 
     public static final List<BreedingGameTests.Case> CASES = List.of(
@@ -31,7 +37,9 @@ public final class TrackingGameTests {
             new BreedingGameTests.Case("a_pregnant_fox_left_untracked_is_harmless", WAIT_TICKS + 20, TrackingGameTests::aPregnantFoxLeftUntrackedIsHarmless),
             new BreedingGameTests.Case("untracked_foxes_breed_as_vanilla", 20,TrackingGameTests::untrackedFoxesBreedAsVanilla),
             new BreedingGameTests.Case("an_untracked_fox_shows_no_stats", 20, TrackingGameTests::anUntrackedFoxShowsNoStats),
-            new BreedingGameTests.Case("an_untracked_fox_goes_back_to_its_vanilla_size", 20, TrackingGameTests::anUntrackedFoxGoesBackToItsVanillaSize)
+            new BreedingGameTests.Case("an_untracked_fox_goes_back_to_its_vanilla_size", 20, TrackingGameTests::anUntrackedFoxGoesBackToItsVanillaSize),
+            new BreedingGameTests.Case("the_api_does_not_report_an_untracked_fox_pregnant", 20, TrackingGameTests::theApiDoesNotReportAnUntrackedFoxPregnant),
+            new BreedingGameTests.Case("the_api_does_not_report_an_untracked_hens_laying", 20, TrackingGameTests::theApiDoesNotReportAnUntrackedHensLaying)
     );
 
     private TrackingGameTests() {
@@ -116,6 +124,40 @@ public final class TrackingGameTests {
                 helper.assertTrue(LiveFacts.of(fox, now, clock).isPresent(), "a tracked fox shows no stats, so this proves nothing"));
 
         helper.assertTrue(LiveFacts.of(fox, now, clock).isEmpty(), "an untracked fox still shows its stats");
+        helper.succeed();
+    }
+
+    // The API reports what the mod looks after: a pregnancy saved on a fox that is untracked now isn't one, and comes back
+    // when foxes are switched on again.
+    public static void theApiDoesNotReportAnUntrackedFoxPregnant(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.FOX);
+        Animal father = male(helper, EntityTypes.FOX);
+        PregnancyApi api = FeaturesRepository.get(PregnancyApi.class);
+        UpkeepGameTests.withConfig(FOXES, () -> {
+            mother.setInLove(null);
+            father.setInLove(null);
+            mother.spawnChildFromBreeding(helper.getLevel(), father);
+            helper.assertTrue(api.isPregnant(mother) && api.pregnancy(mother).isPresent(), "the tracked fox isn't pregnant, so this proves nothing");
+        });
+        helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "the pregnancy wasn't left on the fox");
+
+        helper.assertTrue(!api.isPregnant(mother), "the API calls an untracked fox pregnant");
+        helper.assertTrue(api.pregnancy(mother).isEmpty(), "the API gives an untracked fox's pregnancy");
+
+        UpkeepGameTests.withConfig(FOXES, () ->
+                helper.assertTrue(api.isPregnant(mother) && api.pregnancy(mother).isPresent(), "switching foxes back on doesn't bring the pregnancy back"));
+        helper.succeed();
+    }
+
+    // The same for the laying a hen saved while chickens were tracked.
+    public static void theApiDoesNotReportAnUntrackedHensLaying(GameTestHelper helper) {
+        Animal hen = EggGameTests.chicken(helper, Sex.FEMALE, EggGameTests.mediumHen(), 0.5, 3);
+        Services.DATA.set(hen, EggsFeature.LAYING, new Laying(1L, List.of(5_000), 1, 1));
+        EggsApi api = FeaturesRepository.get(EggsApi.class);
+        helper.assertTrue(api.laying(hen).isPresent(), "the tracked hen has no laying, so this proves nothing");
+
+        UpkeepGameTests.withConfig(NO_CHICKENS, () ->
+                helper.assertTrue(api.laying(hen).isEmpty(), "the API gives an untracked hen's laying"));
         helper.succeed();
     }
 

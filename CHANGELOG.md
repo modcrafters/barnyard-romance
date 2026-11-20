@@ -26,6 +26,7 @@ After publishing, the action prepares the next development version and archives 
 
 ### API
 
+- `PregnancyApi` and `EggsApi.laying` report nothing for an animal whose species isn't tracked: `isPregnant` is false and `pregnancy` and `laying` are empty, even with a pregnancy still saved on it, until the species is switched back on.
 - The `barnyard_romance:included` entity tag opts a mod's animals in.
 - The `barnyard_romance:species_tracked` load condition lets a pack's data load only while a species is tracked.
 - `MilkApi` has `milksWith` and `blocksMilkingItem`, for what milks an animal under its species' milk list.
