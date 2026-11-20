@@ -72,7 +72,8 @@ public final class BreedingGameTests {
             new Case("animals_of_unknown_age_never_die", 20, BreedingGameTests::animalsOfUnknownAgeNeverDie),
             new Case("traits_survive_save_and_load", 20, BreedingGameTests::traitsSurviveSaveAndLoad),
             new Case("calves_remember_both_parents", 20, BreedingGameTests::calvesRememberBothParents),
-            new Case("a_trader_llamas_baby_is_a_llama", 20, BreedingGameTests::aTraderLlamasBabyIsALlama)
+            new Case("a_trader_llamas_baby_is_a_llama", 20, BreedingGameTests::aTraderLlamasBabyIsALlama),
+            new Case("a_switched_off_trader_llamas_baby_is_a_trader_llama", 20, BreedingGameTests::aSwitchedOffTraderLlamasBabyIsATraderLlama)
     );
 
     private BreedingGameTests() {
@@ -509,6 +510,21 @@ public final class BreedingGameTests {
             helper.assertTrue(AnimalSex.speciesId(foal).equals("minecraft:llama"), "the foal's species is " + AnimalSex.speciesId(foal));
         }
         helper.assertTrue(helper.getEntities(EntityTypes.TRADER_LLAMA).stream().noneMatch(Animal::isBaby), "a trader llama foal was born");
+        helper.succeed();
+    }
+
+    // A pack that switches trader llamas off gets vanilla's trader llama foals back.
+    public static void aSwitchedOffTraderLlamasBabyIsATraderLlama(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.TRADER_LLAMA);
+        Animal father = male(helper, EntityTypes.TRADER_LLAMA);
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:trader_llama\": {\"enabled\": false}}}", () -> {
+            mother.setInLove(null);
+            father.setInLove(null);
+            mother.spawnChildFromBreeding(helper.getLevel(), father);
+        });
+
+        helper.assertTrue(helper.getEntities(EntityTypes.TRADER_LLAMA).stream().anyMatch(Animal::isBaby), "no trader llama foal was born");
+        helper.assertTrue(helper.getEntities(EntityTypes.LLAMA).stream().noneMatch(Animal::isBaby), "a switched-off trader llama's foal is a llama");
         helper.succeed();
     }
 

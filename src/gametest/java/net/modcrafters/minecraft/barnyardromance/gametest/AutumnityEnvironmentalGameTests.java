@@ -72,7 +72,8 @@ public final class AutumnityEnvironmentalGameTests {
             new BreedingGameTests.Case("a_yak_is_sheared_once_a_day", 20, AutumnityEnvironmentalGameTests::aYakIsShearedOnceADay),
             new BreedingGameTests.Case("a_dispenser_shears_a_yak_once_a_day", 20, AutumnityEnvironmentalGameTests::aDispenserShearsAYakOnceADay),
             new BreedingGameTests.Case("a_tracked_sows_litter_is_the_barnyards_with_environmental_loaded", 200, AutumnityEnvironmentalGameTests::aTrackedSowsLitterIsTheBarnyards),
-            new BreedingGameTests.Case("an_excluded_sow_keeps_environmentals_larger_litter", 20, AutumnityEnvironmentalGameTests::anExcludedSowKeepsEnvironmentalsLargerLitter)
+            new BreedingGameTests.Case("an_excluded_sow_keeps_environmentals_larger_litter", 20, AutumnityEnvironmentalGameTests::anExcludedSowKeepsEnvironmentalsLargerLitter),
+            new BreedingGameTests.Case("a_sow_with_pregnancy_off_keeps_environmentals_larger_litter", 20, AutumnityEnvironmentalGameTests::aSowWithPregnancyOffKeepsEnvironmentalsLargerLitter)
     );
 
     private AutumnityEnvironmentalGameTests() {
@@ -349,6 +350,27 @@ public final class AutumnityEnvironmentalGameTests {
         } finally {
             BarnyardConfig.set(config);
         }
+        helper.succeed();
+    }
+
+    // With pregnancy switched off a tracked sow breeds the vanilla way, so the barnyard sets no litter and
+    // Environmental's extra piglets come back.
+    public static void aSowWithPregnancyOffKeepsEnvironmentalsLargerLitter(GameTestHelper helper) {
+        if (!FarmMods.present(helper, ENVIRONMENTAL)) {
+            return;
+        }
+        UpkeepGameTests.withConfig("{\"pregnancyEnabled\": false}", () -> {
+            Animal mother = female(helper, EntityTypes.PIG);
+            Animal father = male(helper, EntityTypes.PIG);
+            mother.setInLove(null);
+            father.setInLove(null);
+
+            mother.spawnChildFromBreeding(helper.getLevel(), father);
+
+            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the sow conceived with pregnancy off");
+            long babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).count();
+            helper.assertTrue(babies >= 2, "a sow bred with pregnancy off bore " + babies + " piglets, with no extras from Environmental");
+        });
         helper.succeed();
     }
 

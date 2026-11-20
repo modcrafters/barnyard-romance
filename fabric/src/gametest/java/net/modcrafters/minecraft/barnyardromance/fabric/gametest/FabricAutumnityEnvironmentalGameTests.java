@@ -81,4 +81,9 @@ public class FabricAutumnityEnvironmentalGameTests {
     public void anExcludedSowKeepsEnvironmentalsLargerLitter(GameTestHelper helper) {
         AutumnityEnvironmentalGameTests.anExcludedSowKeepsEnvironmentalsLargerLitter(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aSowWithPregnancyOffKeepsEnvironmentalsLargerLitter(GameTestHelper helper) {
+        AutumnityEnvironmentalGameTests.aSowWithPregnancyOffKeepsEnvironmentalsLargerLitter(helper);
+    }
 }
