@@ -100,7 +100,8 @@ public final class MilkActions {
         BarnyardConfig config = BarnyardConfig.current();
         MilkSettings settings = config.milkFor(AnimalSex.speciesId(animal));
         String heldId = itemId(held);
-        if (settings.entries().isEmpty() || !config.milkingItems().contains(heldId)) {
+        // A list from the config counts even when empty: it says the species gives no milk, with anything.
+        if (settings.entries().isEmpty() && !settings.fromConfig() || !config.milkingItems().contains(heldId)) {
             return false;
         }
         return settings.entries().stream().noneMatch(entry -> entry.bucket().equals(heldId));

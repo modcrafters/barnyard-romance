@@ -86,18 +86,19 @@ final class SpeciesPresets {
             new MilkEntry(WOODEN_BUCKET, "meadow:wooden_sheep_milk_bucket", null));
 
     // Built-in milking: which items milk the species and what they become. A species entry's own list replaces it.
+    private static final Map<String, List<MilkEntry>> MILK = Map.of(
+            "minecraft:cow", COW_MILK,
+            "minecraft:mooshroom", COW_MILK,
+            "minecraft:goat", GOAT_MILK,
+            "minecraft:sheep", SHEEP_MILK);
+
     static List<MilkEntry> milk(String speciesId) {
-        return switch (speciesId) {
-            case "minecraft:cow", "minecraft:mooshroom" -> COW_MILK;
-            case "minecraft:goat" -> GOAT_MILK;
-            case "minecraft:sheep" -> SHEEP_MILK;
-            default -> List.of();
-        };
+        return MILK.getOrDefault(speciesId, List.of());
     }
 
-    // Every item a built-in entry milks with.
-    static List<String> milkingItems() {
-        return List.of(BUCKET, WOODEN_BUCKET);
+    // Every item a built-in entry milks with, taken from the rows above.
+    static Set<String> milkingItems() {
+        return MILK.values().stream().flatMap(List::stream).map(MilkEntry::bucket).collect(java.util.stream.Collectors.toSet());
     }
 
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {

@@ -21,7 +21,7 @@ public interface MilkApi {
     // Whether the held item milks this animal: it's on the species' milk list and what it makes exists.
     boolean milksWith(Animal animal, ItemStack held);
 
-    // Whether the species has a milk list and this item, which milks something, isn't on it: the item must do nothing
+    // Whether the species has a milk list (a config list counts even when empty) and this item, which milks something, isn't on it: the item must do nothing
     // here, not even what it would elsewhere. False for an untracked animal.
     boolean blocksMilkingItem(Animal animal, ItemStack held);
 

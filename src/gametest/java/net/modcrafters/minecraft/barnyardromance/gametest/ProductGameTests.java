@@ -82,6 +82,7 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("sheep_gives_sheep_milk", 20, ProductGameTests::sheepGivesSheepMilk),
             new BreedingGameTests.Case("a_config_milk_entry_with_a_non_bucket_item_milks_a_pig", 20, ProductGameTests::aConfigMilkEntryWithANonBucketItemMilksAPig),
             new BreedingGameTests.Case("a_milking_item_not_on_the_list_does_nothing", 20, ProductGameTests::aMilkingItemNotOnTheListDoesNothing),
+            new BreedingGameTests.Case("an_empty_milk_list_stops_a_cow_giving_milk", 20, ProductGameTests::anEmptyMilkListStopsACowGivingMilk),
             new BreedingGameTests.Case("refused_milking_keeps_the_bucket", 20, ProductGameTests::refusedMilkingKeepsTheBucket),
             new BreedingGameTests.Case("large_cow_milks_twice_a_day", 20, ProductGameTests::largeCowMilksTwiceADay),
             new BreedingGameTests.Case("birth_starts_milk", 200, ProductGameTests::birthStartsMilk),
@@ -275,6 +276,24 @@ public final class ProductGameTests {
         try {
             BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"milk\":"
                     + "[{\"bucket\":\"minecraft:glass_bottle\",\"result\":\"minecraft:honey_bottle\"}]}}}"));
+            Animal cow = mother(helper, EntityTypes.COW, 0.5);
+            Lactation lactationBefore = BreedingGameTests.traits(helper, cow).get(LACTATION);
+            Player player = FoodGameTests.holding(helper, Items.BUCKET);
+            InteractionResult result = GameTestCompat.interact(cow, player);
+            helper.assertTrue(result == InteractionResult.CONSUME, "the bucket on the cow gave " + result);
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "the bucket became " + player.getMainHandItem());
+            helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(lactationBefore), "the bucket changed the lactation");
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
+    // An empty config list is still a list: the bucket does nothing on the cow, and vanilla's milking doesn't answer.
+    public static void anEmptyMilkListStopsACowGivingMilk(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"milk\":[]}}}"));
             Animal cow = mother(helper, EntityTypes.COW, 0.5);
             Lactation lactationBefore = BreedingGameTests.traits(helper, cow).get(LACTATION);
             Player player = FoodGameTests.holding(helper, Items.BUCKET);

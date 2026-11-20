@@ -63,6 +63,11 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void anEmptyMilkListStopsACowGivingMilk(GameTestHelper helper) {
+        ProductGameTests.anEmptyMilkListStopsACowGivingMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
         ProductGameTests.refusedMilkingKeepsTheBucket(helper);
     }
