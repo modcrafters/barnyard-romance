@@ -29,8 +29,9 @@ public final class Conversions {
     private Conversions() {
     }
 
-    // Copies the record when the old animal has one and the new species is switched on. Either way the conversion is
-    // remembered for this tick, so the old animal leaving isn't taken for a death.
+    // Copies the record when the old animal has one and the new species is switched on, and remembers the conversion for
+    // this tick, so the old animal leaving isn't taken for a death. Otherwise nothing is carried or remembered: an
+    // animal that becomes an untracked one leaves the herd books as a death.
     public static void carry(Animal from, Animal to) {
         if (from.level().isClientSide()) {
             return;

@@ -6,7 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
@@ -28,9 +28,10 @@ public final class LiveFacts {
     private LiveFacts() {
     }
 
-    // Empty when the animal has no traits. now is the game time, clock the overworld clock time.
+    // Empty when the animal isn't tracked: it has no traits, or its species was switched off. now is the game time,
+    // clock the overworld clock time.
     public static Optional<AnimalFacts> of(Animal animal, long now, long clock) {
-        return Services.DATA.get(animal).map(traits -> FactSheet.of(new Live(animal, traits, now, clock), now, clock));
+        return Tracked.traits(animal).map(traits -> FactSheet.of(new Live(animal, traits, now, clock), now, clock));
     }
 
     // The animal as it is now; what only a loaded animal can say comes from the entity itself.

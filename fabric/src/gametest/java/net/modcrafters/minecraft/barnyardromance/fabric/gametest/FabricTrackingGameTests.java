@@ -16,4 +16,19 @@ public class FabricTrackingGameTests {
     public void aPregnantFoxLeftUntrackedIsHarmless(GameTestHelper helper) {
         TrackingGameTests.aPregnantFoxLeftUntrackedIsHarmless(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void untrackedFoxesBreedAsVanilla(GameTestHelper helper) {
+        TrackingGameTests.untrackedFoxesBreedAsVanilla(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anUntrackedFoxShowsNoStats(GameTestHelper helper) {
+        TrackingGameTests.anUntrackedFoxShowsNoStats(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anUntrackedFoxGoesBackToItsVanillaSize(GameTestHelper helper) {
+        TrackingGameTests.anUntrackedFoxGoesBackToItsVanillaSize(helper);
+    }
 }

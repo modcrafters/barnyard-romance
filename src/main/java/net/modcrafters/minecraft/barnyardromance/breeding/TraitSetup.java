@@ -35,9 +35,13 @@ public final class TraitSetup {
         BarnyardConfig config = BarnyardConfig.current();
         String speciesId = AnimalSex.speciesId(animal);
         Optional<AnimalTraits> existing = Services.DATA.get(animal);
+        if (!config.speciesEnabled(speciesId)) {
+            existing.ifPresent(traits -> leaveVanilla(animal, traits));
+            return;
+        }
         Optional<AnimalTraits> resolved = createIfMissing
-                ? TraitAssignment.ensure(existing, config.speciesEnabled(speciesId), () -> roll(animal, config, speciesId))
-                : existing.filter(traits -> config.speciesEnabled(speciesId));
+                ? TraitAssignment.ensure(existing, true, () -> roll(animal, config, speciesId))
+                : existing;
         if (resolved.isEmpty()) {
             return;
         }
@@ -52,6 +56,32 @@ public final class TraitSetup {
                 .ifPresent(scale -> applyScale(animal, scale));
         if (animal instanceof Wolf) {
             applyWolfStrength(animal, settled, size);
+        }
+    }
+
+    // An animal whose species was switched off keeps its traits, so switching it back on sizes it again, but its body goes
+    // back to vanilla's: the scale the mod gave it is undone, unless something else has changed it since, and a wolf
+    // loses the strength its size gave it.
+    private static void leaveVanilla(Animal animal, AnimalTraits traits) {
+        AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
+        if (scale != null && scale.getBaseValue() != 1.0 && Math.abs(scale.getBaseValue() - traits.scale()) < 1.0e-6) {
+            scale.setBaseValue(1.0);
+        }
+        if (animal instanceof Wolf) {
+            float maxBefore = animal.getMaxHealth();
+            float share = animal.getHealth() / maxBefore;
+            remove(animal, Attributes.ATTACK_DAMAGE, WOLF_ATTACK);
+            remove(animal, Attributes.MAX_HEALTH, WOLF_HEALTH);
+            if (animal.getMaxHealth() != maxBefore) {
+                animal.setHealth(share * animal.getMaxHealth());
+            }
+        }
+    }
+
+    private static void remove(Animal animal, Holder<Attribute> attribute, Identifier id) {
+        AttributeInstance instance = animal.getAttribute(attribute);
+        if (instance != null) {
+            instance.removeModifier(id);
         }
     }
 

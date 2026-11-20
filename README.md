@@ -207,7 +207,7 @@ The rules run in this order, and the first that applies decides:
 3. The `barnyard_romance:included` tag: the animal is tracked.
 4. The built-in list above.
 
-Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
+Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back. While it's left out, the animal breeds, grows and looks the way vanilla or its own mod has it: back to its normal size, with no stats on show, and a pregnancy it was carrying waits until the species is turned back on.
 
 A breeding ladder shows only for a species that is tracked. The limit: a species switched on only by the `included` tag gets no ladder, and one excluded only by the tag keeps its ladder.
 

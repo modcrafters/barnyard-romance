@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -13,8 +14,9 @@ public final class PregnancyHearts {
     private PregnancyHearts() {
     }
 
+    // A pregnancy left on an animal whose species was switched off doesn't stop it falling in love the vanilla way.
     public static void serverTick(Animal animal, ServerLevel level) {
-        if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent()) {
+        if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent() && Tracked.traits(animal).isPresent()) {
             animal.resetLove();
             return;
         }
