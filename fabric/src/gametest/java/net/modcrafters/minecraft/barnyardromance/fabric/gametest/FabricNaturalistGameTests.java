@@ -106,4 +106,14 @@ public class FabricNaturalistGameTests {
     public void killingAFamiliarDuckIsDinner(GameTestHelper helper) {
         NaturalistGameTests.killingAFamiliarDuckIsDinner(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aThrownDuckEggNeverHatches(GameTestHelper helper) {
+        NaturalistGameTests.aThrownDuckEggNeverHatches(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anExcludedDucksThrownEggsHatch(GameTestHelper helper) {
+        NaturalistGameTests.anExcludedDucksThrownEggsHatch(helper);
+    }
 }

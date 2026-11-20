@@ -33,7 +33,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -77,7 +80,9 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_sitting_duck_lays_where_she_sits", 20, NaturalistGameTests::sittingDuckLaysWhereSheSits),
             new BreedingGameTests.Case("naturalist_familiar_livestock_stays_near_players", 20, NaturalistGameTests::familiarLivestockStaysNearPlayers),
             new BreedingGameTests.Case("naturalist_an_ostrich_hatching_counts_for_players_nearby", 20, NaturalistGameTests::anOstrichHatchingCountsForPlayersNearby),
-            new BreedingGameTests.Case("naturalist_killing_a_familiar_duck_is_dinner", 20, NaturalistGameTests::killingAFamiliarDuckIsDinner)
+            new BreedingGameTests.Case("naturalist_killing_a_familiar_duck_is_dinner", 20, NaturalistGameTests::killingAFamiliarDuckIsDinner),
+            new BreedingGameTests.Case("naturalist_a_thrown_duck_egg_never_hatches", 20, NaturalistGameTests::aThrownDuckEggNeverHatches),
+            new BreedingGameTests.Case("naturalist_an_excluded_ducks_thrown_eggs_hatch_as_the_mod_does", 20, NaturalistGameTests::anExcludedDucksThrownEggsHatch)
     );
 
     private NaturalistGameTests() {
@@ -438,6 +443,59 @@ public final class NaturalistGameTests {
     }
 
     // Familiarity tames Naturalist's livestock, but they're still livestock.
+    // Naturalist's thrown duck egg hatches a duckling at one in eight on its own; plain eggs never hatch while ducks lay
+    // by the mod's rules.
+    public static void aThrownDuckEggNeverHatches(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        for (int i = 0; i < 64; i++) {
+            throwDuckEgg(helper);
+        }
+
+        helper.assertTrue(ducksIn(helper) == 0, "thrown plain eggs hatched " + ducksIn(helper) + " ducks");
+        helper.succeed();
+    }
+
+    // The mod's hatching has to come back with its ducks, or a pack that switches them off loses it.
+    public static void anExcludedDucksThrownEggsHatch(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"naturalist:duck\"]}"));
+            for (int i = 0; i < 128; i++) {
+                throwDuckEgg(helper);
+            }
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(ducksIn(helper) > 0, "128 eggs thrown with ducks excluded hatched nothing");
+        helper.succeed();
+    }
+
+    // One of the mod's plain eggs, dropped onto the pen's floor and ticked by hand until it breaks, all within this tick.
+    private static void throwDuckEgg(GameTestHelper helper) {
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse("naturalist:duck_egg"))
+                .orElseThrow(() -> GameTestCompat.failure(helper, "no thrown duck egg"));
+        ThrowableItemProjectile egg = (ThrowableItemProjectile) GameTestCompat.unspawned(helper, type);
+        Vec3 at = helper.absoluteVec(new Vec3(4.5, 3.0, 4.5));
+        egg.setPos(at.x, at.y, at.z);
+        egg.setItem(new ItemStack(duckEgg(helper)));
+        egg.setDeltaMovement(0.0, -1.0, 0.0);
+        helper.getLevel().addFreshEntity(egg);
+        for (int i = 0; i < 40 && !egg.isRemoved(); i++) {
+            egg.tick();
+        }
+    }
+
+    private static int ducksIn(GameTestHelper helper) {
+        AABB pen = new AABB(helper.absoluteVec(Vec3.ZERO), helper.absoluteVec(new Vec3(9.0, 5.0, 9.0)));
+        return helper.getLevel().getEntitiesOfClass(Animal.class, pen, animal -> animal.getType() == type(helper, DUCK)).size();
+    }
+
     public static void killingAFamiliarDuckIsDinner(GameTestHelper helper) {
         if (!naturalist(helper)) {
             return;

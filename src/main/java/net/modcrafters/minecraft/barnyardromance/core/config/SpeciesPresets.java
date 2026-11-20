@@ -24,6 +24,7 @@ final class SpeciesPresets {
             Map.entry("friendsandfoes:moobloom", CATTLE),
             Map.entry("meadow:water_buffalo", CATTLE),
             Map.entry("meadow:wooly_cow", CATTLE),
+            Map.entry("environmental:yak", CATTLE),
             Map.entry("minecraft:horse", EQUINE),
             Map.entry("minecraft:donkey", EQUINE),
             Map.entry("minecraft:llama", CATTLE),
@@ -55,6 +56,8 @@ final class SpeciesPresets {
     static EggSettings eggs(String speciesId) {
         return switch (speciesId) {
             case "minecraft:chicken", "naturalist:turkey" -> EggSettings.CHICKEN;
+            case "autumnity:turkey" -> EggSettings.CHICKEN.withPlainEgg("autumnity:turkey_egg");
+            case "environmental:duck" -> EggSettings.CHICKEN.withPlainEgg("environmental:duck_egg");
             case "naturalist:duck" -> EggSettings.CHICKEN.withPlainEgg("naturalist:duck_egg");
             case "untitledduckmod:duck" -> EggSettings.CHICKEN.withPlainEgg("untitledduckmod:duck_egg");
             case "untitledduckmod:goose" -> EggSettings.CHICKEN.withPlainEgg("untitledduckmod:goose_egg");
@@ -66,7 +69,8 @@ final class SpeciesPresets {
     private static final Set<String> FIGHTERS = Set.of(
             "minecraft:cow", "minecraft:mooshroom", "minecraft:sheep", "minecraft:goat", "minecraft:pig", "minecraft:rabbit",
             "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich",
-            "untitledduckmod:duck", "untitledduckmod:goose", "friendsandfoes:moobloom", "meadow:water_buffalo", "meadow:wooly_cow");
+            "untitledduckmod:duck", "untitledduckmod:goose", "friendsandfoes:moobloom", "meadow:water_buffalo", "meadow:wooly_cow",
+            "autumnity:turkey", "environmental:duck", "environmental:yak");
 
     static boolean fights(String speciesId) {
         return FIGHTERS.contains(speciesId);
@@ -105,6 +109,9 @@ final class SpeciesPresets {
             new MilkEntry(BUCKET, "barnyard_romance:sheep_milk_bucket", null),
             new MilkEntry(WOODEN_BUCKET, "meadow:wooden_sheep_milk_bucket", null));
 
+    // Environmental's yak is milked with an iron bucket only.
+    private static final List<MilkEntry> YAK_MILK = List.of(new MilkEntry(BUCKET, "minecraft:milk_bucket", null));
+
     // Built-in milking: which items milk the species and what they become. A species entry's own list replaces it.
     private static final Map<String, List<MilkEntry>> MILK = Map.of(
             "minecraft:cow", COW_MILK,
@@ -112,6 +119,7 @@ final class SpeciesPresets {
             "friendsandfoes:moobloom", COW_MILK,
             "meadow:water_buffalo", BUFFALO_MILK,
             "meadow:wooly_cow", COW_MILK,
+            "environmental:yak", YAK_MILK,
             "minecraft:goat", GOAT_MILK,
             "minecraft:sheep", SHEEP_MILK);
 

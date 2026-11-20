@@ -21,6 +21,10 @@
       "required": false
     },
     {
+      "id": "environmental:yak",
+      "required": false
+    },
+    {
       "id": "naturalist:deer",
       "required": false
     },

@@ -25,7 +25,7 @@ class FeatureBoundaryScanTest {
     private static final Set<String> FEATURES = Set.of("familiarity", "breeding", "pregnancy", "eggs", "feed", "food",
             "milk", "shear", "vigour", "rivalry", "drops", "herd", "stats", "advancement", "naturalist");
     private static final Set<String> HOOK_PACKAGES = Set.of("mixin", "mixin/client", "client", "look", "command", "compat/jade",
-            "compat/untitledduckmod", "compat/friendsandfoes", "compat/meadow");
+            "compat/untitledduckmod", "compat/friendsandfoes", "compat/meadow", "compat/autumnity", "compat/environmental");
     // The composition root, in the mod's root package, and the flag the Jade plugin sets, which loads without Jade.
     private static final Set<String> HOOK_CLASSES = Set.of("BarnyardRomance", "BarnyardFeatures", "compat/JadeBridge");
     // Mixin accessors stay where Mixin needs them but count as core.

@@ -699,6 +699,29 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void autumnityAndEnvironmentalPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.speciesEnabled("autumnity:turkey"));
+        assertTrue(config.eggsFor("autumnity:turkey").enabled());
+        assertEquals("autumnity:turkey_egg", config.eggsFor("autumnity:turkey").plainEgg());
+        assertTrue(config.speciesEnabled("environmental:duck"));
+        assertTrue(config.eggsFor("environmental:duck").enabled());
+        assertEquals("environmental:duck_egg", config.eggsFor("environmental:duck").plainEgg());
+        assertTrue(config.speciesEnabled("environmental:yak"));
+        assertEquals(new Range(60_000, 72_000), config.pregnancyRange("environmental:yak"));
+        assertEquals(config.litterRange("minecraft:cow"), config.litterRange("environmental:yak"));
+        assertEquals(java.util.List.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null)),
+                config.milkFor("environmental:yak").entries());
+        for (String id : List.of("autumnity:turkey", "environmental:duck", "environmental:yak")) {
+            assertTrue(config.fightsFor(id), id);
+        }
+        for (String id : List.of("environmental:deer", "environmental:reindeer", "environmental:zebra", "environmental:slabfish")) {
+            assertFalse(config.speciesEnabled(id), id);
+        }
+    }
+
+    @Test
     void naturalistLivestockIsTracked() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

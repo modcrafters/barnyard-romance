@@ -30,6 +30,22 @@ class CompatMixinsTest {
     }
 
     @Test
+    void autumnityAndEnvironmentalMixinsComeWithTheirAnimalClasses() {
+        assertEquals(Set.of("AutumnityTurkeyEggTimerMixin"),
+                Set.copyOf(CompatMixins.mixinsFor("com/teamabnormals/autumnity/common/entity/animal/Turkey.class"::equals)));
+        assertEquals(Set.of("AutumnityThrownEggMixin"),
+                Set.copyOf(CompatMixins.mixinsFor("com/teamabnormals/autumnity/common/entity/projectile/ThrownTurkeyEgg.class"::equals)));
+        assertEquals(Set.of("EnvironmentalDuckEggTimerMixin"),
+                Set.copyOf(CompatMixins.mixinsFor("com/teamabnormals/environmental/common/entity/animal/Duck.class"::equals)));
+        assertEquals(Set.of("EnvironmentalThrownEggMixin"),
+                Set.copyOf(CompatMixins.mixinsFor("com/teamabnormals/environmental/common/entity/projectile/ThrownDuckEgg.class"::equals)));
+        assertEquals(Set.of("EnvironmentalLitterMixin"),
+                Set.copyOf(CompatMixins.mixinsFor("com/teamabnormals/environmental/core/other/EnvironmentalEvents.class"::equals)));
+        assertEquals(Set.of("NaturalistThrownEggMixin"),
+                Set.copyOf(CompatMixins.mixinsFor("com/crispytwig/naturalist/world/entity/projectile/throwableitemprojectile/ThrownDuckEgg.class"::equals)));
+    }
+
+    @Test
     void theMoobloomMixinComesWithItsEntityClass() {
         List<String> mixins = CompatMixins.mixinsFor("com/faboslav/friendsandfoes/common/entity/MoobloomEntity.class"::equals);
         assertEquals(Set.of("MoobloomConversionMixin"), Set.copyOf(mixins));
