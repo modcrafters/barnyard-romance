@@ -47,6 +47,13 @@ class LaddersTest {
     }
 
     @Test
+    void meadowsCattleHaveTheirOwnLadders() {
+        assertEquals(Optional.of("water_buffalo"), Ladders.ladderFor("meadow:water_buffalo"));
+        assertEquals(Optional.of("wooly_cow"), Ladders.ladderFor("meadow:wooly_cow"));
+        assertEquals(Optional.empty(), Ladders.ladderFor("meadow:something_else"));
+    }
+
+    @Test
     void theMoobloomHasItsOwnLadder() {
         assertEquals(Optional.of("moobloom"), Ladders.ladderFor("friendsandfoes:moobloom"));
         assertEquals(Optional.empty(), Ladders.ladderFor("friendsandfoes:crab"));

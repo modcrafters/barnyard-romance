@@ -22,6 +22,8 @@ final class SpeciesPresets {
             Map.entry("minecraft:cow", CATTLE),
             Map.entry("minecraft:mooshroom", CATTLE),
             Map.entry("friendsandfoes:moobloom", CATTLE),
+            Map.entry("meadow:water_buffalo", CATTLE),
+            Map.entry("meadow:wooly_cow", CATTLE),
             Map.entry("minecraft:horse", EQUINE),
             Map.entry("minecraft:donkey", EQUINE),
             Map.entry("minecraft:llama", CATTLE),
@@ -64,7 +66,7 @@ final class SpeciesPresets {
     private static final Set<String> FIGHTERS = Set.of(
             "minecraft:cow", "minecraft:mooshroom", "minecraft:sheep", "minecraft:goat", "minecraft:pig", "minecraft:rabbit",
             "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich",
-            "untitledduckmod:duck", "untitledduckmod:goose", "friendsandfoes:moobloom");
+            "untitledduckmod:duck", "untitledduckmod:goose", "friendsandfoes:moobloom", "meadow:water_buffalo", "meadow:wooly_cow");
 
     static boolean fights(String speciesId) {
         return FIGHTERS.contains(speciesId);
@@ -93,6 +95,9 @@ final class SpeciesPresets {
     private static final List<MilkEntry> COW_MILK = List.of(
             new MilkEntry(BUCKET, "minecraft:milk_bucket", null),
             new MilkEntry(WOODEN_BUCKET, "meadow:wooden_milk_bucket", null));
+    private static final List<MilkEntry> BUFFALO_MILK = List.of(
+            new MilkEntry(BUCKET, "minecraft:milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_buffalo_milk_bucket", null));
     private static final List<MilkEntry> GOAT_MILK = List.of(
             new MilkEntry(BUCKET, "barnyard_romance:goat_milk_bucket", null),
             new MilkEntry(WOODEN_BUCKET, "meadow:wooden_goat_milk_bucket", null));
@@ -105,6 +110,8 @@ final class SpeciesPresets {
             "minecraft:cow", COW_MILK,
             "minecraft:mooshroom", COW_MILK,
             "friendsandfoes:moobloom", COW_MILK,
+            "meadow:water_buffalo", BUFFALO_MILK,
+            "meadow:wooly_cow", COW_MILK,
             "minecraft:goat", GOAT_MILK,
             "minecraft:sheep", SHEEP_MILK);
 

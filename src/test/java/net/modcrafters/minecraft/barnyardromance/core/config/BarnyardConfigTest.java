@@ -680,6 +680,25 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void meadowPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+        for (String id : java.util.List.of("meadow:water_buffalo", "meadow:wooly_cow")) {
+            assertTrue(config.speciesEnabled(id), id);
+            assertEquals(new Range(60_000, 72_000), config.pregnancyRange(id), id);
+            assertEquals(config.litterRange("minecraft:cow"), config.litterRange(id), id);
+            assertTrue(config.fightsFor(id), id);
+            assertFalse(config.stewFor(id), id);
+        }
+        assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
+                new MilkEntry("meadow:wooden_bucket", "meadow:wooden_buffalo_milk_bucket", null)),
+                java.util.Set.copyOf(config.milkFor("meadow:water_buffalo").entries()));
+        // The wooly cow's wooden milk depends on its variant (WoolyCowMilk); this row is the fallback.
+        assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
+                new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
+                java.util.Set.copyOf(config.milkFor("meadow:wooly_cow").entries()));
+    }
+
+    @Test
     void naturalistLivestockIsTracked() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 

@@ -13,6 +13,14 @@
       "required": false
     },
     {
+      "id": "meadow:water_buffalo",
+      "required": false
+    },
+    {
+      "id": "meadow:wooly_cow",
+      "required": false
+    },
+    {
       "id": "naturalist:deer",
       "required": false
     },

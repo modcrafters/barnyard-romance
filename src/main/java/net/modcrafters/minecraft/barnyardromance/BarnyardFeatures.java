@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance;
 import net.modcrafters.minecraft.barnyardromance.advancement.AdvancementFeature;
 import net.modcrafters.minecraft.barnyardromance.breeding.BreedingFeature;
 import net.modcrafters.minecraft.barnyardromance.compat.friendsandfoes.FriendsAndFoesFeature;
+import net.modcrafters.minecraft.barnyardromance.compat.meadow.MeadowFeature;
 import net.modcrafters.minecraft.barnyardromance.compat.untitledduckmod.UntitledDuckModFeature;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
@@ -29,7 +30,7 @@ public final class BarnyardFeatures {
     }
 
     // Familiarity, breeding, pregnancy, eggs, feed, food, milk, shear, vigour, rivalry, drops, herd, stats, advancement,
-    // naturalist, Untitled Duck Mod, Friends&Foes.
+    // naturalist, Untitled Duck Mod, Friends&Foes, Meadow.
     public static List<Feature> all() {
         return List.of(
                 new FamiliarityFeature(),
@@ -49,7 +50,8 @@ public final class BarnyardFeatures {
                 new AdvancementFeature(),
                 new NaturalistFeature(),
                 new UntitledDuckModFeature(),
-                new FriendsAndFoesFeature()
+                new FriendsAndFoesFeature(),
+                new MeadowFeature()
         );
     }
 
