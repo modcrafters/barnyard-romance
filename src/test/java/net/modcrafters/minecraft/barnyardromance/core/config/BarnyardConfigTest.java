@@ -692,10 +692,10 @@ class BarnyardConfigTest {
         assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
                 new MilkEntry("meadow:wooden_bucket", "meadow:wooden_buffalo_milk_bucket", null)),
                 java.util.Set.copyOf(config.milkFor("meadow:water_buffalo").entries()));
-        // The wooly cow's wooden milk depends on its variant (WoolyCowMilk); this row is the fallback.
-        assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
-                new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
-                java.util.Set.copyOf(config.milkFor("meadow:wooly_cow").entries()));
+        // The wooly cow is milked with the wooden bucket only. Its wooden milk depends on its variant (WoolyCowMilk);
+        // this row is the fallback.
+        assertEquals(java.util.List.of(new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
+                java.util.List.copyOf(config.milkFor("meadow:wooly_cow").entries()));
     }
 
     @Test

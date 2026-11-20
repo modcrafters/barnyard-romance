@@ -172,7 +172,7 @@ With [Naturalist](https://modrinth.com/mod/naturalist) installed, four of its cr
 | Duck, turkey | Eggs in a Nesting Box, like chickens |
 | Ostrich | Naturalist's own eggs, but it takes a male and a female |
 
-Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg still follows Naturalist's rules.
+Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg doesn't hatch a duckling, as a thrown chicken egg doesn't; a pack that switches ducks off gets Naturalist's hatching back.
 
 Naturalist's other creatures, deer included, are left alone, along with any it adds later. To include one, give it a species entry with `"enabled": true`, or add it to the `barnyard_romance:included` tag. To leave one of the four out, list it in `exclude`.
 
@@ -194,7 +194,7 @@ Only these species are tracked by default:
 | [Autumnity](https://modrinth.com/mod/autumnity) | Turkey | NeoForge 1.21.1 |
 | [Environmental](https://modrinth.com/mod/environmental) | Duck, yak | NeoForge 1.21.1 |
 
-Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight, eat from a manger and are sheared by the usual rules. A pack that switches one of these animals off gets the mod's own behaviour back.
+Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight and eat from a manger, and wooly cows and yaks are sheared by the usual rules. A pack that switches one of these animals off gets the mod's own behaviour back.
 
 Wild animals such as foxes, ocelots, pandas, polar bears, bees and parrots, and every animal from another mod, stay vanilla unless a pack opts them in. A mod or data pack adds animals to the entity tag `barnyard_romance:included` to opt them in, and a pack can also give a species entry `"enabled": true`.
 
@@ -220,7 +220,7 @@ Besides `milk` (see below), a species entry has two more switches:
 
 ## Milk
 
-Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows and mooshrooms into milk, goats into goat milk and sheep into sheep milk, and Meadow's wooden bucket does the same into its wooden milk buckets (these entries only count when Meadow is installed). Other species give no milk. With Meadow installed, its wooden bucket follows these rules on every animal that has them, and a `milk` list that leaves it out closes it on that species.
+Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows, mooshrooms, mooblooms, water buffalo and yaks into milk, goats into goat milk and sheep into sheep milk. Meadow's wooden bucket milks cows, mooshrooms, mooblooms, goats and sheep into the matching wooden milk buckets, water buffalo into wooden buffalo milk and wooly cows into their variant's wooden milk (these entries only count when Meadow is installed). Wooly cows take only the wooden bucket, and yaks only the iron one. Other species give no milk. With Meadow installed, its wooden bucket follows these rules on every animal that has them, and a `milk` list that leaves it out closes it on that species.
 
 A `milk` list in a species entry replaces the built-in one, it doesn't add to it. An item that milks some species but isn't in this species' list does nothing at all on it, never vanilla's milking, so the wooden bucket can be taken off cows:
 

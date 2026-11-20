@@ -109,6 +109,10 @@ final class SpeciesPresets {
             new MilkEntry(BUCKET, "barnyard_romance:sheep_milk_bucket", null),
             new MilkEntry(WOODEN_BUCKET, "meadow:wooden_sheep_milk_bucket", null));
 
+    // Meadow's wooly cow is milked with the wooden bucket only. What it gives depends on its variant (WoolyCowMilk); this
+    // result is the fallback.
+    private static final List<MilkEntry> WOOLY_COW_MILK = List.of(new MilkEntry(WOODEN_BUCKET, "meadow:wooden_milk_bucket", null));
+
     // Environmental's yak is milked with an iron bucket only.
     private static final List<MilkEntry> YAK_MILK = List.of(new MilkEntry(BUCKET, "minecraft:milk_bucket", null));
 
@@ -118,7 +122,7 @@ final class SpeciesPresets {
             "minecraft:mooshroom", COW_MILK,
             "friendsandfoes:moobloom", COW_MILK,
             "meadow:water_buffalo", BUFFALO_MILK,
-            "meadow:wooly_cow", COW_MILK,
+            "meadow:wooly_cow", WOOLY_COW_MILK,
             "environmental:yak", YAK_MILK,
             "minecraft:goat", GOAT_MILK,
             "minecraft:sheep", SHEEP_MILK);
