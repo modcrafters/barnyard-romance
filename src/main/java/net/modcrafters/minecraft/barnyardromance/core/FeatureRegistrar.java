@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core;
 
 import net.minecraft.world.item.ItemStack;
+import net.modcrafters.minecraft.barnyardromance.core.config.MilkResult;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
@@ -37,4 +38,8 @@ public interface FeatureRegistrar {
 
     // Species the mod tracks by default, on top of the vanilla farm, working and pet animals.
     void trackedByDefault(String... speciesIds);
+
+    // What the species' built-in milk entries become for one animal, when an entry's item id can't say. Once per species;
+    // never used for a milk list from the config.
+    void milkResult(String speciesId, MilkResult result);
 }

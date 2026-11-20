@@ -53,6 +53,16 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aConfigMilkEntryWithANonBucketItemMilksAPig(GameTestHelper helper) {
+        ProductGameTests.aConfigMilkEntryWithANonBucketItemMilksAPig(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMilkingItemNotOnTheListDoesNothing(GameTestHelper helper) {
+        ProductGameTests.aMilkingItemNotOnTheListDoesNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
         ProductGameTests.refusedMilkingKeepsTheBucket(helper);
     }

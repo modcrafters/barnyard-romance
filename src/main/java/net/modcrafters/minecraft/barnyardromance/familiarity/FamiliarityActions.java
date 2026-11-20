@@ -33,16 +33,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
-//? if >=1.21.5 {
-import net.minecraft.world.entity.animal.cow.AbstractCow;
-//?} else
-//import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.feline.Ocelot;
-import net.minecraft.world.entity.animal.goat.Goat;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -328,9 +322,6 @@ public final class FamiliarityActions {
         if (stack.is(Items.BOWL) && animal instanceof MushroomCow) {
             return true;
         }
-        //? if >=1.21.5 {
-        return stack.is(Items.BUCKET) && (animal instanceof AbstractCow || animal instanceof Goat || animal instanceof Sheep);
-        //?} else
-        //return stack.is(Items.BUCKET) && (animal instanceof Cow || animal instanceof Goat || animal instanceof Sheep);
+        return FeaturesRepository.get(MilkApi.class).milksWith(animal, stack);
     }
 }

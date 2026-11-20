@@ -35,6 +35,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -79,6 +80,8 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("fresh_mother_cow_gives_milk", 20, ProductGameTests::freshMotherCowGivesMilk),
             new BreedingGameTests.Case("goat_gives_goat_milk", 20, ProductGameTests::goatGivesGoatMilk),
             new BreedingGameTests.Case("sheep_gives_sheep_milk", 20, ProductGameTests::sheepGivesSheepMilk),
+            new BreedingGameTests.Case("a_config_milk_entry_with_a_non_bucket_item_milks_a_pig", 20, ProductGameTests::aConfigMilkEntryWithANonBucketItemMilksAPig),
+            new BreedingGameTests.Case("a_milking_item_not_on_the_list_does_nothing", 20, ProductGameTests::aMilkingItemNotOnTheListDoesNothing),
             new BreedingGameTests.Case("refused_milking_keeps_the_bucket", 20, ProductGameTests::refusedMilkingKeepsTheBucket),
             new BreedingGameTests.Case("large_cow_milks_twice_a_day", 20, ProductGameTests::largeCowMilksTwiceADay),
             new BreedingGameTests.Case("birth_starts_milk", 200, ProductGameTests::birthStartsMilk),
@@ -248,6 +251,43 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // A pack can milk anything with anything: a glass bottle on a sow gives honey, and a bucket is left to vanilla.
+    public static void aConfigMilkEntryWithANonBucketItemMilksAPig(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:pig\":{\"milk\":"
+                    + "[{\"bucket\":\"minecraft:glass_bottle\",\"result\":\"minecraft:honey_bottle\"}]}}}"));
+            Animal sow = mother(helper, EntityTypes.PIG, 0.5);
+            assertMilks(helper, sow, Items.GLASS_BOTTLE, Items.HONEY_BOTTLE);
+            Player bucket = FoodGameTests.holding(helper, Items.BUCKET);
+            GameTestCompat.interact(sow, bucket);
+            helper.assertTrue(bucket.getMainHandItem().is(Items.BUCKET), "a bucket on the sow gave " + bucket.getMainHandItem());
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
+    // A config list replaces the built-in one: the empty bucket the cow's list no longer has does nothing at all, rather
+    // than falling back to milk.
+    public static void aMilkingItemNotOnTheListDoesNothing(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"milk\":"
+                    + "[{\"bucket\":\"minecraft:glass_bottle\",\"result\":\"minecraft:honey_bottle\"}]}}}"));
+            Animal cow = mother(helper, EntityTypes.COW, 0.5);
+            Lactation lactationBefore = BreedingGameTests.traits(helper, cow).get(LACTATION);
+            Player player = FoodGameTests.holding(helper, Items.BUCKET);
+            InteractionResult result = GameTestCompat.interact(cow, player);
+            helper.assertTrue(result == InteractionResult.CONSUME, "the bucket on the cow gave " + result);
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "the bucket became " + player.getMainHandItem());
+            helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(lactationBefore), "the bucket changed the lactation");
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
     // A male, a dry female and a small female already milked today all keep the empty bucket.
     public static void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
         long now = helper.getLevel().getGameTime();
@@ -325,7 +365,11 @@ public final class ProductGameTests {
     }
 
     static void assertMilks(GameTestHelper helper, Animal animal, Item milk) {
-        Player player = FoodGameTests.holding(helper, Items.BUCKET);
+        assertMilks(helper, animal, Items.BUCKET, milk);
+    }
+
+    static void assertMilks(GameTestHelper helper, Animal animal, Item with, Item milk) {
+        Player player = FoodGameTests.holding(helper, with);
         GameTestCompat.interact(animal, player);
         helper.assertTrue(player.getMainHandItem().is(milk), animal.getType() + " gave " + player.getMainHandItem() + ", not " + milk);
     }

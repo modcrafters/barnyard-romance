@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core;
 
 import net.minecraft.world.item.ItemStack;
+import net.modcrafters.minecraft.barnyardromance.core.config.MilkResult;
 import net.modcrafters.minecraft.barnyardromance.core.data.AttachmentKey;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardRegistrations;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -33,6 +35,7 @@ public final class FeatureSet {
     private final List<Consumer<BarnyardRegistrations.Sink>> content = new ArrayList<>();
     private final Map<String, Supplier<List<ItemStack>>> tabEntries = new LinkedHashMap<>();
     private final Set<String> trackedByDefault = new HashSet<>();
+    private final Map<String, MilkResult> milkResults = new LinkedHashMap<>();
 
     private FeatureSet() {
         AnimalTraitCodecs.coreFields().forEach(field -> sliceFields.put(field, "the core record"));
@@ -91,6 +94,10 @@ public final class FeatureSet {
 
     public boolean trackedByDefault(String speciesId) {
         return trackedByDefault.contains(speciesId);
+    }
+
+    public Optional<MilkResult> milkResult(String speciesId) {
+        return Optional.ofNullable(milkResults.get(speciesId));
     }
 
     private final class Registrar implements FeatureRegistrar {
@@ -169,6 +176,14 @@ public final class FeatureSet {
         public void trackedByDefault(String... speciesIds) {
             open();
             trackedByDefault.addAll(List.of(speciesIds));
+        }
+
+        @Override
+        public void milkResult(String speciesId, MilkResult result) {
+            open();
+            if (milkResults.putIfAbsent(speciesId, result) != null) {
+                throw new IllegalStateException("Two features give " + speciesId + " a milk result; the second is from " + feature);
+            }
         }
 
         private void open() {

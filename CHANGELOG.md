@@ -10,9 +10,11 @@ After publishing, the action prepares the next development version and archives 
 
 - The mod now tracks only farm animals, working animals, dogs and cats by default: foxes, ocelots, pandas, polar bears, Naturalist's deer and animals from other mods stay vanilla. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag. Animals the mod already saved keep their traits.
 - The creative herd stick leaves excluded animals alone: it no longer changes their familiarity or tames them.
+- Milk is a species setting: a species entry's `milk` list says which items milk the animal and what they become, so a pack can take a bucket off cows or milk a pig with a bottle. See "Milk" in the README.
 
 ### API
 
+- `MilkApi` has `milksWith` and `blocksMilkingItem`, for what milks an animal under its species' milk list.
 - A Milking listener that empties the result in place, instead of cancelling, now counts as cancelling: the player keeps the bucket.
 - A listener that throws an error, such as a class missing because a mod isn't installed, is logged and skipped like one that throws an exception.
 - A Fabric callback that throws no longer stops the callbacks after it. On NeoForge, a cancel from before a throwing listener now sticks.

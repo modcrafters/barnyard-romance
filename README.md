@@ -198,6 +198,27 @@ The rules run in this order, and the first that applies decides:
 
 Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
 
+## Milk
+
+Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows and mooshrooms into milk, goats into goat milk and sheep into sheep milk, and Meadow's wooden bucket does the same into its wooden milk buckets (these entries only count when Meadow is installed). Other species give no milk.
+
+A `milk` list in a species entry replaces the built-in one, it doesn't add to it. An item that milks some species but isn't in this species' list does nothing at all on it, never vanilla's milking, so the wooden bucket can be taken off cows:
+
+```json
+{
+  "species": {
+    "minecraft:cow": {
+      "milk": [ { "bucket": "minecraft:bucket", "result": "minecraft:milk_bucket" } ]
+    },
+    "minecraft:pig": {
+      "milk": [ { "bucket": "minecraft:glass_bottle", "result": "minecraft:honey_bottle", "sound": "minecraft:item.bottle.fill" } ]
+    }
+  }
+}
+```
+
+An empty list (`"milk": []`) stops a species giving milk. A list entry that is missing its `bucket` or `result` is skipped and logged. Without `sound`, the entry makes a goat's milking sound for goats and a cow's otherwise.
+
 ### For mod authors
 
 To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:included` (`data/barnyard_romance/tags/entity_type/included.json`, with `"replace": false`). To tell males apart by their horns, also ship an `assets/<namespace>/barnyard_horns/<name>.json` that names the animal under `entities`; see `assets/barnyard_romance/barnyard_horns/cattle.json` for an example.

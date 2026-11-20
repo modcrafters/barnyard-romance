@@ -4,6 +4,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -19,7 +20,17 @@ import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATIO
 final class MilkApiImpl implements MilkApi {
     @Override
     public boolean givesMilk(Animal animal) {
-        return MilkActions.milkFor(animal).isPresent();
+        return MilkActions.givesMilk(animal);
+    }
+
+    @Override
+    public boolean milksWith(Animal animal, ItemStack held) {
+        return MilkActions.milkFor(animal, held).isPresent();
+    }
+
+    @Override
+    public boolean blocksMilkingItem(Animal animal, ItemStack held) {
+        return MilkActions.blocksMilkingItem(animal, held);
     }
 
     @Override

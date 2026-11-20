@@ -16,8 +16,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -54,6 +56,8 @@ public final class BarnyardConfig {
     private final Tuning tuning;
     // eggsFor runs several times per chicken per tick, so each species' eggs block is read once.
     private final Map<String, EggSettings> eggs = new ConcurrentHashMap<>();
+    // Every item that milks something, for the bucket checks on every right-click; found on first use.
+    private volatile Set<String> milkingItems;
 
     private BarnyardConfig(
             boolean enabled,
@@ -417,6 +421,35 @@ public final class BarnyardConfig {
         return SpeciesPresets.fights(speciesId);
     }
 
+    // A species entry's milk list replaces the built-in one; with none, the preset's entries. Nothing for a species the
+    // mod leaves alone.
+    public MilkSettings milkFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return MilkSettings.NONE;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings != null && settings.milk() != null) {
+            return new MilkSettings(settings.milk(), true);
+        }
+        return new MilkSettings(SpeciesPresets.milk(speciesId), false);
+    }
+
+    // Every item that milks some species, in a preset or in any config list, whichever species is on.
+    public Set<String> milkingItems() {
+        Set<String> items = milkingItems;
+        if (items == null) {
+            Set<String> found = new LinkedHashSet<>(SpeciesPresets.milkingItems());
+            for (SpeciesSettings settings : species.values()) {
+                if (settings.milk() != null) {
+                    settings.milk().forEach(entry -> found.add(entry.bucket()));
+                }
+            }
+            items = Collections.unmodifiableSet(found);
+            milkingItems = items;
+        }
+        return items;
+    }
+
     public SizeSettings sizeFor(String speciesId) {
         SpeciesSettings settings = species.get(speciesId);
         if (settings == null) {
@@ -552,7 +585,8 @@ public final class BarnyardConfig {
             Double bellyMaxWiden,
             Double bellyStart,
             JsonObject eggs,
-            Boolean fights
+            Boolean fights,
+            List<MilkEntry> milk
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -577,8 +611,43 @@ public final class BarnyardConfig {
                     optionalDouble(object, "bellyMaxWiden"),
                     optionalDouble(object, "bellyStart"),
                     object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null,
-                    object.has("fights") ? bool(object, "fights", false) : null
+                    object.has("fights") ? bool(object, "fights", false) : null,
+                    milk(object)
             );
+        }
+
+        // A bad entry is skipped and logged, like exclude's; the good ones stay. Not a list: the built-in list is used.
+        private static List<MilkEntry> milk(JsonObject object) {
+            if (!object.has("milk") || object.get("milk").isJsonNull()) {
+                return null;
+            }
+            if (!object.get("milk").isJsonArray()) {
+                Constants.LOG.warn("Ignoring a species entry's milk: it must be a list");
+                return null;
+            }
+            List<MilkEntry> entries = new ArrayList<>();
+            for (JsonElement element : object.getAsJsonArray("milk")) {
+                String bucket = stringIn(element, "bucket");
+                String result = stringIn(element, "result");
+                if (bucket == null || result == null) {
+                    Constants.LOG.warn("Ignoring milk entry {}: it needs a \"bucket\" and a \"result\", both item ids", element);
+                    continue;
+                }
+                JsonElement sound = element.getAsJsonObject().get("sound");
+                if (sound != null && !sound.isJsonNull() && stringIn(element, "sound") == null) {
+                    Constants.LOG.warn("Ignoring the sound of milk entry {}: it must be a sound id", element);
+                }
+                entries.add(new MilkEntry(bucket, result, stringIn(element, "sound")));
+            }
+            return List.copyOf(entries);
+        }
+
+        private static String stringIn(JsonElement element, String name) {
+            if (!element.isJsonObject()) {
+                return null;
+            }
+            JsonElement value = element.getAsJsonObject().get(name);
+            return value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString() ? value.getAsString() : null;
         }
 
         JsonObject toJson() {
@@ -630,6 +699,19 @@ public final class BarnyardConfig {
             }
             if (fights != null) {
                 object.addProperty("fights", fights);
+            }
+            if (milk != null) {
+                JsonArray array = new JsonArray();
+                for (MilkEntry entry : milk) {
+                    JsonObject item = new JsonObject();
+                    item.addProperty("bucket", entry.bucket());
+                    item.addProperty("result", entry.result());
+                    if (entry.sound() != null) {
+                        item.addProperty("sound", entry.sound());
+                    }
+                    array.add(item);
+                }
+                object.add("milk", array);
             }
             return object;
         }

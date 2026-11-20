@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.config;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,6 +71,33 @@ final class SpeciesPresets {
 
     static boolean tames(String speciesId) {
         return TAMES.contains(speciesId);
+    }
+
+    private static final String BUCKET = "minecraft:bucket";
+    private static final String WOODEN_BUCKET = "meadow:wooden_bucket";
+    private static final List<MilkEntry> COW_MILK = List.of(
+            new MilkEntry(BUCKET, "minecraft:milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_milk_bucket", null));
+    private static final List<MilkEntry> GOAT_MILK = List.of(
+            new MilkEntry(BUCKET, "barnyard_romance:goat_milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_goat_milk_bucket", null));
+    private static final List<MilkEntry> SHEEP_MILK = List.of(
+            new MilkEntry(BUCKET, "barnyard_romance:sheep_milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_sheep_milk_bucket", null));
+
+    // Built-in milking: which items milk the species and what they become. A species entry's own list replaces it.
+    static List<MilkEntry> milk(String speciesId) {
+        return switch (speciesId) {
+            case "minecraft:cow", "minecraft:mooshroom" -> COW_MILK;
+            case "minecraft:goat" -> GOAT_MILK;
+            case "minecraft:sheep" -> SHEEP_MILK;
+            default -> List.of();
+        };
+    }
+
+    // Every item a built-in entry milks with.
+    static List<String> milkingItems() {
+        return List.of(BUCKET, WOODEN_BUCKET);
     }
 
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {
