@@ -29,7 +29,7 @@ class FeatureBoundaryScanTest {
     private static final Set<String> HOOK_CLASSES = Set.of("BarnyardRomance", "BarnyardFeatures", "compat/JadeBridge");
     // Mixin accessors stay where Mixin needs them but count as core.
     private static final Set<String> CORE_CLASSES_IN_HOOK_PACKAGES = Set.of("mixin/AnimalEating",
-            "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor");
+            "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor", "mixin/LlamaAccessor");
     // Files one version adds rather than overrides, as <version>/<path>; anything else under versions/ needs a main file.
     private static final Set<String> VERSION_ONLY = Set.of(
             "1.21.1/mixin/client/ChickenModelAccessor",

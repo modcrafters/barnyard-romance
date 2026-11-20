@@ -22,6 +22,7 @@
     "GrumpyHorseMixin",
     "GrumpyWolfSitMixin",
     "HorseTamingGraceMixin",
+    "LlamaAccessor",
     "LivingEntityDropsMixin",
     "MateOverridesMixin",
     "MobConversionMixin",
@@ -37,6 +38,7 @@
     "ThrownEggMixin",
     "TamingGraceMixin",
     "TemptingSensorMixin",
+    "TraderLlamaOffspringMixin",
     "WolfTamingMixin"
   ],
   "client": [

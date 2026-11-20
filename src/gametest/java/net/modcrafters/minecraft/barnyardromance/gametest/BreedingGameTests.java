@@ -18,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyClock;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyController;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
@@ -70,7 +71,8 @@ public final class BreedingGameTests {
             new Case("old_animals_die_of_old_age", 20, BreedingGameTests::oldAnimalsDieOfOldAge),
             new Case("animals_of_unknown_age_never_die", 20, BreedingGameTests::animalsOfUnknownAgeNeverDie),
             new Case("traits_survive_save_and_load", 20, BreedingGameTests::traitsSurviveSaveAndLoad),
-            new Case("calves_remember_both_parents", 20, BreedingGameTests::calvesRememberBothParents)
+            new Case("calves_remember_both_parents", 20, BreedingGameTests::calvesRememberBothParents),
+            new Case("a_trader_llamas_baby_is_a_llama", 20, BreedingGameTests::aTraderLlamasBabyIsALlama)
     );
 
     private BreedingGameTests() {
@@ -486,6 +488,27 @@ public final class BreedingGameTests {
             helper.assertTrue(traits.scale() >= base - 0.1 - 1.0e-9 && traits.scale() <= base + 0.1 + 1.0e-9,
                     "a " + traits.sex() + " mule's scale is " + traits.scale() + ", more than 0.1 from " + base);
         }
+        helper.succeed();
+    }
+
+    // A wandering trader's llama and a player's llama can breed, and the foal is an ordinary llama.
+    public static void aTraderLlamasBabyIsALlama(GameTestHelper helper) {
+        Animal mother = female(helper, EntityTypes.TRADER_LLAMA);
+        Animal father = male(helper, EntityTypes.LLAMA);
+        mother.setInLove(null);
+        father.setInLove(null);
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+        Pregnancy pregnancy = pregnancy(helper, mother);
+        Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
+        PregnancyController.catchUp(mother, helper.getLevel());
+
+        List<Animal> foals = helper.getEntities(EntityTypes.LLAMA).stream().map(Animal.class::cast).filter(Animal::isBaby).toList();
+        helper.assertTrue(!foals.isEmpty(), "no llama was born");
+        for (Animal foal : foals) {
+            helper.assertTrue(foal.getType() == EntityTypes.LLAMA, "the foal is a " + foal.getType());
+            helper.assertTrue(AnimalSex.speciesId(foal).equals("minecraft:llama"), "the foal's species is " + AnimalSex.speciesId(foal));
+        }
+        helper.assertTrue(helper.getEntities(EntityTypes.TRADER_LLAMA).stream().noneMatch(Animal::isBaby), "a trader llama foal was born");
         helper.succeed();
     }
 

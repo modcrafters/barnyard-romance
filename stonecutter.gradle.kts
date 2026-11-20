@@ -36,7 +36,7 @@ stonecutter parameters {
             val animal = "net.minecraft.world.entity.animal"
             for ((type, pkg) in mapOf("Cat" to "feline", "Ocelot" to "feline", "Sheep" to "sheep", "Wolf" to "wolf", "MushroomCow" to "cow", "Chicken" to "chicken"))
                 replace("$animal.$type;", "$animal.$pkg.$type;")
-            for (type in listOf("AbstractHorse", "Donkey", "Horse", "Llama"))
+            for (type in listOf("AbstractHorse", "Donkey", "Horse", "Llama", "TraderLlama"))
                 replace("$animal.horse.$type;", "$animal.equine.$type;")
             replace("net.minecraft.world.entity.projectile.ThrownEgg;", "net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;")
             // The EntityType constants moved to EntityTypes. The import keeps a marker so it can turn back.

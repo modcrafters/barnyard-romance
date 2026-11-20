@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.mixin.LlamaAccessor;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.Optional;
@@ -76,7 +78,15 @@ public final class TraitSetup {
 
     private static AnimalTraits roll(Animal animal, BarnyardConfig config, String speciesId) {
         Sex sex = SexRoll.roll(animal.getRandom().nextDouble(), config.femaleRatio());
-        double scale = ScaleRoll.rollWild(sex, config.sizeFor(speciesId), animal.getRandom().nextDouble());
+        SizeSettings size = config.sizeFor(speciesId);
+        boolean trader = TraderLlamas.SPECIES.equals(speciesId) && animal instanceof Llama;
+        double scale = trader
+                ? ScaleRoll.rollWildTop(sex, size, animal.getRandom().nextDouble())
+                : ScaleRoll.rollWild(sex, size, animal.getRandom().nextDouble());
+        // Only a trader llama getting its first traits as an adult: a baby, or one that already has traits, is left alone.
+        if (trader && !animal.isBaby()) {
+            ((LlamaAccessor) animal).barnyardromance$setStrength(TraderLlamas.strength(animal.getRandom().nextDouble()));
+        }
         // A baby met for the first time was just born (vanilla breeding, spawn eggs); a wild adult's age is unknown.
         long bornTick = animal.isBaby() ? animal.level().getGameTime() : -1L;
         return AnimalTraits.of(sex, scale).withBornTick(bornTick);
