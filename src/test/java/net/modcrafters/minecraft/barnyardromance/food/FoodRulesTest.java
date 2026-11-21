@@ -180,6 +180,34 @@ class FoodRulesTest {
         assertEquals(GRAZER_ID, FoodRules.dietFor(COW, "apack:missing", diets).orElseThrow().getKey());
     }
 
+    @Test
+    void theMenuGoesFoodFilesThenVanillaFoodNothingNamesThenTheDietBestFirst() {
+        Diet diet = new Diet(
+                List.of(COW),
+                List.of(new DietEntry(List.of(ItemMatch.parse("#c:seeds")), 0.5), new DietEntry(List.of(ItemMatch.parse("#c:crops")), 1.0),
+                        new DietEntry(List.of(ItemMatch.parse("#c:foods/fruit")), 0.75)),
+                List.of(ItemMatch.parse("#barnyard_romance:contains_meat"))
+        );
+        FoodFile sugar = file(List.of(COW), List.of(), "minecraft:sugar");
+        FoodFile mash = new FoodFile(List.of(), List.of(GRAZER_ID), List.of(ItemMatch.parse("barnyard_romance:breeders_mash")), true, FoodEffects.NONE);
+        FoodFile wolfTreat = file(List.of(WOLF), List.of(), "minecraft:bone");
+        Map<String, ItemFacts> vanilla = new TreeMap<>(Map.of(
+                "minecraft:wheat", item(Set.of("minecraft:wheat", "#c:crops"), true),
+                "minecraft:hay_block", item(Set.of("minecraft:hay_block"), true),
+                "barnyard_romance:breeders_mash", item(Set.of("barnyard_romance:breeders_mash"), true)));
+
+        List<String> menu = FoodRules.menu(COW, GRAZER_ID, diet, List.of(mash, sugar, wolfTreat), vanilla);
+
+        assertEquals(List.of("minecraft:sugar", "minecraft:hay_block", "#c:crops", "#c:foods/fruit", "#c:seeds"), menu);
+    }
+
+    @Test
+    void withNoDietTheMenuIsItsVanillaFood() {
+        Map<String, ItemFacts> vanilla = new TreeMap<>(Map.of("minecraft:wheat_seeds", item(Set.of("minecraft:wheat_seeds"), true)));
+
+        assertEquals(List.of("minecraft:wheat_seeds"), FoodRules.menu("minecraft:chicken", null, null, List.of(), vanilla));
+    }
+
     private static FoodFile file(List<String> species, List<String> diets, String items) {
         FoodEffects effects = new FoodEffects(Optional.of(0.1), Optional.of(3.0), Optional.empty(), 0.0, 0.0);
         return new FoodFile(species, diets, List.of(ItemMatch.parse(items)), false, effects);

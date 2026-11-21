@@ -140,6 +140,7 @@ public final class EggGameTests {
             new BreedingGameTests.Case("a_wild_egg_hatches_a_chick_with_no_parents", 40, EggGameTests::aWildEggHatchesAChickWithNoParents),
             new BreedingGameTests.Case("a_thrown_wild_egg_hatches_tainted", 20, EggGameTests::aThrownWildEggHatchesTainted),
             new BreedingGameTests.Case("only_a_box_egg_warns_about_taking_it_out", 20, EggGameTests::onlyABoxEggWarnsAboutTakingItOut),
+            new BreedingGameTests.Case("a_fertilized_egg_says_its_species", 20, EggGameTests::aFertilizedEggSaysItsSpecies),
             new BreedingGameTests.Case("box_drops_eggs_when_broken", 20, EggGameTests::boxDropsEggsWhenBroken),
             new BreedingGameTests.Case("box_recipe", 20, EggGameTests::boxRecipe),
             new BreedingGameTests.Case("egg_hatches_in_the_box", 40, EggGameTests::eggHatchesInTheBox),
@@ -643,7 +644,19 @@ public final class EggGameTests {
 
         helper.assertTrue(FertilizedEggItem.lines(inBox).contains(warning), "a box egg doesn't warn: " + FertilizedEggItem.lines(inBox));
         helper.assertTrue(!FertilizedEggItem.lines(wild).contains(warning), "a wild egg still warns");
-        helper.assertTrue(FertilizedEggItem.lines(wild).equals(List.of(unknown)), "a wild egg's tooltip is " + FertilizedEggItem.lines(wild));
+        helper.assertTrue(FertilizedEggItem.lines(wild).contains(unknown), "a wild egg's tooltip is " + FertilizedEggItem.lines(wild));
+        helper.succeed();
+    }
+
+    // Box and wild eggs both open with whose egg it is, since every bird's egg looks alike in the box.
+    public static void aFertilizedEggSaysItsSpecies(GameTestHelper helper) {
+        Text chicken = Text.of("item.barnyard_romance.fertilized_egg.species", Text.of("entity.minecraft.chicken"));
+        ItemStack inBox = FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L));
+        ItemStack wild = WildEggs.taint(inBox.copy());
+
+        helper.assertTrue(FertilizedEggItem.lines(inBox).getFirst().equals(chicken), "a box egg's tooltip is " + FertilizedEggItem.lines(inBox));
+        helper.assertTrue(FertilizedEggItem.lines(wild).equals(List.of(chicken, Text.of("item.barnyard_romance.fertilized_egg.parents_unknown"))),
+                "a wild egg's tooltip is " + FertilizedEggItem.lines(wild));
         helper.succeed();
     }
 

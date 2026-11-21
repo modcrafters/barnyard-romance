@@ -12,6 +12,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Conversions;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,7 +24,9 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -207,7 +210,18 @@ public final class HerdBooks {
         UUID id = book.get(HerdComponents.HERD_BOOK);
         MinecraftServer server = player.level().getServer();
         List<HerdEntry> entries = id == null ? List.of() : entries(server, id, player.level().getGameTime());
-        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries, open, focus));
+        Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries, open, focus, menus(server, entries)));
+    }
+
+    // What each living species in the book eats, for its "not fed" tooltips.
+    public static Map<String, List<String>> menus(MinecraftServer server, List<HerdEntry> entries) {
+        Map<String, List<String>> menus = new LinkedHashMap<>();
+        for (HerdEntry entry : entries) {
+            if (entry.alive() && !menus.containsKey(entry.species())) {
+                menus.put(entry.species(), FeaturesRepository.get(FoodApi.class).menu(server.overworld(), entry.species()));
+            }
+        }
+        return menus;
     }
 
     public static List<HerdEntry> entries(MinecraftServer server, UUID book, long now) {

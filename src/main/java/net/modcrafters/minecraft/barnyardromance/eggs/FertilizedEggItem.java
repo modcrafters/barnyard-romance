@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
+import net.modcrafters.minecraft.barnyardromance.core.text.Names;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.ChatFormatting;
@@ -51,23 +52,33 @@ public class FertilizedEggItem extends EggItem {
     }
     *///?}
 
-    // A box egg: its time, its parents and what taking it out does. A wild egg: no parents, and its time while in a box.
+    // Whose egg it is, with its mod when another animal has the same name. Then for a box egg its time, its parents and
+    // what taking it out does; for a wild egg its time while in a box and that its parents are unknown.
     public static List<Text> lines(ItemStack stack) {
         EggData data = stack.get(EggsComponents.EGG_DATA);
-        if (data != null) {
-            SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
-            Text parents = Text.of(
-                    "item.barnyard_romance.fertilized_egg.parents",
-                    SizeClasses.of(Sex.FEMALE, data.motherScale(), size).name(),
-                    SizeClasses.of(Sex.MALE, data.fatherScale(), size).name()
-            );
-            return List.of(Text.of("item.barnyard_romance.fertilized_egg.time", Growth.clock(data.remainingTicks())), parents,
-                    Text.of("item.barnyard_romance.fertilized_egg.taking_out"));
-        }
-        if (!WildEggs.wild(stack)) {
+        WildEgg wild = stack.get(EggsComponents.WILD_EGG);
+        if (data == null && wild == null) {
             return List.of();
         }
         List<Text> lines = new ArrayList<>();
+        String speciesId = data != null ? data.species() : wild.species();
+        Text species = Names.entity(speciesId);
+        if (!species.isEmpty()) {
+            lines.add(Names.sharedNameMod(speciesId)
+                    .map(mod -> Text.of("item.barnyard_romance.fertilized_egg.species_from", species, mod))
+                    .orElse(Text.of("item.barnyard_romance.fertilized_egg.species", species)));
+        }
+        if (data != null) {
+            SizeSettings size = SizeRanges.orCurrent(data.sizeRange(), data.species());
+            lines.add(Text.of("item.barnyard_romance.fertilized_egg.time", Growth.clock(data.remainingTicks())));
+            lines.add(Text.of(
+                    "item.barnyard_romance.fertilized_egg.parents",
+                    SizeClasses.of(Sex.FEMALE, data.motherScale(), size).name(),
+                    SizeClasses.of(Sex.MALE, data.fatherScale(), size).name()
+            ));
+            lines.add(Text.of("item.barnyard_romance.fertilized_egg.taking_out"));
+            return lines;
+        }
         WildEggs.remainingTicks(stack).ifPresent(ticks -> lines.add(Text.of("item.barnyard_romance.fertilized_egg.time", Growth.clock(ticks))));
         lines.add(Text.of("item.barnyard_romance.fertilized_egg.parents_unknown"));
         return lines;

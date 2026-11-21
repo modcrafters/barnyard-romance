@@ -3,6 +3,9 @@ package net.modcrafters.minecraft.barnyardromance.food;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +39,27 @@ public final class FoodRules {
             }
         }
         return Feed.NOT_FOOD;
+    }
+
+    // What a species eats, best first, as ids: "#c:crops" for a tag, "minecraft:wheat" for an item. Its food files'
+    // everyday foods come first, then the vanilla foods (by item id) that nothing else names, then its diet by how much
+    // good each does. Superfoods are treats, not meals, so they're left out.
+    public static List<String> menu(String speciesId, String dietId, Diet diet, List<FoodFile> files, Map<String, ItemFacts> vanillaFoods) {
+        List<FoodFile> own = files.stream().filter(file -> file.appliesTo(speciesId, dietId)).toList();
+        List<DietEntry> eats = diet == null ? List.of() : diet.eats().stream()
+                .sorted(Comparator.comparingDouble(DietEntry::factor).reversed())
+                .toList();
+        LinkedHashSet<String> menu = new LinkedHashSet<>();
+        own.stream().filter(file -> !file.superfood()).forEach(file -> file.items().forEach(item -> menu.add(item.toString())));
+        vanillaFoods.forEach((id, item) -> {
+            boolean named = own.stream().anyMatch(file -> item.matchesAny(file.items()))
+                    || eats.stream().anyMatch(entry -> item.matchesAny(entry.items()));
+            if (!named) {
+                menu.add(id);
+            }
+        });
+        eats.forEach(entry -> entry.items().forEach(item -> menu.add(item.toString())));
+        return new ArrayList<>(menu);
     }
 
     // The config's override when it exists, else the first diet (by id) that lists the species.

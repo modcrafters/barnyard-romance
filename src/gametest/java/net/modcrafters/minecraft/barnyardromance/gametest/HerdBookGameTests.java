@@ -10,6 +10,8 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import com.mojang.serialization.Dynamic;
@@ -55,6 +57,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -70,6 +73,7 @@ import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityS
 public final class HerdBookGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("wild_animals_cannot_join_a_book", 20, HerdBookGameTests::wildAnimalsCannotJoinABook),
+            new BreedingGameTests.Case("a_book_says_what_each_species_eats", 20, HerdBookGameTests::aBookSaysWhatEachSpeciesEats),
             new BreedingGameTests.Case("familiar_animals_join_once", 20, HerdBookGameTests::familiarAnimalsJoinOnce),
             new BreedingGameTests.Case("tamed_cats_join_without_sitting", 20, HerdBookGameTests::tamedCatsJoinWithoutSitting),
             new BreedingGameTests.Case("newborns_join_their_mothers_books", 20, HerdBookGameTests::newbornsJoinTheirMothersBooks),
@@ -341,12 +345,35 @@ public final class HerdBookGameTests {
         helper.succeed();
     }
 
+    // The book carries each living species' everyday foods, best first, for its "not fed" tooltips: a cow's diet groups
+    // without the superfood mash, a chicken's own seeds. An untracked species has none.
+    public static void aBookSaysWhatEachSpeciesEats(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Animal chicken = female(helper, EntityTypes.CHICKEN);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
+        HerdBooks.register(book, cow);
+        HerdBooks.register(book, chicken);
+        UUID id = bookId(helper, book);
+
+        Map<String, List<String>> menus = HerdBooks.menus(server(helper), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()));
+
+        List<String> cows = menus.getOrDefault("minecraft:cow", List.of());
+        List<String> chickens = menus.getOrDefault("minecraft:chicken", List.of());
+        helper.assertTrue(cows.contains("#c:crops") && cows.indexOf("#c:crops") < cows.indexOf("#c:seeds"), "a cow eats " + cows);
+        helper.assertTrue(!cows.contains("barnyard_romance:breeders_mash") && !cows.contains("minecraft:wheat"), "a cow eats " + cows);
+        helper.assertTrue(chickens.contains("minecraft:wheat_seeds"), "a chicken eats " + chickens);
+        helper.assertTrue(FeaturesRepository.get(FoodApi.class).menu(helper.getLevel(), "minecraft:fox").isEmpty(), "an untracked fox has a menu");
+        helper.succeed();
+    }
+
     public static void showBookSurvivesTheNetworkCodec(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()), false, Optional.of(cow.getUUID()));
+        List<HerdEntry> entries = HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime());
+        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), entries, false, Optional.of(cow.getUUID()),
+                HerdBooks.menus(server(helper), entries));
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
         HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, sent);
@@ -378,7 +405,7 @@ public final class HerdBookGameTests {
         }
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
-        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true, Optional.empty()));
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true, Optional.empty(), Map.of()));
 
         helper.assertTrue(buffer.readableBytes() > 1_048_576, "1,500 animals took only " + buffer.readableBytes() + " bytes");
         helper.assertTrue(buffer.readableBytes() < HerdBookPayloads.ShowBook.MAX_BYTES, "1,500 animals took " + buffer.readableBytes() + " bytes");

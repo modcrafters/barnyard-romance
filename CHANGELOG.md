@@ -8,6 +8,9 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- When an animal hasn't been fed today, its herd book tooltip says what it eats, best first.
+- When two animals in a herd book share a name, like ducks from two mods, their bookmarks and pages add the mod: "Duck @naturalist".
+- A fertilized egg's tooltip says whose egg it is, with the mod when two animals share a name: "Duck egg @naturalist".
 - Herd books show animals whose species isn't tracked any more as not tracked.
 - Shearing a mooshroom or moobloom says it turns it into a cow.
 - The mod now tracks only farm animals, working animals, dogs and cats by default. Foxes, pandas, bees, parrots, Naturalist's deer and every animal from mods Barnyard doesn't support go back to their own behaviour: they breed by vanilla's rules again, return to their normal size and show no stats, and a pregnancy one was carrying waits. They keep what Barnyard saved on them, so switching a species back on brings it all back. A pack can opt an animal in with `"enabled": true` or the `barnyard_romance:included` entity tag.
