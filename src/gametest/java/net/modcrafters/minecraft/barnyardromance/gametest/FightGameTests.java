@@ -68,8 +68,10 @@ public final class FightGameTests {
     private FightGameTests() {
     }
 
+    // The cows are fed like the bulls: a familiar animal that hasn't eaten loses health at midnight, the test clock may
+    // pass one during the fight, and a hurt animal falls out of love.
     public static void twoBullsFightOverACowUntilOneDies(GameTestHelper helper) {
-        Animal cow = female(helper, EntityTypes.COW);
+        Animal cow = fed(female(helper, EntityTypes.COW));
         Animal first = bull(helper, 5, 4, 1.0);
         Animal second = bull(helper, 5, 6, 1.0);
         courtWithAFight(helper, cow, first, second);
@@ -85,7 +87,7 @@ public final class FightGameTests {
     // The bulls wander while they settle, so which two are closest is read off where they stand when she's courted, not
     // where they were put.
     public static void aThirdBullMatesWhileTwoFight(GameTestHelper helper) {
-        Animal cow = female(helper, EntityTypes.COW);
+        Animal cow = fed(female(helper, EntityTypes.COW));
         List<Animal> closestFirst = new ArrayList<>(List.of(bull(helper, 4, 5, 1.0), bull(helper, 5, 5, 1.0), bull(helper, 7, 7, 1.0)));
         cow.setInLoveTime(600);
 
@@ -112,7 +114,7 @@ public final class FightGameTests {
 
     // Walked closest first, two at a time: both pairs fight, and nobody is left over to mate with her yet.
     public static void fourBullsFightInTwoPairs(GameTestHelper helper) {
-        Animal cow = female(helper, EntityTypes.COW);
+        Animal cow = fed(female(helper, EntityTypes.COW));
         List<Animal> bulls = List.of(bull(helper, 4, 4, 1.0), bull(helper, 5, 4, 1.0), bull(helper, 6, 6, 1.0), bull(helper, 7, 7, 1.0));
         cow.setInLoveTime(600);
 
@@ -196,7 +198,7 @@ public final class FightGameTests {
     }
 
     public static void aFightEndsWhenARivalIsRemoved(GameTestHelper helper) {
-        Animal cow = female(helper, EntityTypes.COW);
+        Animal cow = fed(female(helper, EntityTypes.COW));
         Animal first = bull(helper, 5, 4, 1.0);
         Animal second = bull(helper, 5, 6, 1.0);
         courtWithAFight(helper, cow, first, second);
