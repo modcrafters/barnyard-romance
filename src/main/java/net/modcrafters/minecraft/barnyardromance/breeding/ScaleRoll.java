@@ -20,6 +20,11 @@ public final class ScaleRoll {
         return fromPercent(sex, size, percent);
     }
 
+    // A wandering trader's stock: always in the top half of its range, so bigger than the species' middle.
+    public static double rollWildTop(Sex sex, SizeSettings size, double unitRandom) {
+        return fromPercent(sex, size, 0.5 + Math.clamp(unitRandom, 0.0, 1.0) * 0.5);
+    }
+
     public static double percent(Sex sex, double scale, SizeSettings size) {
         double span = size.variation() * 2.0;
         if (span <= 0.0) {

@@ -16,8 +16,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -35,10 +38,14 @@ public final class BarnyardConfig {
     // Whether a species is in the barnyard_romance:excluded entity tag. Tags are Minecraft's, so the mod installs this
     // at start-up; until then (and in unit tests) nothing is excluded by tag.
     private static Predicate<String> excludedByTag = speciesId -> false;
+    // The same for the barnyard_romance:included tag.
+    private static Predicate<String> includedByTag = speciesId -> false;
 
     private final boolean enabled;
     private final boolean herdSticks;
     private final boolean goatLongJumps;
+    private final boolean colouredSheep;
+    private final boolean sheepDyeing;
     private final double femaleRatio;
     private final SizeSettings defaults;
     private final boolean pregnancyEnabled;
@@ -52,11 +59,15 @@ public final class BarnyardConfig {
     private final Tuning tuning;
     // eggsFor runs several times per chicken per tick, so each species' eggs block is read once.
     private final Map<String, EggSettings> eggs = new ConcurrentHashMap<>();
+    // Every item that milks something, for the bucket checks on every right-click; found on first use.
+    private volatile Set<String> milkingItems;
 
     private BarnyardConfig(
             boolean enabled,
             boolean herdSticks,
             boolean goatLongJumps,
+            boolean colouredSheep,
+            boolean sheepDyeing,
             double femaleRatio,
             SizeSettings defaults,
             boolean pregnancyEnabled,
@@ -72,6 +83,8 @@ public final class BarnyardConfig {
         this.enabled = enabled;
         this.herdSticks = herdSticks;
         this.goatLongJumps = goatLongJumps;
+        this.colouredSheep = colouredSheep;
+        this.sheepDyeing = sheepDyeing;
         this.femaleRatio = femaleRatio;
         this.defaults = defaults;
         this.pregnancyEnabled = pregnancyEnabled;
@@ -86,7 +99,7 @@ public final class BarnyardConfig {
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, herdSticksByDefault(), false, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
+        return new BarnyardConfig(true, herdSticksByDefault(), false, false, false, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
     }
 
     // The dev client runs set -Dbarnyard_romance.herd_sticks=true; a config file's own herdSticks wins over it.
@@ -100,6 +113,10 @@ public final class BarnyardConfig {
 
     public static void setExcludedByTag(Predicate<String> excluded) {
         excludedByTag = excluded;
+    }
+
+    public static void setIncludedByTag(Predicate<String> included) {
+        includedByTag = included;
     }
 
     // For game tests, which swap a config in and restore it within the same tick.
@@ -136,6 +153,8 @@ public final class BarnyardConfig {
         boolean enabled = bool(object, "enabled", true);
         boolean herdSticks = bool(object, "herdSticks", herdSticksByDefault());
         boolean goatLongJumps = bool(object, "goatLongJumps", false);
+        boolean colouredSheep = bool(object, "colouredSheep", false);
+        boolean sheepDyeing = bool(object, "sheepDyeing", false);
         double femaleRatio = clamp(number(object, "femaleRatio", 0.5), 0.0, 1.0);
         SizeSettings size = new SizeSettings(
                 number(object, "femaleScale", DEFAULT_SIZE.femaleScale()),
@@ -170,6 +189,8 @@ public final class BarnyardConfig {
                 enabled,
                 herdSticks,
                 goatLongJumps,
+                colouredSheep,
+                sheepDyeing,
                 femaleRatio,
                 size,
                 pregnancyEnabled,
@@ -197,6 +218,8 @@ public final class BarnyardConfig {
         object.addProperty("enabled", enabled);
         object.addProperty("herdSticks", herdSticks);
         object.addProperty("goatLongJumps", goatLongJumps);
+        object.addProperty("colouredSheep", colouredSheep);
+        object.addProperty("sheepDyeing", sheepDyeing);
         object.addProperty("femaleRatio", femaleRatio);
         object.addProperty("femaleScale", defaults.femaleScale());
         object.addProperty("maleScale", defaults.maleScale());
@@ -242,6 +265,17 @@ public final class BarnyardConfig {
         return goatLongJumps;
     }
 
+    // Whether tracked sheep keep vanilla's coloured fleeces when they spawn and pass their colour to their lambs. Off by
+    // default: they spawn white and have white lambs.
+    public boolean colouredSheep() {
+        return colouredSheep;
+    }
+
+    // Whether dye works on tracked sheep. Off by default.
+    public boolean sheepDyeing() {
+        return sheepDyeing;
+    }
+
     public double femaleRatio() {
         return femaleRatio;
     }
@@ -258,8 +292,19 @@ public final class BarnyardConfig {
         return defaults;
     }
 
-    // A species entry's own "enabled" wins, so one species of an excluded mod can be switched back on.
+    // In order: the species entry's own "enabled", then the exclude list and the excluded tag, then the included tag, then
+    // the built-in list (vanilla farm, working and pet animals, and what features track by default). A species entry's
+    // "enabled" wins, so one species of an excluded mod can be switched back on.
     public boolean speciesEnabled(String speciesId) {
+        return speciesEnabled(speciesId, true);
+    }
+
+    // The same without the two tags, for hooks that must tell "a pack switched this animal off" from "never tracked".
+    public boolean speciesEnabledIgnoringTags(String speciesId) {
+        return speciesEnabled(speciesId, false);
+    }
+
+    private boolean speciesEnabled(String speciesId, boolean useTags) {
         if (!enabled) {
             return false;
         }
@@ -267,7 +312,23 @@ public final class BarnyardConfig {
         if (settings != null && settings.enabled() != null) {
             return settings.enabled();
         }
-        return !excluded(speciesId) && !excludedByTag.test(speciesId) && !FeaturesRepository.ignoredByDefault(speciesId);
+        if (excluded(speciesId) || useTags && excludedByTag.test(speciesId)) {
+            return false;
+        }
+        if (useTags && includedByTag.test(speciesId)) {
+            return true;
+        }
+        return BuiltInSpecies.VANILLA.contains(speciesId) || FeaturesRepository.trackedByDefault(speciesId);
+    }
+
+    // Animals that stay wild under their mod's own feeding, so familiarity tames them.
+    public boolean tamesThroughFamiliarity(String speciesId) {
+        return SpeciesPresets.tames(speciesId) && speciesEnabled(speciesId);
+    }
+
+    // The item tag of food this species' mod tames it with, for a species that familiarity tames instead.
+    public Optional<String> tamingFoodTag(String speciesId) {
+        return tamesThroughFamiliarity(speciesId) ? SpeciesPresets.tamingFoodTag(speciesId) : Optional.empty();
     }
 
     public List<String> exclude() {
@@ -377,6 +438,11 @@ public final class BarnyardConfig {
         });
     }
 
+    // The entity id shearing turns this species into for good, if it does (a mooshroom shears into a cow).
+    public Optional<String> shearsInto(String speciesId) {
+        return SpeciesPresets.shearsInto(speciesId);
+    }
+
     // Whether males of this species fight their rivals: the species entry's "fights", else the built-in livestock list.
     public boolean fightsFor(String speciesId) {
         if (!speciesEnabled(speciesId)) {
@@ -387,6 +453,58 @@ public final class BarnyardConfig {
             return settings.fights();
         }
         return SpeciesPresets.fights(speciesId);
+    }
+
+    // A species entry's milk list replaces the built-in one; with none, the preset's entries. Nothing for a species the
+    // mod leaves alone.
+    public MilkSettings milkFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return MilkSettings.NONE;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings != null && settings.milk() != null) {
+            return new MilkSettings(settings.milk(), true);
+        }
+        return new MilkSettings(SpeciesPresets.milk(speciesId), false);
+    }
+
+    // Whether a bowl held out to this species gives mushroom stew: the species entry's "stew", else the built-in
+    // mooshroom. False for a species the mod leaves alone.
+    public boolean stewFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return false;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        if (settings != null && settings.stew() != null) {
+            return settings.stew();
+        }
+        return SpeciesPresets.stew(speciesId);
+    }
+
+    // Whether the once-a-day shearing (and its familiarity cost) counts for this species: the species entry's
+    // "shearing", else on. False for a species the mod leaves alone.
+    public boolean shearingFor(String speciesId) {
+        if (!speciesEnabled(speciesId)) {
+            return false;
+        }
+        SpeciesSettings settings = species.get(speciesId);
+        return settings == null || settings.shearing() == null || settings.shearing();
+    }
+
+    // Every item that milks some species, in a preset or in any config list, whichever species is on.
+    public Set<String> milkingItems() {
+        Set<String> items = milkingItems;
+        if (items == null) {
+            Set<String> found = new LinkedHashSet<>(SpeciesPresets.milkingItems());
+            for (SpeciesSettings settings : species.values()) {
+                if (settings.milk() != null) {
+                    settings.milk().forEach(entry -> found.add(entry.bucket()));
+                }
+            }
+            items = Collections.unmodifiableSet(found);
+            milkingItems = items;
+        }
+        return items;
     }
 
     public SizeSettings sizeFor(String speciesId) {
@@ -524,7 +642,10 @@ public final class BarnyardConfig {
             Double bellyMaxWiden,
             Double bellyStart,
             JsonObject eggs,
-            Boolean fights
+            Boolean fights,
+            List<MilkEntry> milk,
+            Boolean stew,
+            Boolean shearing
     ) {
         static SpeciesSettings from(JsonObject object) {
             Long pregnancyTicks = optionalLong(object, "pregnancyTicks");
@@ -549,8 +670,45 @@ public final class BarnyardConfig {
                     optionalDouble(object, "bellyMaxWiden"),
                     optionalDouble(object, "bellyStart"),
                     object.has("eggs") && object.get("eggs").isJsonObject() ? object.getAsJsonObject("eggs") : null,
-                    object.has("fights") ? bool(object, "fights", false) : null
+                    object.has("fights") ? bool(object, "fights", false) : null,
+                    milk(object),
+                    object.has("stew") ? bool(object, "stew", false) : null,
+                    object.has("shearing") ? bool(object, "shearing", true) : null
             );
+        }
+
+        // A bad entry is skipped and logged, like exclude's; the good ones stay. Not a list: the built-in list is used.
+        private static List<MilkEntry> milk(JsonObject object) {
+            if (!object.has("milk") || object.get("milk").isJsonNull()) {
+                return null;
+            }
+            if (!object.get("milk").isJsonArray()) {
+                Constants.LOG.warn("Ignoring a species entry's milk: it must be a list");
+                return null;
+            }
+            List<MilkEntry> entries = new ArrayList<>();
+            for (JsonElement element : object.getAsJsonArray("milk")) {
+                String bucket = stringIn(element, "bucket");
+                String result = stringIn(element, "result");
+                if (bucket == null || result == null) {
+                    Constants.LOG.warn("Ignoring milk entry {}: it needs a \"bucket\" and a \"result\", both item ids", element);
+                    continue;
+                }
+                JsonElement sound = element.getAsJsonObject().get("sound");
+                if (sound != null && !sound.isJsonNull() && stringIn(element, "sound") == null) {
+                    Constants.LOG.warn("Ignoring the sound of milk entry {}: it must be a sound id", element);
+                }
+                entries.add(new MilkEntry(bucket, result, stringIn(element, "sound")));
+            }
+            return List.copyOf(entries);
+        }
+
+        private static String stringIn(JsonElement element, String name) {
+            if (!element.isJsonObject()) {
+                return null;
+            }
+            JsonElement value = element.getAsJsonObject().get(name);
+            return value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString() ? value.getAsString() : null;
         }
 
         JsonObject toJson() {
@@ -602,6 +760,25 @@ public final class BarnyardConfig {
             }
             if (fights != null) {
                 object.addProperty("fights", fights);
+            }
+            if (milk != null) {
+                JsonArray array = new JsonArray();
+                for (MilkEntry entry : milk) {
+                    JsonObject item = new JsonObject();
+                    item.addProperty("bucket", entry.bucket());
+                    item.addProperty("result", entry.result());
+                    if (entry.sound() != null) {
+                        item.addProperty("sound", entry.sound());
+                    }
+                    array.add(item);
+                }
+                object.add("milk", array);
+            }
+            if (stew != null) {
+                object.addProperty("stew", stew);
+            }
+            if (shearing != null) {
+                object.addProperty("shearing", shearing);
             }
             return object;
         }

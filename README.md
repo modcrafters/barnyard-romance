@@ -1,6 +1,6 @@
 # Barnyard Romance
 
-A Minecraft Java mod for Fabric and NeoForge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla and (most) modded animals.
+A Minecraft Java mod for Fabric and NeoForge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla farm animals, working animals, dogs and cats, and for other animals a pack opts in (see [Which species are tracked](#which-species-are-tracked)).
 
 Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby; only the female falls in love, and the mod finds her a male (see [Rival males](#rival-males)). The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
 
@@ -60,6 +60,8 @@ Tamed wolves, cats and horses never go wild again. Below the familiarity thresho
 Animals that shy away from players, such as rabbits or Naturalist's deer, stop running from you once they're familiar. Before that, they hold still if you sneak up holding food they eat.
 
 Goats don't long-jump, so a fence holds them like any other animal. Vanilla's goats leap to spots they can't walk to, which takes them over a fence. To bring the jump back, set `goatLongJumps` in `config/barnyard_romance.json` to `true`. Goats left out of the mod always jump.
+
+Sheep spawn white, their lambs are white whatever colour their parents are, and dye does nothing on them. Set `colouredSheep` to `true` to bring back vanilla's coloured sheep and lambs that mix their parents' colours, and `sheepDyeing` to `true` to dye sheep again. Sheep that are already coloured keep their colour until they're washed: a water bucket used on a coloured sheep washes it white and comes back empty, whatever these settings. Sheep left out of the mod keep vanilla's colours and dye, and don't wash.
 
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
@@ -164,25 +166,88 @@ A pack can move a species to another block with the entity tags `barnyard_romanc
 
 ## Naturalist
 
-With [Naturalist](https://modrinth.com/mod/naturalist) installed, five of its creatures count as livestock. They get sexes, sizes and familiarity, and males are only different in size.
+With [Naturalist](https://modrinth.com/mod/naturalist) installed, four of its creatures count as livestock. They get sexes, sizes and familiarity, and males are only different in size.
 
 | Creature | How young arrive |
 | --- | --- |
-| Deer, boar | Pregnancy, like cows and pigs |
+| Boar | Pregnancy, like cows and pigs |
 | Duck, turkey | Eggs in a Nesting Box, like chickens |
 | Ostrich | Naturalist's own eggs, but it takes a male and a female |
 
-Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg still follows Naturalist's rules.
+Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg doesn't hatch a duckling, as a thrown chicken egg doesn't; a pack that switches ducks off gets Naturalist's hatching back.
 
-Naturalist's other creatures are left alone, including any it adds later. To include one, give it a species entry with `"enabled": true`. To leave one of the five out, list it in `exclude`.
+Naturalist's other creatures, deer included, are left alone, along with any it adds later. To include one, give it a species entry with `"enabled": true`, or add it to the `barnyard_romance:included` tag. To leave one of the four out, list it in `exclude`.
 
-## Leaving species out
+## Which species are tracked
 
-Set `"enabled": false` in a species entry to leave one species vanilla. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:parrot", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead. An explicit `"enabled": true` in a species entry wins over both. Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back.
+Only these species are tracked by default:
+
+- Vanilla farm animals: cow, mooshroom, sheep, goat, pig, chicken, rabbit and hoglin.
+- Vanilla working animals: horse, donkey, mule, llama, trader llama and camel.
+- Vanilla dogs and cats: wolf and cat.
+- Naturalist's boar, duck, turkey and ostrich, when Naturalist is installed.
+- Animals from the farm-animal mods below, when each is installed.
+
+| Mod | Animals | Loaders |
+| --- | --- | --- |
+| [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod) | Duck, goose | NeoForge 1.21.1, NeoForge and Fabric 26.3 |
+| [Friends&Foes](https://modrinth.com/mod/friends-and-foes) | Moobloom (crab and penguin stay untracked) | NeoForge 1.21.1, NeoForge and Fabric 26.3 |
+| [Let's Do] [Meadow](https://modrinth.com/mod/lets-do-meadow) | Water buffalo, wooly cow (highland, umbra and warped) | NeoForge 1.21.1 |
+| [Autumnity](https://modrinth.com/mod/autumnity) | Turkey | NeoForge 1.21.1 |
+| [Environmental](https://modrinth.com/mod/environmental) | Duck, yak | NeoForge 1.21.1 |
+
+Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight and eat from a manger, and wooly cows and yaks are sheared by the usual rules. A pack that switches one of these animals off gets the mod's own behaviour back.
+
+Wild animals such as foxes, ocelots, pandas, polar bears, bees and parrots, and every animal from another mod, stay vanilla unless a pack opts them in. A mod or data pack adds animals to the entity tag `barnyard_romance:included` to opt them in, and a pack can also give a species entry `"enabled": true`.
+
+To leave a species vanilla, set `"enabled": false` in its species entry. To leave out many, list them in `exclude`, by id or a whole mod: `"exclude": ["minecraft:cow", "somemod:*"]`. A mod or data pack can add its animals to the entity tag `barnyard_romance:excluded` instead.
+
+The rules run in this order, and the first that applies decides:
+
+1. The species entry's `enabled`, true or false.
+2. The `exclude` list and the `barnyard_romance:excluded` tag: the animal is left out.
+3. The `barnyard_romance:included` tag: the animal is tracked.
+4. The built-in list above.
+
+Excluding never wipes what the mod saved on an animal, so turning a species back on brings it all back. While it's left out, the animal breeds, grows and looks the way vanilla or its own mod has it: back to its normal size, with no stats on show, and a pregnancy it was carrying waits until the species is turned back on.
+
+A breeding ladder shows only for a species that is tracked. The limit: a species switched on only by the `included` tag gets no ladder, and one excluded only by the tag keeps its ladder.
+
+### Species settings: stew and shearing
+
+Besides `milk` (see below), a species entry has two more switches:
+
+- `"stew": true` puts the animal's own bowl interaction under Barnyard Romance's rules: it turns the bowl away from an unfamiliar animal, and it costs familiarity like milking does. Vanilla's mooshroom and Friends&Foes' moobloom have one built in. The setting doesn't make an animal that gives no stew give some, and `"stew": false` leaves the bowl to vanilla or the mod.
+- `"shearing"` is on for every tracked animal that can be sheared: it is once a day, costs familiarity, and the animal can refuse. `"shearing": false` leaves shearing entirely to vanilla or the mod.
+
+## Milk
+
+Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows, mooshrooms, mooblooms, water buffalo and yaks into milk, goats into goat milk and sheep into sheep milk. Meadow's wooden bucket milks cows, mooshrooms, mooblooms, goats and sheep into the matching wooden milk buckets, water buffalo into wooden buffalo milk and wooly cows into their variant's wooden milk (these entries only count when Meadow is installed). Wooly cows take only the wooden bucket, and yaks only the iron one. Other species give no milk. With Meadow installed, its wooden bucket follows these rules on every animal that has them, and a `milk` list that leaves it out closes it on that species.
+
+A `milk` list in a species entry replaces the built-in one, it doesn't add to it. An item that milks some species but isn't in this species' list does nothing at all on it, never vanilla's milking, so the wooden bucket can be taken off cows:
+
+```json
+{
+  "species": {
+    "minecraft:cow": {
+      "milk": [ { "bucket": "minecraft:bucket", "result": "minecraft:milk_bucket" } ]
+    },
+    "minecraft:pig": {
+      "milk": [ { "bucket": "minecraft:glass_bottle", "result": "minecraft:honey_bottle", "sound": "minecraft:item.bottle.fill" } ]
+    }
+  }
+}
+```
+
+An empty list (`"milk": []`) stops a species giving milk. A list entry that is missing its `bucket` or `result` is skipped and logged. Without `sound`, the entry makes a goat's milking sound for goats and a cow's otherwise.
+
+### For mod authors
+
+To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:included` (`data/barnyard_romance/tags/entity_type/included.json`, with `"replace": false`). To tell males apart by their horns, also ship an `assets/<namespace>/barnyard_horns/<name>.json` that names the animal under `entities`; see `assets/barnyard_romance/barnyard_horns/cattle.json` for an example.
 
 ## Herd book
 
-Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves.
+Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves. An animal whose species isn't tracked any more (see [Which species are tracked](#which-species-are-tracked)) stays in the book with its name and family, but its page says "Not tracked" instead of its status; its record comes back the day the species is switched on again.
 
 **Copies:** a herd book with a herd, a book, a feather and an ink sac, anywhere in the crafting grid, make a copy, and the herd book stays in the grid. The copy is the same herd, not a snapshot: an animal added or removed with either book shows in both. Give one to someone you farm with, or keep a spare in a chest. Each book's tooltip shows its herd's mark, such as "Herd 3FA2C1", which its copies share. A new book with no animals yet has nothing to copy.
 
@@ -234,6 +299,10 @@ BarnyardEvents.DEATH_DROP.register(drop -> {
 ```
 
 Until 1.0, an API change that breaks callers can come in any release; the changelog lists them under **API**.
+
+## Known issues
+
+- On Fabric, shears from other mods that the game itself doesn't use for shearing can still use up an animal's shearing refusal for the day. Real vanilla shears are then refused until midnight.
 
 ## Contributing
 

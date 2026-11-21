@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
@@ -16,12 +17,17 @@ public final class MatingGate {
     private MatingGate() {
     }
 
+    // Vanilla's rules unless both are tracked: an animal whose species was switched off keeps what the mod saved on it,
+    // sex and pregnancy included, but none of it stops it mating.
     public static boolean allows(Animal self, Animal partner) {
         try {
-            Optional<AnimalTraits> selfTraits = Services.DATA.get(self);
-            Optional<AnimalTraits> partnerTraits = Services.DATA.get(partner);
+            Optional<AnimalTraits> selfTraits = Tracked.traits(self);
+            Optional<AnimalTraits> partnerTraits = Tracked.traits(partner);
+            if (selfTraits.isEmpty() || partnerTraits.isEmpty()) {
+                return true;
+            }
             // A tracked couple mates only as Courtship paired them.
-            if (selfTraits.isPresent() && partnerTraits.isPresent() && selfTraits.get().sex() != partnerTraits.get().sex()
+            if (selfTraits.get().sex() != partnerTraits.get().sex()
                     && !(selfTraits.get().sex() == Sex.FEMALE
                     ? FeaturesRepository.get(RivalryApi.class).chosen(self, partner)
                     : FeaturesRepository.get(RivalryApi.class).chosen(partner, self))) {

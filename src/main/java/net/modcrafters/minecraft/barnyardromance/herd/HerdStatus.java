@@ -24,6 +24,7 @@ import net.modcrafters.minecraft.barnyardromance.shear.api.ShearApi;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalSubject;
+import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatsApi;
 import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
@@ -31,6 +32,8 @@ import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 // Works out what the herd book shows for one animal at a given time, from its record.
@@ -41,6 +44,11 @@ public final class HerdStatus {
 
     public static HerdEntry entry(HerdRecord record, HerdLedger.Node node, long now, long clock, boolean loaded) {
         View view = view(record, node, now, clock, loaded);
+        // A member whose species isn't tracked any more keeps its record, but shows no status from it: the record stops
+        // being refreshed, so what it says (a pregnancy climbing past due) would only be wrong.
+        if (!tracked(record)) {
+            return untracked(record, node, view);
+        }
         Component eggTip = view.eggs() == null ? Component.empty() : TextComponents.of(view.eggs().tooltip());
         if (view.eggs() != null && !view.facts().eggsToday().isEmpty()) {
             eggTip = Component.empty().append(eggTip).append(Component.literal("\n")).append(TextComponents.of(view.facts().eggsToday()));
@@ -52,6 +60,7 @@ public final class HerdStatus {
                 view.female(),
                 view.stage() == AgeStage.BABY || view.stage() == AgeStage.YOUNG,
                 record.alive(),
+                true,
                 view.familiar(),
                 view.fed(),
                 view.feeder(),
@@ -66,6 +75,24 @@ public final class HerdStatus {
                         .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
                         .toList()
         );
+    }
+
+    // Whether the book shows the record's status: the species is tracked now (the dead keep what they died with).
+    static boolean tracked(HerdRecord record) {
+        return !record.alive() || BarnyardConfig.current().speciesEnabled(record.species());
+    }
+
+    // Name, identity and family links, and a page of the size and "Not tracked".
+    private static HerdEntry untracked(HerdRecord record, HerdLedger.Node node, View view) {
+        List<HerdEntry.Line> lines = new ArrayList<>(FeaturesRepository.get(StatsApi.class).lines(view.facts()).stream()
+                .filter(line -> line.kind() == StatKind.SIZE)
+                .map(line -> new HerdEntry.Line(line.kind(), TextComponents.of(line.text()), (float) line.fill()))
+                .toList());
+        lines.add(new HerdEntry.Line(StatKind.NOTE, Component.translatable("gui.barnyard_romance.herd_book.not_tracked"), 0.0F));
+        return new HerdEntry(node.id(), record.species(), record.name(), view.female(),
+                view.stage() == AgeStage.BABY || view.stage() == AgeStage.YOUNG, true, false, Familiar.FAMILIAR, HerdEntry.Fed.NOT_FED,
+                "", -1, false, ShearState.NONE, Optional.empty(), Component.empty(), Optional.ofNullable(node.mother()),
+                Optional.ofNullable(node.father()), lines);
     }
 
     // The stat sheet's values for a record, worked out the way LiveFacts works them out for the animal itself.

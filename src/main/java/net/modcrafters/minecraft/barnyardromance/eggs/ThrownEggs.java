@@ -39,6 +39,12 @@ public final class ThrownEggs {
         return thrown.is(EggsItems.FERTILIZED_EGG) || BarnyardConfig.current().eggsFor("minecraft:chicken").enabled();
     }
 
+    // A mod's own thrown egg (Untitled Duck Mod's) hatches babies of its own at one in eight, which is left alone only
+    // while its species lays by the mod's rules, so a pack that switches it off gets the mod's hatching back.
+    public static boolean blocksModChicks(String speciesId) {
+        return BarnyardConfig.current().eggsFor(speciesId).enabled();
+    }
+
     public static void land(ServerLevel level, Vec3 position, ItemStack thrown, RandomSource random) {
         EggData data = thrown.get(EggsComponents.EGG_DATA);
         WildEgg wild = thrown.get(EggsComponents.WILD_EGG);

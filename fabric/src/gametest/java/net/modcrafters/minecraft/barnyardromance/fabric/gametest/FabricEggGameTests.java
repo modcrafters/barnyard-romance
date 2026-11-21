@@ -381,4 +381,9 @@ public class FabricEggGameTests {
     public void onlyABoxEggWarnsAboutTakingItOut(GameTestHelper helper) {
         EggGameTests.onlyABoxEggWarnsAboutTakingItOut(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aFertilizedEggSaysItsSpecies(GameTestHelper helper) {
+        EggGameTests.aFertilizedEggSaysItsSpecies(helper);
+    }
 }

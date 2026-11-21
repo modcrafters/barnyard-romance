@@ -22,7 +22,16 @@ import java.util.List;
 import java.util.Optional;
 
 public final class Litter {
+    // Set while the breeding event for a litter the mod conceives is posted, so listeners can tell it from a vanilla
+    // breeding.
+    private static final ThreadLocal<Boolean> CONCEIVING = new ThreadLocal<>();
+
     private Litter() {
+    }
+
+    // Whether the breeding event being posted now is for a litter the mod is conceiving, and so the mod sets its size.
+    public static boolean conceiving() {
+        return Boolean.TRUE.equals(CONCEIVING.get());
     }
 
     // Empty means the loader cancelled the breeding (NeoForge BabyEntitySpawnEvent), so there is no pregnancy.
@@ -38,7 +47,12 @@ public final class Litter {
             }
             if (i == 0) {
                 AgeableMob proposed = baby;
-                baby = Services.PLATFORM.onBabySpawn(mother, father, proposed);
+                CONCEIVING.set(Boolean.TRUE);
+                try {
+                    baby = Services.PLATFORM.onBabySpawn(mother, father, proposed);
+                } finally {
+                    CONCEIVING.remove();
+                }
                 // A listener that cancels, or swaps a real baby for nothing, stops the pregnancy.
                 if (baby == null && proposed != null) {
                     return Optional.empty();

@@ -35,6 +35,7 @@ public final class StatGameTests {
             new BreedingGameTests.Case("a_wild_caught_cow_notes_her_cap", 20, StatGameTests::aWildCaughtCowNotesHerCap),
             new BreedingGameTests.Case("a_laying_hen_counts_todays_eggs", 20, StatGameTests::aLayingHenCountsTodaysEggs),
             new BreedingGameTests.Case("a_sheep_says_whether_it_can_be_shorn", 20, StatGameTests::aSheepSaysWhetherItCanBeShorn),
+            new BreedingGameTests.Case("a_mooshroom_says_shearing_turns_it_into_a_cow", 20, StatGameTests::aMooshroomSaysShearingTurnsItIntoACow),
             new BreedingGameTests.Case("an_animal_without_traits_has_no_facts", 20, StatGameTests::anAnimalWithoutTraitsHasNoFacts)
     );
 
@@ -97,6 +98,15 @@ public final class StatGameTests {
 
         helper.assertTrue(kinds(lines).contains(StatKind.SHEAR), "a sheep has no shear line: " + kinds(lines));
         helper.assertTrue(text(lines, StatKind.SHEAR).equals("Ready to shear"), "her shear line reads " + text(lines, StatKind.SHEAR));
+        helper.succeed();
+    }
+
+    public static void aMooshroomSaysShearingTurnsItIntoACow(GameTestHelper helper) {
+        Animal mooshroom = female(helper, EntityTypes.MOOSHROOM);
+
+        List<StatLine> lines = lines(helper, mooshroom, clock(DAY));
+
+        helper.assertTrue(text(lines, StatKind.SHEAR).equals("Shear to turn it into a Cow"), "its shear line reads " + text(lines, StatKind.SHEAR));
         helper.succeed();
     }
 

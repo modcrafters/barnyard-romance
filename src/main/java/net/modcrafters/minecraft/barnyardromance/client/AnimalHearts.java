@@ -6,6 +6,7 @@ import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlices;
 import net.minecraft.world.entity.animal.Animal;
 
@@ -24,8 +25,13 @@ public final class AnimalHearts {
         if (animal.level() == null || !animal.level().isClientSide()) {
             return;
         }
+        // A pregnancy left on an animal whose species was switched off shows nothing, as vanilla shows nothing.
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
+        if (traits.isEmpty()) {
+            return;
+        }
         if (Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isEmpty()) {
-            oldHeart(animal);
+            oldHeart(animal, traits.get());
             return;
         }
         animal.resetLove();
@@ -45,12 +51,11 @@ public final class AnimalHearts {
         }
     }
 
-    private static void oldHeart(Animal animal) {
+    private static void oldHeart(Animal animal, AnimalTraits traits) {
         if (animal.getRandom().nextInt(OLD_CHANCE) != 0) {
             return;
         }
-        Optional<AnimalTraits> traits = Services.DATA.get(animal);
-        if (traits.isEmpty() || traits.get().get(PregnancySlices.BREEDING).loveUntil() > animal.level().getGameTime() || AgeController.stage(animal) != AgeStage.OLD) {
+        if (traits.get(PregnancySlices.BREEDING).loveUntil() > animal.level().getGameTime() || AgeController.stage(animal, traits) != AgeStage.OLD) {
             return;
         }
         animal.level().addParticle(

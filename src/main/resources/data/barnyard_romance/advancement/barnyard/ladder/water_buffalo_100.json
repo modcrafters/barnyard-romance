@@ -1,0 +1,41 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "meadow:water_buffalo"
+      ]
+    }
+  ],
+  "fabric:load_conditions": [
+    {
+      "condition": "barnyard_romance:species_tracked",
+      "species": [
+        "meadow:water_buffalo"
+      ]
+    }
+  ],
+  "parent": "barnyard_romance:barnyard/ladder/water_buffalo_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.water_buffalo_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "meadow:water_buffalo_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.water_buffalo_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

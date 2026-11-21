@@ -10,6 +10,9 @@ import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.MilkEntry;
+import net.modcrafters.minecraft.barnyardromance.core.config.MilkResult;
+import net.modcrafters.minecraft.barnyardromance.core.config.MilkSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
@@ -23,19 +26,16 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
-//? if >=1.21.5 {
-import net.minecraft.world.entity.animal.cow.AbstractCow;
-//?} else
-//import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.animal.goat.Goat;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -50,25 +50,87 @@ import java.util.Optional;
 
 import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
 
-// Milking tracked cows, mooshrooms, goats and sheep: only mothers in milk, a few times a day by size.
+// Milking tracked animals the species' milk list names (built in: cows, mooshrooms, goats and sheep): only mothers in milk, a few times a day by size.
 public final class MilkActions {
     private MilkActions() {
     }
 
-    public static Optional<Item> milkFor(Animal animal) {
-        //? if >=1.21.5 {
-        if (animal instanceof AbstractCow) {
-        //?} else
-        //if (animal instanceof Cow) {
-            return Optional.of(Items.MILK_BUCKET);
+    // What milking gives, and the sound it makes.
+    public record Milk(Item result, SoundEvent sound) {
+    }
+
+    // What the held item milks the animal into: the item has to be one of the species' milking items and the entry's
+    // items have to exist (an entry for another mod's item resolves to nothing without that mod).
+    public static Optional<Milk> milkFor(Animal animal, ItemStack held) {
+        String speciesId = AnimalSex.speciesId(animal);
+        MilkSettings settings = BarnyardConfig.current().milkFor(speciesId);
+        if (settings.entries().isEmpty() || held.isEmpty()) {
+            return Optional.empty();
         }
-        if (animal instanceof Goat) {
-            return Optional.of(MilkItems.GOAT_MILK_BUCKET);
-        }
-        if (animal instanceof Sheep) {
-            return Optional.of(MilkItems.SHEEP_MILK_BUCKET);
+        String heldId = itemId(held);
+        for (MilkEntry entry : settings.entries()) {
+            if (entry.bucket().equals(heldId)) {
+                Optional<Milk> milk = resolve(animal, speciesId, settings, entry);
+                if (milk.isPresent()) {
+                    return milk;
+                }
+            }
         }
         return Optional.empty();
+    }
+
+    // Whether any of the species' milk entries resolves: the animal is a milk animal, whatever it's milked with.
+    public static boolean givesMilk(Animal animal) {
+        String speciesId = AnimalSex.speciesId(animal);
+        MilkSettings settings = BarnyardConfig.current().milkFor(speciesId);
+        for (MilkEntry entry : settings.entries()) {
+            if (resolve(animal, speciesId, settings, entry).isPresent()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // A tracked animal with a milk list that doesn't have this item, though the item milks something somewhere: the
+    // list replaced the built-in one, so the item does nothing, and vanilla's (or another mod's) milking mustn't answer.
+    public static boolean blocksMilkingItem(Animal animal, ItemStack held) {
+        if (held.isEmpty() || Tracked.traits(animal).isEmpty()) {
+            return false;
+        }
+        BarnyardConfig config = BarnyardConfig.current();
+        // A bowl on a stew animal is the stew's, even when a pack milks some other species with a bowl.
+        if (held.is(Items.BOWL) && givesStew(animal)) {
+            return false;
+        }
+        MilkSettings settings = config.milkFor(AnimalSex.speciesId(animal));
+        String heldId = itemId(held);
+        // A list from the config counts even when empty: it says the species gives no milk, with anything.
+        if (settings.entries().isEmpty() && !settings.fromConfig() || !config.milkingItems().contains(heldId)) {
+            return false;
+        }
+        return settings.entries().stream().noneMatch(entry -> entry.bucket().equals(heldId));
+    }
+
+    // Whether a bowl held out to this animal gives stew: the species' stew setting (built in: the mooshroom).
+    public static boolean givesStew(Animal animal) {
+        return BarnyardConfig.current().stewFor(AnimalSex.speciesId(animal));
+    }
+
+    private static String itemId(ItemStack stack) {
+        return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+    }
+
+    // A built-in entry goes through the feature's milk result for the species if it registered one; a config entry names
+    // its item outright.
+    private static Optional<Milk> resolve(Animal animal, String speciesId, MilkSettings settings, MilkEntry entry) {
+        Optional<MilkResult> provider = settings.fromConfig() ? Optional.empty() : FeaturesRepository.milkResult(speciesId);
+        Optional<Item> result = provider.isPresent() ? provider.get().resultFor(animal, entry) : item(entry.result());
+        return result.map(item -> new Milk(item, milkingSound(animal, entry)));
+    }
+
+    private static Optional<Item> item(String id) {
+        Identifier parsed = Identifier.tryParse(id);
+        return parsed == null ? Optional.empty() : BuiltInRegistries.ITEM.getOptional(parsed).filter(item -> item != Items.AIR);
     }
 
     // Null leaves the bucket to vanilla: not a bucket, not a milk animal, a baby, or an untracked animal.
@@ -83,9 +145,13 @@ public final class MilkActions {
 
     private static InteractionResult tryMilk(Animal animal, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        Optional<Item> milk = milkFor(animal);
-        if (!stack.is(Items.BUCKET) || milk.isEmpty() || animal.isBaby()) {
+        if (animal.isBaby()) {
             return null;
+        }
+        Optional<Milk> milk = milkFor(animal, stack);
+        if (milk.isEmpty()) {
+            // The species' list has no use for this item, so nothing happens: no vanilla milking, no message.
+            return blocksMilkingItem(animal, stack) ? InteractionResult.CONSUME : null;
         }
         Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty()) {
@@ -125,12 +191,12 @@ public final class MilkActions {
         }
         // Other mods may stop the milking or change what the bucket becomes; stopped, nothing happens at all. A result
         // a listener emptied in place, rather than cancelling, stops it too, so it doesn't use up the bucket for nothing.
-        Milking milking = BarnyardEvents.MILKING.post(new Milking(animal, player, new ItemStack(milk.get())));
+        Milking milking = BarnyardEvents.MILKING.post(new Milking(animal, player, new ItemStack(milk.get().result())));
         if (milking.isCancelled() || milking.result().isEmpty()) {
             return InteractionResult.CONSUME;
         }
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
-        animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milkingSound(animal), SoundSource.PLAYERS, 1.0F, 1.0F);
+        animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milk.get().sound(), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, milking.result().copy()));
         Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).milked(now, clock, tuning.milkKeepsFlowingTicks())));
         familiarityApi.spendFamiliarity(animal, tuning.familiarityMilkingCost());
@@ -154,7 +220,7 @@ public final class MilkActions {
         AnimalTraits traits = tracked.get();
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
-        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
+        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), givesMilk(animal),
                 traits.get(LACTATION).hasMilk(now, tuning.milkKeepsFlowingTicks()), FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits));
         if (start != MilkRules.Start.OK) {
             VersionCompat.sendOverlay(player, TextComponents.of(MilkRules.text(start)));
@@ -182,7 +248,7 @@ public final class MilkActions {
         AnimalTraits traits = tracked.get();
         Tuning tuning = BarnyardConfig.current().tuning();
         long now = animal.level().getGameTime();
-        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), milkFor(animal).isPresent(),
+        MilkRules.Start start = MilkRules.start(traits.sex(), animal.isBaby(), givesMilk(animal),
                 traits.get(LACTATION).hasMilk(now, tuning.milkKeepsFlowingTicks()), FeaturesRepository.get(FamiliarityApi.class).isFamiliar(traits));
         if (start == MilkRules.Start.OK) {
             Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).started(now, tuning.milkKeepsFlowingTicks())));
@@ -208,7 +274,7 @@ public final class MilkActions {
     }
 
     public static Optional<MilkStatus> status(Animal animal, AnimalTraits traits, long now, long clock) {
-        if (traits.sex() != Sex.FEMALE || milkFor(animal).isEmpty() || Tracked.traits(animal).isEmpty()) {
+        if (traits.sex() != Sex.FEMALE || !givesMilk(animal) || Tracked.traits(animal).isEmpty()) {
             return Optional.empty();
         }
         return status(traits, sizeClass(animal, traits), now, clock);
@@ -236,7 +302,15 @@ public final class MilkActions {
         return SizeClasses.of(traits.sex(), traits.scale(), SizeRanges.rangeOf(traits, AnimalSex.speciesId(animal)));
     }
 
-    private static SoundEvent milkingSound(Animal animal) {
+    // The entry's own sound if it names one, else the goat's, else the cow's.
+    private static SoundEvent milkingSound(Animal animal, MilkEntry entry) {
+        if (entry.sound() != null) {
+            Identifier id = Identifier.tryParse(entry.sound());
+            Optional<SoundEvent> sound = id == null ? Optional.empty() : BuiltInRegistries.SOUND_EVENT.getOptional(id);
+            if (sound.isPresent()) {
+                return sound.get();
+            }
+        }
         if (animal instanceof Goat goat) {
             return goat.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_MILK : SoundEvents.GOAT_MILK;
         }
@@ -244,7 +318,7 @@ public final class MilkActions {
     }
 
     // A refused milking gives nothing and costs no familiarity, but the animal's milking is over until midnight. A
-    // mooshroom's stew counts as milking.
+    // stew animal's stew counts as milking.
     public static void refuseMilking(Animal animal, @Nullable Player player) {
         long today = GameDay.of(animal.level().getOverworldClockTime());
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
@@ -255,7 +329,7 @@ public final class MilkActions {
         familiarityApi.showRefusal(animal);
     }
 
-    // A bowl held out to a mooshroom: null lets vanilla give the stew. Unfamiliar mooshrooms are turned away earlier.
+    // A bowl held out to an animal that gives stew: null lets the stew come. Unfamiliar animals are turned away earlier.
     public static @Nullable InteractionResult refusesStew(Animal animal, Player player) {
         Optional<AnimalTraits> tracked = Tracked.traits(animal);
         if (tracked.isEmpty() || animal.isBaby()) {

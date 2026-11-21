@@ -18,6 +18,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.BreedingApi;
 import net.modcrafters.minecraft.barnyardromance.breeding.api.Parent;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
@@ -49,7 +50,12 @@ public final class PregnancyController {
         }
     }
 
+    // A mother whose species was switched off keeps her pregnancy as it was saved, and it goes on once the species is
+    // switched back on; meanwhile she's left to vanilla.
     public static void catchUp(Animal animal, ServerLevel level) {
+        if (Tracked.traits(animal).isEmpty()) {
+            return;
+        }
         Optional<Pregnancy> pregnancy = Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
         if (pregnancy.isEmpty() || !animal.isAlive()) {
             return;
@@ -97,11 +103,9 @@ public final class PregnancyController {
 
     private static boolean startOrRefuse(Animal self, Animal partner, ServerLevel level) {
         BarnyardConfig config = BarnyardConfig.current();
-        if (!config.speciesEnabled(AnimalSex.speciesId(self))) {
-            return false;
-        }
-        Optional<AnimalTraits> selfTraits = Services.DATA.get(self);
-        Optional<AnimalTraits> partnerTraits = Services.DATA.get(partner);
+        // Either one untracked (a donkey a pack switched off, bred to a horse) breeds the vanilla way.
+        Optional<AnimalTraits> selfTraits = Tracked.traits(self);
+        Optional<AnimalTraits> partnerTraits = Tracked.traits(partner);
         if (selfTraits.isEmpty() || partnerTraits.isEmpty()) {
             return false;
         }

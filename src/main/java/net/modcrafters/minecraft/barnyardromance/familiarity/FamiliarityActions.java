@@ -13,6 +13,7 @@ import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.milk.api.MilkApi;
@@ -24,8 +25,10 @@ import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
-import net.modcrafters.minecraft.barnyardromance.naturalist.api.NaturalistApi;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -33,19 +36,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Animal;
-//? if >=1.21.5 {
-import net.minecraft.world.entity.animal.cow.AbstractCow;
-//?} else
-//import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.feline.Ocelot;
-import net.minecraft.world.entity.animal.goat.Goat;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
@@ -57,6 +54,7 @@ public final class FamiliarityActions {
     public static final Text TOO_SHY = Text.of("message.barnyard_romance.too_shy");
     public static final Text WONT_EAT = Text.of("message.barnyard_romance.wont_eat");
     public static final Text WANTS_MEAT = Text.of("message.barnyard_romance.wants_meat");
+    public static final Text WANTS_DAILY_FEED = Text.of("message.barnyard_romance.wants_daily_feed");
     public static final Text NOT_FAMILIAR = Text.of("message.barnyard_romance.not_familiar");
 
     private FamiliarityActions() {
@@ -206,7 +204,7 @@ public final class FamiliarityActions {
             pet.setTarget(null);
             pet.setOrderedToSit(true);
             pet.level().broadcastEntityEvent(pet, (byte) 7);
-        } else if (animal instanceof TamableAnimal pet && FeaturesRepository.get(NaturalistApi.class).isLivestock(AnimalSex.speciesId(animal))
+        } else if (animal instanceof TamableAnimal pet && BarnyardConfig.current().tamesThroughFamiliarity(AnimalSex.speciesId(animal))
                 && Familiarity.tames(pet.isTame(), familiarity)) {
             if (!allowsTaming(animal, player, Taming.Kind.TAME)) {
                 return;
@@ -230,14 +228,30 @@ public final class FamiliarityActions {
         return animal.level().isClientSide() || !BarnyardEvents.TAMING.post(new Taming(animal, player, kind)).isCancelled();
     }
 
+    // Their mod's taming food would tame these behind familiarity's back: bones for a wild wolf, and for the species
+    // that SpeciesPresets gives a taming food tag (Untitled Duck Mod's birds) an item from it.
     public static InteractionResult blocksVanillaTaming(Animal animal, Player player, ItemStack stack) {
-        if (!(animal instanceof Wolf wolf) || wolf.isTame() || !stack.is(Items.BONE) || Tracked.traits(animal).isEmpty()) {
+        if (!(animal instanceof TamableAnimal pet) || pet.isTame() || Tracked.traits(animal).isEmpty()) {
+            return null;
+        }
+        Text message;
+        if (animal instanceof Wolf && stack.is(Items.BONE)) {
+            message = WANTS_MEAT;
+        } else if (isTamingFood(animal, stack)) {
+            message = WANTS_DAILY_FEED;
+        } else {
             return null;
         }
         if (!animal.level().isClientSide()) {
-            VersionCompat.sendOverlay(player, TextComponents.of(WANTS_MEAT));
+            VersionCompat.sendOverlay(player, TextComponents.of(message));
         }
         return InteractionResult.CONSUME;
+    }
+
+    private static boolean isTamingFood(Animal animal, ItemStack stack) {
+        return BarnyardConfig.current().tamingFoodTag(AnimalSex.speciesId(animal))
+                .filter(tag -> stack.is(TagKey.create(Registries.ITEM, Identifier.parse(tag))))
+                .isPresent();
     }
 
     private static void scare(Animal animal, Player player) {
@@ -298,6 +312,11 @@ public final class FamiliarityActions {
         if (!isProduct(animal, stack)) {
             return false;
         }
+        // A species switched off for shearing has its shears left to vanilla.
+        if (stack.getItem() instanceof ShearsItem && animal instanceof Shearable
+                && !BarnyardConfig.current().shearingFor(AnimalSex.speciesId(animal))) {
+            return false;
+        }
         return denies(animal);
     }
 
@@ -322,15 +341,12 @@ public final class FamiliarityActions {
         if (animal.isBaby()) {
             return false;
         }
-        if (stack.is(Items.SHEARS) && animal instanceof Shearable) {
+        if (stack.getItem() instanceof ShearsItem && animal instanceof Shearable) {
             return true;
         }
-        if (stack.is(Items.BOWL) && animal instanceof MushroomCow) {
+        if (stack.is(Items.BOWL) && FeaturesRepository.get(MilkApi.class).givesStew(animal)) {
             return true;
         }
-        //? if >=1.21.5 {
-        return stack.is(Items.BUCKET) && (animal instanceof AbstractCow || animal instanceof Goat || animal instanceof Sheep);
-        //?} else
-        //return stack.is(Items.BUCKET) && (animal instanceof Cow || animal instanceof Goat || animal instanceof Sheep);
+        return FeaturesRepository.get(MilkApi.class).milksWith(animal, stack);
     }
 }

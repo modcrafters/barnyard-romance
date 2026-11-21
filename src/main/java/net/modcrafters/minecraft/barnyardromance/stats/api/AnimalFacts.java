@@ -34,6 +34,8 @@ public record AnimalFacts(
         // -1 while alive.
         long diedDay,
         ShearState shear,
+        // What shearing turns the animal into, as a name; empty when it stays itself.
+        Text shearsInto,
         boolean grumpy,
         // What a hen lays tomorrow; null for everything else.
         @Nullable EggOutlook eggs,
@@ -81,6 +83,7 @@ public record AnimalFacts(
         private Familiar familiar = Familiar.FAMILIAR;
         private long diedDay = -1L;
         private ShearState shear = ShearState.NONE;
+        private Text shearsInto = Text.EMPTY;
         private boolean grumpy = false;
         private @Nullable EggOutlook eggs = null;
         private double cap = 1.0;
@@ -169,6 +172,11 @@ public record AnimalFacts(
 
         public Builder shear(ShearState shear) {
             this.shear = shear;
+            return this;
+        }
+
+        public Builder shearsInto(Text shearsInto) {
+            this.shearsInto = shearsInto;
             return this;
         }
 
@@ -263,6 +271,7 @@ public record AnimalFacts(
                     familiar,
                     diedDay,
                     shear,
+                    shearsInto,
                     grumpy,
                     eggs,
                     cap,

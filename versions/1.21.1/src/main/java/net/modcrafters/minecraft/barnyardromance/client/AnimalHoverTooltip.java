@@ -2,7 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.compat.JadeBridge;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
@@ -40,7 +40,7 @@ public final class AnimalHoverTooltip {
         if (!(minecraft.hitResult instanceof EntityHitResult hit) || !(hit.getEntity() instanceof Animal animal)) {
             return;
         }
-        Optional<AnimalTraits> traits = Services.DATA.get(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         if (traits.isEmpty()) {
             return;
         }

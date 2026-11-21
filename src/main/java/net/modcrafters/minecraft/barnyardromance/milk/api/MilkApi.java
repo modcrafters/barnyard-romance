@@ -4,6 +4,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
@@ -13,8 +14,20 @@ import java.util.Optional;
 
 // What other features ask of milk.
 public interface MilkApi {
-    // Whether the animal's species gives milk (cows, mooshrooms, goats and sheep).
+    // Whether the animal's species gives milk (built in: cows, mooshrooms, goats and sheep; a species entry's milk list
+    // can add or take away).
     boolean givesMilk(Animal animal);
+
+    // Whether a bowl held out to the animal gives stew (built in: mooshrooms and mooblooms; a species entry's stew
+    // setting puts that existing bowl interaction under the rules or leaves it to the mod).
+    boolean givesStew(Animal animal);
+
+    // Whether the held item milks this animal: it's on the species' milk list and what it makes exists.
+    boolean milksWith(Animal animal, ItemStack held);
+
+    // Whether the species has a milk list (a config list counts even when empty) and this item, which milks something, isn't on it: the item must do nothing
+    // here, not even what it would elsewhere. False for an untracked animal.
+    boolean blocksMilkingItem(Animal animal, ItemStack held);
 
     // A tracked female's milk, if she has any. now is the game time, clock the overworld clock time.
     Optional<MilkStatus> status(Animal animal, AnimalTraits traits, long now, long clock);

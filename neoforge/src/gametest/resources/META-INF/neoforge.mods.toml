@@ -9,6 +9,8 @@ displayName = "${mod_name} Game Tests"
 description = '''Game tests for ${mod_name}.'''
 [[mixins]]
 config = "${mod_id}_gametest.mixins.json"
+[[mixins]]
+config = "${mod_id}_gametest_neoforge.mixins.json"
 [[dependencies.${mod_id}_gametest]]
 modId = "${mod_id}"
 type = "required"

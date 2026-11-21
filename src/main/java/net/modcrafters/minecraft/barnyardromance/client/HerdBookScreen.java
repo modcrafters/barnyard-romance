@@ -21,9 +21,12 @@ import net.minecraft.client.input.MouseButtonEvent;
 //? if >=1.21.6
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -55,6 +58,12 @@ public class HerdBookScreen extends Screen {
     private static final int HUNGRY = 0xFFB5482F;
     private static final int FROZEN = 0xFF8A8A8A;
     private static final int TAB_TEXT = 0xFF4C1A0B;
+    // How many foods a "not fed" tooltip names before it says how many more there are.
+    private static final int MENU_NAMES = 8;
+    // Our contains_* tags read oddly in a list of foods ("Eats Contains Meat"), so a menu names them its own way.
+    private static final Map<String, String> MENU_GROUP_NAMES = Map.of(
+            "#barnyard_romance:contains_meat", "gui.barnyard_romance.herd_book.food_meat",
+            "#barnyard_romance:contains_fish", "gui.barnyard_romance.herd_book.food_fish");
     // Where the cover's left and right edges are in the book texture.
     private static final int COVER_LEFT = 20;
     private static final int COVER_RIGHT = 166;
@@ -142,6 +151,9 @@ public class HerdBookScreen extends Screen {
     // Which leaf of the shown animal's entry is open; a long entry runs over more than one.
     private int leaf;
     private boolean removeArmed;
+    private Map<String, String> bookmarkNames = Map.of();
+    // What each living species in the book eats, best first, as "#tag" and item ids.
+    private Map<String, List<String>> menus = Map.of();
     private final List<Hit> hits = new ArrayList<>();
     private final PageWheel wheel = new PageWheel();
     private @Nullable PageButton backButton;
@@ -155,6 +167,7 @@ public class HerdBookScreen extends Screen {
     // A new copy of the book from the server: keep the page if it still exists.
     public void update(HerdBookPayloads.ShowBook book) {
         this.book = book.book();
+        this.menus = book.menus();
         Map<UUID, HerdEntry> byId = new LinkedHashMap<>();
         book.entries().forEach(entry -> byId.put(entry.id(), entry));
         this.entries = byId;
@@ -168,6 +181,7 @@ public class HerdBookScreen extends Screen {
                 .map(entry -> new HerdBookLayout.Row(entry.id(), entry.species(), speciesName(entry.species()), resolved.get(entry.id()),
                         entry.female(), entry.kid(), entry.alive()))
                 .toList();
+        this.bookmarkNames = HerdBookLayout.speciesNames(this.rows);
         this.removeArmed = false;
         if (this.animal != null && !this.entries.containsKey(this.animal)) {
             this.animal = null;
@@ -459,7 +473,7 @@ public class HerdBookScreen extends Screen {
         }
         List<TabBox> boxes = new ArrayList<>();
         for (HerdBookLayout.Tab tab : tabs) {
-            String label = HerdBookLayout.tabLabel(speciesName(tab.species()));
+            String label = HerdBookLayout.tabLabel(bookmarkName(tab.species()));
             int shown = tab.side() == HerdBookLayout.Side.RIGHT ? columnStarts.get(tab.column()) : 0;
             int out = shown + tabWidth(tab.species()) + (tab.species().equals(this.species) ? TAB_SELECTED : 0);
             int y = top() + TAB_TOP + tab.row() * TAB_PITCH;
@@ -476,7 +490,7 @@ public class HerdBookScreen extends Screen {
     }
 
     private int tabWidth(String species) {
-        return this.font.width(HerdBookLayout.tabLabel(speciesName(species))) + TAB_PADDING;
+        return this.font.width(HerdBookLayout.tabLabel(bookmarkName(species))) + TAB_PADDING;
     }
 
     private @Nullable TabBox hoveredTab(List<TabBox> boxes, double mouseX, double mouseY) {
@@ -504,7 +518,7 @@ public class HerdBookScreen extends Screen {
         List<TabBox> boxes = tabBoxes();
         // Hits are checked first to last, so the tabs drawn on top go first.
         for (TabBox box : boxes.reversed()) {
-            String name = speciesName(box.species());
+            String name = bookmarkName(box.species());
             int textX = (box.shown0() + box.shown1() - this.font.width(box.label()) + 1) / 2;
             graphics.text(this.font, box.label(), textX, box.y() + 3, box.species().equals(this.species) ? TEXT : TAB_TEXT, false);
             this.hits.add(new Hit(box.shown0(), box.y(), box.shown1(), box.y() + TAB_HEIGHT, () -> showContents(box.species(), 0), Component.literal(name)));
@@ -513,7 +527,7 @@ public class HerdBookScreen extends Screen {
 
     private void drawContents(GuiGraphicsExtractor graphics, int x, int y) {
         List<List<HerdBookLayout.Line>> pages = contents();
-        page(graphics, Component.literal(speciesName(this.species)), pages.size());
+        page(graphics, Component.literal(bookmarkName(this.species)), pages.size());
         List<HerdBookLayout.Line> lines = pages.get(Math.min(this.page, pages.size() - 1));
         int lineY = y;
         for (int i = 0; i < lines.size(); i++) {
@@ -543,6 +557,12 @@ public class HerdBookScreen extends Screen {
     // Draws the status icons right-aligned to `right` and returns where they start.
     private int drawIcons(GuiGraphicsExtractor graphics, HerdEntry entry, int right, int y) {
         int x = right;
+        if (!entry.tracked()) {
+            x -= this.font.width("-");
+            graphics.text(this.font, "-", x, y, FROZEN, false);
+            this.hits.add(new Hit(x, y, x + 6, y + 8, null, Component.translatable("gui.barnyard_romance.herd_book.not_tracked")));
+            return x;
+        }
         if (entry.familiar() != Familiar.FAMILIAR) {
             x -= this.font.width("?");
             graphics.text(this.font, "?", x, y, FROZEN, false);
@@ -572,12 +592,16 @@ public class HerdBookScreen extends Screen {
         if (entry.shear() != ShearState.NONE) {
             x -= ICON;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, entry.shear() == ShearState.READY ? SHEARS_ICON : SHEARS_EMPTY, x, y - 1, ICON, ICON);
-            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, Component.translatable(shearKey(entry.shear()))));
+            this.hits.add(new Hit(x, y - 1, x + ICON, y + 8, null, shearTip(entry)));
             x -= 1;
         }
         x -= ICON;
         drawFood(graphics, entry.fed(), x, y - 1);
-        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, fedTooltip(entry)));
+        List<Component> fedTooltip = new ArrayList<>(List.of(fedTooltip(entry)));
+        if (entry.fed() == HerdEntry.Fed.NOT_FED) {
+            eats(entry.species()).ifPresent(fedTooltip::add);
+        }
+        this.hits.add(new Hit(x - 1, y - 1, x + 10, y + 8, null, fedTooltip));
         return x;
     }
 
@@ -601,6 +625,58 @@ public class HerdBookScreen extends Screen {
                             Component.translatable("block." + Constants.MOD_ID + "." + entry.feeder()));
             case NOT_FED -> Component.translatable("gui.barnyard_romance.herd_book.not_fed_today");
         };
+    }
+
+    // "Eats Crops, Hay Bale, …": the species' everyday foods, best first, for when it hasn't been fed today. Empty when
+    // the book has none for it, as for a species that isn't tracked.
+    private Optional<Component> eats(String species) {
+        List<String> menu = this.menus.getOrDefault(species, List.of());
+        if (menu.isEmpty()) {
+            return Optional.empty();
+        }
+        MutableComponent names = Component.empty();
+        for (int i = 0; i < Math.min(menu.size(), MENU_NAMES); i++) {
+            if (i > 0) {
+                names.append(", ");
+            }
+            names.append(foodName(menu.get(i)));
+        }
+        if (menu.size() > MENU_NAMES) {
+            names.append(", ").append(Component.translatable("gui.barnyard_romance.herd_book.eats_more", menu.size() - MENU_NAMES));
+        }
+        return Optional.of(Component.translatable("gui.barnyard_romance.herd_book.eats", names));
+    }
+
+    // A tag by its own name for a menu, else the name the loaders give it, else its path; an item by its name.
+    private static Component foodName(String id) {
+        if (id.startsWith("#")) {
+            String menuKey = MENU_GROUP_NAMES.get(id);
+            if (menuKey != null) {
+                return Component.translatable(menuKey);
+            }
+            Identifier tag = Identifier.tryParse(id.substring(1));
+            if (tag == null) {
+                return Component.literal(id);
+            }
+            String key = "tag.item." + tag.getNamespace() + "." + tag.getPath().replace('/', '.');
+            return Language.getInstance().has(key) ? Component.translatable(key) : Component.literal(pathName(tag.getPath()));
+        }
+        Identifier item = Identifier.tryParse(id);
+        return item == null ? Component.literal(id) : BuiltInRegistries.ITEM.getOptional(item)
+                .map(found -> new ItemStack(found).getHoverName())
+                .orElse(Component.literal(id));
+    }
+
+    // "foods/small_flowers" as "Small Flowers".
+    private static String pathName(String path) {
+        String last = path.substring(path.lastIndexOf('/') + 1);
+        StringBuilder name = new StringBuilder();
+        for (String word : last.split("_")) {
+            if (!word.isEmpty()) {
+                name.append(name.isEmpty() ? "" : " ").append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+            }
+        }
+        return name.toString();
     }
 
     // An animal's page: a card with its head, name and size, its status lines, then its family.
@@ -728,7 +804,10 @@ public class HerdBookScreen extends Screen {
     // Draws one status row and returns the height it took. Hovering it shows its details; a bar's tooltip leads with its words.
     private int drawPageLine(GuiGraphicsExtractor graphics, HerdEntry entry, HerdBookLayout.Folded<HerdEntry.Line> row, int x, int y) {
         HerdEntry.Line line = row.line();
-        List<Component> details = row.details().stream().map(HerdEntry.Line::text).toList();
+        List<Component> details = new ArrayList<>(row.details().stream().map(HerdEntry.Line::text).toList());
+        if (line.kind() == StatKind.NOT_FED) {
+            eats(entry.species()).ifPresent(details::add);
+        }
         int iconY = y - 1;
         switch (line.kind()) {
             case FED -> drawFood(graphics, entry.fed() == HerdEntry.Fed.FEEDER ? HerdEntry.Fed.FEEDER : HerdEntry.Fed.HAND, x, iconY);
@@ -899,6 +978,13 @@ public class HerdBookScreen extends Screen {
         };
     }
 
+    // The shear row's own words, so a mooshroom's icon says it turns it into a cow like its page does.
+    private static Component shearTip(HerdEntry entry) {
+        return entry.lines().stream().filter(line -> line.kind() == StatKind.SHEAR).findFirst()
+                .map(HerdEntry.Line::text)
+                .orElseGet(() -> Component.translatable(shearKey(entry.shear())));
+    }
+
     private static String shearKey(ShearState state) {
         return switch (state) {
             case SHEARED_TODAY -> "gui.barnyard_romance.herd_book.sheared_today";
@@ -911,12 +997,15 @@ public class HerdBookScreen extends Screen {
         return entry.alive() ? HerdBookLayout.pageOf(contents(), entry.id()) : 0;
     }
 
+    // The title is cut short where it would run into the page number.
     private void page(GuiGraphicsExtractor graphics, Component title, int pages) {
-        graphics.text(this.font, title, left() + TEXT_X, top() + 16, HEADER, false);
+        int titleWidth = TEXT_WIDTH;
         if (pages > 1) {
             Component number = Component.translatable("gui.barnyard_romance.herd_book.page", this.page + 1, pages);
             graphics.text(this.font, number, left() + TEXT_X + TEXT_WIDTH - this.font.width(number), top() + 16, MUTED, false);
+            titleWidth -= this.font.width(number) + 4;
         }
+        graphics.text(this.font, fit(title.getString(), titleWidth), left() + TEXT_X, top() + 16, HEADER, false);
     }
 
     private String fit(String text, int width) {
@@ -924,6 +1013,11 @@ public class HerdBookScreen extends Screen {
             return text;
         }
         return this.font.plainSubstrByWidth(text, Math.max(0, width - this.font.width("…"))) + "…";
+    }
+
+    // A species' name on its bookmark and contents page, with its mod's id when another species in the book shares it.
+    private String bookmarkName(String species) {
+        return this.bookmarkNames.getOrDefault(species, speciesName(species));
     }
 
     private static String speciesName(String species) {

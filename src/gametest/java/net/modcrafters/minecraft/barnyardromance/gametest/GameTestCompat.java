@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -66,6 +71,19 @@ public final class GameTestCompat {
             throw failure(helper, "could not create a " + type);
         }
         return entity;
+    }
+
+    // Finishes the mob as a spawn egg would, with the choices vanilla makes for a new mob, such as a sheep's colour.
+    public static void finalizeSpawn(GameTestHelper helper, Mob mob) {
+        mob.finalizeSpawn(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(mob.blockPosition()), EntitySpawnReason.SPAWN_ITEM_USE, null);
+    }
+
+    // The dye of this colour.
+    public static Item dye(DyeColor color) {
+        return Items.DYE.asList().stream()
+                .filter(item -> new ItemStack(item).get(DataComponents.DYE) == color)
+                .findFirst()
+                .orElseThrow();
     }
 
     // A fresh copy of the entity made from its save, the way a chunk loads it. The copy is not in the level.

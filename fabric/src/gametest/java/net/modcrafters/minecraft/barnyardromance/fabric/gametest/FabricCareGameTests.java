@@ -68,6 +68,41 @@ public class FabricCareGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingAMooshroomCountsOnItsCow(GameTestHelper helper) {
+        CareGameTests.shearingAMooshroomCountsOnItsCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingAMooshroomEarnsNoFleeceNavidad(GameTestHelper helper) {
+        CareGameTests.shearingAMooshroomEarnsNoFleeceNavidad(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aDispenserShearingAMooshroomCountsOnItsCow(GameTestHelper helper) {
+        CareGameTests.aDispenserShearingAMooshroomCountsOnItsCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingSwitchedOffRollsNoRefusal(GameTestHelper helper) {
+        CareGameTests.shearingSwitchedOffRollsNoRefusal(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingSwitchedOffNeverAsksForFamiliarity(GameTestHelper helper) {
+        CareGameTests.shearingSwitchedOffNeverAsksForFamiliarity(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aSnowGolemIsLeftAlone(GameTestHelper helper) {
+        CareGameTests.aSnowGolemIsLeftAlone(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shearingSwitchedOffLeavesItToVanilla(GameTestHelper helper) {
+        CareGameTests.shearingSwitchedOffLeavesItToVanilla(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void dispenserShearingCostsFamiliarity(GameTestHelper helper) {
         CareGameTests.dispenserShearingCostsFamiliarity(helper);
     }

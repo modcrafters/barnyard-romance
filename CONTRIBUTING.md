@@ -52,6 +52,19 @@ These runs test compatibility with [Naturalist](https://modrinth.com/mod/natural
 
 Naturalist needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.101` to the `:neoforge:26.3` versions of these commands.
 
+### With the farm-animal mods
+
+These runs test compatibility with the farm-animal mods the mod has hooks for: [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod), [Friends&Foes](https://modrinth.com/mod/friends-and-foes), [Meadow](https://modrinth.com/mod/lets-do-meadow), [Autumnity](https://modrinth.com/mod/autumnity) and [Environmental](https://modrinth.com/mod/environmental), with the libraries they need. Each run has its own game folder under `runs/farm-mods-*`, and Gradle copies exactly the jars for that build into its `mods`, so the mod doesn't compile against them or ship them. On NeoForge the IntelliJ run configs copy them too, after a Gradle sync. Fabric's runs start from Gradle only. The jars are pinned by Modrinth version id in `gradle/farm-mods-runs.gradle`.
+
+| Command | What it runs |
+| --- | --- |
+| `gradlew :neoforge:1.21.1:runClientFarmMods`, `gradlew :neoforge:26.3:runClientFarmMods`, `gradlew :fabric:26.3:runClientFarmMods` | The game with the farm-animal mods |
+| `gradlew :neoforge:1.21.1:runGameTestServerFarmMods`, `gradlew :neoforge:26.3:runGameTestServerFarmMods`, `gradlew :fabric:26.3:runGametestFarmMods` | Game tests with the mods loaded |
+
+NeoForge 1.21.1 loads all five mods. Only Untitled Duck Mod and Friends&Foes have a 26.3 build, so the 26.3 runs load just those two. A run names the mods it should have in `-Dbarnyard_romance.expect_mods`, and a farm-mod game test fails, rather than passes empty, when one of them is missing.
+
+Untitled Duck Mod needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.103` to the `:neoforge:26.3` versions of these commands.
+
 ### With Fresh Animations
 
 `gradlew :fabric:26.3:runClientFreshAnimations`, `gradlew :neoforge:26.3:runClientFreshAnimations` or `gradlew :neoforge:1.21.1:runClientFreshAnimations` starts the game with [Fresh Animations](https://modrinth.com/resourcepack/fresh-animations) and the two mods it needs, Entity Texture Features and Entity Model Features. The run has its own game folder, `runs/fresh-animations-client`. Gradle copies the two jars into its `mods` and the pack into its `resourcepacks`, and switches the pack on in its `options.txt`. On NeoForge the IntelliJ run config does the same after a Gradle sync.

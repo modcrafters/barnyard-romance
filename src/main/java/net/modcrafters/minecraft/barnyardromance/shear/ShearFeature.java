@@ -12,7 +12,7 @@ public final class ShearFeature implements Feature {
 
     @Override
     public void register(FeatureRegistrar registrar) {
-        registrar.provide(ShearApi.class, ShearRule::state);
+        registrar.provide(ShearApi.class, new ShearApiImpl());
         registrar.slice(ShearSlices.LAST_SHEARED);
     }
 }

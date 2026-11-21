@@ -4,7 +4,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
@@ -33,7 +33,7 @@ final class AnimalStatsProvider implements IEntityComponentProvider {
         if (!(accessor.getEntity() instanceof Animal animal)) {
             return;
         }
-        Optional<AnimalTraits> traits = Services.DATA.get(animal);
+        Optional<AnimalTraits> traits = Tracked.traits(animal);
         Optional<AnimalFacts> facts = LiveFacts.of(animal, animal.level().getGameTime(), animal.level().getOverworldClockTime());
         if (traits.isEmpty() || facts.isEmpty()) {
             return;

@@ -1,15 +1,21 @@
 package net.modcrafters.minecraft.barnyardromance.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
+import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
+import net.modcrafters.minecraft.barnyardromance.shear.SheepColours;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 //? if >=1.21.11
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -51,6 +57,11 @@ public class MobProductMixin {
         if (!((Object) this instanceof Animal animal)) {
             return;
         }
+        InteractionResult washing = SheepColours.wash(animal, player, hand);
+        if (washing != null) {
+            callback.setReturnValue(washing);
+            return;
+        }
         InteractionResult feeding = FamiliarityActions.interact(animal, player, hand);
         if (feeding != null) {
             callback.setReturnValue(feeding);
@@ -71,9 +82,36 @@ public class MobProductMixin {
             callback.setReturnValue(shorn);
             return;
         }
+        // A bowl held out to a stew animal can be turned away like a bucket; otherwise the animal's own stew comes.
+        if (!animal.isBaby() && player.getItemInHand(hand).is(Items.BOWL) && MilkActions.givesStew(animal)) {
+            InteractionResult refused = MilkActions.refusesStew(animal, player);
+            if (refused != null) {
+                callback.setReturnValue(refused);
+                return;
+            }
+        }
         InteractionResult milking = MilkActions.milk(animal, player, hand);
         if (milking != null) {
             callback.setReturnValue(milking);
         }
+    }
+
+    // Stew is milking by another name, so it costs the same familiarity. The stew itself stays the animal's own.
+    @WrapOperation(
+            method = "interact",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/Mob;mobInteract(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"
+            )
+    )
+    private InteractionResult barnyardromance$stewCost(Mob instance, Player player, InteractionHand hand, Operation<InteractionResult> original) {
+        // The hand changes once the bowl is filled, so ask before.
+        boolean bowl = player.getItemInHand(hand).is(Items.BOWL);
+        InteractionResult result = original.call(instance, player, hand);
+        if (bowl && instance instanceof Animal animal && !animal.isBaby() && result.consumesAction()
+                && !animal.level().isClientSide() && MilkActions.givesStew(animal)) {
+            FamiliarityCare.spend(animal, BarnyardConfig.current().tuning().familiarityMilkingCost());
+        }
+        return result;
     }
 }

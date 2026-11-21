@@ -24,12 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FeatureBoundaryScanTest {
     private static final Set<String> FEATURES = Set.of("familiarity", "breeding", "pregnancy", "eggs", "feed", "food",
             "milk", "shear", "vigour", "rivalry", "drops", "herd", "stats", "advancement", "naturalist");
-    private static final Set<String> HOOK_PACKAGES = Set.of("mixin", "mixin/client", "client", "look", "command", "compat/jade");
+    private static final Set<String> HOOK_PACKAGES = Set.of("mixin", "mixin/client", "client", "look", "command", "compat/jade",
+            "compat/untitledduckmod", "compat/friendsandfoes", "compat/meadow", "compat/autumnity", "compat/environmental");
     // The composition root, in the mod's root package, and the flag the Jade plugin sets, which loads without Jade.
     private static final Set<String> HOOK_CLASSES = Set.of("BarnyardRomance", "BarnyardFeatures", "compat/JadeBridge");
     // Mixin accessors stay where Mixin needs them but count as core.
     private static final Set<String> CORE_CLASSES_IN_HOOK_PACKAGES = Set.of("mixin/AnimalEating",
-            "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor");
+            "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor", "mixin/LlamaAccessor");
     // Files one version adds rather than overrides, as <version>/<path>; anything else under versions/ needs a main file.
     private static final Set<String> VERSION_ONLY = Set.of(
             "1.21.1/mixin/client/ChickenModelAccessor",

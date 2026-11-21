@@ -1,13 +1,12 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
 import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
-import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggsApi;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
@@ -29,9 +28,10 @@ public final class LiveFacts {
     private LiveFacts() {
     }
 
-    // Empty when the animal has no traits. now is the game time, clock the overworld clock time.
+    // Empty when the animal isn't tracked: it has no traits, or its species was switched off. now is the game time,
+    // clock the overworld clock time.
     public static Optional<AnimalFacts> of(Animal animal, long now, long clock) {
-        return Services.DATA.get(animal).map(traits -> FactSheet.of(new Live(animal, traits, now, clock), now, clock));
+        return Tracked.traits(animal).map(traits -> FactSheet.of(new Live(animal, traits, now, clock), now, clock));
     }
 
     // The animal as it is now; what only a loaded animal can say comes from the entity itself.
@@ -93,8 +93,8 @@ public final class LiveFacts {
 
         @Override
         public ShearState shear() {
-            return FeaturesRepository.get(ShearApi.class).shearState(
-                    animal instanceof Sheep, !(animal instanceof Sheep sheep && sheep.isSheared()), animal.isBaby(), traits, clock);
+            ShearApi shear = FeaturesRepository.get(ShearApi.class);
+            return shear.shearState(shear.tracksShearing(animal), shear.readyForShearing(animal), animal.isBaby(), traits, clock);
         }
 
         // A loaded animal is either familiar or not yet; only the herd book remembers one that was.
