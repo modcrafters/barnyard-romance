@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Sheep spawn white and have white lambs, and dye no longer works on them. Set `colouredSheep` or `sheepDyeing` to `true` in `config/barnyard_romance.json` to bring either back. A water bucket washes a coloured sheep white.
 - When an animal hasn't been fed today, its herd book tooltip says what it eats, best first.
 - When two animals in a herd book share a name, like ducks from two mods, their bookmarks and pages add the mod: "Duck @naturalist".
 - A fertilized egg's tooltip says whose egg it is, with the mod when two animals share a name: "Duck egg @naturalist".

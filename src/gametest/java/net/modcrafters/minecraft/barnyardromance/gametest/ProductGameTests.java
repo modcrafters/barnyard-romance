@@ -48,6 +48,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -57,8 +58,10 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
@@ -93,6 +96,10 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("meat_keeps_its_curve", 20, ProductGameTests::meatKeepsItsCurve),
             new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool),
             new BreedingGameTests.Case("sheep_shear_once_a_day", 20, ProductGameTests::sheepShearOnceADay),
+            new BreedingGameTests.Case("tracked_sheep_spawn_white", 20, ProductGameTests::trackedSheepSpawnWhite),
+            new BreedingGameTests.Case("lambs_are_white_without_coloured_sheep", 20, ProductGameTests::lambsAreWhiteWithoutColouredSheep),
+            new BreedingGameTests.Case("tracked_sheep_cannot_be_dyed", 20, ProductGameTests::trackedSheepCannotBeDyed),
+            new BreedingGameTests.Case("a_water_bucket_washes_a_sheep_white", 20, ProductGameTests::aWaterBucketWashesASheepWhite),
             new BreedingGameTests.Case("unfamiliar_sheep_keep_their_wool", 20, ProductGameTests::unfamiliarSheepKeepTheirWool),
             new BreedingGameTests.Case("wolf_tamed_by_familiarity", 20, ProductGameTests::wolfTamedByFamiliarity),
             new BreedingGameTests.Case("wolves_bite_and_last_by_their_size", 20, ProductGameTests::wolvesBiteAndLastByTheirSize),
@@ -478,6 +485,121 @@ public final class ProductGameTests {
         Services.DATA.set(sheep, traits.with(LAST_SHEARED, traits.get(LAST_SHEARED) - GameDay.TICKS));
         GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.SHEARS));
         helper.assertTrue(sheep.isSheared(), "a sheep sheared yesterday was not sheared today");
+        helper.succeed();
+    }
+
+    // With colouredSheep off (the default) a tracked sheep always spawns white. Switched on, or with sheep excluded,
+    // vanilla picks its colour, and a hundred sheep are never all white.
+    public static void trackedSheepSpawnWhite(GameTestHelper helper) {
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            Set<DyeColor> tracked = spawnColours(helper);
+            BarnyardConfig.set(BarnyardConfig.parse("{\"colouredSheep\": true}"));
+            Set<DyeColor> switchedOn = spawnColours(helper);
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:sheep\"]}"));
+            Set<DyeColor> excluded = spawnColours(helper);
+            helper.assertTrue(tracked.equals(Set.of(DyeColor.WHITE)), "tracked sheep spawned " + tracked);
+            helper.assertTrue(switchedOn.size() > 1, "with colouredSheep on, sheep spawned only " + switchedOn);
+            helper.assertTrue(excluded.size() > 1, "excluded sheep spawned only " + excluded);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    private static Set<DyeColor> spawnColours(GameTestHelper helper) {
+        Set<DyeColor> colours = EnumSet.noneOf(DyeColor.class);
+        for (int i = 0; i < 100; i++) {
+            Sheep sheep = GameTestCompat.unspawned(helper, EntityTypes.SHEEP);
+            GameTestCompat.finalizeSpawn(helper, sheep);
+            colours.add(sheep.getColor());
+        }
+        return colours;
+    }
+
+    // With colouredSheep off two black sheep have a white lamb; switched on, a black one, as in vanilla.
+    public static void lambsAreWhiteWithoutColouredSheep(GameTestHelper helper) {
+        Sheep ewe = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        Sheep ram = (Sheep) BreedingGameTests.male(helper, EntityTypes.SHEEP);
+        ewe.setColor(DyeColor.BLACK);
+        ram.setColor(DyeColor.BLACK);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            DyeColor white = ewe.getBreedOffspring(helper.getLevel(), ram).getColor();
+            BarnyardConfig.set(BarnyardConfig.parse("{\"colouredSheep\": true}"));
+            DyeColor black = ewe.getBreedOffspring(helper.getLevel(), ram).getColor();
+            helper.assertTrue(white == DyeColor.WHITE, "with colouredSheep off, black sheep had a " + white + " lamb");
+            helper.assertTrue(black == DyeColor.BLACK, "with colouredSheep on, black sheep had a " + black + " lamb");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    // With sheepDyeing off (the default) dye does nothing on a tracked sheep and isn't used up; switched on, or with
+    // sheep excluded, it dyes the sheep as in vanilla.
+    public static void trackedSheepCannotBeDyed(GameTestHelper helper) {
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            Player refused = FoodGameTests.holding(helper, GameTestCompat.dye(DyeColor.RED));
+            GameTestCompat.useOn(sheep, refused);
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "a tracked sheep was dyed " + sheep.getColor());
+            helper.assertTrue(refused.getMainHandItem().getCount() == 1, "the dye was used up on a sheep that can't be dyed");
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"sheepDyeing\": true}"));
+            Player dyer = FoodGameTests.holding(helper, GameTestCompat.dye(DyeColor.RED));
+            GameTestCompat.useOn(sheep, dyer);
+            helper.assertTrue(sheep.getColor() == DyeColor.RED, "with sheepDyeing on, the sheep stayed " + sheep.getColor());
+            helper.assertTrue(dyer.getMainHandItem().isEmpty(), "with sheepDyeing on, the dye wasn't used");
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:sheep\"]}"));
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, GameTestCompat.dye(DyeColor.BLUE)));
+            helper.assertTrue(sheep.getColor() == DyeColor.BLUE, "an excluded sheep wasn't dyed");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    // A water bucket washes a coloured sheep white, whatever the colour settings, and becomes an empty bucket. A sheared
+    // sheep washes too, since its wool grows back in its colour. A white sheep is left alone, and so is an excluded one.
+    public static void aWaterBucketWashesASheepWhite(GameTestHelper helper) {
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            sheep.setColor(DyeColor.BLACK);
+            Player washer = FoodGameTests.holding(helper, Items.WATER_BUCKET);
+            GameTestCompat.useOn(sheep, washer);
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "a washed sheep stayed " + sheep.getColor());
+            helper.assertTrue(washer.getMainHandItem().is(Items.BUCKET), "washing left " + washer.getMainHandItem());
+
+            Player again = FoodGameTests.holding(helper, Items.WATER_BUCKET);
+            InteractionResult white = GameTestCompat.interact(sheep, again);
+            helper.assertTrue(!white.consumesAction() && again.getMainHandItem().is(Items.WATER_BUCKET), "a white sheep was washed");
+
+            sheep.setColor(DyeColor.BLUE);
+            sheep.setSheared(true);
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.WATER_BUCKET));
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "a sheared sheep stayed " + sheep.getColor());
+            sheep.setSheared(false);
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"colouredSheep\": true, \"sheepDyeing\": true}"));
+            sheep.setColor(DyeColor.PINK);
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.WATER_BUCKET));
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "with the colour settings on, a washed sheep stayed " + sheep.getColor());
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:sheep\"]}"));
+            sheep.setColor(DyeColor.BLACK);
+            GameTestCompat.interact(sheep, FoodGameTests.holding(helper, Items.WATER_BUCKET));
+            helper.assertTrue(sheep.getColor() == DyeColor.BLACK, "an excluded sheep was washed");
+        } finally {
+            BarnyardConfig.set(config);
+        }
         helper.succeed();
     }
 

@@ -8,6 +8,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
+import net.modcrafters.minecraft.barnyardromance.shear.SheepColours;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Mob;
@@ -54,6 +55,11 @@ public class MobProductMixin {
     //?} else
     //private void barnyardromance$products(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> callback) {
         if (!((Object) this instanceof Animal animal)) {
+            return;
+        }
+        InteractionResult washing = SheepColours.wash(animal, player, hand);
+        if (washing != null) {
+            callback.setReturnValue(washing);
             return;
         }
         InteractionResult feeding = FamiliarityActions.interact(animal, player, hand);

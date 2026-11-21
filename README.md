@@ -61,6 +61,8 @@ Animals that shy away from players, such as rabbits or Naturalist's deer, stop r
 
 Goats don't long-jump, so a fence holds them like any other animal. Vanilla's goats leap to spots they can't walk to, which takes them over a fence. To bring the jump back, set `goatLongJumps` in `config/barnyard_romance.json` to `true`. Goats left out of the mod always jump.
 
+Sheep spawn white, their lambs are white whatever colour their parents are, and dye does nothing on them. Set `colouredSheep` to `true` to bring back vanilla's coloured sheep and lambs that mix their parents' colours, and `sheepDyeing` to `true` to dye sheep again. Sheep that are already coloured keep their colour until they're washed: a water bucket used on a coloured sheep washes it white and comes back empty, whatever these settings. Sheep left out of the mod keep vanilla's colours and dye, and don't wash.
+
 The losses are `familiarityHungerLoss`, `familiarityMilkingCost` and `familiarityShearingCost` in the config's `tuning` block (0 turns one off).
 
 ### Wild-caught animals

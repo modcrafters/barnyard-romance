@@ -13,6 +13,26 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void trackedSheepSpawnWhite(GameTestHelper helper) {
+        ProductGameTests.trackedSheepSpawnWhite(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void lambsAreWhiteWithoutColouredSheep(GameTestHelper helper) {
+        ProductGameTests.lambsAreWhiteWithoutColouredSheep(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void trackedSheepCannotBeDyed(GameTestHelper helper) {
+        ProductGameTests.trackedSheepCannotBeDyed(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWaterBucketWashesASheepWhite(GameTestHelper helper) {
+        ProductGameTests.aWaterBucketWashesASheepWhite(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void unfamiliarSheepKeepTheirWool(GameTestHelper helper) {
         ProductGameTests.unfamiliarSheepKeepTheirWool(helper);
     }

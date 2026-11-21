@@ -187,6 +187,24 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void colouredSheepAndSheepDyeingAreOffByDefault() {
+        assertFalse(BarnyardConfig.parse("{}").colouredSheep());
+        assertFalse(BarnyardConfig.parse("{}").sheepDyeing());
+        assertFalse(BarnyardConfig.defaults().colouredSheep());
+        assertFalse(BarnyardConfig.defaults().sheepDyeing());
+    }
+
+    @Test
+    void colouredSheepAndSheepDyeingRoundTrip() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"colouredSheep\": true, \"sheepDyeing\": true}");
+
+        assertTrue(config.colouredSheep());
+        assertTrue(config.sheepDyeing());
+        assertTrue(BarnyardConfig.parse(config.toJson()).colouredSheep());
+        assertTrue(BarnyardConfig.parse(config.toJson()).sheepDyeing());
+    }
+
+    @Test
     void herdSticksAreOffByDefault() {
         assertFalse(BarnyardConfig.parse("{}").herdSticks());
     }
