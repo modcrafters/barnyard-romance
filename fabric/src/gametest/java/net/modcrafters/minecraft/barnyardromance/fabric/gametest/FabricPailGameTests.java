@@ -161,4 +161,29 @@ public class FabricPailGameTests {
     public void aDroppedFluidCanStillBePouredOut(GameTestHelper helper) {
         PailGameTests.aDroppedFluidCanStillBePouredOut(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void goatMilkConvertsToMilk(GameTestHelper helper) {
+        PailGameTests.goatMilkConvertsToMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void conversionLeavesNoBucket(GameTestHelper helper) {
+        PailGameTests.conversionLeavesNoBucket(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void vanillaMilkDoesNotConvert(GameTestHelper helper) {
+        PailGameTests.vanillaMilkDoesNotConvert(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPailDoesNotConvert(GameTestHelper helper) {
+        PailGameTests.aPailDoesNotConvert(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void conversionLoadsOnlyWhenSwitchedOn(GameTestHelper helper) {
+        PailGameTests.conversionLoadsOnlyWhenSwitchedOn(helper);
+    }
 }

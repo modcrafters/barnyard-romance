@@ -48,6 +48,7 @@ public final class BarnyardConfig {
     private final boolean goatLongJumps;
     private final boolean colouredSheep;
     private final boolean sheepDyeing;
+    private final boolean milkConversion;
     private final double femaleRatio;
     private final SizeSettings defaults;
     private final boolean pregnancyEnabled;
@@ -70,6 +71,7 @@ public final class BarnyardConfig {
             boolean goatLongJumps,
             boolean colouredSheep,
             boolean sheepDyeing,
+            boolean milkConversion,
             double femaleRatio,
             SizeSettings defaults,
             boolean pregnancyEnabled,
@@ -87,6 +89,7 @@ public final class BarnyardConfig {
         this.goatLongJumps = goatLongJumps;
         this.colouredSheep = colouredSheep;
         this.sheepDyeing = sheepDyeing;
+        this.milkConversion = milkConversion;
         this.femaleRatio = femaleRatio;
         this.defaults = defaults;
         this.pregnancyEnabled = pregnancyEnabled;
@@ -101,7 +104,7 @@ public final class BarnyardConfig {
     }
 
     public static BarnyardConfig defaults() {
-        return new BarnyardConfig(true, herdSticksByDefault(), false, false, false, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
+        return new BarnyardConfig(true, herdSticksByDefault(), false, false, false, false, 0.5, DEFAULT_SIZE, true, DEFAULT_PREGNANCY_TICKS, DEFAULT_LITTER, AgeSettings.DEFAULTS, BellySettings.DEFAULTS, Map.of(), List.of(), HungerSettings.DEFAULTS, Tuning.DEFAULTS);
     }
 
     // The dev client runs set -Dbarnyard_romance.herd_sticks=true; a config file's own herdSticks wins over it.
@@ -157,6 +160,7 @@ public final class BarnyardConfig {
         boolean goatLongJumps = bool(object, "goatLongJumps", false);
         boolean colouredSheep = bool(object, "colouredSheep", false);
         boolean sheepDyeing = bool(object, "sheepDyeing", false);
+        boolean milkConversion = bool(object, "milkConversion", false);
         double femaleRatio = clamp(number(object, "femaleRatio", 0.5), 0.0, 1.0);
         SizeSettings size = new SizeSettings(
                 number(object, "femaleScale", DEFAULT_SIZE.femaleScale()),
@@ -193,6 +197,7 @@ public final class BarnyardConfig {
                 goatLongJumps,
                 colouredSheep,
                 sheepDyeing,
+                milkConversion,
                 femaleRatio,
                 size,
                 pregnancyEnabled,
@@ -222,6 +227,7 @@ public final class BarnyardConfig {
         object.addProperty("goatLongJumps", goatLongJumps);
         object.addProperty("colouredSheep", colouredSheep);
         object.addProperty("sheepDyeing", sheepDyeing);
+        object.addProperty("milkConversion", milkConversion);
         object.addProperty("femaleRatio", femaleRatio);
         object.addProperty("femaleScale", defaults.femaleScale());
         object.addProperty("maleScale", defaults.maleScale());
@@ -276,6 +282,12 @@ public final class BarnyardConfig {
     // Whether dye works on tracked sheep. Off by default.
     public boolean sheepDyeing() {
         return sheepDyeing;
+    }
+
+    // Whether the recipe that turns a goat or sheep milk bucket (or any other bucket in c:buckets/milk) into a vanilla
+    // milk bucket loads. Off by default; read at startup, as a recipe's load condition.
+    public boolean milkConversion() {
+        return milkConversion;
     }
 
     public double femaleRatio() {

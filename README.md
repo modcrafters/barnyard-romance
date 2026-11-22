@@ -267,6 +267,8 @@ Sneak while looking at an animal to see all its stats on the card above it. Usin
 
 **Herd Sticks:** `herdSticks` in `config/barnyard_romance.json` is `false` by default. Turned on, it shows the Herd Sticks in the creative tab and the `/barnyard familiarity` and `/barnyard pregnancy` commands that hand them out. Needs a restart.
 
+**Milk conversion:** `milkConversion` in `config/barnyard_romance.json` is `false` by default. Turned on, a recipe turns a single goat milk bucket, sheep milk bucket or any other milk bucket in `c:buckets/milk` into a vanilla milk bucket, with nothing left over: the bucket it came in isn't handed back. Vanilla's own milk bucket and the pails don't convert. Needs a restart.
+
 ## Translations
 
 All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To translate it, copy that file to your language's code (for example `de_de.json`) and translate the values. Leave the keys and the `%s` placeholders as they are. The file can go in the mod or in a resource pack.

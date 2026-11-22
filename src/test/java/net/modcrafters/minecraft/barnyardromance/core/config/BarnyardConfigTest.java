@@ -205,6 +205,20 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void milkConversionIsOffByDefault() {
+        assertFalse(BarnyardConfig.parse("{}").milkConversion());
+        assertFalse(BarnyardConfig.defaults().milkConversion());
+    }
+
+    @Test
+    void milkConversionRoundTrips() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"milkConversion\": true}");
+
+        assertTrue(config.milkConversion());
+        assertTrue(BarnyardConfig.parse(config.toJson()).milkConversion());
+    }
+
+    @Test
     void herdSticksAreOffByDefault() {
         assertFalse(BarnyardConfig.parse("{}").herdSticks());
     }

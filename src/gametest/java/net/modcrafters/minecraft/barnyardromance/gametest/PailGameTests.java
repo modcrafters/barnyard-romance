@@ -26,8 +26,11 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.modcrafters.minecraft.barnyardromance.api.event.Milking;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.config.ConfigEnabled;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
+import net.modcrafters.minecraft.barnyardromance.milk.MilkConversionRecipe;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
 import net.modcrafters.minecraft.barnyardromance.pail.PailContents;
@@ -78,7 +81,12 @@ public final class PailGameTests {
             new BreedingGameTests.Case("closing_returns_the_slot_item", 20, PailGameTests::closingReturnsTheSlotItem),
             new BreedingGameTests.Case("shift_clicking_sixteen_buckets_moves_one", 20, PailGameTests::shiftClickingSixteenBucketsMovesOne),
             new BreedingGameTests.Case("moving_the_pail_closes_the_menu", 20, PailGameTests::movingThePailClosesTheMenu),
-            new BreedingGameTests.Case("a_dropped_fluid_can_still_be_poured_out", 20, PailGameTests::aDroppedFluidCanStillBePouredOut)
+            new BreedingGameTests.Case("a_dropped_fluid_can_still_be_poured_out", 20, PailGameTests::aDroppedFluidCanStillBePouredOut),
+            new BreedingGameTests.Case("goat_milk_converts_to_milk", 20, PailGameTests::goatMilkConvertsToMilk),
+            new BreedingGameTests.Case("conversion_leaves_no_bucket", 20, PailGameTests::conversionLeavesNoBucket),
+            new BreedingGameTests.Case("vanilla_milk_does_not_convert", 20, PailGameTests::vanillaMilkDoesNotConvert),
+            new BreedingGameTests.Case("a_pail_does_not_convert", 20, PailGameTests::aPailDoesNotConvert),
+            new BreedingGameTests.Case("conversion_loads_only_when_switched_on", 20, PailGameTests::conversionLoadsOnlyWhenSwitchedOn)
     );
     // Familiar enough to be milked but under refusalBelow, with every roll a refusal: a milking that gets as far as the
     // roll is refused, so one that isn't refused never rolled.
@@ -543,6 +551,98 @@ public final class PailGameTests {
     // The key of a translated name, or "" for a name written out, such as a fluid's id.
     private static String translationKey(Component name) {
         return name.getContents() instanceof TranslatableContents translatable ? translatable.getKey() : "";
+    }
+
+    public static void goatMilkConvertsToMilk(GameTestHelper helper) {
+        for (Item bucket : List.of(MilkItems.GOAT_MILK_BUCKET, MilkItems.SHEEP_MILK_BUCKET)) {
+            CraftingInput input = CraftingInput.of(3, 3, grid(new ItemStack(bucket)));
+            MilkConversionRecipe recipe = MilkConversionRecipe.create();
+            helper.assertTrue(recipe.matches(input, helper.getLevel()), "the recipe doesn't match " + bucket);
+            helper.assertTrue(assemble(helper, recipe, input).is(Items.MILK_BUCKET), bucket + " makes " + assemble(helper, recipe, input));
+        }
+        // Two buckets, or a bucket with something else, aren't a conversion.
+        CraftingInput two = CraftingInput.of(3, 3, grid(new ItemStack(MilkItems.GOAT_MILK_BUCKET), new ItemStack(MilkItems.SHEEP_MILK_BUCKET)));
+        helper.assertTrue(!MilkConversionRecipe.create().matches(two, helper.getLevel()), "two milk buckets convert");
+        CraftingInput mixed = CraftingInput.of(3, 3, grid(new ItemStack(MilkItems.GOAT_MILK_BUCKET), new ItemStack(Items.WHEAT)));
+        helper.assertTrue(!MilkConversionRecipe.create().matches(mixed, helper.getLevel()), "a milk bucket and wheat convert");
+        helper.succeed();
+    }
+
+    // The goat and sheep milk buckets return an empty bucket as a craft remainder, so the recipe has to say it returns
+    // nothing.
+    public static void conversionLeavesNoBucket(GameTestHelper helper) {
+        CraftingInput input = CraftingInput.of(3, 3, grid(new ItemStack(MilkItems.GOAT_MILK_BUCKET)));
+        for (ItemStack left : MilkConversionRecipe.create().getRemainingItems(input)) {
+            helper.assertTrue(left.isEmpty(), "the conversion leaves " + left);
+        }
+        helper.succeed();
+    }
+
+    public static void vanillaMilkDoesNotConvert(GameTestHelper helper) {
+        CraftingInput input = CraftingInput.of(3, 3, grid(new ItemStack(Items.MILK_BUCKET)));
+        helper.assertTrue(!MilkConversionRecipe.create().matches(input, helper.getLevel()), "vanilla's milk bucket converts to itself");
+        helper.succeed();
+    }
+
+    public static void aPailDoesNotConvert(GameTestHelper helper) {
+        for (Item pail : List.of(PailItems.WOODEN_PAIL, PailItems.COPPER_PAIL, PailItems.IRON_PAIL)) {
+            ItemStack full = new ItemStack(pail);
+            PailItem.setContents(full, new PailContents(Identifier.fromNamespaceAndPath("barnyard_romance", "goat_milk"), 1000));
+            for (ItemStack stack : List.of(new ItemStack(pail), full)) {
+                CraftingInput input = CraftingInput.of(3, 3, grid(stack));
+                helper.assertTrue(!MilkConversionRecipe.create().matches(input, helper.getLevel()), "a pail converts: " + stack);
+            }
+        }
+        helper.succeed();
+    }
+
+    // Reloading datapacks mid-suite isn't practical (the ladder tests don't either), so this is three checks that
+    // together cover it: a default run has no conversion in the recipe manager, the load condition follows the config,
+    // and the recipe file carries that condition for both loaders.
+    public static void conversionLoadsOnlyWhenSwitchedOn(GameTestHelper helper) {
+        helper.assertTrue(!BarnyardConfig.current().milkConversion(), "the test run has the conversion switched on");
+        helper.assertTrue(result(helper, grid(new ItemStack(MilkItems.GOAT_MILK_BUCKET))).isEmpty(),
+                "the conversion recipe is loaded with the switch off");
+        helper.assertTrue(!ConfigEnabled.test("milkConversion"), "the condition passes with the switch off");
+        UpkeepGameTests.withConfig("{\"milkConversion\": true}", () ->
+                helper.assertTrue(ConfigEnabled.test("milkConversion"), "the condition fails with the switch on"));
+        helper.assertTrue(!ConfigEnabled.test("milkConversion"), "the config wasn't restored");
+        helper.assertTrue(!ConfigEnabled.test("notASwitch"), "an unknown key passes");
+
+        String json;
+        // The loaders keep the mod's jar out of reach of this class's own loader, so ask the server's resources.
+        java.util.Optional<net.minecraft.server.packs.resources.Resource> file = helper.getLevel().getServer().getResourceManager()
+                .getResource(Identifier.fromNamespaceAndPath("barnyard_romance", "recipe/milk_conversion.json"));
+        helper.assertTrue(file.isPresent(), "the recipe file is missing");
+        try (java.io.InputStream stream = file.get().open()) {
+            json = new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException exception) {
+            throw new IllegalStateException(exception);
+        }
+        com.google.gson.JsonObject recipe = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+        com.google.gson.JsonObject neoforge = recipe.getAsJsonArray("neoforge:conditions").get(0).getAsJsonObject();
+        com.google.gson.JsonObject fabric = recipe.getAsJsonArray("fabric:load_conditions").get(0).getAsJsonObject();
+        helper.assertTrue(neoforge.get("type").getAsString().equals("barnyard_romance:config_enabled")
+                && neoforge.get("key").getAsString().equals("milkConversion"), "the NeoForge condition is " + neoforge);
+        helper.assertTrue(fabric.get("condition").getAsString().equals("barnyard_romance:config_enabled")
+                && fabric.get("key").getAsString().equals("milkConversion"), "the Fabric condition is " + fabric);
+        helper.succeed();
+    }
+
+    // The stacks in the grid's first slots, the rest empty.
+    private static List<ItemStack> grid(ItemStack... stacks) {
+        List<ItemStack> grid = new ArrayList<>(List.of(stacks));
+        while (grid.size() < 9) {
+            grid.add(ItemStack.EMPTY);
+        }
+        return grid;
+    }
+
+    private static ItemStack assemble(GameTestHelper helper, CraftingRecipe recipe, CraftingInput input) {
+        //? if >=1.21.2 {
+        return recipe.assemble(input);
+        //?} else
+        //return recipe.assemble(input, helper.getLevel().registryAccess());
     }
 
     // A stick above a V of the material.

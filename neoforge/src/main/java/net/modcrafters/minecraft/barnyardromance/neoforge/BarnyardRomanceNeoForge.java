@@ -72,6 +72,7 @@ public class BarnyardRomanceNeoForge {
         NeoForgeBridge.register();
         NeoForgeAnimalData.register(modBus);
         SpeciesTrackedCondition.register(modBus);
+        ConfigEnabledCondition.register(modBus);
         // Cow milk in pails is NeoForge's own milk fluid, which is off unless a mod asks for it.
         NeoForgeMod.enableMilkFluid();
         NeoForgePlatformHelper.FLUID_TYPES.register(modBus);
