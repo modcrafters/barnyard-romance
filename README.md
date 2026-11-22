@@ -302,6 +302,7 @@ dependencies {
 - Only touch the API when the mod `barnyard_romance` is loaded. Never shade the API or nest it in your jar: Barnyard Romance already carries it, and two copies clash.
 - `BarnyardEvents` has the events. `Taming`, `Milking`, `DeathDrop`, `ShearYield` and `FamiliarityChange` come before Barnyard Romance acts and can be cancelled or changed. `Befriended`, `Born` and `Hatched` come after. They fire on the server, only for animals Barnyard Romance tracks. Register listeners while your mod starts.
 - `BarnyardApi.animals()` answers `tracked(animal)` and `info(animal)`: sex, size, age, familiarity and pregnancy, as the stat card shows them.
+- `BarnyardApi.pails()` reads and moves milk in pails, by the same rules as the pail's window and the fluid adapters: `isPail`, `capacity`, `fluid` and `amount` read a pail, `fill` and `drain` change it in place (or only report with `simulate`), all in millilitres. `fill` refuses a fluid outside `barnyard_romance:pail_fluids` and a second fluid in a pail that already holds one, and `drain` empties whatever the pail holds. A stack of more than one pail takes and gives nothing.
 - NeoForge mods can also listen on NeoForge's bus (`MilkingEvent` and the rest in `api.neoforge`, each with `apiEvent()`), and Fabric mods to `BarnyardFabricEvents`. These run after the listeners on `BarnyardEvents`.
 
 ```java
