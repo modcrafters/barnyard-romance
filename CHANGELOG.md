@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Wooden, copper and iron pails hold 2000, 3000 and 5000 ml of one fluid. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail shows what it holds in its tooltip and as a fill bar. They can't be filled yet.
 - Sheep spawn white and have white lambs, and dye no longer works on them. Set `colouredSheep` or `sheepDyeing` to `true` in `config/barnyard_romance.json` to bring either back. A water bucket washes a coloured sheep white.
 - When an animal hasn't been fed today, its herd book tooltip says what it eats, best first.
 - When two animals in a herd book share a name, like ducks from two mods, their bookmarks and pages add the mod: "Duck @naturalist".

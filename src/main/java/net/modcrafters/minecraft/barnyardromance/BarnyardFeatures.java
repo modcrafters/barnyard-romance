@@ -17,6 +17,7 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityFeature;
 import net.modcrafters.minecraft.barnyardromance.food.FoodFeature;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkFeature;
+import net.modcrafters.minecraft.barnyardromance.pail.PailFeature;
 import net.modcrafters.minecraft.barnyardromance.naturalist.NaturalistFeature;
 import net.modcrafters.minecraft.barnyardromance.rivalry.RivalryFeature;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearFeature;
@@ -42,6 +43,7 @@ public final class BarnyardFeatures {
                 new FeedFeature(),
                 new FoodFeature(),
                 new MilkFeature(),
+                new PailFeature(),
                 new ShearFeature(),
                 new VigourFeature(),
                 new RivalryFeature(),

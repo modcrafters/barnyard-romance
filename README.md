@@ -245,6 +245,10 @@ An empty list (`"milk": []`) stops a species giving milk. A list entry that is m
 
 To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:included` (`data/barnyard_romance/tags/entity_type/included.json`, with `"replace": false`). To tell males apart by their horns, also ship an `assets/<namespace>/barnyard_horns/<name>.json` that names the animal under `entities`; see `assets/barnyard_romance/barnyard_horns/cattle.json` for an example.
 
+## Pails
+
+Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and an Iron Pail 5000 ml, each of one fluid at a time, and a bucket is 1000 ml. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip says what it holds, and its item bar shows how full it is. Pails stack to one.
+
 ## Herd book
 
 Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves. An animal whose species isn't tracked any more (see [Which species are tracked](#which-species-are-tracked)) stays in the book with its name and family, but its page says "Not tracked" instead of its status; its record comes back the day the species is switched on again.

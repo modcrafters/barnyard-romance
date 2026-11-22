@@ -63,6 +63,9 @@ public final class BarnyardTab {
         contents.add(new ItemStack(item("stud_mash")));
         contents.add(new ItemStack(item("sheep_milk_bucket")));
         contents.add(new ItemStack(item("goat_milk_bucket")));
+        contents.add(new ItemStack(item("wooden_pail")));
+        contents.add(new ItemStack(item("copper_pail")));
+        contents.add(new ItemStack(item("iron_pail")));
         return contents;
     }
 

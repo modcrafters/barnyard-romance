@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "barnyard_romance:item/metal_pail",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": 14211288
+      }
+    ]
+  }
+}

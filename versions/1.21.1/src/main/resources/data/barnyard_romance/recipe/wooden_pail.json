@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "minecraft:stick"
+    },
+    "M": {
+      "tag": "minecraft:planks"
+    }
+  },
+  "pattern": [
+    " S ",
+    "M M",
+    " M "
+  ],
+  "result": {
+    "id": "barnyard_romance:wooden_pail"
+  }
+}
