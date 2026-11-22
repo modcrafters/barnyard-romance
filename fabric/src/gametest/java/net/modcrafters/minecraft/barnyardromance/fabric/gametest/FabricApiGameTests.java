@@ -111,4 +111,24 @@ public class FabricApiGameTests {
     public void shearYieldCanBeChanged(GameTestHelper helper) {
         ApiGameTests.shearYieldCanBeChanged(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theApiFillsAndDrainsAPail(GameTestHelper helper) {
+        ApiGameTests.theApiFillsAndDrainsAPail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theApiObeysTheTag(GameTestHelper helper) {
+        ApiGameTests.theApiObeysTheTag(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theApiSaysAStickIsNoPail(GameTestHelper helper) {
+        ApiGameTests.theApiSaysAStickIsNoPail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void theApiDrainsADroppedFluid(GameTestHelper helper) {
+        ApiGameTests.theApiDrainsADroppedFluid(helper);
+    }
 }
