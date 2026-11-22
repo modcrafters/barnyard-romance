@@ -111,4 +111,54 @@ public class FabricPailGameTests {
     public void aConfigEntryNamingAPailWins(GameTestHelper helper) {
         PailGameTests.aConfigEntryNamingAPailWins(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void usingAPailOpensItsWindow(GameTestHelper helper) {
+        PailGameTests.usingAPailOpensItsWindow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anEmptyBucketTakesAThousand(GameTestHelper helper) {
+        PailGameTests.anEmptyBucketTakesAThousand(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMilkBucketPoursIn(GameTestHelper helper) {
+        PailGameTests.aMilkBucketPoursIn(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aDifferentMilkBucketIsRefused(GameTestHelper helper) {
+        PailGameTests.aDifferentMilkBucketIsRefused(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aBucketNeedsAFullThousand(GameTestHelper helper) {
+        PailGameTests.aBucketNeedsAFullThousand(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void pourOutEmptiesThePail(GameTestHelper helper) {
+        PailGameTests.pourOutEmptiesThePail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void closingReturnsTheSlotItem(GameTestHelper helper) {
+        PailGameTests.closingReturnsTheSlotItem(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void shiftClickingSixteenBucketsMovesOne(GameTestHelper helper) {
+        PailGameTests.shiftClickingSixteenBucketsMovesOne(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void movingThePailClosesTheMenu(GameTestHelper helper) {
+        PailGameTests.movingThePailClosesTheMenu(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aDroppedFluidCanStillBePouredOut(GameTestHelper helper) {
+        PailGameTests.aDroppedFluidCanStillBePouredOut(helper);
+    }
 }

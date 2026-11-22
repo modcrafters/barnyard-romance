@@ -3,10 +3,12 @@ package net.modcrafters.minecraft.barnyardromance.fabric.client;
 import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
+import net.modcrafters.minecraft.barnyardromance.client.PailScreen;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
 import net.modcrafters.minecraft.barnyardromance.pail.PailFluids;
+import net.modcrafters.minecraft.barnyardromance.pail.PailItems;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
@@ -53,6 +55,7 @@ public class BarnyardRomanceFabricClient implements ClientModInitializer {
         );
         MenuScreens.register(EggsBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
         MenuScreens.register(FeedBlocks.FEEDER_MENU, FeederScreen::new);
+        MenuScreens.register(PailItems.PAIL_MENU, PailScreen::new);
         BlockEntityRenderers.register(EggsBlocks.NESTING_BOX_ENTITY, NestingBoxRenderer::new);
         ClientPlayNetworking.registerGlobalReceiver(HerdBookPayloads.ShowBook.TYPE, (payload, context) -> HerdBookClient.show(payload));
         // Milk can't be placed, so this is for other mods' tanks, which draw a fluid's still and flowing textures.

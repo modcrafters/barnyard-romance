@@ -39,7 +39,8 @@
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.LooksClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.HerdBookClientGameTest",
             "net.modcrafters.minecraft.barnyardromance.fabric.gametest.NestingBoxClientGameTest",
-            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FeederClientGameTest"
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.FeederClientGameTest",
+            "net.modcrafters.minecraft.barnyardromance.fabric.gametest.PailClientGameTest"
         ]
     },
     "mixins": [

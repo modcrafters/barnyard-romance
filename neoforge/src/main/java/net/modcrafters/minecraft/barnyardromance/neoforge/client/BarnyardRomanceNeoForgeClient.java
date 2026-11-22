@@ -3,11 +3,13 @@ package net.modcrafters.minecraft.barnyardromance.neoforge.client;
 import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxRenderer;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
+import net.modcrafters.minecraft.barnyardromance.client.PailScreen;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
 import net.modcrafters.minecraft.barnyardromance.pail.PailFluids;
+import net.modcrafters.minecraft.barnyardromance.pail.PailItems;
 import net.minecraft.world.level.material.Fluid;
 //? if >=26.1 {
 import net.minecraft.client.renderer.block.FluidModel;
@@ -36,10 +38,8 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 //? if >=1.21.6
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
-//? if <1.21.2 {
-/*import net.modcrafters.minecraft.barnyardromance.pail.PailItems;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-*///?}
+//? if <1.21.2
+//import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 //? if >=1.21.2 {
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 //?} else
@@ -137,6 +137,7 @@ public final class BarnyardRomanceNeoForgeClient {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(EggsBlocks.NESTING_BOX_MENU, NestingBoxScreen::new);
         event.register(FeedBlocks.FEEDER_MENU, FeederScreen::new);
+        event.register(PailItems.PAIL_MENU, PailScreen::new);
     }
 
     private static void registerParticles(RegisterParticleProvidersEvent event) {

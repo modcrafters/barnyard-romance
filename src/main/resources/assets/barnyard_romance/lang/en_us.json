@@ -85,6 +85,7 @@
   "item.barnyard_romance.iron_pail": "Iron Pail",
   "item.barnyard_romance.pail.contents": "%s %s / %s ml",
   "item.barnyard_romance.pail.empty": "Empty (%s ml)",
+  "gui.barnyard_romance.pail.pour_out": "Pour out",
   "fluid.barnyard_romance.milk": "Milk",
   "fluid.barnyard_romance.goat_milk": "Goat Milk",
   "fluid.barnyard_romance.sheep_milk": "Sheep Milk",
