@@ -241,6 +241,8 @@ A `milk` list in a species entry replaces the built-in one, it doesn't add to it
 
 An empty list (`"milk": []`) stops a species giving milk. A list entry that is missing its `bucket` or `result` is skipped and logged. When a held item matches several entries, one naming the item itself comes first, then one naming a tag it's in, wherever each is in the list. Without `sound`, the entry makes a goat's milking sound for goats and a cow's otherwise.
 
+Pails carry milk in bulk; see [Pails](#pails).
+
 ### For mod authors
 
 To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:included` (`data/barnyard_romance/tags/entity_type/included.json`, with `"replace": false`). To tell males apart by their horns, also ship an `assets/<namespace>/barnyard_horns/<name>.json` that names the animal under `entities`; see `assets/barnyard_romance/barnyard_horns/cattle.json` for an example.
@@ -257,6 +259,8 @@ A pail takes the fluids in the `barnyard_romance:pail_fluids` fluid tag: cow, go
 
 Other mods' tanks and pipes see a pail as a fluid container, through NeoForge's fluid capability or Fabric's Transfer API. They can fill it with a fluid from the tag, up to its capacity and never with a second fluid, and drain what it holds, even a fluid a pack has since taken out of the tag. A millilitre is a millibucket. On Fabric, which counts 81 droplets to the millilitre, only whole millilitres move. Goat and sheep milk buckets, and on Fabric vanilla's milk bucket too, empty into a tank as 1000 ml and leave an empty bucket, and a tank fills an empty bucket with any of the three milks.
 
+**Milk conversion:** `milkConversion` in `config/barnyard_romance.json` is `false` by default. Turned on, a recipe turns a single goat milk bucket, sheep milk bucket or any other milk bucket in `c:buckets/milk` into a vanilla milk bucket, with nothing left over: the bucket it came in isn't handed back. Vanilla's own milk bucket and the pails don't convert. Needs a restart.
+
 ## Herd book
 
 Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves. An animal whose species isn't tracked any more (see [Which species are tracked](#which-species-are-tracked)) stays in the book with its name and family, but its page says "Not tracked" instead of its status; its record comes back the day the species is switched on again.
@@ -266,8 +270,6 @@ Craft a **Herd Book** from a book and a wheat, then use it on familiar animals t
 Sneak while looking at an animal to see all its stats on the card above it. Using the book on an animal that's already in it opens the book at that animal's page, which runs over several leaves for a long entry. With [Jade](https://modrinth.com/mod/jade) installed, the stats show in Jade's tooltip instead of the card.
 
 **Herd Sticks:** `herdSticks` in `config/barnyard_romance.json` is `false` by default. Turned on, it shows the Herd Sticks in the creative tab and the `/barnyard familiarity` and `/barnyard pregnancy` commands that hand them out. Needs a restart.
-
-**Milk conversion:** `milkConversion` in `config/barnyard_romance.json` is `false` by default. Turned on, a recipe turns a single goat milk bucket, sheep milk bucket or any other milk bucket in `c:buckets/milk` into a vanilla milk bucket, with nothing left over: the bucket it came in isn't handed back. Vanilla's own milk bucket and the pails don't convert. Needs a restart.
 
 ## Translations
 
@@ -303,6 +305,7 @@ dependencies {
 - `BarnyardEvents` has the events. `Taming`, `Milking`, `DeathDrop`, `ShearYield` and `FamiliarityChange` come before Barnyard Romance acts and can be cancelled or changed. `Befriended`, `Born` and `Hatched` come after. They fire on the server, only for animals Barnyard Romance tracks. Register listeners while your mod starts.
 - `BarnyardApi.animals()` answers `tracked(animal)` and `info(animal)`: sex, size, age, familiarity and pregnancy, as the stat card shows them.
 - `BarnyardApi.pails()` reads and moves milk in pails, by the same rules as the pail's window and the fluid adapters: `isPail`, `capacity`, `fluid` and `amount` read a pail, `fill` and `drain` change it in place (or only report with `simulate`), all in millilitres. `fill` refuses a fluid outside `barnyard_romance:pail_fluids` and a second fluid in a pail that already holds one, and `drain` empties whatever the pail holds. A stack of more than one pail takes and gives nothing.
+- The `barnyard_romance:config_enabled` load condition lets a pack's data load only while a boolean config option is on: `{"key": "milkConversion"}` in `neoforge:conditions` (with `type`) or `fabric:load_conditions` (with `condition`). The milk conversion recipe uses it.
 - NeoForge mods can also listen on NeoForge's bus (`MilkingEvent` and the rest in `api.neoforge`, each with `apiEvent()`), and Fabric mods to `BarnyardFabricEvents`. These run after the listeners on `BarnyardEvents`.
 
 ```java

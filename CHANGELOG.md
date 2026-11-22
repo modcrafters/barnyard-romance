@@ -39,6 +39,7 @@ After publishing, the action prepares the next development version and archives 
 - `PregnancyApi` and `EggsApi.laying` report nothing for an animal whose species isn't tracked: `isPregnant` is false and `pregnancy` and `laying` are empty, even with a pregnancy still saved on it, until the species is switched back on.
 - The `barnyard_romance:included` entity tag opts a mod's animals in.
 - The `barnyard_romance:species_tracked` load condition lets a pack's data load only while a species is tracked.
+- The `barnyard_romance:config_enabled` load condition, `{"key": "milkConversion"}` in `neoforge:conditions` (with `type`) or `fabric:load_conditions` (with `condition`), lets a pack's data load only while a boolean config option is on.
 - `MilkApi` has `milksWith` and `blocksMilkingItem`, for what milks an animal under its species' milk list.
 - A Milking listener that empties the result in place, instead of cancelling, now counts as cancelling: the player keeps the bucket.
 - A listener that throws an error, such as a class missing because a mod isn't installed, is logged and skipped like one that throws an exception.

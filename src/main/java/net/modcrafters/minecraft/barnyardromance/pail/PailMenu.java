@@ -115,7 +115,7 @@ public class PailMenu extends AbstractContainerMenu {
         if (stack.is(Items.BUCKET)) {
             return filled(pail).isPresent();
         }
-        Optional<Fluid> fluid = PailFluids.forBucket(stack.getItem());
+        Optional<Fluid> fluid = PailFluids.forBucket(stack.getItem(), PailItem.contents(pail).fluid());
         return fluid.isPresent() && PailTransfer.insert(pail, fluid.get(), BUCKET, true) == BUCKET;
     }
 
@@ -131,7 +131,7 @@ public class PailMenu extends AbstractContainerMenu {
             PailTransfer.extract(pail, null, BUCKET, false);
             return new ItemStack(full);
         }
-        PailTransfer.insert(pail, PailFluids.forBucket(stack.getItem()).orElseThrow(), BUCKET, false);
+        PailTransfer.insert(pail, PailFluids.forBucket(stack.getItem(), PailItem.contents(pail).fluid()).orElseThrow(), BUCKET, false);
         return new ItemStack(Items.BUCKET);
     }
 

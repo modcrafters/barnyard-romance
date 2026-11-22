@@ -17,12 +17,12 @@ public final class PailMilking {
     }
 
     public static boolean fits(ItemStack pail, Item result) {
-        return PailFluids.forBucket(result).filter(fluid -> PailTransfer.insert(pail, fluid, MILKING, true) == MILKING).isPresent();
+        return PailFluids.forBucket(result, PailItem.contents(pail).fluid()).filter(fluid -> PailTransfer.insert(pail, fluid, MILKING, true) == MILKING).isPresent();
     }
 
     // Another milk comes before a full pail, since emptying some of it wouldn't help.
     public static Optional<Component> refusal(ItemStack pail, Item result) {
-        Optional<Fluid> fluid = PailFluids.forBucket(result);
+        Optional<Fluid> fluid = PailFluids.forBucket(result, PailItem.contents(pail).fluid());
         if (!(pail.getItem() instanceof PailItem item) || fluid.isEmpty()) {
             return Optional.empty();
         }
@@ -40,6 +40,6 @@ public final class PailMilking {
         if (!fits(pail, result)) {
             return false;
         }
-        return PailTransfer.insert(pail, PailFluids.forBucket(result).orElseThrow(), MILKING, false) == MILKING;
+        return PailTransfer.insert(pail, PailFluids.forBucket(result, PailItem.contents(pail).fluid()).orElseThrow(), MILKING, false) == MILKING;
     }
 }

@@ -184,7 +184,7 @@ public final class PailGameTests {
                 "sheep milk is called " + PailFluids.name(MilkFluids.SHEEP_ID));
         // On NeoForge cow milk is NeoForge's own, with NeoForge's key, so all both loaders share is that it's translated.
         helper.assertTrue(!translationKey(PailFluids.name(MilkFluids.COW_ID)).isEmpty(), "cow milk is called " + PailFluids.name(MilkFluids.COW_ID));
-        helper.assertTrue(PailFluids.colour(MilkFluids.COW_ID) == 0xFFFFFF, "cow milk is " + Integer.toHexString(PailFluids.colour(MilkFluids.COW_ID)));
+        helper.assertTrue(PailFluids.colour(MilkFluids.COW_ID) == MilkFluids.COW_COLOUR, "cow milk is " + Integer.toHexString(PailFluids.colour(MilkFluids.COW_ID)));
         helper.assertTrue(PailFluids.colour(MilkFluids.GOAT_ID) == 0xFFF8E7, "goat milk is " + Integer.toHexString(PailFluids.colour(MilkFluids.GOAT_ID)));
         helper.assertTrue(PailFluids.colour(MilkFluids.SHEEP_ID) == 0xFDF5E2, "sheep milk is " + Integer.toHexString(PailFluids.colour(MilkFluids.SHEEP_ID)));
         helper.succeed();
@@ -305,6 +305,8 @@ public final class PailGameTests {
     public static void aCreativePlayerFillsThePail(GameTestHelper helper) {
         ItemStack pail = new ItemStack(PailItems.WOODEN_PAIL);
         Player player = holding(helper, pail, GameType.CREATIVE, InteractionHand.MAIN_HAND, new ArrayList<>());
+        // The mock's game mode is only an override; the abilities are what the milking code reads.
+        player.getAbilities().instabuild = true;
 
         GameTestCompat.interact(ProductGameTests.mother(helper, EntityTypes.COW, 0.5), player);
 
