@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import com.mojang.authlib.GameProfile;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -19,9 +20,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.clock.WorldClocks;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.UUID;
 
 // Game test steps that look different on older versions. versions/1.21.1 has the same class for 1.21.1.
 public final class GameTestCompat {
@@ -35,7 +41,32 @@ public final class GameTestCompat {
 
     // A right click on the mob with the player's main hand.
     public static InteractionResult interact(Mob mob, Player player) {
-        return mob.interact(player, InteractionHand.MAIN_HAND, mob.position());
+        return interact(mob, player, InteractionHand.MAIN_HAND);
+    }
+
+    // A right click on the mob with this hand.
+    public static InteractionResult interact(Mob mob, Player player, InteractionHand hand) {
+        return mob.interact(player, hand, mob.position());
+    }
+
+    // A mock player, as GameTestHelper.makeMockPlayer makes, that keeps the overlay messages it's sent.
+    public static Player listeningPlayer(GameTestHelper helper, GameType gameType, List<Component> messages) {
+        return new Player(helper.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+            @Override
+            public @Nullable GameType gameMode() {
+                return gameType;
+            }
+
+            @Override
+            public boolean isClientAuthoritative() {
+                return false;
+            }
+
+            @Override
+            public void sendOverlayMessage(Component message) {
+                messages.add(message);
+            }
+        };
     }
 
     // The whole right click: the mob first, then the held item, as NeoForge's shears need on 1.21.1.

@@ -208,6 +208,8 @@
   "message.barnyard_romance.dairy_mash.already": "She already has milk.",
   "message.barnyard_romance.milk.hungry": "She went hungry yesterday, so she has no milk today.",
   "message.barnyard_romance.milk.disabled": "Milking is turned off.",
+  "message.barnyard_romance.pail.full": "The pail is full",
+  "message.barnyard_romance.pail.holds": "This pail holds %s",
   "message.barnyard_romance.shear.enough": "Sheared enough for today.",
   "message.barnyard_romance.refused.milk": "She won't let you milk her today.",
   "message.barnyard_romance.refused.shear": "It won't let you shear it today.",

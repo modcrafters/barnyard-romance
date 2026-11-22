@@ -1,8 +1,11 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import com.mojang.authlib.GameProfile;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -14,9 +17,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 // The 1.21.1 copy of src/.../gametest/GameTestCompat. Test positions here count from the structure block, which
 // sits one block below the pen, so positions in the pen are one higher than the shared tests write them.
@@ -29,7 +35,38 @@ public final class GameTestCompat {
     }
 
     public static InteractionResult interact(Mob mob, Player player) {
-        return mob.interact(player, InteractionHand.MAIN_HAND);
+        return interact(mob, player, InteractionHand.MAIN_HAND);
+    }
+
+    public static InteractionResult interact(Mob mob, Player player, InteractionHand hand) {
+        return mob.interact(player, hand);
+    }
+
+    // A mock player, as GameTestHelper.makeMockPlayer makes, that keeps the overlay messages it's sent.
+    public static Player listeningPlayer(GameTestHelper helper, GameType gameType, List<Component> messages) {
+        return new Player(helper.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+            @Override
+            public boolean isSpectator() {
+                return gameType == GameType.SPECTATOR;
+            }
+
+            @Override
+            public boolean isCreative() {
+                return gameType.isCreative();
+            }
+
+            @Override
+            public boolean isLocalPlayer() {
+                return true;
+            }
+
+            @Override
+            public void displayClientMessage(Component message, boolean overlay) {
+                if (overlay) {
+                    messages.add(message);
+                }
+            }
+        };
     }
 
     // The whole right click: the mob first, then the held item, as NeoForge's shears need here.

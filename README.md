@@ -222,7 +222,7 @@ Besides `milk` (see below), a species entry has two more switches:
 
 ## Milk
 
-Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand), a `result` (the item you get, both item ids) and an optional `sound`. Built in, a bucket milks cows, mooshrooms, mooblooms, water buffalo and yaks into milk, goats into goat milk and sheep into sheep milk. Meadow's wooden bucket milks cows, mooshrooms, mooblooms, goats and sheep into the matching wooden milk buckets, water buffalo into wooden buffalo milk and wooly cows into their variant's wooden milk (these entries only count when Meadow is installed). Wooly cows take only the wooden bucket, and yaks only the iron one. Other species give no milk. With Meadow installed, its wooden bucket follows these rules on every animal that has them, and a `milk` list that leaves it out closes it on that species.
+Which items milk a species, and what they become, is a species setting: a `milk` list of entries, each with a `bucket` (the item in hand: an item id, or `#` and an item tag such as `#barnyard_romance:pails`), a `result` (the item you get, an item id) and an optional `sound`. Built in, a bucket milks cows, mooshrooms, mooblooms, water buffalo and yaks into milk, goats into goat milk and sheep into sheep milk. Meadow's wooden bucket milks cows, mooshrooms, mooblooms, goats and sheep into the matching wooden milk buckets, water buffalo into wooden buffalo milk and wooly cows into their variant's wooden milk (these entries only count when Meadow is installed). Wooly cows take the wooden bucket and pails but not the iron bucket, and yaks only the iron bucket. Other species give no milk. With Meadow installed, its wooden bucket follows these rules on every animal that has them, and a `milk` list that leaves it out closes it on that species.
 
 A `milk` list in a species entry replaces the built-in one, it doesn't add to it. An item that milks some species but isn't in this species' list does nothing at all on it, never vanilla's milking, so the wooden bucket can be taken off cows:
 
@@ -239,7 +239,7 @@ A `milk` list in a species entry replaces the built-in one, it doesn't add to it
 }
 ```
 
-An empty list (`"milk": []`) stops a species giving milk. A list entry that is missing its `bucket` or `result` is skipped and logged. Without `sound`, the entry makes a goat's milking sound for goats and a cow's otherwise.
+An empty list (`"milk": []`) stops a species giving milk. A list entry that is missing its `bucket` or `result` is skipped and logged. When a held item matches several entries, one naming the item itself comes first, then one naming a tag it's in, wherever each is in the list. Without `sound`, the entry makes a goat's milking sound for goats and a cow's otherwise.
 
 ### For mod authors
 
@@ -248,6 +248,8 @@ To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:in
 ## Pails
 
 Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and an Iron Pail 5000 ml, each of one fluid at a time, and a bucket is 1000 ml. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip says what it holds, and its item bar shows how full it is, in the colour of its milk. Pails stack to one.
+
+**Milking:** use a pail on an animal to milk it by the same rules as a bucket, in either hand and in creative mode too. Each milking adds 1000 ml: cows, mooshrooms, mooblooms, water buffalo and yaks give cow milk, goats goat milk and sheep sheep milk, and plain wooly cows give cow milk (a warped wooly cow gives a pail nothing). A pail that is full, or holds another milk, says so and leaves the animal alone, so it costs no milking, no familiarity and no chance to refuse. A species' `milk` list is searched for an entry naming that pail, then for `#barnyard_romance:pails`, then for `minecraft:bucket`, and the milk bucket the entry gives is poured in as its fluid; a pail does nothing on an animal whose milk has no fluid in `barnyard_romance:pail_fluids`.
 
 A pail takes the fluids in the `barnyard_romance:pail_fluids` fluid tag: cow, goat and sheep milk. Goat and sheep milk are fluids of their own, `barnyard_romance:goat_milk` and `barnyard_romance:sheep_milk`, and both are in `c:milk`. Cow milk is NeoForge's own milk fluid (`minecraft:milk`) on NeoForge, which Barnyard Romance switches on, and `barnyard_romance:milk` on Fabric. None of them can be poured out into the world. A pack can add a fluid to the tag with `"replace": false`.
 

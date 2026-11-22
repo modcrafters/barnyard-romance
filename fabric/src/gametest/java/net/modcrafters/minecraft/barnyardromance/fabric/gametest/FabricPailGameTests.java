@@ -61,4 +61,54 @@ public class FabricPailGameTests {
     public void anUnknownFluidNamesItselfById(GameTestHelper helper) {
         PailGameTests.anUnknownFluidNamesItselfById(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPailTakesACowsMilk(GameTestHelper helper) {
+        PailGameTests.aPailTakesACowsMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aSecondMilkingAddsToThePail(GameTestHelper helper) {
+        PailGameTests.aSecondMilkingAddsToThePail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aFullPailSpendsNothing(GameTestHelper helper) {
+        PailGameTests.aFullPailSpendsNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPailOfGoatMilkRefusesACow(GameTestHelper helper) {
+        PailGameTests.aPailOfGoatMilkRefusesACow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPailObeysTheMilkingRules(GameTestHelper helper) {
+        PailGameTests.aPailObeysTheMilkingRules(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCancelledMilkingLeavesThePail(GameTestHelper helper) {
+        PailGameTests.aCancelledMilkingLeavesThePail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aListenerResultWithoutAFluidMilksNothing(GameTestHelper helper) {
+        PailGameTests.aListenerResultWithoutAFluidMilksNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCreativePlayerFillsThePail(GameTestHelper helper) {
+        PailGameTests.aCreativePlayerFillsThePail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anOffhandPailFills(GameTestHelper helper) {
+        PailGameTests.anOffhandPailFills(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aConfigEntryNamingAPailWins(GameTestHelper helper) {
+        PailGameTests.aConfigEntryNamingAPailWins(helper);
+    }
 }

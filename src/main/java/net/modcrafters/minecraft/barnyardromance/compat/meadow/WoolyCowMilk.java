@@ -16,8 +16,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // A wooly cow's wooden milk depends on its variant: the warped cow gives warped milk, the others plain wooden milk. The
 // variant is the mod's enum, so it is read by name (getVariant, then getBucket on that) and the mod isn't compiled
 // against. If the mod renamed either, this logs once and the entry's own result is used, as for a config entry.
+// Into a pail, the plain cows give cow milk and the warped cow nothing: warped milk is only Meadow's wooden-bucket item,
+// with no fluid behind it.
 public final class WoolyCowMilk implements MilkResult {
     static final String WOODEN_BUCKET = "meadow:wooden_bucket";
+    static final String PAILS = "#barnyard_romance:pails";
+    private static final String PLAIN_WOODEN_MILK = "meadow:wooden_milk_bucket";
 
     private final AtomicBoolean warned = new AtomicBoolean();
     // The methods of the class last seen; a wooly cow is one class, so this is looked up once.
@@ -34,7 +38,15 @@ public final class WoolyCowMilk implements MilkResult {
                 return bucket;
             }
         }
+        if (PAILS.equals(entry.bucket()) && variantBucket(animal).filter(WoolyCowMilk::isWarped).isPresent()) {
+            return Optional.empty();
+        }
         return own(entry);
+    }
+
+    // Any wooden milk but the plain one is the warped cow's.
+    private static boolean isWarped(Item woodenMilk) {
+        return !PLAIN_WOODEN_MILK.equals(BuiltInRegistries.ITEM.getKey(woodenMilk).toString());
     }
 
     private static Optional<Item> own(MilkEntry entry) {

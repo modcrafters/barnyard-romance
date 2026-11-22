@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.pail;
 
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureRegistrar;
+import net.modcrafters.minecraft.barnyardromance.pail.api.PailApi;
 
 // Pails: buckets that hold a few buckets of one fluid, milk first.
 public final class PailFeature implements Feature {
@@ -12,6 +13,7 @@ public final class PailFeature implements Feature {
 
     @Override
     public void register(FeatureRegistrar registrar) {
+        registrar.provide(PailApi.class, new PailApiImpl());
         // A lambda, so PailItems and MilkFluids (and their items and fluids) load only once the registries are open.
         registrar.content(sink -> {
             PailComponents.register(sink);

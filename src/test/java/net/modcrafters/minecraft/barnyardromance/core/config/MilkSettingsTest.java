@@ -82,6 +82,37 @@ class MilkSettingsTest {
     }
 
     @Test
+    void a_tag_entry_parses_and_round_trips() {
+        String json = "{\"species\":{\"minecraft:sheep\":{\"milk\":["
+                + "{\"bucket\":\"#barnyard_romance:pails\",\"result\":\"barnyard_romance:sheep_milk_bucket\"}]}}}";
+
+        BarnyardConfig config = BarnyardConfig.parse(json);
+        BarnyardConfig again = BarnyardConfig.parse(config.toJson());
+
+        assertEquals(List.of(entry("#barnyard_romance:pails", "barnyard_romance:sheep_milk_bucket")), config.milkFor("minecraft:sheep").entries());
+        assertEquals(config.milkFor("minecraft:sheep"), again.milkFor("minecraft:sheep"));
+    }
+
+    @Test
+    void milkingItems_includes_tag_entries() {
+        BarnyardConfig config = BarnyardConfig.parse(
+                "{\"species\":{\"minecraft:pig\":{\"milk\":[{\"bucket\":\"#c:tools/bowls\",\"result\":\"minecraft:mushroom_stew\"}]}}}");
+
+        assertTrue(config.milkingItems().contains("#c:tools/bowls"));
+        // The wooly cow's built-in pail entry.
+        assertTrue(config.milkingItems().contains("#barnyard_romance:pails"));
+    }
+
+    @Test
+    void woolyCowsTakePailsAsCowMilk() {
+        MilkSettings milk = BarnyardConfig.parse("{}").milkFor("meadow:wooly_cow");
+
+        assertTrue(holds(milk, "meadow:wooden_bucket", "meadow:wooden_milk_bucket"));
+        assertTrue(holds(milk, "#barnyard_romance:pails", "minecraft:milk_bucket"));
+        assertFalse(milk.entries().stream().anyMatch(entry -> entry.bucket().equals("minecraft:bucket")));
+    }
+
+    @Test
     void pigsGiveNoMilk() {
         assertTrue(BarnyardConfig.parse("{}").milkFor("minecraft:pig").entries().isEmpty());
     }

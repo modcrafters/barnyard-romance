@@ -8,6 +8,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonWriter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.ItemStack;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -491,7 +493,25 @@ public final class BarnyardConfig {
         return settings == null || settings.shearing() == null || settings.shearing();
     }
 
-    // Every item that milks some species, in a preset or in any config list, whichever species is on.
+    // Whether the held item milks some species: milkingItems names its id, or a #tag it's in.
+    public boolean isMilkingItem(ItemStack held) {
+        if (held.isEmpty()) {
+            return false;
+        }
+        Set<String> items = milkingItems();
+        if (items.contains(BuiltInRegistries.ITEM.getKey(held.getItem()).toString())) {
+            return true;
+        }
+        for (String item : items) {
+            if (MilkEntry.inTag(item, held)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Every item that milks some species, in a preset or in any config list, whichever species is on. An entry that
+    // names a tag is here as # and the tag id.
     public Set<String> milkingItems() {
         Set<String> items = milkingItems;
         if (items == null) {
@@ -691,7 +711,7 @@ public final class BarnyardConfig {
                 String bucket = stringIn(element, "bucket");
                 String result = stringIn(element, "result");
                 if (bucket == null || result == null) {
-                    Constants.LOG.warn("Ignoring milk entry {}: it needs a \"bucket\" and a \"result\", both item ids", element);
+                    Constants.LOG.warn("Ignoring milk entry {}: it needs a \"bucket\" (an item id or #tag) and a \"result\" (an item id)", element);
                     continue;
                 }
                 JsonElement sound = element.getAsJsonObject().get("sound");
