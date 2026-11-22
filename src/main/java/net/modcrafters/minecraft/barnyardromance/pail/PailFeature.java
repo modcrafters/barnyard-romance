@@ -12,10 +12,11 @@ public final class PailFeature implements Feature {
 
     @Override
     public void register(FeatureRegistrar registrar) {
-        // A lambda, so PailItems (and its items) load only once the registries are open.
+        // A lambda, so PailItems and MilkFluids (and their items and fluids) load only once the registries are open.
         registrar.content(sink -> {
             PailComponents.register(sink);
             PailItems.register(sink);
+            MilkFluids.register(sink);
         });
     }
 }

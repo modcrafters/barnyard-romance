@@ -6,6 +6,18 @@ import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsBlocks;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
+import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
+import net.modcrafters.minecraft.barnyardromance.pail.PailFluids;
+import net.minecraft.world.level.material.Fluid;
+//? if >=26.1 {
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.neoforged.neoforge.client.event.RegisterFluidModelsEvent;
+import net.neoforged.neoforge.client.fluid.FluidTintSources;
+//?} else {
+/*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+*///?}
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.client.AnimalHoverTooltip;
@@ -44,6 +56,7 @@ public final class BarnyardRomanceNeoForgeClient {
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerParticles);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerScreens);
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerRenderers);
+        modBus.addListener(BarnyardRomanceNeoForgeClient::registerMilkTextures);
         //? if >=1.21.6
         modBus.addListener(BarnyardRomanceNeoForgeClient::registerPayloads);
         //? if <1.21.2
@@ -56,6 +69,39 @@ public final class BarnyardRomanceNeoForgeClient {
     /*private static void registerItemColours(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tintIndex) -> tintIndex == 0 ? 0xFF000000 | 0xC15A36 : -1, PailItems.COPPER_PAIL);
         event.register((stack, tintIndex) -> tintIndex == 0 ? 0xFF000000 | 0xD8D8D8 : -1, PailItems.IRON_PAIL);
+    }
+    *///?}
+
+    // Milk can't be placed, so this is for other mods' tanks, which draw a fluid's still and flowing textures. 26.1 moved
+    // them from the fluid type's client extension to a fluid model.
+    //? if >=26.1 {
+    private static void registerMilkTextures(RegisterFluidModelsEvent event) {
+        for (Fluid milk : MilkFluids.own()) {
+            event.register(new FluidModel.Unbaked(new Material(MilkFluids.STILL_TEXTURE), new Material(MilkFluids.FLOW_TEXTURE), null,
+                    FluidTintSources.constant(0xFF000000 | PailFluids.colour(milk))), milk);
+        }
+    }
+    //?} else {
+    /*private static void registerMilkTextures(RegisterClientExtensionsEvent event) {
+        for (Fluid milk : MilkFluids.own()) {
+            int tint = 0xFF000000 | PailFluids.colour(milk);
+            event.registerFluidType(new IClientFluidTypeExtensions() {
+                @Override
+                public Identifier getStillTexture() {
+                    return MilkFluids.STILL_TEXTURE;
+                }
+
+                @Override
+                public Identifier getFlowingTexture() {
+                    return MilkFluids.FLOW_TEXTURE;
+                }
+
+                @Override
+                public int getTintColor() {
+                    return tint;
+                }
+            }, milk.getFluidType());
+        }
     }
     *///?}
 

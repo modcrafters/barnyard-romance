@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Milk is a fluid. Goat and sheep milk are fluids of their own, cow milk is NeoForge's milk fluid (now switched on) or Barnyard Romance's own on Fabric, and the `barnyard_romance:pail_fluids` tag says which fluids a pail takes. A pail's tooltip names its milk, and its fill bar is the milk's colour.
 - Wooden, copper and iron pails hold 2000, 3000 and 5000 ml of one fluid. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail shows what it holds in its tooltip and as a fill bar. They can't be filled yet.
 - Sheep spawn white and have white lambs, and dye no longer works on them. Set `colouredSheep` or `sheepDyeing` to `true` in `config/barnyard_romance.json` to bring either back. A water bucket washes a coloured sheep white.
 - When an animal hasn't been fed today, its herd book tooltip says what it eats, best first.

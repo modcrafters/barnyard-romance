@@ -247,7 +247,9 @@ To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:in
 
 ## Pails
 
-Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and an Iron Pail 5000 ml, each of one fluid at a time, and a bucket is 1000 ml. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip says what it holds, and its item bar shows how full it is. Pails stack to one.
+Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and an Iron Pail 5000 ml, each of one fluid at a time, and a bucket is 1000 ml. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip says what it holds, and its item bar shows how full it is, in the colour of its milk. Pails stack to one.
+
+A pail takes the fluids in the `barnyard_romance:pail_fluids` fluid tag: cow, goat and sheep milk. Goat and sheep milk are fluids of their own, `barnyard_romance:goat_milk` and `barnyard_romance:sheep_milk`, and both are in `c:milk`. Cow milk is NeoForge's own milk fluid (`minecraft:milk`) on NeoForge, which Barnyard Romance switches on, and `barnyard_romance:milk` on Fabric. None of them can be poured out into the world. A pack can add a fluid to the tag with `"replace": false`.
 
 ## Herd book
 

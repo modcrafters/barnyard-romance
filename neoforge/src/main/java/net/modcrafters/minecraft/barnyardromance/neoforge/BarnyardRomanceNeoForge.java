@@ -17,6 +17,7 @@ import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
+import net.modcrafters.minecraft.barnyardromance.neoforge.platform.NeoForgePlatformHelper;
 import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceKey;
@@ -30,6 +31,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.NeoForgeMod;
 //? if >=1.21.2 {
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 //?} else
@@ -62,6 +64,9 @@ public class BarnyardRomanceNeoForge {
         NeoForgeBridge.register();
         NeoForgeAnimalData.register(modBus);
         SpeciesTrackedCondition.register(modBus);
+        // Cow milk in pails is NeoForge's own milk fluid, which is off unless a mod asks for it.
+        NeoForgeMod.enableMilkFluid();
+        NeoForgePlatformHelper.FLUID_TYPES.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);

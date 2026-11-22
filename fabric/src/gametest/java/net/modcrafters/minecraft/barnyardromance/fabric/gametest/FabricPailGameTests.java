@@ -31,4 +31,34 @@ public class FabricPailGameTests {
     public void theBowlAndBucketStillCraft(GameTestHelper helper) {
         PailGameTests.theBowlAndBucketStillCraft(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void milkBucketsMapToTheirFluids(GameTestHelper helper) {
+        PailGameTests.milkBucketsMapToTheirFluids(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void fluidsMapBackToTheirBuckets(GameTestHelper helper) {
+        PailGameTests.fluidsMapBackToTheirBuckets(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void pailFluidsAreMilkOnly(GameTestHelper helper) {
+        PailGameTests.pailFluidsAreMilkOnly(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void ourMilksAreInCMilk(GameTestHelper helper) {
+        PailGameTests.ourMilksAreInCMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void milksHaveNamesAndColours(GameTestHelper helper) {
+        PailGameTests.milksHaveNamesAndColours(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anUnknownFluidNamesItselfById(GameTestHelper helper) {
+        PailGameTests.anUnknownFluidNamesItselfById(helper);
+    }
 }
