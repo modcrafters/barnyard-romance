@@ -146,6 +146,7 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(AdvancementGameTests.CASES);
         cases.addAll(ApiGameTests.CASES);
         cases.addAll(NeoForgeApiGameTests.CASES);
+        cases.addAll(NeoForgePailFluidTests.CASES);
         cases.add(new BreedingGameTests.Case("unload_event_refreshes_the_record", 20,
                 helper -> HerdBookGameTests.unloadEventRefreshesTheRecord(helper,
                         cow -> NeoForge.EVENT_BUS.post(new EntityLeaveLevelEvent(cow, helper.getLevel())))));

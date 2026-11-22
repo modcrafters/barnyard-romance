@@ -251,6 +251,8 @@ Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and
 
 A pail takes the fluids in the `barnyard_romance:pail_fluids` fluid tag: cow, goat and sheep milk. Goat and sheep milk are fluids of their own, `barnyard_romance:goat_milk` and `barnyard_romance:sheep_milk`, and both are in `c:milk`. Cow milk is NeoForge's own milk fluid (`minecraft:milk`) on NeoForge, which Barnyard Romance switches on, and `barnyard_romance:milk` on Fabric. None of them can be poured out into the world. A pack can add a fluid to the tag with `"replace": false`.
 
+Other mods' tanks and pipes see a pail as a fluid container, through NeoForge's fluid capability or Fabric's Transfer API. They can fill it with a fluid from the tag, up to its capacity and never with a second fluid, and drain what it holds, even a fluid a pack has since taken out of the tag. A millilitre is a millibucket. On Fabric, which counts 81 droplets to the millilitre, only whole millilitres move. Goat and sheep milk buckets, and on Fabric vanilla's milk bucket too, empty into a tank as 1000 ml and leave an empty bucket, and a tank fills an empty bucket with any of the three milks.
+
 ## Herd book
 
 Craft a **Herd Book** from a book and a wheat, then use it on familiar animals to add them. Use it in the air to read it: it keeps a live list of your herd, from anywhere, with feeding, pregnancy, milk and family at a glance. Newborns join their mother's books by themselves. An animal whose species isn't tracked any more (see [Which species are tracked](#which-species-are-tracked)) stays in the book with its name and family, but its page says "Not tracked" instead of its status; its record comes back the day the species is switched on again.

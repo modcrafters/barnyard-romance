@@ -8,8 +8,9 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Other mods' tanks and pipes can fill and drain pails, through NeoForge's fluid capability or Fabric's Transfer API. Goat and sheep milk buckets empty into tanks and fill from them like a milk bucket, and on Fabric vanilla's milk bucket does too.
 - Milk is a fluid. Goat and sheep milk are fluids of their own, cow milk is NeoForge's milk fluid (now switched on) or Barnyard Romance's own on Fabric, and the `barnyard_romance:pail_fluids` tag says which fluids a pail takes. A pail's tooltip names its milk, and its fill bar is the milk's colour.
-- Wooden, copper and iron pails hold 2000, 3000 and 5000 ml of one fluid. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail shows what it holds in its tooltip and as a fill bar. They can't be filled yet.
+- Wooden, copper and iron pails hold 2000, 3000 and 5000 ml of one fluid. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail shows what it holds in its tooltip and as a fill bar. Milking doesn't fill them yet.
 - Sheep spawn white and have white lambs, and dye no longer works on them. Set `colouredSheep` or `sheepDyeing` to `true` in `config/barnyard_romance.json` to bring either back. A water bucket washes a coloured sheep white.
 - When an animal hasn't been fed today, its herd book tooltip says what it eats, best first.
 - When two animals in a herd book share a name, like ducks from two mods, their bookmarks and pages add the mod: "Duck @naturalist".

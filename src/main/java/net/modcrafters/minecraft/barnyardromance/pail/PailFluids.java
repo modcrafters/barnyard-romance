@@ -62,7 +62,8 @@ public final class PailFluids {
         return fluid instanceof MilkFluid milk ? milk.colour() : WHITE;
     }
 
-    private static Optional<Fluid> registered(Identifier id) {
+    // The fluid with this id, if it is still registered.
+    static Optional<Fluid> registered(Identifier id) {
         return BuiltInRegistries.FLUID.getOptional(id).filter(fluid -> fluid != Fluids.EMPTY);
     }
 }
