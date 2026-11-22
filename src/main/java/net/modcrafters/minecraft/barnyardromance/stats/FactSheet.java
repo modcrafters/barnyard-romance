@@ -11,6 +11,7 @@ import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.text.Names;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.Laying;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
@@ -74,6 +75,7 @@ final class FactSheet {
                 .familiar(subject.familiar())
                 .diedDay(subject.diedDay())
                 .shear(subject.shear())
+                .shearsInto(BarnyardConfig.current().shearsInto(species).map(Names::entity).orElse(Text.EMPTY))
                 .grumpy(subject.alive() && subject.tamed() && !familiarityApi.isFamiliar(traits))
                 .eggs(subject.eggsTomorrow())
                 .cap(subject.cap())

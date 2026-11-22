@@ -18,8 +18,18 @@ public class FabricNaturalistGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
-    public void deerAndBoarGetPregnant(GameTestHelper helper) {
-        NaturalistGameTests.deerAndBoarGetPregnant(helper);
+    public void deerLadderIsHidden(GameTestHelper helper) {
+        NaturalistGameTests.deerLadderIsHidden(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void deerIsOut(GameTestHelper helper) {
+        NaturalistGameTests.deerIsOut(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void boarGetsPregnant(GameTestHelper helper) {
+        NaturalistGameTests.boarGetsPregnant(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
@@ -100,5 +110,15 @@ public class FabricNaturalistGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void killingAFamiliarDuckIsDinner(GameTestHelper helper) {
         NaturalistGameTests.killingAFamiliarDuckIsDinner(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aThrownDuckEggNeverHatches(GameTestHelper helper) {
+        NaturalistGameTests.aThrownDuckEggNeverHatches(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anExcludedDucksThrownEggsHatch(GameTestHelper helper) {
+        NaturalistGameTests.anExcludedDucksThrownEggsHatch(helper);
     }
 }

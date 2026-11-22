@@ -1,8 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.core;
 
+import net.modcrafters.minecraft.barnyardromance.core.config.MilkResult;
 import net.modcrafters.minecraft.barnyardromance.core.registry.TabEntries;
 
 import java.util.List;
+import java.util.Optional;
 
 // The features the game runs with: installed once at start-up (see BarnyardFeatures) and kept for the whole game.
 public final class FeaturesRepository {
@@ -38,8 +40,14 @@ public final class FeaturesRepository {
     }
 
     // False before install, so unit tests that load the config without features still work.
-    public static boolean ignoredByDefault(String speciesId) {
+    public static boolean trackedByDefault(String speciesId) {
         FeatureSet installed = features;
-        return installed != null && installed.ignoredByDefault(speciesId);
+        return installed != null && installed.trackedByDefault(speciesId);
+    }
+
+    // Empty before install, and for a species no feature gives a milk result.
+    public static Optional<MilkResult> milkResult(String speciesId) {
+        FeatureSet installed = features;
+        return installed == null ? Optional.empty() : installed.milkResult(speciesId);
     }
 }

@@ -1,4 +1,22 @@
 {
+  "neoforge:conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "minecraft:llama",
+        "minecraft:trader_llama"
+      ]
+    }
+  ],
+  "fabric:load_conditions": [
+    {
+      "condition": "barnyard_romance:species_tracked",
+      "species": [
+        "minecraft:llama",
+        "minecraft:trader_llama"
+      ]
+    }
+  ],
   "parent": "barnyard_romance:barnyard/special_delivery",
   "criteria": {
     "done": {

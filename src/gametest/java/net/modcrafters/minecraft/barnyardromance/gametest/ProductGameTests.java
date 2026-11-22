@@ -35,6 +35,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -47,6 +48,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -56,8 +58,10 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliaritySlices.CARE;
 import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
@@ -79,15 +83,23 @@ public final class ProductGameTests {
             new BreedingGameTests.Case("fresh_mother_cow_gives_milk", 20, ProductGameTests::freshMotherCowGivesMilk),
             new BreedingGameTests.Case("goat_gives_goat_milk", 20, ProductGameTests::goatGivesGoatMilk),
             new BreedingGameTests.Case("sheep_gives_sheep_milk", 20, ProductGameTests::sheepGivesSheepMilk),
+            new BreedingGameTests.Case("a_config_milk_entry_with_a_non_bucket_item_milks_a_pig", 20, ProductGameTests::aConfigMilkEntryWithANonBucketItemMilksAPig),
+            new BreedingGameTests.Case("a_milking_item_not_on_the_list_does_nothing", 20, ProductGameTests::aMilkingItemNotOnTheListDoesNothing),
+            new BreedingGameTests.Case("an_empty_milk_list_stops_a_cow_giving_milk", 20, ProductGameTests::anEmptyMilkListStopsACowGivingMilk),
             new BreedingGameTests.Case("refused_milking_keeps_the_bucket", 20, ProductGameTests::refusedMilkingKeepsTheBucket),
             new BreedingGameTests.Case("large_cow_milks_twice_a_day", 20, ProductGameTests::largeCowMilksTwiceADay),
             new BreedingGameTests.Case("birth_starts_milk", 200, ProductGameTests::birthStartsMilk),
             new BreedingGameTests.Case("wild_cow_gets_one_milk_window", 20, ProductGameTests::wildCowGetsOneMilkWindow),
             new BreedingGameTests.Case("mooshroom_bowl_stays_vanilla", 20, ProductGameTests::mooshroomBowlStaysVanilla),
+            new BreedingGameTests.Case("a_bowl_milk_entry_elsewhere_leaves_the_mooshroom_stew", 20, ProductGameTests::aBowlMilkEntryElsewhereLeavesTheMooshroomStew),
             new BreedingGameTests.Case("sized_drops_follow_the_rule", 20, ProductGameTests::sizedDropsFollowTheRule),
             new BreedingGameTests.Case("meat_keeps_its_curve", 20, ProductGameTests::meatKeepsItsCurve),
             new BreedingGameTests.Case("big_sheep_shear_more_wool", 20, ProductGameTests::bigSheepShearMoreWool),
             new BreedingGameTests.Case("sheep_shear_once_a_day", 20, ProductGameTests::sheepShearOnceADay),
+            new BreedingGameTests.Case("tracked_sheep_spawn_white", 20, ProductGameTests::trackedSheepSpawnWhite),
+            new BreedingGameTests.Case("lambs_are_white_without_coloured_sheep", 20, ProductGameTests::lambsAreWhiteWithoutColouredSheep),
+            new BreedingGameTests.Case("tracked_sheep_cannot_be_dyed", 20, ProductGameTests::trackedSheepCannotBeDyed),
+            new BreedingGameTests.Case("a_water_bucket_washes_a_sheep_white", 20, ProductGameTests::aWaterBucketWashesASheepWhite),
             new BreedingGameTests.Case("unfamiliar_sheep_keep_their_wool", 20, ProductGameTests::unfamiliarSheepKeepTheirWool),
             new BreedingGameTests.Case("wolf_tamed_by_familiarity", 20, ProductGameTests::wolfTamedByFamiliarity),
             new BreedingGameTests.Case("wolves_bite_and_last_by_their_size", 20, ProductGameTests::wolvesBiteAndLastByTheirSize),
@@ -248,6 +260,61 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // A pack can milk anything with anything: a glass bottle on a sow gives honey, and a bucket is left to vanilla.
+    public static void aConfigMilkEntryWithANonBucketItemMilksAPig(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:pig\":{\"milk\":"
+                    + "[{\"bucket\":\"minecraft:glass_bottle\",\"result\":\"minecraft:honey_bottle\"}]}}}"));
+            Animal sow = mother(helper, EntityTypes.PIG, 0.5);
+            assertMilks(helper, sow, Items.GLASS_BOTTLE, Items.HONEY_BOTTLE);
+            Player bucket = FoodGameTests.holding(helper, Items.BUCKET);
+            GameTestCompat.interact(sow, bucket);
+            helper.assertTrue(bucket.getMainHandItem().is(Items.BUCKET), "a bucket on the sow gave " + bucket.getMainHandItem());
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
+    // A config list replaces the built-in one: the empty bucket the cow's list no longer has does nothing at all, rather
+    // than falling back to milk.
+    public static void aMilkingItemNotOnTheListDoesNothing(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"milk\":"
+                    + "[{\"bucket\":\"minecraft:glass_bottle\",\"result\":\"minecraft:honey_bottle\"}]}}}"));
+            Animal cow = mother(helper, EntityTypes.COW, 0.5);
+            Lactation lactationBefore = BreedingGameTests.traits(helper, cow).get(LACTATION);
+            Player player = FoodGameTests.holding(helper, Items.BUCKET);
+            InteractionResult result = GameTestCompat.interact(cow, player);
+            helper.assertTrue(result == InteractionResult.CONSUME, "the bucket on the cow gave " + result);
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "the bucket became " + player.getMainHandItem());
+            helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(lactationBefore), "the bucket changed the lactation");
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
+    // An empty config list is still a list: the bucket does nothing on the cow, and vanilla's milking doesn't answer.
+    public static void anEmptyMilkListStopsACowGivingMilk(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"milk\":[]}}}"));
+            Animal cow = mother(helper, EntityTypes.COW, 0.5);
+            Lactation lactationBefore = BreedingGameTests.traits(helper, cow).get(LACTATION);
+            Player player = FoodGameTests.holding(helper, Items.BUCKET);
+            InteractionResult result = GameTestCompat.interact(cow, player);
+            helper.assertTrue(result == InteractionResult.CONSUME, "the bucket on the cow gave " + result);
+            helper.assertTrue(player.getMainHandItem().is(Items.BUCKET), "the bucket became " + player.getMainHandItem());
+            helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(lactationBefore), "the bucket changed the lactation");
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
     // A male, a dry female and a small female already milked today all keep the empty bucket.
     public static void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
         long now = helper.getLevel().getGameTime();
@@ -313,6 +380,23 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // A pack that milks a pig with a bowl makes the bowl a milking item everywhere; the mooshroom's stew must not be
+    // swallowed as a bowl its milk list doesn't have.
+    public static void aBowlMilkEntryElsewhereLeavesTheMooshroomStew(GameTestHelper helper) {
+        BarnyardConfig before = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"species\":{\"minecraft:pig\":{\"milk\":"
+                    + "[{\"bucket\":\"minecraft:bowl\",\"result\":\"minecraft:mushroom_stew\"}]}}}"));
+            Animal mooshroom = mother(helper, EntityTypes.MOOSHROOM, 0.5);
+            Player player = FoodGameTests.holding(helper, Items.BOWL);
+            GameTestCompat.interact(mooshroom, player);
+            helper.assertTrue(player.getMainHandItem().is(Items.MUSHROOM_STEW), "a familiar mooshroom gave " + player.getMainHandItem());
+        } finally {
+            BarnyardConfig.set(before);
+        }
+        helper.succeed();
+    }
+
     // A female that just gave birth, sized at a point of her species range: 0 is the smallest, 1 the largest.
     public static Animal mother(GameTestHelper helper, EntityType<? extends Animal> type, double point) {
         Animal animal = BreedingGameTests.female(helper, type);
@@ -325,7 +409,11 @@ public final class ProductGameTests {
     }
 
     static void assertMilks(GameTestHelper helper, Animal animal, Item milk) {
-        Player player = FoodGameTests.holding(helper, Items.BUCKET);
+        assertMilks(helper, animal, Items.BUCKET, milk);
+    }
+
+    static void assertMilks(GameTestHelper helper, Animal animal, Item with, Item milk) {
+        Player player = FoodGameTests.holding(helper, with);
         GameTestCompat.interact(animal, player);
         helper.assertTrue(player.getMainHandItem().is(milk), animal.getType() + " gave " + player.getMainHandItem() + ", not " + milk);
     }
@@ -400,6 +488,121 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // With colouredSheep off (the default) a tracked sheep always spawns white. Switched on, or with sheep excluded,
+    // vanilla picks its colour, and a hundred sheep are never all white.
+    public static void trackedSheepSpawnWhite(GameTestHelper helper) {
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            Set<DyeColor> tracked = spawnColours(helper);
+            BarnyardConfig.set(BarnyardConfig.parse("{\"colouredSheep\": true}"));
+            Set<DyeColor> switchedOn = spawnColours(helper);
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:sheep\"]}"));
+            Set<DyeColor> excluded = spawnColours(helper);
+            helper.assertTrue(tracked.equals(Set.of(DyeColor.WHITE)), "tracked sheep spawned " + tracked);
+            helper.assertTrue(switchedOn.size() > 1, "with colouredSheep on, sheep spawned only " + switchedOn);
+            helper.assertTrue(excluded.size() > 1, "excluded sheep spawned only " + excluded);
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    private static Set<DyeColor> spawnColours(GameTestHelper helper) {
+        Set<DyeColor> colours = EnumSet.noneOf(DyeColor.class);
+        for (int i = 0; i < 100; i++) {
+            Sheep sheep = GameTestCompat.unspawned(helper, EntityTypes.SHEEP);
+            GameTestCompat.finalizeSpawn(helper, sheep);
+            colours.add(sheep.getColor());
+        }
+        return colours;
+    }
+
+    // With colouredSheep off two black sheep have a white lamb; switched on, a black one, as in vanilla.
+    public static void lambsAreWhiteWithoutColouredSheep(GameTestHelper helper) {
+        Sheep ewe = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        Sheep ram = (Sheep) BreedingGameTests.male(helper, EntityTypes.SHEEP);
+        ewe.setColor(DyeColor.BLACK);
+        ram.setColor(DyeColor.BLACK);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            DyeColor white = ewe.getBreedOffspring(helper.getLevel(), ram).getColor();
+            BarnyardConfig.set(BarnyardConfig.parse("{\"colouredSheep\": true}"));
+            DyeColor black = ewe.getBreedOffspring(helper.getLevel(), ram).getColor();
+            helper.assertTrue(white == DyeColor.WHITE, "with colouredSheep off, black sheep had a " + white + " lamb");
+            helper.assertTrue(black == DyeColor.BLACK, "with colouredSheep on, black sheep had a " + black + " lamb");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    // With sheepDyeing off (the default) dye does nothing on a tracked sheep and isn't used up; switched on, or with
+    // sheep excluded, it dyes the sheep as in vanilla.
+    public static void trackedSheepCannotBeDyed(GameTestHelper helper) {
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            Player refused = FoodGameTests.holding(helper, GameTestCompat.dye(DyeColor.RED));
+            GameTestCompat.useOn(sheep, refused);
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "a tracked sheep was dyed " + sheep.getColor());
+            helper.assertTrue(refused.getMainHandItem().getCount() == 1, "the dye was used up on a sheep that can't be dyed");
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"sheepDyeing\": true}"));
+            Player dyer = FoodGameTests.holding(helper, GameTestCompat.dye(DyeColor.RED));
+            GameTestCompat.useOn(sheep, dyer);
+            helper.assertTrue(sheep.getColor() == DyeColor.RED, "with sheepDyeing on, the sheep stayed " + sheep.getColor());
+            helper.assertTrue(dyer.getMainHandItem().isEmpty(), "with sheepDyeing on, the dye wasn't used");
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:sheep\"]}"));
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, GameTestCompat.dye(DyeColor.BLUE)));
+            helper.assertTrue(sheep.getColor() == DyeColor.BLUE, "an excluded sheep wasn't dyed");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
+    // A water bucket washes a coloured sheep white, whatever the colour settings, and becomes an empty bucket. A sheared
+    // sheep washes too, since its wool grows back in its colour. A white sheep is left alone, and so is an excluded one.
+    public static void aWaterBucketWashesASheepWhite(GameTestHelper helper) {
+        Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{}"));
+            sheep.setColor(DyeColor.BLACK);
+            Player washer = FoodGameTests.holding(helper, Items.WATER_BUCKET);
+            GameTestCompat.useOn(sheep, washer);
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "a washed sheep stayed " + sheep.getColor());
+            helper.assertTrue(washer.getMainHandItem().is(Items.BUCKET), "washing left " + washer.getMainHandItem());
+
+            Player again = FoodGameTests.holding(helper, Items.WATER_BUCKET);
+            InteractionResult white = GameTestCompat.interact(sheep, again);
+            helper.assertTrue(!white.consumesAction() && again.getMainHandItem().is(Items.WATER_BUCKET), "a white sheep was washed");
+
+            sheep.setColor(DyeColor.BLUE);
+            sheep.setSheared(true);
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.WATER_BUCKET));
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "a sheared sheep stayed " + sheep.getColor());
+            sheep.setSheared(false);
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"colouredSheep\": true, \"sheepDyeing\": true}"));
+            sheep.setColor(DyeColor.PINK);
+            GameTestCompat.useOn(sheep, FoodGameTests.holding(helper, Items.WATER_BUCKET));
+            helper.assertTrue(sheep.getColor() == DyeColor.WHITE, "with the colour settings on, a washed sheep stayed " + sheep.getColor());
+
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"minecraft:sheep\"]}"));
+            sheep.setColor(DyeColor.BLACK);
+            GameTestCompat.interact(sheep, FoodGameTests.holding(helper, Items.WATER_BUCKET));
+            helper.assertTrue(sheep.getColor() == DyeColor.BLACK, "an excluded sheep was washed");
+        } finally {
+            BarnyardConfig.set(config);
+        }
+        helper.succeed();
+    }
+
     public static void unfamiliarSheepKeepTheirWool(GameTestHelper helper) {
         Sheep sheep = (Sheep) BreedingGameTests.female(helper, EntityTypes.SHEEP);
         FoodGameTests.withFamiliarity(helper, sheep, 0.1);
@@ -433,10 +636,13 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
+    // Ocelots aren't tracked unless a pack switches them on.
+    private static final String OCELOTS = "{\"species\": {\"minecraft:ocelot\": {\"enabled\": true}}}";
+
     public static void ocelotTrustsByFamiliarity(GameTestHelper helper) {
         Animal ocelot = FoodGameTests.withFamiliarity(helper, BreedingGameTests.female(helper, EntityTypes.OCELOT), 0.25);
 
-        FamiliarityActions.interact(ocelot, sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND);
+        UpkeepGameTests.withConfig(OCELOTS, () -> FamiliarityActions.interact(ocelot, sneaking(helper, Items.SALMON), InteractionHand.MAIN_HAND));
 
         helper.assertTrue(((OcelotAccessor) ocelot).barnyardromance$isTrusting(), "a familiar ocelot does not trust its feeder");
         helper.succeed();
@@ -528,7 +734,7 @@ public final class ProductGameTests {
         helper.assertTrue(!cat.isPersistenceRequired() && !ocelot.isPersistenceRequired(), "the test felines started out persistent");
 
         GameTestCompat.interact(cat, sneaking(helper, Items.COD));
-        GameTestCompat.interact(ocelot, sneaking(helper, Items.SALMON));
+        UpkeepGameTests.withConfig(OCELOTS, () -> GameTestCompat.interact(ocelot, sneaking(helper, Items.SALMON)));
 
         helper.assertTrue(cat.isPersistenceRequired(), "a fed stray cat can still despawn");
         helper.assertTrue(ocelot.isPersistenceRequired(), "a fed ocelot can still despawn");

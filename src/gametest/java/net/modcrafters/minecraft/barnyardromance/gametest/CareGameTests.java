@@ -14,6 +14,7 @@ import net.modcrafters.minecraft.barnyardromance.shear.FamiliarShearing;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
+import net.modcrafters.minecraft.barnyardromance.shear.ShearRule;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Sulk;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdComponents;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
@@ -41,6 +42,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Shearable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -95,6 +103,13 @@ public final class CareGameTests {
             new BreedingGameTests.Case("refused_milking_costs_nothing", 20, CareGameTests::refusedMilkingCostsNothing),
             new BreedingGameTests.Case("shearing_costs_familiarity", 20, CareGameTests::shearingCostsFamiliarity),
             new BreedingGameTests.Case("dispenser_shearing_costs_familiarity", 20, CareGameTests::dispenserShearingCostsFamiliarity),
+            new BreedingGameTests.Case("shearing_a_mooshroom_counts_on_its_cow", 20, CareGameTests::shearingAMooshroomCountsOnItsCow),
+            new BreedingGameTests.Case("shearing_a_mooshroom_earns_no_fleece_navidad", 20, CareGameTests::shearingAMooshroomEarnsNoFleeceNavidad),
+            new BreedingGameTests.Case("a_dispenser_shearing_a_mooshroom_counts_on_its_cow", 20, CareGameTests::aDispenserShearingAMooshroomCountsOnItsCow),
+            new BreedingGameTests.Case("shearing_switched_off_rolls_no_refusal", 20, CareGameTests::shearingSwitchedOffRollsNoRefusal),
+            new BreedingGameTests.Case("shearing_switched_off_never_asks_for_familiarity", 20, CareGameTests::shearingSwitchedOffNeverAsksForFamiliarity),
+            new BreedingGameTests.Case("a_snow_golem_is_left_alone", 20, CareGameTests::aSnowGolemIsLeftAlone),
+            new BreedingGameTests.Case("shearing_switched_off_leaves_it_to_vanilla", 20, CareGameTests::shearingSwitchedOffLeavesItToVanilla),
             new BreedingGameTests.Case("mooshroom_stew_costs_familiarity", 20, CareGameTests::mooshroomStewCostsFamiliarity),
             new BreedingGameTests.Case("hungry_cow_gives_no_milk_next_day", 20, CareGameTests::hungryCowGivesNoMilkNextDay),
             new BreedingGameTests.Case("hungry_days_count_towards_drying_up", 20, CareGameTests::hungryDaysCountTowardsDryingUp),
@@ -304,6 +319,120 @@ public final class CareGameTests {
 
         assertFamiliarity(helper, sheep, 0.75);
         helper.succeed();
+    }
+
+    // A sheared mooshroom is gone, so the count and the cost land on the cow it became, which keeps its record.
+    public static void shearingAMooshroomCountsOnItsCow(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        Player player = MockPlayers.inLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+        GameTestCompat.useOn(mooshroom, player);
+
+        helper.assertTrue(mooshroom.isRemoved(), "the mooshroom was not sheared");
+        Animal cow = cowNear(helper, mooshroom);
+        helper.assertTrue(ShearRule.shearedToday(traits(helper, cow), helper.getLevel().getOverworldClockTime()),
+                "the cow does not count as sheared today");
+        assertFamiliarity(helper, cow, 0.75);
+        helper.succeed();
+    }
+
+    // Fleece Navidad is for sheep: a familiar mooshroom sheared by hand is counted, but earns nothing.
+    public static void shearingAMooshroomEarnsNoFleeceNavidad(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        ServerPlayer player = MockPlayers.inLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+        GameTestCompat.useOn(mooshroom, player);
+
+        helper.assertTrue(mooshroom.isRemoved(), "the mooshroom was not sheared");
+        helper.assertTrue(!AdvancementGameTests.earned(player, BarnyardAdvancements.FLEECE_NAVIDAD), "shearing a mooshroom earned Fleece Navidad");
+        helper.succeed();
+    }
+
+    // A real dispenser next to the mooshroom, so 26.3's FamiliarShearing and 1.21.1's IShearable hook both run.
+    public static void aDispenserShearingAMooshroomCountsOnItsCow(GameTestHelper helper) {
+        Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+        ServerLevel level = helper.getLevel();
+        BlockPos dispenserPos = mooshroom.blockPosition().east();
+        level.setBlock(dispenserPos, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.WEST), 3);
+        ((DispenserBlockEntity) level.getBlockEntity(dispenserPos)).setItem(0, new ItemStack(Items.SHEARS));
+
+        // The dispenser's own tick is what dispenses.
+        level.getBlockState(dispenserPos).tick(level, dispenserPos, level.getRandom());
+
+        helper.assertTrue(mooshroom.isRemoved(), "the dispenser did not shear the mooshroom");
+        Animal cow = cowNear(helper, mooshroom);
+        helper.assertTrue(ShearRule.shearedToday(traits(helper, cow), level.getOverworldClockTime()), "the cow does not count as sheared today");
+        assertFamiliarity(helper, cow, 0.75);
+        helper.succeed();
+    }
+
+    // Not an Animal, so the mod has nothing to count; vanilla shears it as ever.
+    public static void aSnowGolemIsLeftAlone(GameTestHelper helper) {
+        Mob golem = GameTestCompat.spawn(helper, EntityTypes.SNOW_GOLEM, 2, 1, 2);
+        Player player = MockPlayers.inLevel(helper);
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+        GameTestCompat.useOn(golem, player);
+
+        helper.assertTrue(!((Shearable) golem).readyForShearing(), "the snow golem kept its pumpkin");
+        helper.succeed();
+    }
+
+    public static void shearingSwitchedOffLeavesItToVanilla(GameTestHelper helper) {
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:mooshroom\": {\"shearing\": false}}}", () -> {
+            Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), 0.8);
+            Player player = MockPlayers.inLevel(helper);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+            GameTestCompat.useOn(mooshroom, player);
+
+            helper.assertTrue(mooshroom.isRemoved(), "the mooshroom was not sheared");
+            Animal cow = cowNear(helper, mooshroom);
+            helper.assertTrue(!ShearRule.shearedToday(traits(helper, cow), helper.getLevel().getOverworldClockTime()),
+                    "the cow counts as sheared today");
+            assertFamiliarity(helper, cow, 0.8);
+        });
+        helper.succeed();
+    }
+
+    // Below refusalBelow, with the roll forced to always refuse (refusalChance 1): a species switched off for shearing
+    // still shears every time, by hand and from a dispenser.
+    public static void shearingSwitchedOffRollsNoRefusal(GameTestHelper helper) {
+        switchedOffMooshroomShears(helper, 0.45);
+    }
+
+    // Under the familiarity threshold the animal would be turned away as not familiar; switched off, it isn't.
+    public static void shearingSwitchedOffNeverAsksForFamiliarity(GameTestHelper helper) {
+        switchedOffMooshroomShears(helper, 0.1);
+    }
+
+    private static void switchedOffMooshroomShears(GameTestHelper helper, double familiarity) {
+        UpkeepGameTests.withConfig("{\"tuning\": {\"refusalBelow\": 0.5, \"refusalChance\": 1.0, \"familiarityThreshold\": 0.3}, "
+                + "\"species\": {\"minecraft:mooshroom\": {\"shearing\": false}}}", () -> {
+            Animal mooshroom = withFamiliarity(helper, female(helper, EntityTypes.MOOSHROOM), familiarity);
+            helper.assertTrue(!ShearActions.withholds(mooshroom), "a dispenser is withheld from a mooshroom switched off for shearing");
+            helper.assertTrue(!ShearActions.denied(mooshroom), "an unfamiliar mooshroom switched off for shearing is denied shears");
+            Player player = MockPlayers.inLevel(helper);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));
+
+            GameTestCompat.useOn(mooshroom, player);
+
+            helper.assertTrue(mooshroom.isRemoved(), "the mooshroom was not sheared");
+            Animal cow = cowNear(helper, mooshroom);
+            long today = GameDay.of(helper.getLevel().getOverworldClockTime());
+            helper.assertTrue(!traits(helper, cow).get(CARE).refusals().refused(Refusable.SHEARING, today), "the shearing was refused");
+            assertFamiliarity(helper, cow, familiarity);
+        });
+        helper.succeed();
+    }
+
+    private static Animal cowNear(GameTestHelper helper, Animal mooshroom) {
+        List<Animal> cows = helper.getLevel().getEntitiesOfClass(Animal.class, mooshroom.getBoundingBox().inflate(4.0),
+                animal -> animal.getType() == EntityTypes.COW);
+        helper.assertTrue(cows.size() == 1, "the shearing left " + cows.size() + " cows");
+        return cows.get(0);
     }
 
     public static void mooshroomStewCostsFamiliarity(GameTestHelper helper) {
@@ -560,7 +689,8 @@ public final class CareGameTests {
         parrot.tame(MockPlayers.inLevel(helper));
         Services.DATA.set(parrot, traits(helper, parrot).with(CARE, traits(helper, parrot).get(CARE).fed(0.0, -1L)));
 
-        helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy");
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:parrot\": {\"enabled\": true}}}", () ->
+                helper.assertTrue(!FamiliarityCare.grumpy(parrot), "a tamed parrot turned grumpy"));
         helper.succeed();
     }
 

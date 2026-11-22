@@ -8,8 +8,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
@@ -63,6 +67,15 @@ public final class GameTestCompat {
             throw failure(helper, "could not create a " + type);
         }
         return entity;
+    }
+
+    @SuppressWarnings({"deprecation", "OverrideOnly"})
+    public static void finalizeSpawn(GameTestHelper helper, Mob mob) {
+        mob.finalizeSpawn(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(mob.blockPosition()), MobSpawnType.SPAWN_EGG, null);
+    }
+
+    public static Item dye(DyeColor color) {
+        return DyeItem.byColor(color);
     }
 
     @SuppressWarnings("unchecked")

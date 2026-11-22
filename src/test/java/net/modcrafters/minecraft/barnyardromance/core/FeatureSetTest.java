@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,7 +69,7 @@ class FeatureSetTest {
         assertThrows(IllegalStateException.class, () -> kept.get().content(sink -> {
         }));
         assertThrows(IllegalStateException.class, () -> kept.get().tabEntry("late", List::of));
-        assertThrows(IllegalStateException.class, () -> kept.get().ignoredByDefault(species -> true));
+        assertThrows(IllegalStateException.class, () -> kept.get().trackedByDefault("a:b"));
         assertThrows(IllegalStateException.class, () -> kept.get().slice(slice("late", "late")));
         assertThrows(IllegalStateException.class, () -> kept.get().hook(AnimalPhase.JOINED, "milk.joined", (animal, level) -> {
         }));
@@ -98,6 +99,14 @@ class FeatureSetTest {
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> setOf(features));
         assertTrue(thrown.getMessage().contains("laying"), thrown.getMessage());
+    }
+
+    @Test
+    void trackedByDefaultCollectsFeatureIds() {
+        FeatureSet features = setOf(List.of(feature("mod", registrar -> registrar.trackedByDefault("a:b"))));
+
+        assertTrue(features.trackedByDefault("a:b"));
+        assertFalse(features.trackedByDefault("a:c"));
     }
 
     @Test

@@ -41,6 +41,34 @@ class LaddersTest {
     }
 
     @Test
+    void duckModBirdsShareTheDuckAndGooseLadders() {
+        assertEquals(Optional.of("duck"), Ladders.ladderFor("untitledduckmod:duck"));
+        assertEquals(Optional.of("goose"), Ladders.ladderFor("untitledduckmod:goose"));
+    }
+
+    @Test
+    void meadowsCattleHaveTheirOwnLadders() {
+        assertEquals(Optional.of("water_buffalo"), Ladders.ladderFor("meadow:water_buffalo"));
+        assertEquals(Optional.of("wooly_cow"), Ladders.ladderFor("meadow:wooly_cow"));
+        assertEquals(Optional.empty(), Ladders.ladderFor("meadow:something_else"));
+    }
+
+    @Test
+    void autumnitysAndEnvironmentalsFarmAnimalsHaveLadders() {
+        assertEquals(Optional.of("turkey"), Ladders.ladderFor("autumnity:turkey"));
+        assertEquals(Optional.of("duck"), Ladders.ladderFor("environmental:duck"));
+        assertEquals(Optional.of("yak"), Ladders.ladderFor("environmental:yak"));
+        assertEquals(Optional.empty(), Ladders.ladderFor("environmental:deer"));
+        assertEquals(Optional.of("deer"), Ladders.ladderFor("naturalist:deer"));
+    }
+
+    @Test
+    void theMoobloomHasItsOwnLadder() {
+        assertEquals(Optional.of("moobloom"), Ladders.ladderFor("friendsandfoes:moobloom"));
+        assertEquals(Optional.empty(), Ladders.ladderFor("friendsandfoes:crab"));
+    }
+
+    @Test
     void twinsCrossTheStepOnce() {
         assertEquals(List.of(10), Ladders.crossed(9, 11));
         assertEquals(List.of(), Ladders.crossed(10, 11));

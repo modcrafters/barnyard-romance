@@ -4,6 +4,7 @@ plugins {
 }
 
 apply from: rootProject.file('gradle/naturalist-runs.gradle')
+apply from: rootProject.file('gradle/farm-mods-runs.gradle')
 apply from: rootProject.file('gradle/jade-runs.gradle')
 apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
 
@@ -76,6 +77,20 @@ neoForge {
             gameDirectory = this.mkdir(this.file('runs/naturalist-gametest'))
             systemProperty('barnyard_romance.expect_naturalist', 'true')
         }
+        // Compatibility testing with the farm-animal mods, see gradle/farm-mods-runs.gradle.
+        clientFarmMods {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/farm-mods-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        gameTestServerFarmMods {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.gametest
+            loadedMods = [neoForge.mods.named(mod_id).get(), neoForge.mods.named("${mod_id}_gametest").get()]
+            gameDirectory = this.mkdir(this.file('runs/farm-mods-gametest'))
+            systemProperty('barnyard_romance.expect_mods', farmModIds)
+        }
         // Our stats in Jade's tooltip, see gradle/jade-runs.gradle.
         clientJade {
             client()
@@ -96,13 +111,16 @@ neoForge {
 // taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
 neoForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
 neoForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
+neoForge.runs.clientFarmMods.taskBefore(farmModsInRun('clientFarmMods', 'runs/farm-mods-client'))
+neoForge.runs.gameTestServerFarmMods.taskBefore(farmModsInRun('gameTestServerFarmMods', 'runs/farm-mods-gametest'))
 neoForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
 freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client').each { neoForge.runs.clientFreshAnimations.taskBefore(it) }
 
 // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
 // midnight partway through and hunger or Vigour refills would hit unrelated tests. 1.21.1 saves the world
 // in world, 26.3 in gametestserver.
-['gameTestServer': 'runs/gametest', 'gameTestServerNaturalist': 'runs/naturalist-gametest'].each { runName, runDir ->
+['gameTestServer': 'runs/gametest', 'gameTestServerNaturalist': 'runs/naturalist-gametest',
+ 'gameTestServerFarmMods': 'runs/farm-mods-gametest'].each { runName, runDir ->
     def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
         description = "Deletes the ${runDir} world so the run starts fresh."
         delete file("${runDir}/world"), file("${runDir}/gametestserver")

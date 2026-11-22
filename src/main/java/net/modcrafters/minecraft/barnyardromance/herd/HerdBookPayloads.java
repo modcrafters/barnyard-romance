@@ -8,7 +8,9 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,8 +21,10 @@ public final class HerdBookPayloads {
 
     // book is empty for a book that has never registered an animal. open is true when the player used the book,
     // and false for a reply, which must not reopen a book the player has closed.
-    // focus is the animal whose page to turn to, if any.
-    public record ShowBook(Optional<UUID> book, List<HerdEntry> entries, boolean open, Optional<UUID> focus) implements CustomPacketPayload {
+    // focus is the animal whose page to turn to, if any. menus has what each living species in the book eats, best
+    // first, as "#tag" and item ids, for its "not fed" tooltips.
+    public record ShowBook(Optional<UUID> book, List<HerdEntry> entries, boolean open, Optional<UUID> focus,
+                           Map<String, List<String>> menus) implements CustomPacketPayload {
         public static final Type<ShowBook> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "show_herd_book"));
         // Books have no size limit and grow as calves are born, so a big farm's book is past vanilla's 1 MiB
         // packet limit (about 1 KB per animal). NeoForge splits large payloads itself; Fabric registers this.
@@ -34,6 +38,8 @@ public final class HerdBookPayloads {
                 ShowBook::open,
                 ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC).cast(),
                 ShowBook::focus,
+                ByteBufCodecs.map(HashMap::new, ByteBufCodecs.STRING_UTF8, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list())),
+                ShowBook::menus,
                 ShowBook::new
         );
 

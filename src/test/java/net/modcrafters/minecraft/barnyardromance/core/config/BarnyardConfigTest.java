@@ -4,10 +4,12 @@ import net.modcrafters.minecraft.barnyardromance.BarnyardFeatures;
 import net.modcrafters.minecraft.barnyardromance.breeding.ScaleRoll;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.breeding.SexRoll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,10 +19,106 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BarnyardConfigTest {
-    // Naturalist hands config its default ignore list when it registers.
+    // Naturalist registers its tracked-by-default species.
     @BeforeAll
     static void installFeatures() {
         BarnyardFeatures.ensureInstalled();
+    }
+
+    @AfterEach
+    void restoreTags() {
+        BarnyardConfig.setIncludedByTag(id -> false);
+        BarnyardConfig.setExcludedByTag(id -> false);
+    }
+
+    @Test
+    void vanillaFarmWorkingAndPetsAreTracked() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String id : List.of("cow", "mooshroom", "sheep", "goat", "pig", "chicken", "rabbit", "hoglin", "horse", "donkey",
+                "mule", "llama", "trader_llama", "camel", "wolf", "cat")) {
+            assertTrue(config.speciesEnabled("minecraft:" + id), id);
+        }
+        assertEquals(16, BuiltInSpecies.VANILLA.size());
+    }
+
+    @Test
+    void wildVanillaAnimalsAreNot() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String id : List.of("fox", "ocelot", "panda", "polar_bear", "bee", "turtle", "axolotl", "frog", "armadillo", "sniffer",
+                "strider", "parrot", "skeleton_horse", "zombie_horse")) {
+            assertFalse(config.speciesEnabled("minecraft:" + id), id);
+        }
+    }
+
+    @Test
+    void shearingTurnsMooshroomsAndMoobloomsIntoCows() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertEquals(Optional.of("minecraft:cow"), config.shearsInto("minecraft:mooshroom"));
+        assertEquals(Optional.of("minecraft:cow"), config.shearsInto("friendsandfoes:moobloom"));
+        assertEquals(Optional.empty(), config.shearsInto("minecraft:sheep"));
+    }
+
+    @Test
+    void naturalistDeerIsOut() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertFalse(config.speciesEnabled("naturalist:deer"));
+        for (String id : List.of("boar", "duck", "turkey", "ostrich")) {
+            assertTrue(config.speciesEnabled("naturalist:" + id), id);
+        }
+    }
+
+    @Test
+    void unknownModAnimalsAreOut() {
+        assertFalse(BarnyardConfig.parse("{}").speciesEnabled("somemod:cow"));
+    }
+
+    @Test
+    void explicitEnabledBringsOneBack() {
+        assertTrue(BarnyardConfig.parse("""
+                { "species": { "minecraft:fox": { "enabled": true } } }
+                """).speciesEnabled("minecraft:fox"));
+    }
+
+    @Test
+    void includedTagBringsOneBack() {
+        BarnyardConfig.setIncludedByTag("somemod:cow"::equals);
+
+        assertTrue(BarnyardConfig.parse("{}").speciesEnabled("somemod:cow"));
+    }
+
+    @Test
+    void excludeBeatsIncludedTag() {
+        BarnyardConfig.setIncludedByTag("somemod:cow"::equals);
+
+        assertFalse(BarnyardConfig.parse("""
+                { "exclude": ["somemod:*"] }
+                """).speciesEnabled("somemod:cow"));
+    }
+
+    @Test
+    void ignoringTagsSkipsBothTags() {
+        BarnyardConfig.setIncludedByTag("somemod:cow"::equals);
+        BarnyardConfig.setExcludedByTag("minecraft:pig"::equals);
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertFalse(config.speciesEnabledIgnoringTags("somemod:cow"));
+        assertTrue(config.speciesEnabledIgnoringTags("minecraft:pig"));
+        assertFalse(config.speciesEnabled("minecraft:pig"));
+    }
+
+    @Test
+    void tamesThroughFamiliarity() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.tamesThroughFamiliarity("naturalist:duck"));
+        assertFalse(config.tamesThroughFamiliarity("minecraft:cow"));
+        assertFalse(BarnyardConfig.parse("""
+                { "exclude": ["naturalist:duck"] }
+                """).tamesThroughFamiliarity("naturalist:duck"));
     }
 
     @Test
@@ -86,6 +184,24 @@ class BarnyardConfigTest {
 
         assertTrue(config.goatLongJumps());
         assertTrue(BarnyardConfig.parse(config.toJson()).goatLongJumps());
+    }
+
+    @Test
+    void colouredSheepAndSheepDyeingAreOffByDefault() {
+        assertFalse(BarnyardConfig.parse("{}").colouredSheep());
+        assertFalse(BarnyardConfig.parse("{}").sheepDyeing());
+        assertFalse(BarnyardConfig.defaults().colouredSheep());
+        assertFalse(BarnyardConfig.defaults().sheepDyeing());
+    }
+
+    @Test
+    void colouredSheepAndSheepDyeingRoundTrip() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"colouredSheep\": true, \"sheepDyeing\": true}");
+
+        assertTrue(config.colouredSheep());
+        assertTrue(config.sheepDyeing());
+        assertTrue(BarnyardConfig.parse(config.toJson()).colouredSheep());
+        assertTrue(BarnyardConfig.parse(config.toJson()).sheepDyeing());
     }
 
     @Test
@@ -438,7 +554,7 @@ class BarnyardConfigTest {
     @Test
     void speciesEntriesSwitchFightingOnAndOff() {
         BarnyardConfig config = BarnyardConfig.parse("""
-                { "species": { "minecraft:cow": { "fights": false }, "modded:yak": { "fights": true } } }
+                { "species": { "minecraft:cow": { "fights": false }, "modded:yak": { "enabled": true, "fights": true } } }
                 """);
 
         assertFalse(config.fightsFor("minecraft:cow"));
@@ -446,6 +562,37 @@ class BarnyardConfigTest {
         BarnyardConfig reread = BarnyardConfig.parse(config.toJson());
         assertFalse(reread.fightsFor("minecraft:cow"));
         assertTrue(reread.fightsFor("modded:yak"));
+    }
+
+    @Test
+    void stewPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.stewFor("minecraft:mooshroom"));
+        assertFalse(config.stewFor("minecraft:cow"));
+    }
+
+    @Test
+    void stewFromConfig() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"species\":{\"minecraft:cow\":{\"stew\":true}}}");
+
+        assertTrue(config.stewFor("minecraft:cow"));
+        assertTrue(BarnyardConfig.parse(config.toJson()).stewFor("minecraft:cow"));
+        assertFalse(BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"stew\":false}}}").stewFor("minecraft:mooshroom"));
+        assertFalse(BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"enabled\":false}}}").stewFor("minecraft:mooshroom"));
+    }
+
+    @Test
+    void shearingDefaultsOnAndCanBeSwitchedOff() {
+        BarnyardConfig defaults = BarnyardConfig.parse("{}");
+        BarnyardConfig off = BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"shearing\":false}}}");
+
+        assertTrue(defaults.shearingFor("minecraft:cow"));
+        assertTrue(defaults.shearingFor("minecraft:mooshroom"));
+        assertFalse(off.shearingFor("minecraft:mooshroom"));
+        assertTrue(off.shearingFor("minecraft:sheep"));
+        assertFalse(BarnyardConfig.parse(off.toJson()).shearingFor("minecraft:mooshroom"));
+        assertFalse(BarnyardConfig.parse("{\"species\":{\"minecraft:mooshroom\":{\"enabled\":false}}}").shearingFor("minecraft:mooshroom"));
     }
 
     @Test
@@ -490,7 +637,7 @@ class BarnyardConfigTest {
     @Test
     void eggsBlockCanMakeAnyBirdLay() {
         BarnyardConfig config = BarnyardConfig.parse("""
-                { "species": { "somemod:duck": { "eggs": { "enabled": true, "plainEgg": "somemod:duck_egg" } } } }
+                { "species": { "somemod:duck": { "enabled": true, "eggs": { "enabled": true, "plainEgg": "somemod:duck_egg" } } } }
                 """);
 
         EggSettings eggs = config.eggsFor("somemod:duck");
@@ -521,10 +668,92 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void duckModBirdsAreTrackedAndLay() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        for (String bird : List.of("duck", "goose")) {
+            String id = "untitledduckmod:" + bird;
+            assertTrue(config.speciesEnabled(id), id);
+            assertTrue(config.eggsFor(id).enabled(), id);
+            assertEquals("untitledduckmod:" + bird + "_egg", config.eggsFor(id).plainEgg(), id);
+            assertTrue(config.fightsFor(id), id);
+            assertTrue(config.tamesThroughFamiliarity(id), id);
+        }
+        assertFalse(config.speciesEnabled("untitledduckmod:some_future_bird"));
+    }
+
+    @Test
+    void duckModBirdsHaveTamingFoodTags() {
+        assertEquals(java.util.Optional.of("untitledduckmod:duck_taming_food"), SpeciesPresets.tamingFoodTag("untitledduckmod:duck"));
+        assertEquals(java.util.Optional.of("untitledduckmod:goose_taming_food"), SpeciesPresets.tamingFoodTag("untitledduckmod:goose"));
+        assertEquals(java.util.Optional.empty(), SpeciesPresets.tamingFoodTag("naturalist:duck"));
+    }
+
+    @Test
+    void moobloomPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+        String id = "friendsandfoes:moobloom";
+
+        assertTrue(config.speciesEnabled(id));
+        assertEquals(config.pregnancyRange("minecraft:cow"), config.pregnancyRange(id));
+        assertEquals(config.litterRange("minecraft:cow"), config.litterRange(id));
+        assertEquals(new Range(60_000, 72_000), config.pregnancyRange(id));
+        assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
+                new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
+                java.util.Set.copyOf(config.milkFor(id).entries()));
+        assertTrue(config.stewFor(id));
+        assertTrue(config.fightsFor(id));
+        assertFalse(config.speciesEnabled("friendsandfoes:crab"));
+        assertFalse(config.speciesEnabled("friendsandfoes:penguin"));
+    }
+
+    @Test
+    void meadowPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+        for (String id : java.util.List.of("meadow:water_buffalo", "meadow:wooly_cow")) {
+            assertTrue(config.speciesEnabled(id), id);
+            assertEquals(new Range(60_000, 72_000), config.pregnancyRange(id), id);
+            assertEquals(config.litterRange("minecraft:cow"), config.litterRange(id), id);
+            assertTrue(config.fightsFor(id), id);
+            assertFalse(config.stewFor(id), id);
+        }
+        assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
+                new MilkEntry("meadow:wooden_bucket", "meadow:wooden_buffalo_milk_bucket", null)),
+                java.util.Set.copyOf(config.milkFor("meadow:water_buffalo").entries()));
+        // The wooly cow is milked with the wooden bucket only. Its wooden milk depends on its variant (WoolyCowMilk);
+        // this row is the fallback.
+        assertEquals(java.util.List.of(new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
+                java.util.List.copyOf(config.milkFor("meadow:wooly_cow").entries()));
+    }
+
+    @Test
+    void autumnityAndEnvironmentalPresets() {
+        BarnyardConfig config = BarnyardConfig.parse("{}");
+
+        assertTrue(config.speciesEnabled("autumnity:turkey"));
+        assertTrue(config.eggsFor("autumnity:turkey").enabled());
+        assertEquals("autumnity:turkey_egg", config.eggsFor("autumnity:turkey").plainEgg());
+        assertTrue(config.speciesEnabled("environmental:duck"));
+        assertTrue(config.eggsFor("environmental:duck").enabled());
+        assertEquals("environmental:duck_egg", config.eggsFor("environmental:duck").plainEgg());
+        assertTrue(config.speciesEnabled("environmental:yak"));
+        assertEquals(new Range(60_000, 72_000), config.pregnancyRange("environmental:yak"));
+        assertEquals(config.litterRange("minecraft:cow"), config.litterRange("environmental:yak"));
+        assertEquals(java.util.List.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null)),
+                config.milkFor("environmental:yak").entries());
+        for (String id : List.of("autumnity:turkey", "environmental:duck", "environmental:yak")) {
+            assertTrue(config.fightsFor(id), id);
+        }
+        for (String id : List.of("environmental:deer", "environmental:reindeer", "environmental:zebra", "environmental:slabfish")) {
+            assertFalse(config.speciesEnabled(id), id);
+        }
+    }
+
+    @Test
     void naturalistLivestockIsTracked() {
         BarnyardConfig config = BarnyardConfig.parse("{}");
 
-        for (String id : List.of("deer", "boar", "duck", "turkey", "ostrich")) {
+        for (String id : List.of("boar", "duck", "turkey", "ostrich")) {
             assertTrue(config.speciesEnabled("naturalist:" + id), id);
         }
     }
@@ -539,8 +768,8 @@ class BarnyardConfigTest {
     }
 
     @Test
-    void otherModsAreStillTracked() {
-        assertTrue(BarnyardConfig.parse("{}").speciesEnabled("somemod:firefly"));
+    void otherModsAreNotTrackedUnlessEnabled() {
+        assertFalse(BarnyardConfig.parse("{}").speciesEnabled("somemod:firefly"));
     }
 
     @Test

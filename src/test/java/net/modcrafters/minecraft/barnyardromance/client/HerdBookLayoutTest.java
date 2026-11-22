@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -158,6 +159,22 @@ class HerdBookLayoutTest {
         assertEquals("Trader Lla…", HerdBookLayout.tabLabel("Trader Llama"));
         // No space left hanging before the dots.
         assertEquals("Skeleton…", HerdBookLayout.tabLabel("Skeleton  Horse"));
+    }
+
+    @Test
+    void speciesSharingANameAreToldApartByTheirMod() {
+        List<HerdBookLayout.Row> rows = List.of(
+                new HerdBookLayout.Row(id(1), "naturalist:duck", "Duck", "Duck", true, false, true),
+                new HerdBookLayout.Row(id(2), "untitledduckmod:duck", "Duck", "Duck", false, false, true),
+                new HerdBookLayout.Row(id(3), "untitledduckmod:duck", "Duck", "Duck", true, false, true),
+                cow(4, "Daisy", true, false));
+
+        Map<String, String> names = HerdBookLayout.speciesNames(rows);
+
+        assertEquals("Duck @naturalist", names.get("naturalist:duck"));
+        assertEquals("Duck @untitledduckmod", names.get("untitledduckmod:duck"));
+        assertEquals("Cow", names.get("minecraft:cow"));
+        assertEquals("Duck @natu…", HerdBookLayout.tabLabel(names.get("naturalist:duck")));
     }
 
     @Test

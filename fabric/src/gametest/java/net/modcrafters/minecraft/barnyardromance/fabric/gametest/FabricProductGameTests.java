@@ -13,6 +13,26 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void trackedSheepSpawnWhite(GameTestHelper helper) {
+        ProductGameTests.trackedSheepSpawnWhite(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void lambsAreWhiteWithoutColouredSheep(GameTestHelper helper) {
+        ProductGameTests.lambsAreWhiteWithoutColouredSheep(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void trackedSheepCannotBeDyed(GameTestHelper helper) {
+        ProductGameTests.trackedSheepCannotBeDyed(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWaterBucketWashesASheepWhite(GameTestHelper helper) {
+        ProductGameTests.aWaterBucketWashesASheepWhite(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void unfamiliarSheepKeepTheirWool(GameTestHelper helper) {
         ProductGameTests.unfamiliarSheepKeepTheirWool(helper);
     }
@@ -53,6 +73,21 @@ public class FabricProductGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aConfigMilkEntryWithANonBucketItemMilksAPig(GameTestHelper helper) {
+        ProductGameTests.aConfigMilkEntryWithANonBucketItemMilksAPig(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMilkingItemNotOnTheListDoesNothing(GameTestHelper helper) {
+        ProductGameTests.aMilkingItemNotOnTheListDoesNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anEmptyMilkListStopsACowGivingMilk(GameTestHelper helper) {
+        ProductGameTests.anEmptyMilkListStopsACowGivingMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void refusedMilkingKeepsTheBucket(GameTestHelper helper) {
         ProductGameTests.refusedMilkingKeepsTheBucket(helper);
     }
@@ -75,6 +110,11 @@ public class FabricProductGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void mooshroomBowlStaysVanilla(GameTestHelper helper) {
         ProductGameTests.mooshroomBowlStaysVanilla(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aBowlMilkEntryElsewhereLeavesTheMooshroomStew(GameTestHelper helper) {
+        ProductGameTests.aBowlMilkEntryElsewhereLeavesTheMooshroomStew(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

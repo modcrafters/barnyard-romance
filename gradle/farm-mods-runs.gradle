@@ -1,0 +1,84 @@
+// The farm-animal mods, for compatibility testing only: Untitled Duck Mod, Friends&Foes, Meadow, Autumnity and
+// Environmental, and the libraries they need. The mod never compiles or ships against them: Gradle resolves the jars
+// when one of these runs starts and copies them to that run's own mods folder, so the normal runs, the tests and the
+// published jars don't see them.
+//
+// Every jar is a Modrinth version id, not a version number: a number repeats across loaders and Minecraft versions.
+// Friends&Foes has a project for Fabric and another for NeoForge. Meadow's Foundation library is bundled inside it.
+// Untitled Duck Mod 1.8.1 on NeoForge 26.3 needs NeoForge 26.3.0.103, a newer one than the mod builds against, so add
+// -Pneoforge_version=26.3.0.103 to those runs.
+
+apply from: rootProject.file('gradle/modrinth-maven.gradle')
+
+// loader + ' ' + minecraft version -> the mods' ids, and each jar as [Modrinth project slug, version id].
+def farmModsByBuild = [
+        'neoforge 1.21.1': [
+                modIds: ['untitledduckmod', 'friendsandfoes', 'meadow', 'autumnity', 'environmental'],
+                jars  : [
+                        ['untitled-duck-mod', 'vNlEAHKP'],      // 1.7.1+neoforge
+                        ['friends-and-foes-forge', 'SHNibBGE'], // neoforge-5.0.5+mc1.21.1
+                        ['lets-do-meadow', '7lmxOKYR'],         // 1.4.10
+                        ['autumnity', '9jUNvDKx'],              // 6.0.1
+                        ['environmental', 'NdDV1AM8'],          // 5.0.1
+                        ['geckolib', 'Grwn5rUB'],               // 4.9.3
+                        ['resourceful-lib', 'x99nCLTm'],        // 3.0.12
+                        ['architectury-api', 'xGfBrBzj'],       // 13.0.12+neoforge
+                        ['blueprint', 'FHOjk8Ez'],              // 8.2.0
+                ],
+        ],
+        'neoforge 26.3'  : [
+                modIds: ['untitledduckmod', 'friendsandfoes'],
+                jars  : [
+                        ['untitled-duck-mod', 'lGoz2u2L'],      // 1.8.1-neoforge
+                        ['friends-and-foes-forge', 'ad6tXDq5'], // neoforge-5.0.5+mc26.3
+                        ['geckolib', '2s1O42FX'],               // 5.5.7
+                        ['resourceful-lib', 'g9rQSbAF'],        // 6.0.1
+                ],
+        ],
+        'fabric 26.3'    : [
+                modIds: ['untitledduckmod', 'friendsandfoes'],
+                jars  : [
+                        ['untitled-duck-mod', 'R3vpHCeV'],      // 1.8.0+fabric
+                        ['friends-and-foes', 'HjDSkNE9'],       // fabric-5.0.5+mc26.3
+                        ['geckolib', 'kSxHvs99'],               // 5.5.7
+                        ['resourceful-lib', 'P6Jq77km'],        // 6.0.1
+                ],
+        ],
+]
+
+def farmBuild = farmModsByBuild["${project.parent.name} ${minecraft_version}".toString()]
+if (farmBuild == null) {
+    throw new GradleException("gradle/farm-mods-runs.gradle has no mods for ${project.parent.name} ${minecraft_version}")
+}
+
+configurations {
+    farmMods {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+}
+
+dependencies {
+    farmBuild.jars.each { slug, versionId ->
+        farmMods "maven.modrinth:${slug}:${versionId}"
+    }
+}
+
+// The ids of this build's farm-animal mods, comma separated, for -Dbarnyard_romance.expect_mods.
+ext.farmModIds = farmBuild.modIds.join(',')
+
+// Call for each farm-mods run. The mods folder is synced, so it holds exactly these jars.
+ext.farmModsInRun = { String runName, String gameDirectory ->
+    def sync = tasks.register("sync${runName.capitalize()}Mods", Sync) {
+        group = 'farm mods'
+        description = "Copies the farm-animal mod jars to ${gameDirectory}/mods."
+        from configurations.farmMods
+        into file("${gameDirectory}/mods")
+    }
+    tasks.matching { it.name == "run${runName.capitalize()}" }.configureEach {
+        group = 'farm mods'
+        dependsOn sync
+    }
+    return sync
+}

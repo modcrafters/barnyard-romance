@@ -112,4 +112,14 @@ public class FabricBreedingGameTests {
     public void aMuleIsSavedInItsOwnRange(GameTestHelper helper) {
         BreedingGameTests.aMuleIsSavedInItsOwnRange(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aTraderLlamasBabyIsALlama(GameTestHelper helper) {
+        BreedingGameTests.aTraderLlamasBabyIsALlama(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aSwitchedOffTraderLlamasBabyIsATraderLlama(GameTestHelper helper) {
+        BreedingGameTests.aSwitchedOffTraderLlamasBabyIsATraderLlama(helper);
+    }
 }

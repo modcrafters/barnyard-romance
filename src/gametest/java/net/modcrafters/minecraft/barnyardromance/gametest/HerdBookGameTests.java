@@ -10,6 +10,8 @@ import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
+import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
 import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
 import com.mojang.serialization.Dynamic;
@@ -55,6 +57,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -70,6 +73,7 @@ import static net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityS
 public final class HerdBookGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("wild_animals_cannot_join_a_book", 20, HerdBookGameTests::wildAnimalsCannotJoinABook),
+            new BreedingGameTests.Case("a_book_says_what_each_species_eats", 20, HerdBookGameTests::aBookSaysWhatEachSpeciesEats),
             new BreedingGameTests.Case("familiar_animals_join_once", 20, HerdBookGameTests::familiarAnimalsJoinOnce),
             new BreedingGameTests.Case("tamed_cats_join_without_sitting", 20, HerdBookGameTests::tamedCatsJoinWithoutSitting),
             new BreedingGameTests.Case("newborns_join_their_mothers_books", 20, HerdBookGameTests::newbornsJoinTheirMothersBooks),
@@ -102,7 +106,8 @@ public final class HerdBookGameTests {
             new BreedingGameTests.Case("an_animal_in_another_book_is_added_to_this_one", 20, HerdBookGameTests::anAnimalInAnotherBookIsAddedToThisOne),
             new BreedingGameTests.Case("a_herd_book_copies_with_a_book_feather_and_ink", 20, HerdBookGameTests::aHerdBookCopiesWithABookFeatherAndInk),
             new BreedingGameTests.Case("a_fresh_herd_book_does_not_copy", 20, HerdBookGameTests::aFreshHerdBookDoesNotCopy),
-            new BreedingGameTests.Case("a_copy_shares_the_herd", 20, HerdBookGameTests::aCopySharesTheHerd)
+            new BreedingGameTests.Case("a_copy_shares_the_herd", 20, HerdBookGameTests::aCopySharesTheHerd),
+            new BreedingGameTests.Case("a_member_whose_species_left_tracking_shows_not_tracked", 20, HerdBookGameTests::aMemberWhoseSpeciesLeftTrackingShowsNotTracked)
     );
 
     private HerdBookGameTests() {
@@ -340,12 +345,35 @@ public final class HerdBookGameTests {
         helper.succeed();
     }
 
+    // The book carries each living species' everyday foods, best first, for its "not fed" tooltips: a cow's diet groups
+    // without the superfood mash, a chicken's own seeds. An untracked species has none.
+    public static void aBookSaysWhatEachSpeciesEats(GameTestHelper helper) {
+        Animal cow = female(helper, EntityTypes.COW);
+        Animal chicken = female(helper, EntityTypes.CHICKEN);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
+        HerdBooks.register(book, cow);
+        HerdBooks.register(book, chicken);
+        UUID id = bookId(helper, book);
+
+        Map<String, List<String>> menus = HerdBooks.menus(server(helper), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()));
+
+        List<String> cows = menus.getOrDefault("minecraft:cow", List.of());
+        List<String> chickens = menus.getOrDefault("minecraft:chicken", List.of());
+        helper.assertTrue(cows.contains("#c:crops") && cows.indexOf("#c:crops") < cows.indexOf("#c:seeds"), "a cow eats " + cows);
+        helper.assertTrue(!cows.contains("barnyard_romance:breeders_mash") && !cows.contains("minecraft:wheat"), "a cow eats " + cows);
+        helper.assertTrue(chickens.contains("minecraft:wheat_seeds"), "a chicken eats " + chickens);
+        helper.assertTrue(FeaturesRepository.get(FoodApi.class).menu(helper.getLevel(), "minecraft:fox").isEmpty(), "an untracked fox has a menu");
+        helper.succeed();
+    }
+
     public static void showBookSurvivesTheNetworkCodec(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime()), false, Optional.of(cow.getUUID()));
+        List<HerdEntry> entries = HerdBooks.entries(server(helper), id, helper.getLevel().getGameTime());
+        HerdBookPayloads.ShowBook sent = new HerdBookPayloads.ShowBook(Optional.of(id), entries, false, Optional.of(cow.getUUID()),
+                HerdBooks.menus(server(helper), entries));
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
         HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, sent);
@@ -371,13 +399,13 @@ public final class HerdBookGameTests {
                         Component.translatable("gui.barnyard_romance.time.days", 12)), 0.0F));
         List<HerdEntry> entries = new java.util.ArrayList<>();
         for (int i = 0; i < 1_500; i++) {
-            entries.add(new HerdEntry(UUID.randomUUID(), "minecraft:cow", "Daisy the " + i + "th", true, false, true, Familiar.FAMILIAR,
+            entries.add(new HerdEntry(UUID.randomUUID(), "minecraft:cow", "Daisy the " + i + "th", true, false, true, true, Familiar.FAMILIAR,
                     HerdEntry.Fed.HAND, "", 61, false, ShearState.NONE, Optional.empty(), net.minecraft.network.chat.Component.empty(),
                     Optional.of(UUID.randomUUID()), Optional.of(UUID.randomUUID()), lines));
         }
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
-        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true, Optional.empty()));
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, new HerdBookPayloads.ShowBook(Optional.of(UUID.randomUUID()), entries, true, Optional.empty(), Map.of()));
 
         helper.assertTrue(buffer.readableBytes() > 1_048_576, "1,500 animals took only " + buffer.readableBytes() + " bytes");
         helper.assertTrue(buffer.readableBytes() < HerdBookPayloads.ShowBook.MAX_BYTES, "1,500 animals took " + buffer.readableBytes() + " bytes");
@@ -474,6 +502,46 @@ public final class HerdBookGameTests {
 
         helper.assertTrue(List.copyOf(loaded.ledger().members(id)).equals(order), "the members came back as " + loaded.ledger().members(id));
         helper.succeed();
+    }
+
+    // A fox that was pregnant when foxes were tracked is no longer carrying anything as far as the book can tell: the
+    // record is kept, but its page says "Not tracked" instead of a pregnancy climbing past due.
+    public static void aMemberWhoseSpeciesLeftTrackingShowsNotTracked(GameTestHelper helper) {
+        Animal fox = female(helper, EntityTypes.FOX);
+        Animal father = male(helper, EntityTypes.FOX);
+        ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
+        UpkeepGameTests.withConfig(FOX_ON, () -> {
+            fox.setInLove(null);
+            father.setInLove(null);
+            fox.spawnChildFromBreeding(helper.getLevel(), father);
+            helper.assertTrue(HerdBooks.register(book, fox) == HerdBooks.RegisterResult.ADDED, "the tracked fox was not added");
+            HerdEntry tracked = HerdBooks.entries(server(helper), bookId(helper, book), helper.getLevel().getGameTime()).get(0);
+            helper.assertTrue(tracked.pregnancyPercent() >= 0 && kinds(tracked).contains(StatKind.PREGNANT),
+                    "the tracked fox shows no pregnancy, so this proves nothing: " + tracked.lines());
+        });
+
+        HerdEntry entry = HerdBooks.entries(server(helper), bookId(helper, book), helper.getLevel().getGameTime() + 100_000L).get(0);
+
+        helper.assertTrue(entry.pregnancyPercent() < 0, "the untracked fox shows a pregnancy: " + entry.pregnancyPercent());
+        for (StatKind status : List.of(StatKind.PREGNANT, StatKind.FAMILIARITY, StatKind.FED, StatKind.NOT_FED, StatKind.FERTILITY, StatKind.MILK, StatKind.SHEAR)) {
+            helper.assertTrue(!kinds(entry).contains(status), "the untracked fox shows " + status + ": " + kinds(entry));
+        }
+        helper.assertTrue(entry.lines().stream().anyMatch(line -> line.kind() == StatKind.NOTE && line.text().getString().equals("Not tracked")),
+                "the untracked fox doesn't say so: " + entry.lines());
+        helper.assertTrue(entry.name().equals(data(helper).record(fox.getUUID()).name()) && entry.species().equals("minecraft:fox"), "the fox lost its identity");
+        helper.assertTrue(data(helper).record(fox.getUUID()).pregnancy() != null, "the fox's saved record lost its pregnancy");
+
+        UpkeepGameTests.withConfig(FOX_ON, () -> {
+            HerdEntry again = HerdBooks.entries(server(helper), bookId(helper, book), helper.getLevel().getGameTime()).get(0);
+            helper.assertTrue(again.pregnancyPercent() >= 0 && kinds(again).contains(StatKind.PREGNANT), "the fox switched back on shows no pregnancy again");
+        });
+        helper.succeed();
+    }
+
+    private static final String FOX_ON = "{\"species\": {\"minecraft:fox\": {\"enabled\": true}}}";
+
+    private static List<StatKind> kinds(HerdEntry entry) {
+        return entry.lines().stream().map(HerdEntry.Line::kind).toList();
     }
 
     private static List<Animal> breed(GameTestHelper helper, Animal mother, Animal father) {

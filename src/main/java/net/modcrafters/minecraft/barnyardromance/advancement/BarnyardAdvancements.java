@@ -21,6 +21,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 
@@ -190,10 +191,10 @@ public final class BarnyardAdvancements {
         }
     }
 
-    // A familiar sheep shorn; shearer is null for a dispenser.
+    // A familiar sheep shorn (other shearable animals don't count); shearer is null for a dispenser.
     public static void sheared(Animal animal, @Nullable UUID shearer) {
         try {
-            if (shearer != null && animal.level() instanceof ServerLevel level) {
+            if (shearer != null && animal instanceof Sheep && animal.level() instanceof ServerLevel level) {
                 Grants.grant(level.getServer(), shearer, FLEECE_NAVIDAD, Grants.CRITERION);
             }
         } catch (RuntimeException exception) {

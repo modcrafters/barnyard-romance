@@ -22,7 +22,7 @@ public interface EggsApi {
     // Whether a nesting box in range of the hen has room for a fertilized egg.
     boolean hasBoxWithRoomNear(Animal hen, ServerLevel level);
 
-    // The hen's eggs for the day she last planned, if she has planned one.
+    // The hen's eggs for the day she last planned, if she has planned one. A hen whose species isn't tracked reports none.
     Optional<Laying> laying(Animal hen);
 
     // Whether the animal is sitting in a nesting box, out of the world for now.

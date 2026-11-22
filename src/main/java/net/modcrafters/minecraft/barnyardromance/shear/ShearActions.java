@@ -10,17 +10,18 @@ import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Conversions;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShearsItem;
 import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
@@ -28,7 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-// Once-a-day shearing for sheep (see ShearRule): shears by hand and from dispensers both ask here.
+// Once-a-day shearing for sheep and any other tracked animal that can be sheared (see ShearRule): shears by hand and from dispensers both ask here.
 public final class ShearActions {
     public static final Text ENOUGH = Text.of("message.barnyard_romance.shear.enough");
     public static final Text REFUSED = Text.of("message.barnyard_romance.refused.shear");
@@ -50,12 +51,18 @@ public final class ShearActions {
         return shearedToday(animal) || refusedToday(animal);
     }
 
+    // Whether an animal's unfamiliarity keeps shears off it. A species switched off for shearing is left to vanilla.
+    public static boolean denied(Animal animal) {
+        return BarnyardConfig.current().shearingFor(AnimalSex.speciesId(animal))
+                && FeaturesRepository.get(FamiliarityApi.class).deniesProducts(animal);
+    }
+
     // For dispensers: blocked, or a sheep with wool that rolls a refusal now.
     public static boolean withholds(Animal animal) {
         if (blocked(animal)) {
             return true;
         }
-        if (animal instanceof Shearable shearable && shearable.readyForShearing() && rollsRefusal(animal)) {
+        if (tracksShearing(animal) && readyForShearing(animal) && rollsRefusal(animal)) {
             refuseShearing(animal, null);
             return true;
         }
@@ -65,7 +72,7 @@ public final class ShearActions {
     // Shears on a sheep already sheared today, or one that won't be sheared: refused, and the player is told why. The
     // hand roll happens here only; NeoForge's shears check blocked afterwards, so one click never rolls twice.
     public static @Nullable InteractionResult refuses(Animal animal, Player player, ItemStack stack) {
-        if (!stack.is(Items.SHEARS) || animal.isBaby()) {
+        if (!(stack.getItem() instanceof ShearsItem) || animal.isBaby()) {
             return null;
         }
         if (shearedToday(animal) || refusedToday(animal)) {
@@ -74,7 +81,7 @@ public final class ShearActions {
             }
             return InteractionResult.FAIL;
         }
-        if (!animal.level().isClientSide() && animal instanceof Shearable shearable && shearable.readyForShearing() && rollsRefusal(animal)) {
+        if (!animal.level().isClientSide() && tracksShearing(animal) && readyForShearing(animal) && rollsRefusal(animal)) {
             refuseShearing(animal, player);
             return InteractionResult.FAIL;
         }
@@ -114,9 +121,40 @@ public final class ShearActions {
 
     // Counts the shearing for the once-a-day rule, and takes its familiarity cost.
     public static void recordShearing(Animal animal) {
-        Shearer shearer = SHEARERS.remove(animal.getUUID());
+        if (tracksShearing(animal)) {
+            record(animal, animal.getUUID());
+        }
+    }
+
+    // After a shearing that may have turned the animal into another (a mooshroom into a cow): counts it on whichever
+    // animal is there now. Nothing is counted for a conversion that carried no record.
+    public static void recordAfterShear(Animal animal) {
+        if (!tracksShearing(animal)) {
+            return;
+        }
+        if (animal.isRemoved()) {
+            Conversions.successor(animal).ifPresent(successor -> record(successor, animal.getUUID()));
+        } else {
+            recordShearing(animal);
+        }
+    }
+
+    // The end of a player's right click on a tracked animal that isn't a sheep (those count themselves in
+    // SheepShearMixin). wasReady is whether it could be sheared before the click: counts it when it could and the
+    // click used that up, or the animal turned into another.
+    public static void recordAfterInteract(Animal animal, boolean wasReady, InteractionResult result) {
+        if (!wasReady || !result.consumesAction() || animal.level().isClientSide()) {
+            return;
+        }
+        if (animal.isRemoved() || !readyForShearing(animal)) {
+            recordAfterShear(animal);
+        }
+    }
+
+    private static void record(Animal animal, UUID shearerKey) {
+        Shearer shearer = SHEARERS.remove(shearerKey);
         UUID player = shearer != null && shearer.tick() == animal.level().getGameTime() ? shearer.player() : null;
-        tracked(animal).ifPresent(traits -> {
+        Tracked.traits(animal).ifPresent(traits -> {
             Services.DATA.set(animal, traits.with(ShearSlices.LAST_SHEARED, animal.level().getOverworldClockTime()));
             FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
             familiarityApi.spendFamiliarity(animal, BarnyardConfig.current().tuning().familiarityShearingCost());
@@ -126,7 +164,18 @@ public final class ShearActions {
         });
     }
 
+    public static boolean readyForShearing(Animal animal) {
+        return animal instanceof Shearable shearable && shearable.readyForShearing();
+    }
+
+    // Shearable, tracked, and its species not switched off for shearing.
+    public static boolean tracksShearing(Animal animal) {
+        return animal instanceof Shearable
+                && BarnyardConfig.current().shearingFor(AnimalSex.speciesId(animal))
+                && Tracked.traits(animal).isPresent();
+    }
+
     private static Optional<AnimalTraits> tracked(Animal animal) {
-        return animal instanceof Sheep ? Tracked.traits(animal) : Optional.empty();
+        return tracksShearing(animal) ? Tracked.traits(animal) : Optional.empty();
     }
 }

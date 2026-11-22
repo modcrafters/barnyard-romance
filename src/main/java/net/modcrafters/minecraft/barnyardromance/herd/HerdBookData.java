@@ -171,6 +171,16 @@ public final class HerdBookData extends SavedData {
         setDirty();
     }
 
+    // The animal became another one: the ledger and the record follow it to its new id.
+    public void rename(UUID from, UUID to) {
+        ledger.renamed(from, to);
+        HerdRecord record = records.remove(from);
+        if (record != null) {
+            records.put(to, record);
+        }
+        setDirty();
+    }
+
     // Drops the records of animals that no book holds any more.
     public void forgetOrphans() {
         Set<UUID> orphans = ledger.orphans();

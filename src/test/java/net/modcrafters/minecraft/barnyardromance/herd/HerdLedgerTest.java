@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HerdLedgerTest {
@@ -223,5 +224,88 @@ class HerdLedgerTest {
         assertEquals(ledger.books(), loaded.books());
         assertEquals(ledger.nodes(), loaded.nodes());
         assertEquals(Map.of(BOOK, Set.of(id(1), id(2))), loaded.books());
+    }
+
+    @Test
+    void renamedMovesNodeParentsAndBooks() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.register(OTHER_BOOK, node(1));
+        ledger.born(id(1), List.of(child(2, 1, 9)));
+
+        ledger.renamed(id(1), id(7));
+
+        assertNull(ledger.node(id(1)));
+        assertTrue(ledger.node(id(7)).alive());
+        assertTrue(ledger.node(id(7)).everFamiliar());
+        assertEquals(id(7), ledger.node(id(2)).mother());
+        assertEquals(id(9), ledger.node(id(2)).father());
+        assertTrue(ledger.isMember(BOOK, id(7)));
+        assertTrue(ledger.isMember(OTHER_BOOK, id(7)));
+        assertFalse(ledger.isMember(BOOK, id(1)));
+        assertEquals(Set.of(id(7), id(2)), ledger.members(BOOK));
+    }
+
+    // The calf's own record still names the mother's old id after she was renamed. Registering it into another book
+    // keeps the mother the ledger knows, so she isn't pruned from the first book when she dies.
+    @Test
+    void registeringAfterARenameKeepsTheKnownMother() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.born(id(1), List.of(child(2, 1, -1)));
+        ledger.renamed(id(1), id(7));
+
+        ledger.register(OTHER_BOOK, child(2, 1, -1));
+        ledger.died(id(7));
+
+        assertEquals(id(7), ledger.node(id(2)).mother());
+        assertTrue(ledger.isMember(BOOK, id(7)));
+    }
+
+    @Test
+    void registeringKeepsAKnownParentOverAMissingOne() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.register(BOOK, child(2, 1, -1));
+
+        ledger.register(OTHER_BOOK, child(2, -1, -1));
+        ledger.register(OTHER_BOOK, child(2, 5, -1));
+
+        assertEquals(id(1), ledger.node(id(2)).mother());
+    }
+
+    @Test
+    void registeringTakesANewParentTheLedgerKnows() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.register(BOOK, node(3));
+        ledger.register(BOOK, child(2, 1, -1));
+
+        ledger.register(OTHER_BOOK, child(2, 3, -1));
+
+        assertEquals(id(3), ledger.node(id(2)).mother());
+    }
+
+    @Test
+    void renamedKeepsTheOrderTheyJoinedIn() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+        ledger.register(BOOK, node(2));
+        ledger.register(BOOK, node(3));
+
+        ledger.renamed(id(2), id(7));
+
+        assertEquals(List.of(id(1), id(7), id(3)), List.copyOf(ledger.members(BOOK)));
+    }
+
+    @Test
+    void renamedIgnoresAnAnimalNoBookKnows() {
+        HerdLedger ledger = new HerdLedger();
+        ledger.register(BOOK, node(1));
+
+        ledger.renamed(id(5), id(7));
+
+        assertNull(ledger.node(id(7)));
+        assertEquals(Set.of(id(1)), ledger.members(BOOK));
     }
 }

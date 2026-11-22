@@ -1,11 +1,14 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.text.Names;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -72,6 +75,17 @@ public final class HerdBookLayout {
                 .map(Row::species)
                 .distinct()
                 .toList();
+    }
+
+    // Each species' shown name for its bookmark and page title. When two species in the book share a name, as ducks
+    // from two mods do, each gets "@" and its mod's id after it.
+    public static Map<String, String> speciesNames(List<Row> rows) {
+        Map<String, String> names = new LinkedHashMap<>();
+        rows.forEach(row -> names.putIfAbsent(row.species(), row.speciesName()));
+        Map<String, Long> uses = new LinkedHashMap<>();
+        names.values().forEach(name -> uses.merge(name, 1L, Long::sum));
+        names.replaceAll((species, name) -> uses.get(name) > 1 ? name + " @" + Names.modId(species) : name);
+        return names;
     }
 
     // How many rows of a `size`-high icon are colored in, counting up from the bottom, at `percent` done.

@@ -5,6 +5,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.config.Range;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -21,12 +22,13 @@ import static net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancySlice
 final class PregnancyApiImpl implements PregnancyApi {
     @Override
     public Optional<Pregnancy> pregnancy(Animal animal) {
-        return Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
+        // What the mod saved on an animal whose species isn't tracked stays saved, but it isn't a pregnancy any more.
+        return Tracked.traits(animal).isEmpty() ? Optional.empty() : Services.DATA.get(animal, PregnancyFeature.PREGNANCY);
     }
 
     @Override
     public boolean isPregnant(Animal animal) {
-        return Services.DATA.get(animal, PregnancyFeature.PREGNANCY).isPresent();
+        return pregnancy(animal).isPresent();
     }
 
     @Override

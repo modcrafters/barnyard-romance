@@ -8,12 +8,22 @@ import java.util.Optional;
 import java.util.Set;
 
 // The breeding ladders: an advancement at 10 births of a kind of livestock, and another at 100. The horse family
-// shares one ladder, and trader llamas count as llamas. Naturalist's ladders only load with Naturalist.
+// shares one ladder, and trader llamas count as llamas. A ladder loads only while one of its species is registered and
+// tracked (SpeciesTracked), so a mod's ladders never show without the mod. Duck and turkey ladders are shared by the mods'.
 public final class Ladders {
     public static final List<Integer> STEPS = List.of(10, 100);
 
     private static final Set<String> VANILLA = Set.of("cow", "mooshroom", "sheep", "pig", "goat", "horse", "llama", "camel", "rabbit", "chicken");
     private static final Set<String> NATURALIST = Set.of("deer", "boar", "duck", "turkey", "ostrich");
+    // Untitled Duck Mod's birds, which share ducks' ladder with Naturalist's.
+    private static final Set<String> UNTITLED_DUCK_MOD = Set.of("duck", "goose");
+    // Friends&Foes' flower cow.
+    private static final Set<String> FRIENDS_AND_FOES = Set.of("moobloom");
+    // Meadow's water buffalo and wooly cow.
+    private static final Set<String> MEADOW = Set.of("water_buffalo", "wooly_cow");
+    // Autumnity's turkey shares turkeys' ladder; Environmental's duck shares ducks', and its yak has its own.
+    private static final Set<String> AUTUMNITY = Set.of("turkey");
+    private static final Set<String> ENVIRONMENTAL = Set.of("duck", "yak");
     private static final Map<String, String> SHARED = Map.of(
             "minecraft:donkey", "horse",
             "minecraft:mule", "horse",
@@ -34,6 +44,11 @@ public final class Ladders {
         Set<String> ladders = switch (namespace) {
             case "minecraft" -> VANILLA;
             case "naturalist" -> NATURALIST;
+            case "untitledduckmod" -> UNTITLED_DUCK_MOD;
+            case "friendsandfoes" -> FRIENDS_AND_FOES;
+            case "meadow" -> MEADOW;
+            case "autumnity" -> AUTUMNITY;
+            case "environmental" -> ENVIRONMENTAL;
             default -> Set.of();
         };
         return ladders.contains(path) ? Optional.of(path) : Optional.empty();

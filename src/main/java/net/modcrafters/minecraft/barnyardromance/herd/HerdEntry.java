@@ -18,6 +18,8 @@ import java.util.UUID;
 // One animal as the herd book shows it, worked out on the server when the book is opened.
 // pregnancyPercent is -1 when not pregnant; shear is NONE for animals that aren't sheared; eggs is what a hen lays
 // tomorrow (empty for everything else) and eggTip says why; the page's lines are already translatable components.
+// tracked is false for a living animal whose species isn't tracked now: its page is the name and a note, with none of
+// the fields below filled in.
 // feeder is the feeding block's id (say "manger") when fed is FEEDER, and empty otherwise.
 public record HerdEntry(
         UUID id,
@@ -26,6 +28,7 @@ public record HerdEntry(
         boolean female,
         boolean kid,
         boolean alive,
+        boolean tracked,
         Familiar familiar,
         Fed fed,
         String feeder,
@@ -71,6 +74,7 @@ public record HerdEntry(
                 ByteBufCodecs.BOOL.encode(buf, entry.female());
                 ByteBufCodecs.BOOL.encode(buf, entry.kid());
                 ByteBufCodecs.BOOL.encode(buf, entry.alive());
+                ByteBufCodecs.BOOL.encode(buf, entry.tracked());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.familiar().ordinal());
                 ByteBufCodecs.VAR_INT.encode(buf, entry.fed().ordinal());
                 ByteBufCodecs.STRING_UTF8.encode(buf, entry.feeder());
@@ -88,6 +92,7 @@ public record HerdEntry(
                     UUIDUtil.STREAM_CODEC.decode(buf),
                     ByteBufCodecs.STRING_UTF8.decode(buf),
                     ByteBufCodecs.STRING_UTF8.decode(buf),
+                    ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),

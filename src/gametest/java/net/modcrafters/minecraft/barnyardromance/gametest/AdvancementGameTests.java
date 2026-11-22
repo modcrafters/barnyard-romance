@@ -5,6 +5,7 @@ import net.modcrafters.minecraft.barnyardromance.advancement.CreditData;
 import net.modcrafters.minecraft.barnyardromance.advancement.CreditLedger;
 import net.modcrafters.minecraft.barnyardromance.advancement.Grants;
 import net.modcrafters.minecraft.barnyardromance.advancement.Ladders;
+import net.modcrafters.minecraft.barnyardromance.advancement.SpeciesTracked;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.eggs.Hatching;
 import net.modcrafters.minecraft.barnyardromance.eggs.ThrownEggs;
@@ -62,7 +63,8 @@ public final class AdvancementGameTests {
             new BreedingGameTests.Case("a_calf_of_wild_parents_is_no_family_tree", 100, AdvancementGameTests::aCalfOfWildParentsIsNoFamilyTree),
             new BreedingGameTests.Case("ten_piglets_earn_the_first_pig_step", 100, AdvancementGameTests::tenPigletsEarnTheFirstPigStep),
             new BreedingGameTests.Case("a_donkey_foal_counts_for_the_horse_ladder", 100, AdvancementGameTests::aDonkeyFoalCountsForTheHorseLadder),
-            new BreedingGameTests.Case("naturalist_ladders_load_only_with_naturalist", 20, AdvancementGameTests::naturalistLaddersLoadOnlyWithNaturalist),
+            new BreedingGameTests.Case("ladders_load_for_tracked_species", 20, AdvancementGameTests::laddersLoadForTrackedSpecies),
+            new BreedingGameTests.Case("the_condition_follows_the_config", 20, AdvancementGameTests::theConditionFollowsTheConfig),
             new BreedingGameTests.Case("a_bred_egg_hatching_credits_players_nearby", 20, AdvancementGameTests::aBredEggHatchingCreditsPlayersNearby),
             new BreedingGameTests.Case("a_wild_egg_earns_which_came_first_but_no_ladder", 20, AdvancementGameTests::aWildEggEarnsWhichCameFirstButNoLadder),
             new BreedingGameTests.Case("a_thrown_bred_egg_counts", 20, AdvancementGameTests::aThrownBredEggCounts),
@@ -283,14 +285,34 @@ public final class AdvancementGameTests {
         });
     }
 
-    public static void naturalistLaddersLoadOnlyWithNaturalist(GameTestHelper helper) {
-        boolean loaded = Services.PLATFORM.isModLoaded("naturalist");
-        boolean present = helper.getLevel().getServer().getAdvancements().get(Ladders.advancement("deer", 10)) != null;
-
-        helper.assertTrue(present == loaded, "the deer ladder is " + (present ? "" : "not ") + "loaded, and Naturalist is "
-                + (loaded ? "" : "not ") + "installed");
-        helper.assertTrue(helper.getLevel().getServer().getAdvancements().get(Ladders.advancement("cow", 10)) != null, "the cow ladder isn't loaded");
+    // A ladder loads when its species is registered and tracked (SpeciesTracked), so a normal run has the vanilla ones,
+    // never the deer's (deer are out), and Environmental's yak only with that mod.
+    public static void laddersLoadForTrackedSpecies(GameTestHelper helper) {
+        helper.assertTrue(ladderLoaded(helper, "cow", 10), "the cow ladder isn't loaded");
+        helper.assertTrue(ladderLoaded(helper, "pig", 100), "the pig ladder's second step isn't loaded");
+        helper.assertTrue(ladderLoaded(helper, "horse", 10), "the horse ladder isn't loaded");
+        helper.assertTrue(!ladderLoaded(helper, "deer", 10), "the deer ladder is loaded, and deer aren't tracked");
+        boolean environmental = Services.PLATFORM.isModLoaded("environmental");
+        helper.assertTrue(ladderLoaded(helper, "yak", 10) == environmental, "the yak ladder is " + (environmental ? "not " : "")
+                + "loaded, and Environmental is " + (environmental ? "" : "not ") + "installed");
         helper.succeed();
+    }
+
+    // Datapacks aren't reloaded mid-suite on purpose; the load condition is just this test, so this stands in for
+    // "a ladder whose species the config switches off isn't loaded".
+    public static void theConditionFollowsTheConfig(GameTestHelper helper) {
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:pig\": {\"enabled\": false}}}", () -> {
+            helper.assertTrue(!SpeciesTracked.test(List.of("minecraft:pig")), "the pig is tracked with it switched off");
+            helper.assertTrue(SpeciesTracked.test(List.of("minecraft:cow")), "the cow isn't tracked");
+            helper.assertTrue(SpeciesTracked.test(List.of("minecraft:pig", "minecraft:cow")), "a ladder with one tracked species isn't loaded");
+            helper.assertTrue(!SpeciesTracked.test(List.of("barnyard_romance:not_a_species")), "an unregistered species is tracked");
+        });
+        helper.assertTrue(SpeciesTracked.test(List.of("minecraft:pig")), "the config wasn't restored");
+        helper.succeed();
+    }
+
+    static boolean ladderLoaded(GameTestHelper helper, String ladder, int step) {
+        return helper.getLevel().getServer().getAdvancements().get(Ladders.advancement(ladder, step)) != null;
     }
 
     public static void aBredEggHatchingCreditsPlayersNearby(GameTestHelper helper) {
@@ -416,7 +438,8 @@ public final class AdvancementGameTests {
         ServerPlayer player = MockPlayers.inLevel(helper);
         helper.assertTrue(Services.DATA.get(fox).isPresent(), "the fox isn't tracked, so this proves nothing");
 
-        fox.die(helper.getLevel().damageSources().playerAttack(player));
+        UpkeepGameTests.withConfig("{\"species\": {\"minecraft:fox\": {\"enabled\": true}}}", () ->
+                fox.die(helper.getLevel().damageSources().playerAttack(player)));
 
         helper.assertTrue(!earned(player, BarnyardAdvancements.NOT_YOU_ITS_DINNER), "killing a familiar fox earned the dinner advancement");
         helper.succeed();

@@ -57,10 +57,22 @@ public final class HerdLedger {
         if (known == null) {
             nodes.put(animal.id(), animal);
         } else {
-            Node updated = known.withParents(animal.mother(), animal.father());
+            Node updated = known.withParents(parent(known.mother(), animal.mother()), parent(known.father(), animal.father()));
             nodes.put(animal.id(), animal.everFamiliar() ? updated.familiar() : updated);
         }
         return books.computeIfAbsent(book, key -> new LinkedHashSet<>()).add(animal.id());
+    }
+
+    // A parent the ledger knows is kept over one it doesn't: an animal's own record can still name a parent's old id
+    // after she was renamed (see renamed), and taking that would cut her off from her young.
+    private @Nullable UUID parent(@Nullable UUID known, @Nullable UUID incoming) {
+        if (incoming != null && nodes.containsKey(incoming)) {
+            return incoming;
+        }
+        if (known != null && nodes.containsKey(known)) {
+            return known;
+        }
+        return incoming != null ? incoming : known;
     }
 
     // Young join every book their mother is in at the moment of birth; the father doesn't matter.
@@ -103,6 +115,27 @@ public final class HerdLedger {
         }
         prune(members);
         return true;
+    }
+
+    // The animal became another one (a sheared mooshroom is a new cow): its node, its parents' references to it and its
+    // place in every book move to the new id, in the same order.
+    public void renamed(UUID from, UUID to) {
+        Node node = nodes.remove(from);
+        if (node == null) {
+            return;
+        }
+        nodes.put(to, new Node(to, node.mother(), node.father(), node.alive(), node.everFamiliar()));
+        nodes.replaceAll((id, other) -> from.equals(other.mother()) || from.equals(other.father())
+                ? new Node(id, from.equals(other.mother()) ? to : other.mother(), from.equals(other.father()) ? to : other.father(), other.alive(), other.everFamiliar())
+                : other);
+        books.replaceAll((book, members) -> {
+            if (!members.contains(from)) {
+                return members;
+            }
+            Set<UUID> moved = new LinkedHashSet<>();
+            members.forEach(member -> moved.add(from.equals(member) ? to : member));
+            return moved;
+        });
     }
 
     public void familiar(UUID animal, boolean familiar) {

@@ -33,7 +33,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -60,7 +63,9 @@ public final class NaturalistGameTests {
     public static final List<BreedingGameTests.Case> CASES = List.of(
             new BreedingGameTests.Case("naturalist_livestock_is_tracked", 20, NaturalistGameTests::livestockIsTracked),
             new BreedingGameTests.Case("naturalist_others_are_ignored", 20, NaturalistGameTests::othersAreIgnored),
-            new BreedingGameTests.Case("naturalist_deer_and_boar_get_pregnant", 20, NaturalistGameTests::deerAndBoarGetPregnant),
+            new BreedingGameTests.Case("naturalist_deer_is_out", 20, NaturalistGameTests::deerIsOut),
+            new BreedingGameTests.Case("naturalist_deer_ladder_is_hidden", 20, NaturalistGameTests::deerLadderIsHidden),
+            new BreedingGameTests.Case("naturalist_boar_gets_pregnant", 20, NaturalistGameTests::boarGetsPregnant),
             new BreedingGameTests.Case("naturalist_ostriches_need_a_male_and_a_female", 20, NaturalistGameTests::ostrichesNeedAMaleAndAFemale),
             new BreedingGameTests.Case("naturalist_ostriches_breed_by_courtship", 400, NaturalistGameTests::ostrichesBreedByCourtship),
             new BreedingGameTests.Case("naturalist_food_does_not_breed_ducks_or_turkeys", 20, NaturalistGameTests::foodDoesNotBreedDucksOrTurkeys),
@@ -76,7 +81,9 @@ public final class NaturalistGameTests {
             new BreedingGameTests.Case("naturalist_sitting_duck_lays_where_she_sits", 20, NaturalistGameTests::sittingDuckLaysWhereSheSits),
             new BreedingGameTests.Case("naturalist_familiar_livestock_stays_near_players", 20, NaturalistGameTests::familiarLivestockStaysNearPlayers),
             new BreedingGameTests.Case("naturalist_an_ostrich_hatching_counts_for_players_nearby", 20, NaturalistGameTests::anOstrichHatchingCountsForPlayersNearby),
-            new BreedingGameTests.Case("naturalist_killing_a_familiar_duck_is_dinner", 20, NaturalistGameTests::killingAFamiliarDuckIsDinner)
+            new BreedingGameTests.Case("naturalist_killing_a_familiar_duck_is_dinner", 20, NaturalistGameTests::killingAFamiliarDuckIsDinner),
+            new BreedingGameTests.Case("naturalist_a_thrown_duck_egg_never_hatches", 20, NaturalistGameTests::aThrownDuckEggNeverHatches),
+            new BreedingGameTests.Case("naturalist_an_excluded_ducks_thrown_eggs_hatch_as_the_mod_does", 20, NaturalistGameTests::anExcludedDucksThrownEggsHatch)
     );
 
     private NaturalistGameTests() {
@@ -120,24 +127,43 @@ public final class NaturalistGameTests {
         helper.succeed();
     }
 
-    public static void deerAndBoarGetPregnant(GameTestHelper helper) {
+    // Deer are wild game, not livestock, so they stay Naturalist's unless a pack switches them on.
+    public static void deerIsOut(GameTestHelper helper) {
         if (!naturalist(helper)) {
             return;
         }
-        for (String id : List.of(DEER, BOAR)) {
-            Animal mother = BreedingGameTests.female(helper, type(helper, id));
-            Animal father = BreedingGameTests.male(helper, type(helper, id));
-            Animal otherMale = BreedingGameTests.male(helper, type(helper, id));
-            mother.setInLove(null);
-            father.setInLove(null);
-            otherMale.setInLove(null);
-            helper.assertTrue(!father.isInLove(), "feeding put a male " + id + " in love");
-            helper.assertTrue(!father.canMate(otherMale), "two male " + id + " can mate");
+        helper.assertTrue(!BarnyardConfig.current().speciesEnabled(DEER), "deer are enabled");
+        Animal deer = GameTestCompat.spawn(helper, type(helper, DEER), 4, 1, 4);
+        helper.assertTrue(Services.DATA.get(deer).isEmpty(), "a deer has traits");
+        helper.succeed();
+    }
 
-            mother.spawnChildFromBreeding(helper.getLevel(), father);
-
-            helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "a " + id + " isn't pregnant");
+    // The deer's ladder needs a tracked deer; the duck's loads for Naturalist's duck.
+    public static void deerLadderIsHidden(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
         }
+        helper.assertTrue(!AdvancementGameTests.ladderLoaded(helper, "deer", 10), "the deer ladder is loaded");
+        helper.assertTrue(AdvancementGameTests.ladderLoaded(helper, "duck", 10), "the duck ladder isn't loaded");
+        helper.succeed();
+    }
+
+    public static void boarGetsPregnant(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        Animal mother = BreedingGameTests.female(helper, type(helper, BOAR));
+        Animal father = BreedingGameTests.male(helper, type(helper, BOAR));
+        Animal otherMale = BreedingGameTests.male(helper, type(helper, BOAR));
+        mother.setInLove(null);
+        father.setInLove(null);
+        otherMale.setInLove(null);
+        helper.assertTrue(!father.isInLove(), "feeding put a male boar in love");
+        helper.assertTrue(!father.canMate(otherMale), "two male boars can mate");
+
+        mother.spawnChildFromBreeding(helper.getLevel(), father);
+
+        helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isPresent(), "a boar isn't pregnant");
         helper.succeed();
     }
 
@@ -361,7 +387,7 @@ public final class NaturalistGameTests {
             return;
         }
         // All in the same spot: further along, the test's player would stand in the pen's wall, out of sight.
-        for (String id : List.of(DEER, BOAR, TURKEY)) {
+        for (String id : List.of(BOAR, TURKEY)) {
             Animal wild = bird(helper, id, Sex.FEMALE, 0.0, 2);
             Animal familiar = bird(helper, id, Sex.FEMALE, 1.0, 3);
             Player player = holding(helper, Items.STICK);
@@ -428,6 +454,59 @@ public final class NaturalistGameTests {
     }
 
     // Familiarity tames Naturalist's livestock, but they're still livestock.
+    // Naturalist's thrown duck egg hatches a duckling at one in eight on its own; plain eggs never hatch while ducks lay
+    // by the mod's rules.
+    public static void aThrownDuckEggNeverHatches(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        for (int i = 0; i < 64; i++) {
+            throwDuckEgg(helper);
+        }
+
+        helper.assertTrue(ducksIn(helper) == 0, "thrown plain eggs hatched " + ducksIn(helper) + " ducks");
+        helper.succeed();
+    }
+
+    // The mod's hatching has to come back with its ducks, or a pack that switches them off loses it.
+    public static void anExcludedDucksThrownEggsHatch(GameTestHelper helper) {
+        if (!naturalist(helper)) {
+            return;
+        }
+        BarnyardConfig config = BarnyardConfig.current();
+        try {
+            BarnyardConfig.set(BarnyardConfig.parse("{\"exclude\": [\"naturalist:duck\"]}"));
+            for (int i = 0; i < 128; i++) {
+                throwDuckEgg(helper);
+            }
+        } finally {
+            BarnyardConfig.set(config);
+        }
+
+        helper.assertTrue(ducksIn(helper) > 0, "128 eggs thrown with ducks excluded hatched nothing");
+        helper.succeed();
+    }
+
+    // One of the mod's plain eggs, dropped onto the pen's floor and ticked by hand until it breaks, all within this tick.
+    private static void throwDuckEgg(GameTestHelper helper) {
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse("naturalist:duck_egg"))
+                .orElseThrow(() -> GameTestCompat.failure(helper, "no thrown duck egg"));
+        ThrowableItemProjectile egg = (ThrowableItemProjectile) GameTestCompat.unspawned(helper, type);
+        Vec3 at = helper.absoluteVec(new Vec3(4.5, 3.0, 4.5));
+        egg.setPos(at.x, at.y, at.z);
+        egg.setItem(new ItemStack(duckEgg(helper)));
+        egg.setDeltaMovement(0.0, -1.0, 0.0);
+        helper.getLevel().addFreshEntity(egg);
+        for (int i = 0; i < 40 && !egg.isRemoved(); i++) {
+            egg.tick();
+        }
+    }
+
+    private static int ducksIn(GameTestHelper helper) {
+        AABB pen = new AABB(helper.absoluteVec(Vec3.ZERO), helper.absoluteVec(new Vec3(9.0, 5.0, 9.0)));
+        return helper.getLevel().getEntitiesOfClass(Animal.class, pen, animal -> animal.getType() == type(helper, DUCK)).size();
+    }
+
     public static void killingAFamiliarDuckIsDinner(GameTestHelper helper) {
         if (!naturalist(helper)) {
             return;

@@ -20,6 +20,11 @@ public class FabricHerdBookGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aBookSaysWhatEachSpeciesEats(GameTestHelper helper) {
+        HerdBookGameTests.aBookSaysWhatEachSpeciesEats(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void familiarAnimalsJoinOnce(GameTestHelper helper) {
         HerdBookGameTests.familiarAnimalsJoinOnce(helper);
     }
@@ -182,5 +187,10 @@ public class FabricHerdBookGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void aCopySharesTheHerd(GameTestHelper helper) {
         HerdBookGameTests.aCopySharesTheHerd(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aMemberWhoseSpeciesLeftTrackingShowsNotTracked(GameTestHelper helper) {
+        HerdBookGameTests.aMemberWhoseSpeciesLeftTrackingShowsNotTracked(helper);
     }
 }

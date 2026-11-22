@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.eggs;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.api.SizeClass;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.config.EggSettings;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
@@ -36,7 +37,7 @@ final class EggsApiImpl implements EggsApi {
 
     @Override
     public Optional<Laying> laying(Animal hen) {
-        return Services.DATA.get(hen, EggsFeature.LAYING);
+        return Tracked.traits(hen).isEmpty() ? Optional.empty() : Services.DATA.get(hen, EggsFeature.LAYING);
     }
 
     @Override

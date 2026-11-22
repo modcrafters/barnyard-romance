@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ScaleRollTest {
     private final SizeSettings defaults = new SizeSettings(0.9, 1.1, 0.05);
@@ -45,5 +46,16 @@ class ScaleRollTest {
         SizeSettings extreme = new SizeSettings(0.1, 20.0, 1.0);
         assertEquals(0.0625, ScaleRoll.roll(Sex.FEMALE, extreme, 0.0), 1.0e-9);
         assertEquals(16.0, ScaleRoll.roll(Sex.MALE, extreme, 1.0), 1.0e-9);
+    }
+
+    @Test
+    void rollWildTopStaysInTheTopHalf() {
+        SizeSettings size = new SizeSettings(0.8, 1.2, 0.1);
+        for (double unit : new double[]{0.0, 0.5, 1.0}) {
+            for (Sex sex : Sex.values()) {
+                double percent = ScaleRoll.percent(sex, ScaleRoll.rollWildTop(sex, size, unit), size);
+                assertTrue(percent >= 0.5 - 1.0e-9 && percent <= 1.0 + 1.0e-9, sex + " at " + unit + " rolled " + percent);
+            }
+        }
     }
 }

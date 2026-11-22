@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.pregnancy;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.Optional;
@@ -39,7 +40,8 @@ public final class BreedingStatus {
             if (animal.level() == null || animal.level().isClientSide()) {
                 return;
             }
-            Optional<AnimalTraits> traits = Services.DATA.get(animal);
+            // An untracked animal's saved traits are left as they were.
+            Optional<AnimalTraits> traits = Tracked.traits(animal);
             if (traits.isEmpty()) {
                 return;
             }

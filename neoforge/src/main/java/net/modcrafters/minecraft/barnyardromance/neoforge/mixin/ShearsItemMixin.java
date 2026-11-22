@@ -2,7 +2,6 @@ package net.modcrafters.minecraft.barnyardromance.neoforge.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityActions;
 import net.modcrafters.minecraft.barnyardromance.shear.ShearActions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
@@ -23,6 +22,6 @@ public class ShearsItemMixin {
             )
     )
     private boolean barnyardromance$familiar(boolean shearable, @Local(argsOnly = true) LivingEntity entity) {
-        return shearable && !(entity instanceof Animal animal && (FamiliarityActions.denies(animal) || ShearActions.blocked(animal)));
+        return shearable && !(entity instanceof Animal animal && (ShearActions.denied(animal) || ShearActions.blocked(animal)));
     }
 }

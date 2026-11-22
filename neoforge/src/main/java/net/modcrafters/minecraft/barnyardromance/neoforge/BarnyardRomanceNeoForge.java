@@ -61,6 +61,7 @@ public class BarnyardRomanceNeoForge {
         // The public API's events are NeoForge events too.
         NeoForgeBridge.register();
         NeoForgeAnimalData.register(modBus);
+        SpeciesTrackedCondition.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);

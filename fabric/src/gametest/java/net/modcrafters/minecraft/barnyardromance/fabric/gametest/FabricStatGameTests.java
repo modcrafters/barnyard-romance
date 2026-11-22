@@ -33,6 +33,11 @@ public class FabricStatGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aMooshroomSaysShearingTurnsItIntoACow(GameTestHelper helper) {
+        StatGameTests.aMooshroomSaysShearingTurnsItIntoACow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void anAnimalWithoutTraitsHasNoFacts(GameTestHelper helper) {
         StatGameTests.anAnimalWithoutTraitsHasNoFacts(helper);
     }

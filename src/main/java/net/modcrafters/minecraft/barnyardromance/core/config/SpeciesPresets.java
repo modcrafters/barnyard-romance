@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.core.config;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 // Built-in pregnancy and litter ranges for vanilla mammals and Naturalist's livestock. A user's species entry beats
@@ -19,6 +21,10 @@ final class SpeciesPresets {
     private static final Map<String, Preset> PRESETS = Map.ofEntries(
             Map.entry("minecraft:cow", CATTLE),
             Map.entry("minecraft:mooshroom", CATTLE),
+            Map.entry("friendsandfoes:moobloom", CATTLE),
+            Map.entry("meadow:water_buffalo", CATTLE),
+            Map.entry("meadow:wooly_cow", CATTLE),
+            Map.entry("environmental:yak", CATTLE),
             Map.entry("minecraft:horse", EQUINE),
             Map.entry("minecraft:donkey", EQUINE),
             Map.entry("minecraft:llama", CATTLE),
@@ -46,11 +52,24 @@ final class SpeciesPresets {
         return PRESETS.get(speciesId);
     }
 
+    // Animals that shearing turns into another animal for good, and what into.
+    private static final Map<String, String> SHEARS_INTO = Map.of(
+            "minecraft:mooshroom", "minecraft:cow",
+            "friendsandfoes:moobloom", "minecraft:cow");
+
+    static Optional<String> shearsInto(String speciesId) {
+        return Optional.ofNullable(SHEARS_INTO.get(speciesId));
+    }
+
     // Birds that lay eggs instead of giving birth. A Naturalist turkey has no egg of its own, so it lays vanilla's.
     static EggSettings eggs(String speciesId) {
         return switch (speciesId) {
             case "minecraft:chicken", "naturalist:turkey" -> EggSettings.CHICKEN;
+            case "autumnity:turkey" -> EggSettings.CHICKEN.withPlainEgg("autumnity:turkey_egg");
+            case "environmental:duck" -> EggSettings.CHICKEN.withPlainEgg("environmental:duck_egg");
             case "naturalist:duck" -> EggSettings.CHICKEN.withPlainEgg("naturalist:duck_egg");
+            case "untitledduckmod:duck" -> EggSettings.CHICKEN.withPlainEgg("untitledduckmod:duck_egg");
+            case "untitledduckmod:goose" -> EggSettings.CHICKEN.withPlainEgg("untitledduckmod:goose_egg");
             default -> EggSettings.NONE;
         };
     }
@@ -58,10 +77,78 @@ final class SpeciesPresets {
     // Livestock males fight their rivals; pets, hunters and everything else are left out unless a species entry says.
     private static final Set<String> FIGHTERS = Set.of(
             "minecraft:cow", "minecraft:mooshroom", "minecraft:sheep", "minecraft:goat", "minecraft:pig", "minecraft:rabbit",
-            "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich");
+            "minecraft:chicken", "naturalist:deer", "naturalist:boar", "naturalist:duck", "naturalist:turkey", "naturalist:ostrich",
+            "untitledduckmod:duck", "untitledduckmod:goose", "friendsandfoes:moobloom", "meadow:water_buffalo", "meadow:wooly_cow",
+            "autumnity:turkey", "environmental:duck", "environmental:yak");
 
     static boolean fights(String speciesId) {
         return FIGHTERS.contains(speciesId);
+    }
+
+    // Animals that stay wild under their mod's own feeding, so familiarity tames them.
+    private static final Set<String> TAMES = Set.of(
+            "naturalist:duck", "naturalist:ostrich", "untitledduckmod:duck", "untitledduckmod:goose");
+
+    static boolean tames(String speciesId) {
+        return TAMES.contains(speciesId);
+    }
+
+    // The item tag of food the species' own mod tames with. Familiarity tames them instead, so the mod's food is turned
+    // down (FamiliarityActions.blocksVanillaTaming).
+    static Optional<String> tamingFoodTag(String speciesId) {
+        return switch (speciesId) {
+            case "untitledduckmod:duck" -> Optional.of("untitledduckmod:duck_taming_food");
+            case "untitledduckmod:goose" -> Optional.of("untitledduckmod:goose_taming_food");
+            default -> Optional.empty();
+        };
+    }
+
+    private static final String BUCKET = "minecraft:bucket";
+    private static final String WOODEN_BUCKET = "meadow:wooden_bucket";
+    private static final List<MilkEntry> COW_MILK = List.of(
+            new MilkEntry(BUCKET, "minecraft:milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_milk_bucket", null));
+    private static final List<MilkEntry> BUFFALO_MILK = List.of(
+            new MilkEntry(BUCKET, "minecraft:milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_buffalo_milk_bucket", null));
+    private static final List<MilkEntry> GOAT_MILK = List.of(
+            new MilkEntry(BUCKET, "barnyard_romance:goat_milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_goat_milk_bucket", null));
+    private static final List<MilkEntry> SHEEP_MILK = List.of(
+            new MilkEntry(BUCKET, "barnyard_romance:sheep_milk_bucket", null),
+            new MilkEntry(WOODEN_BUCKET, "meadow:wooden_sheep_milk_bucket", null));
+
+    // Meadow's wooly cow is milked with the wooden bucket only. What it gives depends on its variant (WoolyCowMilk); this
+    // result is the fallback.
+    private static final List<MilkEntry> WOOLY_COW_MILK = List.of(new MilkEntry(WOODEN_BUCKET, "meadow:wooden_milk_bucket", null));
+
+    // Environmental's yak is milked with an iron bucket only.
+    private static final List<MilkEntry> YAK_MILK = List.of(new MilkEntry(BUCKET, "minecraft:milk_bucket", null));
+
+    // Built-in milking: which items milk the species and what they become. A species entry's own list replaces it.
+    private static final Map<String, List<MilkEntry>> MILK = Map.of(
+            "minecraft:cow", COW_MILK,
+            "minecraft:mooshroom", COW_MILK,
+            "friendsandfoes:moobloom", COW_MILK,
+            "meadow:water_buffalo", BUFFALO_MILK,
+            "meadow:wooly_cow", WOOLY_COW_MILK,
+            "environmental:yak", YAK_MILK,
+            "minecraft:goat", GOAT_MILK,
+            "minecraft:sheep", SHEEP_MILK);
+
+    static List<MilkEntry> milk(String speciesId) {
+        return MILK.getOrDefault(speciesId, List.of());
+    }
+
+    // Bowls give stew from the mooshroom (mushroom stew) and the moobloom (suspicious stew); a species entry's "stew"
+    // puts that existing bowl interaction under the rules (or leaves it to the mod), it doesn't make an animal give stew.
+    static boolean stew(String speciesId) {
+        return "minecraft:mooshroom".equals(speciesId) || "friendsandfoes:moobloom".equals(speciesId);
+    }
+
+    // Every item a built-in entry milks with, taken from the rows above.
+    static Set<String> milkingItems() {
+        return MILK.values().stream().flatMap(List::stream).map(MilkEntry::bucket).collect(java.util.stream.Collectors.toSet());
     }
 
     private static Preset preset(long pregnancyMin, long pregnancyMax, long litterMin, long litterMax) {

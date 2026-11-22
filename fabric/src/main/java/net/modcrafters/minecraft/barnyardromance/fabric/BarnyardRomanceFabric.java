@@ -42,6 +42,8 @@ public class BarnyardRomanceFabric implements ModInitializer {
         // The public API's events are Fabric API events too.
         FabricBridge.register();
         FabricAnimalData.register();
+        // The breeding ladders load only while one of their species is tracked.
+        FabricSpeciesTracked.register();
         BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());

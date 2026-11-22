@@ -2,8 +2,6 @@
 //? if >=1.21.2 {
 package net.modcrafters.minecraft.barnyardromance.shear;
 
-import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
-import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -11,6 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -27,10 +26,14 @@ public final class FamiliarShearing {
             if (!entity.isAlive() || !(entity instanceof Shearable shearable) || !shearable.readyForShearing()) {
                 continue;
             }
-            if (entity instanceof Animal animal && (FeaturesRepository.get(FamiliarityApi.class).deniesProducts(animal) || ShearActions.withholds(animal))) {
+            if (entity instanceof Animal animal && (ShearActions.denied(animal) || ShearActions.withholds(animal))) {
                 continue;
             }
             shearable.shear(level, SoundSource.BLOCKS, tool);
+            // Sheep count themselves in SheepShearMixin.
+            if (entity instanceof Animal animal && !(entity instanceof Sheep)) {
+                ShearActions.recordAfterShear(animal);
+            }
             level.gameEvent(null, GameEvent.SHEAR, pos);
             return true;
         }

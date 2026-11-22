@@ -15,7 +15,8 @@ import java.util.Optional;
 
 // What other features ask of pregnancy. now is the game time, which pregnancies, love and rest count in.
 public interface PregnancyApi {
-    // The mother's pregnancy, if she is carrying one.
+    // The mother's pregnancy, if she is carrying one. An animal whose species isn't tracked reports none, even with a
+    // pregnancy still saved on it.
     Optional<Pregnancy> pregnancy(Animal animal);
 
     boolean isPregnant(Animal animal);

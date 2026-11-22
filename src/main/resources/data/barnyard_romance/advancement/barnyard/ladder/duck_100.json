@@ -1,15 +1,21 @@
 {
   "neoforge:conditions": [
     {
-      "type": "neoforge:mod_loaded",
-      "modid": "naturalist"
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "naturalist:duck",
+        "untitledduckmod:duck",
+        "environmental:duck"
+      ]
     }
   ],
   "fabric:load_conditions": [
     {
-      "condition": "fabric:all_mods_loaded",
-      "values": [
-        "naturalist"
+      "condition": "barnyard_romance:species_tracked",
+      "species": [
+        "naturalist:duck",
+        "untitledduckmod:duck",
+        "environmental:duck"
       ]
     }
   ],
@@ -25,7 +31,7 @@
     },
     "frame": "challenge",
     "icon": {
-      "id": "naturalist:duck_spawn_egg"
+      "id": "minecraft:feather"
     },
     "title": {
       "translate": "advancements.barnyard_romance.ladder.duck_100.title"
