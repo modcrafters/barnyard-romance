@@ -66,4 +66,9 @@ public class FabricMeadowGameTests {
     public void waterBuffaloAndYakGiveCowMilk(GameTestHelper helper) {
         MeadowGameTests.waterBuffaloAndYakGiveCowMilk(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWarpedWoolyCowSwallowsAPailSilently(GameTestHelper helper) {
+        MeadowGameTests.aWarpedWoolyCowSwallowsAPailSilently(helper);
+    }
 }

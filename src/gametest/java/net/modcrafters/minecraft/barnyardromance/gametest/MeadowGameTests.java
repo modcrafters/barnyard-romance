@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
 import net.modcrafters.minecraft.barnyardromance.pail.PailContents;
@@ -51,6 +53,7 @@ public final class MeadowGameTests {
             new BreedingGameTests.Case("a_wooly_cow_is_sheared_once_a_day", 20, MeadowGameTests::aWoolyCowIsShearedOnceADay),
             new BreedingGameTests.Case("a_plain_wooly_cow_fills_a_pail_with_cow_milk", 20, MeadowGameTests::aPlainWoolyCowFillsAPailWithCowMilk),
             new BreedingGameTests.Case("a_warped_wooly_cow_gives_a_pail_nothing", 20, MeadowGameTests::aWarpedWoolyCowGivesAPailNothing),
+            new BreedingGameTests.Case("a_warped_wooly_cow_swallows_a_pail_silently", 20, MeadowGameTests::aWarpedWoolyCowSwallowsAPailSilently),
             new BreedingGameTests.Case("a_wooly_cow_still_takes_the_wooden_bucket", 20, MeadowGameTests::aWoolyCowStillTakesTheWoodenBucket),
             new BreedingGameTests.Case("an_iron_bucket_still_does_nothing_on_a_wooly_cow", 20, MeadowGameTests::anIronBucketStillDoesNothingOnAWoolyCow),
             new BreedingGameTests.Case("water_buffalo_and_yak_give_cow_milk", 20, MeadowGameTests::waterBuffaloAndYakGiveCowMilk)
@@ -187,6 +190,28 @@ public final class MeadowGameTests {
 
         PailGameTests.assertHolds(helper, player.getMainHandItem(), pail, PailContents.EMPTY);
         helper.assertTrue(BreedingGameTests.traits(helper, cow).get(LACTATION).equals(before), "a warped wooly cow was counted as milked");
+        helper.succeed();
+    }
+
+    // The pail entry names the pail but gives the warped cow nothing, so the click ends there, silently and costing
+    // nothing: consumed, it never reaches Meadow's own interaction or the pail's use.
+    public static void aWarpedWoolyCowSwallowsAPailSilently(GameTestHelper helper) {
+        if (!FarmMods.present(helper, MOD)) {
+            return;
+        }
+        Animal cow = ProductGameTests.mother(helper, type(helper, WOOLY_COW), 0.5);
+        setVariant(helper, cow, "WARPED");
+        AnimalTraits before = BreedingGameTests.traits(helper, cow);
+        ItemStack pail = PailGameTests.pail(PailItems.IRON_PAIL, MilkFluids.COW_ID, 1000);
+        List<Component> messages = new ArrayList<>();
+        Player player = PailGameTests.holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, messages);
+
+        InteractionResult result = GameTestCompat.useOn(cow, player);
+
+        helper.assertTrue(result == InteractionResult.CONSUME, "a pail on a warped wooly cow answered " + result);
+        PailGameTests.assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.COW_ID, 1000));
+        helper.assertTrue(messages.isEmpty(), "a pail on a warped wooly cow was told " + messages);
+        helper.assertTrue(BreedingGameTests.traits(helper, cow).equals(before), "a pail on a warped wooly cow changed her record");
         helper.succeed();
     }
 

@@ -128,6 +128,11 @@ public final class MilkActions {
         if (settings.entries().isEmpty() && !settings.fromConfig() || !isMilkingItem(config, held)) {
             return false;
         }
+        // A pail only ever fills from an entry that resolves: one that names it but gives this animal nothing (a warped
+        // wooly cow) leaves it doing nothing too, silently, rather than passing the click on to the pail's own use.
+        if (FeaturesRepository.get(PailApi.class).isPail(held)) {
+            return milkFor(animal, held).isEmpty();
+        }
         List<Predicate<MilkEntry>> names = names(held);
         return settings.entries().stream().noneMatch(entry -> names.stream().anyMatch(name -> name.test(entry)));
     }
