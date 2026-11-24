@@ -120,19 +120,23 @@ public class PailMenu extends AbstractContainerMenu {
     }
 
     // Trades a bucket put in the slot with the pail: an empty bucket comes back full, a full one comes back empty.
-    // Anything that doesn't trade comes back as it was. The pail changes in place, so it stays the stack in the hand.
+    // In creative the pail still gains or loses its thousand, but the bucket comes back as it went in. Anything that
+    // doesn't trade comes back as it was. The pail changes in place, so it stays the stack in the hand.
     ItemStack trade(ItemStack stack) {
         if (stack.getCount() != 1 || !trades(stack)) {
             return stack;
         }
         ItemStack pail = pail();
+        ItemStack traded;
         if (stack.is(Items.BUCKET)) {
             Item full = filled(pail).orElseThrow();
             PailTransfer.extract(pail, null, BUCKET, false);
-            return new ItemStack(full);
+            traded = new ItemStack(full);
+        } else {
+            PailTransfer.insert(pail, PailFluids.forBucket(stack.getItem(), PailItem.contents(pail).fluid()).orElseThrow(), BUCKET, false);
+            traded = new ItemStack(Items.BUCKET);
         }
-        PailTransfer.insert(pail, PailFluids.forBucket(stack.getItem(), PailItem.contents(pail).fluid()).orElseThrow(), BUCKET, false);
-        return new ItemStack(Items.BUCKET);
+        return player.hasInfiniteMaterials() ? stack : traded;
     }
 
     // The full bucket an empty one becomes, if the pail has a whole bucket of a fluid that has one.

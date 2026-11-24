@@ -1,11 +1,11 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "barnyard_romance:item/metal_pail",
+    "model": "barnyard_romance:item/copper_pail",
     "tints": [
       {
-        "type": "minecraft:constant",
-        "value": 12671542
+        "type": "minecraft:dye",
+        "default": -25488
       }
     ]
   }

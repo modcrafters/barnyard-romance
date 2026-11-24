@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -55,6 +57,7 @@ public final class PailGameTests {
             new BreedingGameTests.Case("a_new_pail_is_empty", 20, PailGameTests::aNewPailIsEmpty),
             new BreedingGameTests.Case("pails_are_in_the_pails_tag", 20, PailGameTests::pailsAreInThePailsTag),
             new BreedingGameTests.Case("pail_recipes_craft", 20, PailGameTests::pailRecipesCraft),
+            new BreedingGameTests.Case("a_custom_metal_pail_crafts", 20, PailGameTests::aCustomMetalPailCrafts),
             new BreedingGameTests.Case("the_bowl_and_bucket_still_craft", 20, PailGameTests::theBowlAndBucketStillCraft),
             new BreedingGameTests.Case("milk_buckets_map_to_their_fluids", 20, PailGameTests::milkBucketsMapToTheirFluids),
             new BreedingGameTests.Case("fluids_map_back_to_their_buckets", 20, PailGameTests::fluidsMapBackToTheirBuckets),
@@ -75,6 +78,8 @@ public final class PailGameTests {
             new BreedingGameTests.Case("using_a_pail_opens_its_window", 20, PailGameTests::usingAPailOpensItsWindow),
             new BreedingGameTests.Case("an_empty_bucket_takes_a_thousand", 20, PailGameTests::anEmptyBucketTakesAThousand),
             new BreedingGameTests.Case("a_milk_bucket_pours_in", 20, PailGameTests::aMilkBucketPoursIn),
+            new BreedingGameTests.Case("a_creative_empty_bucket_stays_empty", 20, PailGameTests::aCreativeEmptyBucketStaysEmpty),
+            new BreedingGameTests.Case("a_creative_milk_bucket_stays_full", 20, PailGameTests::aCreativeMilkBucketStaysFull),
             new BreedingGameTests.Case("a_different_milk_bucket_is_refused", 20, PailGameTests::aDifferentMilkBucketIsRefused),
             new BreedingGameTests.Case("a_bucket_needs_a_full_thousand", 20, PailGameTests::aBucketNeedsAFullThousand),
             new BreedingGameTests.Case("pour_out_empties_the_pail", 20, PailGameTests::pourOutEmptiesThePail),
@@ -127,6 +132,17 @@ public final class PailGameTests {
         helper.assertTrue(craft(helper, Items.OAK_PLANKS).is(PailItems.WOODEN_PAIL), "planks make " + craft(helper, Items.OAK_PLANKS));
         helper.assertTrue(craft(helper, Items.COPPER_INGOT).is(PailItems.COPPER_PAIL), "copper makes " + craft(helper, Items.COPPER_INGOT));
         helper.assertTrue(craft(helper, Items.IRON_INGOT).is(PailItems.IRON_PAIL), "iron makes " + craft(helper, Items.IRON_INGOT));
+        helper.succeed();
+    }
+
+    public static void aCustomMetalPailCrafts(GameTestHelper helper) {
+        // The game-test recipe stands in gold ingots for another mod's lead ingots.
+        ItemStack pail = craft(helper, Items.GOLD_INGOT);
+        helper.assertTrue(pail.is(PailItems.IRON_PAIL) && pail.is(PailItems.PAILS), "lead uses the iron pail variant");
+        helper.assertTrue(((PailItem) pail.getItem()).capacity() == 5000, "lead inherits the iron pail capacity");
+        helper.assertTrue(pail.getHoverName().getString().equals("Lead Pail"), "the crafted pail is named Lead Pail");
+        DyedItemColor tint = pail.get(DataComponents.DYED_COLOR);
+        helper.assertTrue(tint != null && tint.rgb() == 0x456578, "the crafted pail stores the recipe tint");
         helper.succeed();
     }
 
@@ -347,7 +363,7 @@ public final class PailGameTests {
 
     // A use that no animal or block takes opens the window on the pail in that hand, here the offhand.
     public static void usingAPailOpensItsWindow(GameTestHelper helper) {
-        ServerPlayer player = MockPlayers.inLevel(helper);
+        ServerPlayer player = survival(MockPlayers.inLevel(helper));
         ItemStack pail = pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 2500);
         player.setItemInHand(InteractionHand.OFF_HAND, pail);
 
@@ -383,6 +399,40 @@ public final class PailGameTests {
         put(menu, player, new ItemStack(MilkItems.SHEEP_MILK_BUCKET));
 
         assertSlot(helper, menu, Items.BUCKET);
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.SHEEP_ID, 1000));
+        helper.succeed();
+    }
+
+    // Vanilla's mock server player is a creative one, and in creative a bucket comes back from the slot unchanged.
+    private static ServerPlayer survival(ServerPlayer player) {
+        player.getAbilities().instabuild = false;
+        return player;
+    }
+
+    // Creative mode: the pail gives its thousand and the empty bucket stays empty.
+    public static void aCreativeEmptyBucketStaysEmpty(GameTestHelper helper) {
+        ItemStack pail = pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 2500);
+        Player player = holding(helper, pail, GameType.CREATIVE, InteractionHand.MAIN_HAND, new ArrayList<>());
+        player.getAbilities().instabuild = true;
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, new ItemStack(Items.BUCKET));
+
+        assertSlot(helper, menu, Items.BUCKET);
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 1500));
+        helper.succeed();
+    }
+
+    // Creative mode: the pail takes a thousand and the milk bucket stays full.
+    public static void aCreativeMilkBucketStaysFull(GameTestHelper helper) {
+        ItemStack pail = new ItemStack(PailItems.WOODEN_PAIL);
+        Player player = holding(helper, pail, GameType.CREATIVE, InteractionHand.MAIN_HAND, new ArrayList<>());
+        player.getAbilities().instabuild = true;
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, new ItemStack(MilkItems.SHEEP_MILK_BUCKET));
+
+        assertSlot(helper, menu, MilkItems.SHEEP_MILK_BUCKET);
         assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.SHEEP_ID, 1000));
         helper.succeed();
     }
@@ -437,7 +487,7 @@ public final class PailGameTests {
     // Vanilla only hands a window's items back to a server player.
     public static void closingReturnsTheSlotItem(GameTestHelper helper) {
         ItemStack pail = pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 2500);
-        ServerPlayer player = MockPlayers.inLevel(helper);
+        ServerPlayer player = survival(MockPlayers.inLevel(helper));
         player.setItemInHand(InteractionHand.MAIN_HAND, pail);
         PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
         put(menu, player, new ItemStack(Items.BUCKET));

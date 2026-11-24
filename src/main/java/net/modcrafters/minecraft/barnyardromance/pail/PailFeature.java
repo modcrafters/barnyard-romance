@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pail;
 
+import net.minecraft.core.registries.Registries;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardApi;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureRegistrar;
@@ -21,6 +22,7 @@ public final class PailFeature implements Feature {
             PailComponents.register(sink);
             PailItems.register(sink);
             MilkFluids.register(sink);
+            sink.register(Registries.RECIPE_SERIALIZER, PailRecipe.ID, () -> PailRecipe.SERIALIZER);
         });
     }
 }

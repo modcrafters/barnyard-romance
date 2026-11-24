@@ -251,9 +251,25 @@ To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:in
 
 Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and an Iron Pail 5000 ml, each of one fluid at a time, and a bucket is 1000 ml. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip says what it holds, and its item bar shows how full it is, in the colour of its milk. Pails stack to one.
 
+**Custom metal pails** use a `barnyard_romance:pail_shaped` recipe under `data/<namespace>/recipe/` in a data pack. Use `pail` in place of `result`, with a material ID, a `#RRGGBB` tint and a `copper` or `iron` variant. The variant supplies the shape, registered item and capacity. The recipe gives the stack its own name and tint. This example crafts a 5000 ml Lead Pail from `examplemod:lead_ingot` on 26.3.
+
+```json
+{
+  "type": "barnyard_romance:pail_shaped",
+  "pattern": [" S ", "M M", " M "],
+  "key": {
+    "S": "minecraft:stick",
+    "M": "examplemod:lead_ingot"
+  },
+  "pail": { "material": "lead", "tint": "#456578", "variant": "iron" }
+}
+```
+
+On 1.21.1, write the ingredients as objects such as `{ "item": "examplemod:lead_ingot" }`. To translate a material name in a resource pack, use a key such as `pail_material.barnyard_romance.minecraft.lead` for `lead` or `pail_material.barnyard_romance.examplemod.lead` for `examplemod:lead`.
+
 **Milking:** use a pail on an animal to milk it by the same rules as a bucket, in either hand and in creative mode too. Each milking adds 1000 ml: cows, mooshrooms, mooblooms, water buffalo and yaks give cow milk, goats goat milk and sheep sheep milk, and plain wooly cows give cow milk (a warped wooly cow gives a pail nothing). A pail that is full, or holds another milk, says so and leaves the animal alone, so it costs no milking, no familiarity and no chance to refuse. A species' `milk` list is searched for an entry naming that pail, then for `#barnyard_romance:pails`, then for `minecraft:bucket`, and the milk bucket the entry gives is poured in as its fluid; a pail does nothing on an animal whose milk has no fluid in `barnyard_romance:pail_fluids`.
 
-**The pail's window:** use a pail in the air, or on a block or animal that doesn't take it, to open its window. It shows what the pail holds and has one slot. Put an empty bucket in to take 1000 ml out as a bucket of that milk, or a milk bucket of the pail's milk (any milk the pail takes, if it's empty) to pour 1000 ml in and get the empty bucket back. A bucket only goes in when a whole 1000 ml can move, and a stack of buckets goes in one at a time. **Pour out** empties the whole pail on the spot, with no confirmation, and the milk is gone; it works even on a fluid a pack has taken out of the tag. Closing the window gives back what's in the slot, and the window closes if the pail leaves your hand.
+**The pail's window:** use a pail in the air, or on a block or animal that doesn't take it, to open its window. It shows what the pail holds and has one slot. Put an empty bucket in to take 1000 ml out as a bucket of that milk, or a milk bucket of the pail's milk (any milk the pail takes, if it's empty) to pour 1000 ml in and get the empty bucket back. In creative mode the pail still gains or loses its 1000 ml, but the bucket stays as it went in. A bucket only goes in when a whole 1000 ml can move, and a stack of buckets goes in one at a time. **Pour out** empties the whole pail on the spot, with no confirmation, and the milk is gone; it works even on a fluid a pack has taken out of the tag. Closing the window gives back what's in the slot, and the window closes if the pail leaves your hand.
 
 A pail takes the fluids in the `barnyard_romance:pail_fluids` fluid tag: cow, goat and sheep milk. Goat and sheep milk are fluids of their own, `barnyard_romance:goat_milk` and `barnyard_romance:sheep_milk`, and both are in `c:milk`. Cow milk is NeoForge's own milk fluid (`minecraft:milk`) on NeoForge, which Barnyard Romance switches on, and `barnyard_romance:milk` on Fabric. None of them can be poured out into the world. A pack can add a fluid to the tag with `"replace": false`.
 

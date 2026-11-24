@@ -28,6 +28,11 @@ public class FabricPailGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void aCustomMetalPailCrafts(GameTestHelper helper) {
+        PailGameTests.aCustomMetalPailCrafts(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void theBowlAndBucketStillCraft(GameTestHelper helper) {
         PailGameTests.theBowlAndBucketStillCraft(helper);
     }
@@ -125,6 +130,16 @@ public class FabricPailGameTests {
     @GameTest(structure = PEN, maxTicks = 20)
     public void aMilkBucketPoursIn(GameTestHelper helper) {
         PailGameTests.aMilkBucketPoursIn(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCreativeEmptyBucketStaysEmpty(GameTestHelper helper) {
+        PailGameTests.aCreativeEmptyBucketStaysEmpty(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCreativeMilkBucketStaysFull(GameTestHelper helper) {
+        PailGameTests.aCreativeMilkBucketStaysFull(helper);
     }
 
     @GameTest(structure = PEN, maxTicks = 20)

@@ -38,8 +38,10 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 //? if >=1.21.6
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
-//? if <1.21.2
-//import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+//? if <1.21.2 {
+/*import net.minecraft.world.item.component.DyedItemColor;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+*///?}
 //? if >=1.21.2 {
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 //?} else
@@ -63,12 +65,11 @@ public final class BarnyardRomanceNeoForgeClient {
         //modBus.addListener(BarnyardRomanceNeoForgeClient::registerItemColours);
     }
 
-    // 1.21.2 and later tint in the item's own file (items/copper_pail.json); before that the client tints in code.
-    // The numbers match those files.
+    // On 1.21.1, match the dye tint sources and defaults in the newer item definitions.
     //? if <1.21.2 {
     /*private static void registerItemColours(RegisterColorHandlersEvent.Item event) {
-        event.register((stack, tintIndex) -> tintIndex == 0 ? 0xFF000000 | 0xC15A36 : -1, PailItems.COPPER_PAIL);
-        event.register((stack, tintIndex) -> tintIndex == 0 ? 0xFF000000 | 0xD8D8D8 : -1, PailItems.IRON_PAIL);
+        event.register((stack, tintIndex) -> tintIndex == 0 ? DyedItemColor.getOrDefault(stack, 0xFFFF9C70) : -1, PailItems.COPPER_PAIL);
+        event.register((stack, tintIndex) -> tintIndex == 0 ? DyedItemColor.getOrDefault(stack, 0xFFCCD1DE) : -1, PailItems.IRON_PAIL);
     }
     *///?}
 
