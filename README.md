@@ -306,9 +306,13 @@ All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To transl
 
 ## For mod developers
 
-Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. Add the jar for your loader and Minecraft version as a compile-only dependency; it brings the common API jar with it.
+Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. The jars are on the maven at `https://maven.moddev.zone/releases`. Add the jar for your loader and Minecraft version as a compile-only dependency; it brings the common API jar with it.
 
 ```groovy
+repositories {
+    maven { url = "https://maven.moddev.zone/releases" }
+}
+
 dependencies {
     // NeoForge: barnyard_romance-api-neoforge-26.3 or barnyard_romance-api-neoforge-1.21.1
     compileOnly "net.modcrafters.minecraft:barnyard_romance-api-neoforge-26.3:<version>"

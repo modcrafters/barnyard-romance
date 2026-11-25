@@ -24,10 +24,11 @@ class LangFileTest {
     private static final String ADVANCEMENTS = "src/main/resources/data/barnyard_romance/advancement";
     // Keys the code never names in full: the game looks up item and block names from the registry and tag names from the tag
     // id, and ItemProperties adds .use and .effect to a superfood's own key for its tooltip. The loaders build a milk
-    // fluid's name, fluid.barnyard_romance.<path>, from its path.
+    // fluid's name, fluid.barnyard_romance.<path>, from its path. A metal pail recipe builds its material's name,
+    // pail_material.barnyard_romance.<namespace>.<path>, from the material id.
     // config.jade.plugin_<id>.<option> is the name Jade shows for a plugin option in its own settings screen.
     // item.minecraft.milk_bucket renames vanilla's milk bucket to cow milk, next to sheep and goat milk.
-    private static final Pattern IMPLICIT = Pattern.compile("item\\.barnyard_romance\\.[a-z0-9_]+(?:\\.use|\\.effect)?|block\\.barnyard_romance\\.[a-z0-9_]+|fluid\\.barnyard_romance\\.[a-z0-9_]+|item\\.minecraft\\.milk_bucket|itemGroup\\..*|death\\..*|tag\\..*|config\\.jade\\.plugin_barnyard_romance\\.[a-z_]+");
+    private static final Pattern IMPLICIT = Pattern.compile("item\\.barnyard_romance\\.[a-z0-9_]+(?:\\.use|\\.effect)?|block\\.barnyard_romance\\.[a-z0-9_]+|fluid\\.barnyard_romance\\.[a-z0-9_]+|pail_material\\.barnyard_romance\\.[a-z0-9_.-]+\\.[a-z0-9_./-]+|item\\.minecraft\\.milk_bucket|itemGroup\\..*|death\\..*|tag\\..*|config\\.jade\\.plugin_barnyard_romance\\.[a-z_]+");
 
     @Test
     void everyKeyInTheCodeIsInTheLangFile() throws IOException {
