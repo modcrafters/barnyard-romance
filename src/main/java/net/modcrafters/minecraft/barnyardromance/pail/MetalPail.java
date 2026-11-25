@@ -10,6 +10,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.DyedItemColor;
+//? if >=1.21.5
+import net.minecraft.world.item.component.TooltipDisplay;
 
 import java.util.Arrays;
 import java.util.HexFormat;
@@ -64,8 +66,10 @@ record MetalPail(Identifier material, int tint, Variant variant) {
         Component materialName = Component.translatableWithFallback(material.toLanguageKey("pail_material.barnyard_romance"), title);
         DataComponentPatch.Builder components = DataComponentPatch.builder();
         components.set(DataComponents.ITEM_NAME, Component.translatableWithFallback("item.barnyard_romance.pail.named", "%s Pail", materialName));
+        // The tint is the pail's metal, not a dye, so the tooltip doesn't say "Dyed".
         //? if >=1.21.5 {
         components.set(DataComponents.DYED_COLOR, new DyedItemColor(tint));
+        components.set(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT.withHidden(DataComponents.DYED_COLOR, true));
         //?} else
         //components.set(DataComponents.DYED_COLOR, new DyedItemColor(tint, false));
         return components.build();

@@ -84,6 +84,8 @@
   "item.barnyard_romance.copper_pail": "Copper Pail",
   "item.barnyard_romance.iron_pail": "Iron Pail",
   "item.barnyard_romance.pail.named": "%s Pail",
+  "pail_material.barnyard_romance.minecraft.copper": "Copper",
+  "pail_material.barnyard_romance.minecraft.iron": "Iron",
   "item.barnyard_romance.pail.contents": "%s %s / %s ml",
   "item.barnyard_romance.pail.empty": "Empty (%s ml)",
   "gui.barnyard_romance.pail.pour_out": "Pour out",

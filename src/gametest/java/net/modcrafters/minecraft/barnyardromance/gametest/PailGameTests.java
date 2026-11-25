@@ -23,6 +23,8 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.component.DyedItemColor;
+//? if >=1.21.5
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -132,7 +134,21 @@ public final class PailGameTests {
         helper.assertTrue(craft(helper, Items.OAK_PLANKS).is(PailItems.WOODEN_PAIL), "planks make " + craft(helper, Items.OAK_PLANKS));
         helper.assertTrue(craft(helper, Items.COPPER_INGOT).is(PailItems.COPPER_PAIL), "copper makes " + craft(helper, Items.COPPER_INGOT));
         helper.assertTrue(craft(helper, Items.IRON_INGOT).is(PailItems.IRON_PAIL), "iron makes " + craft(helper, Items.IRON_INGOT));
+        assertMetalPail(helper, craft(helper, Items.COPPER_INGOT), "Copper Pail", 0xFF9C70);
+        assertMetalPail(helper, craft(helper, Items.IRON_INGOT), "Iron Pail", 0xCCD1DE);
         helper.succeed();
+    }
+
+    // Built-in and custom metal pails share one recipe type: a name, and a tint the tooltip doesn't call a dye.
+    private static void assertMetalPail(GameTestHelper helper, ItemStack pail, String name, int tint) {
+        helper.assertTrue(pail.getHoverName().getString().equals(name), "the crafted pail is named " + name + ", not " + pail.getHoverName().getString());
+        DyedItemColor dye = pail.get(DataComponents.DYED_COLOR);
+        helper.assertTrue(dye != null && dye.rgb() == tint, name + " stores its tint");
+        //? if >=1.21.5 {
+        helper.assertTrue(!pail.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).shows(DataComponents.DYED_COLOR),
+                name + " hides the dye line in its tooltip");
+        //?} else
+        //helper.assertTrue(!dye.showInTooltip(), name + " hides the dye line in its tooltip");
     }
 
     public static void aCustomMetalPailCrafts(GameTestHelper helper) {
@@ -140,9 +156,7 @@ public final class PailGameTests {
         ItemStack pail = craft(helper, Items.GOLD_INGOT);
         helper.assertTrue(pail.is(PailItems.IRON_PAIL) && pail.is(PailItems.PAILS), "lead uses the iron pail variant");
         helper.assertTrue(((PailItem) pail.getItem()).capacity() == 5000, "lead inherits the iron pail capacity");
-        helper.assertTrue(pail.getHoverName().getString().equals("Lead Pail"), "the crafted pail is named Lead Pail");
-        DyedItemColor tint = pail.get(DataComponents.DYED_COLOR);
-        helper.assertTrue(tint != null && tint.rgb() == 0x456578, "the crafted pail stores the recipe tint");
+        assertMetalPail(helper, pail, "Lead Pail", 0x456578);
         helper.succeed();
     }
 

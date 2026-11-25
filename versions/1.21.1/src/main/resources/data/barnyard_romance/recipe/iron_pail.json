@@ -1,20 +1,14 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "barnyard_romance:pail_shaped",
   "category": "misc",
   "key": {
-    "S": {
-      "item": "minecraft:stick"
-    },
-    "M": {
-      "item": "minecraft:iron_ingot"
-    }
+    "S": { "item": "minecraft:stick" },
+    "M": { "item": "minecraft:iron_ingot" }
   },
   "pattern": [
     " S ",
     "M M",
     " M "
   ],
-  "result": {
-    "id": "barnyard_romance:iron_pail"
-  }
+  "pail": { "material": "minecraft:iron", "tint": "#CCD1DE", "variant": "iron" }
 }

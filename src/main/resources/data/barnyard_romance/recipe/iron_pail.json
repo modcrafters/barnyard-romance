@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "barnyard_romance:pail_shaped",
   "category": "misc",
   "key": {
     "S": "minecraft:stick",
@@ -10,7 +10,5 @@
     "M M",
     " M "
   ],
-  "result": {
-    "id": "barnyard_romance:iron_pail"
-  }
+  "pail": { "material": "minecraft:iron", "tint": "#CCD1DE", "variant": "iron" }
 }

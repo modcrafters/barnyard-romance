@@ -251,7 +251,7 @@ To have Barnyard Romance track your mod's animal, add it to `barnyard_romance:in
 
 Pails carry milk in bulk. A Wooden Pail holds 2000 ml, a Copper Pail 3000 ml and an Iron Pail 5000 ml, each of one fluid at a time, and a bucket is 1000 ml. Craft one with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip says what it holds, and its item bar shows how full it is, in the colour of its milk. Pails stack to one.
 
-**Custom metal pails** use a `barnyard_romance:pail_shaped` recipe under `data/<namespace>/recipe/` in a data pack. Use `pail` in place of `result`, with a material ID, a `#RRGGBB` tint and a `copper` or `iron` variant. The variant supplies the shape, registered item and capacity. The recipe gives the stack its own name and tint. This example crafts a 5000 ml Lead Pail from `examplemod:lead_ingot` on 26.3.
+**Custom metal pails** use a `barnyard_romance:pail_shaped` recipe under `data/<namespace>/recipe/` in a data pack. Use `pail` in place of `result`, with a material ID, a `#RRGGBB` tint and a `copper` or `iron` variant. The variant supplies the shape, registered item and capacity. The recipe gives the stack its own name and tint. The Copper and Iron Pail recipes use this type too, with `minecraft:copper` and `#FF9C70`, and `minecraft:iron` and `#CCD1DE`. A pack can replace them at `data/barnyard_romance/recipe/copper_pail.json` and `iron_pail.json`. A pail from the creative tab or `/give` has no name or tint of its own, so it uses the item's name and its variant's default tint, which match the built-in recipes. This example crafts a 5000 ml Lead Pail from `examplemod:lead_ingot` on 26.3.
 
 ```json
 {
