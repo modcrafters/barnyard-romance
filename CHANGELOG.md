@@ -8,6 +8,13 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Pails: a Wooden, Copper and Iron Pail hold 2000, 3000 and 5000 ml of one fluid, crafted with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip names what it holds and its fill bar takes the milk's colour.
+- Data packs can add metal pails of their own, such as a Lead Pail, with a `barnyard_romance:pail_shaped` recipe that gives a material name, a tint and the copper or iron pail's size. The Copper and Iron Pail recipes work the same way.
+- Milk animals straight into a pail: each milking adds 1000 ml, by the same rules as a bucket, from either hand and in creative mode too. A full pail, or one holding another milk, says so and costs the animal nothing. Water buffalo and yaks give cow milk, goats and sheep their own, Meadow's plain wooly cows give cow milk and warped ones nothing, and a pack's milk list can name a pail or the `#barnyard_romance:pails` tag.
+- Use a pail in the air to open its window: put an empty bucket or pail in to fill it from the pail, or one holding milk to pour it in, as much as fits. Any mod's fluid container works the same way, so pails pour into pails (in creative the container stays as it was), and **Pour out** empties the pail.
+- Milk is a fluid, so other mods' tanks and pipes can fill and drain pails, through NeoForge's fluid capability or Fabric's Transfer API. Goat and sheep milk are fluids of their own, cow milk is NeoForge's milk fluid (now switched on) or Barnyard Romance's own on Fabric, and the `barnyard_romance:pail_fluids` tag says which fluids a pail takes. Goat and sheep milk buckets, and on Fabric vanilla's milk bucket, empty into tanks and fill from them.
+- New setting `milkConversion` (off by default): a recipe that turns a goat milk bucket, sheep milk bucket or any other milk bucket into vanilla's milk bucket, with no spare bucket left over.
+- For mod developers: the API jars are on the maven at `https://maven.moddev.zone/releases`.
 - Sheep spawn white and have white lambs, and dye no longer works on them. Set `colouredSheep` or `sheepDyeing` to `true` in `config/barnyard_romance.json` to bring either back. A water bucket washes a coloured sheep white.
 - When an animal hasn't been fed today, its herd book tooltip says what it eats, best first.
 - When two animals in a herd book share a name, like ducks from two mods, their bookmarks and pages add the mod: "Duck @naturalist".
@@ -30,9 +37,11 @@ After publishing, the action prepares the next development version and archives 
 
 ### API
 
+- `BarnyardApi.pails()` reads, fills and drains pails, by the same rules as the pail's window and the fluid adapters.
 - `PregnancyApi` and `EggsApi.laying` report nothing for an animal whose species isn't tracked: `isPregnant` is false and `pregnancy` and `laying` are empty, even with a pregnancy still saved on it, until the species is switched back on.
 - The `barnyard_romance:included` entity tag opts a mod's animals in.
 - The `barnyard_romance:species_tracked` load condition lets a pack's data load only while a species is tracked.
+- The `barnyard_romance:config_enabled` load condition, `{"key": "milkConversion"}` in `neoforge:conditions` (with `type`) or `fabric:load_conditions` (with `condition`), lets a pack's data load only while a boolean config option is on.
 - `MilkApi` has `milksWith` and `blocksMilkingItem`, for what milks an animal under its species' milk list.
 - A Milking listener that empties the result in place, instead of cancelling, now counts as cancelling: the player keeps the bucket.
 - A listener that throws an error, such as a class missing because a mod isn't installed, is logged and skipped like one that throws an exception.

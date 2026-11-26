@@ -26,7 +26,8 @@ public interface MilkApi {
     boolean milksWith(Animal animal, ItemStack held);
 
     // Whether the species has a milk list (a config list counts even when empty) and this item, which milks something, isn't on it: the item must do nothing
-    // here, not even what it would elsewhere. False for an untracked animal.
+    // here, not even what it would elsewhere. A pail is blocked whenever the list gives it nothing, even through an entry
+    // that names it. False for an untracked animal.
     boolean blocksMilkingItem(Animal animal, ItemStack held);
 
     // A tracked female's milk, if she has any. now is the game time, clock the overworld clock time.

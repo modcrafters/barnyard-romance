@@ -41,4 +41,34 @@ public class FabricMeadowGameTests {
     public void aWoolyCowIsShearedOnceADay(GameTestHelper helper) {
         MeadowGameTests.aWoolyCowIsShearedOnceADay(helper);
     }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPlainWoolyCowFillsAPailWithCowMilk(GameTestHelper helper) {
+        MeadowGameTests.aPlainWoolyCowFillsAPailWithCowMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWarpedWoolyCowGivesAPailNothing(GameTestHelper helper) {
+        MeadowGameTests.aWarpedWoolyCowGivesAPailNothing(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWoolyCowStillTakesTheWoodenBucket(GameTestHelper helper) {
+        MeadowGameTests.aWoolyCowStillTakesTheWoodenBucket(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anIronBucketStillDoesNothingOnAWoolyCow(GameTestHelper helper) {
+        MeadowGameTests.anIronBucketStillDoesNothingOnAWoolyCow(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void waterBuffaloAndYakGiveCowMilk(GameTestHelper helper) {
+        MeadowGameTests.waterBuffaloAndYakGiveCowMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aWarpedWoolyCowSwallowsAPailSilently(GameTestHelper helper) {
+        MeadowGameTests.aWarpedWoolyCowSwallowsAPailSilently(helper);
+    }
 }

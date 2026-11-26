@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "minecraft:milk",
+      "required": false
+    },
+    {
+      "id": "barnyard_romance:milk",
+      "required": false
+    },
+    "barnyard_romance:goat_milk",
+    "barnyard_romance:sheep_milk"
+  ]
+}

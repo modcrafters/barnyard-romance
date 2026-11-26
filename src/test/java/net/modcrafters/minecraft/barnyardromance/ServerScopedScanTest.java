@@ -28,6 +28,7 @@ class ServerScopedScanTest {
             Map.entry("core/animal/AnimalSex.SPECIES_IDS", "entity type to species id, from the built-in registry"),
             Map.entry("food/FoodData.WARNED", "log messages already shown, cleared on reload"),
             Map.entry("look/AnimalLooks.WARNED", "log messages already shown"),
+            Map.entry("core/config/ConfigEnabled.WARNED", "unknown condition keys already logged"),
             Map.entry("core/compat/ModFields.FIELDS", "class and field name to another mod's field, found by reflection; holds no world state"),
             Map.entry("fabric/data/FabricAnimalData.TYPES", "startup state: attachment types are registered once per game"),
             Map.entry("neoforge/data/NeoForgeAnimalData.TYPES", "startup state: attachment types are registered once per game")

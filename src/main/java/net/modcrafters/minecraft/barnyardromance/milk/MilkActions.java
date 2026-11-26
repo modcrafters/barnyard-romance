@@ -19,6 +19,7 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.food.api.Feed;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodApi;
+import net.modcrafters.minecraft.barnyardromance.pail.api.PailApi;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -46,12 +47,17 @@ import net.minecraft.world.item.Items;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static net.modcrafters.minecraft.barnyardromance.milk.MilkSlices.LACTATION;
 
 // Milking tracked animals the species' milk list names (built in: cows, mooshrooms, goats and sheep): only mothers in milk, a few times a day by size.
 public final class MilkActions {
+    private static final String BUCKET = "minecraft:bucket";
+
     private MilkActions() {
     }
 
@@ -60,23 +66,38 @@ public final class MilkActions {
     }
 
     // What the held item milks the animal into: the item has to be one of the species' milking items and the entry's
-    // items have to exist (an entry for another mod's item resolves to nothing without that mod).
+    // items have to exist (an entry for another mod's item resolves to nothing without that mod). Entries are tried in
+    // the order of names, so an entry naming the item beats one naming its tag, wherever each is in the list.
     public static Optional<Milk> milkFor(Animal animal, ItemStack held) {
         String speciesId = AnimalSex.speciesId(animal);
         MilkSettings settings = BarnyardConfig.current().milkFor(speciesId);
         if (settings.entries().isEmpty() || held.isEmpty()) {
             return Optional.empty();
         }
-        String heldId = itemId(held);
-        for (MilkEntry entry : settings.entries()) {
-            if (entry.bucket().equals(heldId)) {
-                Optional<Milk> milk = resolve(animal, speciesId, settings, entry);
-                if (milk.isPresent()) {
-                    return milk;
+        for (Predicate<MilkEntry> name : names(held)) {
+            for (MilkEntry entry : settings.entries()) {
+                if (name.test(entry)) {
+                    Optional<Milk> milk = resolve(animal, speciesId, settings, entry);
+                    if (milk.isPresent()) {
+                        return milk;
+                    }
                 }
             }
         }
         return Optional.empty();
+    }
+
+    // How a milk list can name the held item, in the order they're tried: by its id, then by a tag it's in, and for a
+    // pail, last, by the empty bucket, so every species milked with a bucket fills a pail with the same milk.
+    private static List<Predicate<MilkEntry>> names(ItemStack held) {
+        String heldId = itemId(held);
+        List<Predicate<MilkEntry>> names = new ArrayList<>(3);
+        names.add(entry -> entry.bucket().equals(heldId));
+        names.add(entry -> entry.namesTagOf(held));
+        if (FeaturesRepository.get(PailApi.class).isPail(held)) {
+            names.add(entry -> entry.bucket().equals(BUCKET));
+        }
+        return names;
     }
 
     // Whether any of the species' milk entries resolves: the animal is a milk animal, whatever it's milked with.
@@ -103,12 +124,22 @@ public final class MilkActions {
             return false;
         }
         MilkSettings settings = config.milkFor(AnimalSex.speciesId(animal));
-        String heldId = itemId(held);
         // A list from the config counts even when empty: it says the species gives no milk, with anything.
-        if (settings.entries().isEmpty() && !settings.fromConfig() || !config.milkingItems().contains(heldId)) {
+        if (settings.entries().isEmpty() && !settings.fromConfig() || !isMilkingItem(config, held)) {
             return false;
         }
-        return settings.entries().stream().noneMatch(entry -> entry.bucket().equals(heldId));
+        // A pail only ever fills from an entry that resolves: one that names it but gives this animal nothing (a warped
+        // wooly cow) leaves it doing nothing too, silently, rather than passing the click on to the pail's own use.
+        if (FeaturesRepository.get(PailApi.class).isPail(held)) {
+            return milkFor(animal, held).isEmpty();
+        }
+        List<Predicate<MilkEntry>> names = names(held);
+        return settings.entries().stream().noneMatch(entry -> names.stream().anyMatch(name -> name.test(entry)));
+    }
+
+    // A pail milks wherever the empty bucket does, so it is a milking item whenever the bucket is.
+    private static boolean isMilkingItem(BarnyardConfig config, ItemStack held) {
+        return config.isMilkingItem(held) || FeaturesRepository.get(PailApi.class).isPail(held) && config.milkingItems().contains(BUCKET);
     }
 
     // Whether a bowl held out to this animal gives stew: the species' stew setting (built in: the mooshroom).
@@ -157,6 +188,16 @@ public final class MilkActions {
         if (tracked.isEmpty()) {
             return null;
         }
+        PailApi pails = FeaturesRepository.get(PailApi.class);
+        boolean pail = pails.isPail(stack);
+        // A pail that can't take this milk, being full or holding another, is turned away before any rule runs, so the
+        // animal keeps her milking, her familiarity and her chance to refuse.
+        if (pail && !pails.fits(stack, milk.get().result())) {
+            if (!animal.level().isClientSide()) {
+                pails.refusal(stack, milk.get().result()).ifPresent(message -> VersionCompat.sendOverlay(player, message));
+            }
+            return InteractionResult.CONSUME;
+        }
         FamiliarityApi familiarityApi = FeaturesRepository.get(FamiliarityApi.class);
         AnimalTraits traits = familiarityApi.settle(animal).orElse(tracked.get());
         Tuning tuning = BarnyardConfig.current().tuning();
@@ -195,9 +236,18 @@ public final class MilkActions {
         if (milking.isCancelled() || milking.result().isEmpty()) {
             return InteractionResult.CONSUME;
         }
+        if (pail) {
+            // The pail fills where it is, in either hand and in creative mode too, where a bucket would stay as it is
+            // and a new milk bucket be handed over. A listener may have changed the milk to one the pail can't take:
+            // then nothing happens, as if it had cancelled.
+            if (!pails.fill(stack, milking.result().getItem())) {
+                return InteractionResult.CONSUME;
+            }
+        } else {
+            player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, milking.result().copy()));
+        }
         // Played by the server for everyone: Player.playSound would skip the milker, whose client never milks.
         animal.level().playSound(null, animal.getX(), animal.getY(), animal.getZ(), milk.get().sound(), SoundSource.PLAYERS, 1.0F, 1.0F);
-        player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, milking.result().copy()));
         Services.DATA.set(animal, traits.with(LACTATION, traits.get(LACTATION).milked(now, clock, tuning.milkKeepsFlowingTicks())));
         familiarityApi.spendFamiliarity(animal, tuning.familiarityMilkingCost());
         if (familiarityApi.isFamiliar(traits)) {

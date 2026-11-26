@@ -41,7 +41,10 @@ class BarnyardTabTest {
                 "new ItemStack(item(\"dairy_mash\"))",
                 "new ItemStack(item(\"stud_mash\"))",
                 "new ItemStack(item(\"sheep_milk_bucket\"))",
-                "new ItemStack(item(\"goat_milk_bucket\"))"
+                "new ItemStack(item(\"goat_milk_bucket\"))",
+                "new ItemStack(item(\"wooden_pail\"))",
+                "new ItemStack(item(\"copper_pail\"))",
+                "new ItemStack(item(\"iron_pail\"))"
         ), declared(TAB, "public static List<ItemStack> contents() {", "contents"));
         assertEquals(List.of(
                 "if (herdSticks) | create(HerdTool.info())",

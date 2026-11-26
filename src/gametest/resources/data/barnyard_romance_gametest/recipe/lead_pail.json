@@ -1,0 +1,9 @@
+{
+  "type": "barnyard_romance:pail_shaped",
+  "pattern": [" S ", "M M", " M "],
+  "key": {
+    "S": "minecraft:stick",
+    "M": "minecraft:gold_ingot"
+  },
+  "pail": { "material": "lead", "tint": "#456578", "variant": "iron" }
+}

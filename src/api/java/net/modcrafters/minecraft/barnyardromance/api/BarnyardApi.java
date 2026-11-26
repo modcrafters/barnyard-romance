@@ -5,6 +5,7 @@ package net.modcrafters.minecraft.barnyardromance.api;
  */
 public final class BarnyardApi {
     private static volatile BarnyardAnimals animals;
+    private static volatile BarnyardPails pails;
 
     private BarnyardApi() {
     }
@@ -22,5 +23,23 @@ public final class BarnyardApi {
      */
     public static void install(BarnyardAnimals queries) {
         animals = queries;
+    }
+
+    /**
+     * Reading and filling pails.
+     */
+    public static BarnyardPails pails() {
+        BarnyardPails installed = pails;
+        if (installed == null) {
+            throw new IllegalStateException("Barnyard Romance isn't loaded");
+        }
+        return installed;
+    }
+
+    /**
+     * For Barnyard Romance only: it installs the pail queries while it starts.
+     */
+    public static void installPails(BarnyardPails queries) {
+        pails = queries;
     }
 }

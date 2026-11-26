@@ -205,6 +205,20 @@ class BarnyardConfigTest {
     }
 
     @Test
+    void milkConversionIsOffByDefault() {
+        assertFalse(BarnyardConfig.parse("{}").milkConversion());
+        assertFalse(BarnyardConfig.defaults().milkConversion());
+    }
+
+    @Test
+    void milkConversionRoundTrips() {
+        BarnyardConfig config = BarnyardConfig.parse("{\"milkConversion\": true}");
+
+        assertTrue(config.milkConversion());
+        assertTrue(BarnyardConfig.parse(config.toJson()).milkConversion());
+    }
+
+    @Test
     void herdSticksAreOffByDefault() {
         assertFalse(BarnyardConfig.parse("{}").herdSticks());
     }
@@ -720,9 +734,10 @@ class BarnyardConfigTest {
         assertEquals(java.util.Set.of(new MilkEntry("minecraft:bucket", "minecraft:milk_bucket", null),
                 new MilkEntry("meadow:wooden_bucket", "meadow:wooden_buffalo_milk_bucket", null)),
                 java.util.Set.copyOf(config.milkFor("meadow:water_buffalo").entries()));
-        // The wooly cow is milked with the wooden bucket only. Its wooden milk depends on its variant (WoolyCowMilk);
-        // this row is the fallback.
-        assertEquals(java.util.List.of(new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null)),
+        // The wooly cow is milked with the wooden bucket and pails, never the iron bucket. What it gives depends on its
+        // variant (WoolyCowMilk); these rows are the fallback.
+        assertEquals(java.util.List.of(new MilkEntry("meadow:wooden_bucket", "meadow:wooden_milk_bucket", null),
+                        new MilkEntry("#barnyard_romance:pails", "minecraft:milk_bucket", null)),
                 java.util.List.copyOf(config.milkFor("meadow:wooly_cow").entries()));
     }
 

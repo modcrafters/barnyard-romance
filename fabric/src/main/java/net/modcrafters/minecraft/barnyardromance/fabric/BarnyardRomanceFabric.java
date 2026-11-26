@@ -31,6 +31,20 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.animal.Animal;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.base.EmptyItemFluidStorage;
+import net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluid;
+import net.modcrafters.minecraft.barnyardromance.fabric.pail.PailFluidStorage;
+import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
+import net.modcrafters.minecraft.barnyardromance.pail.PailItems;
+
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -44,11 +58,13 @@ public class BarnyardRomanceFabric implements ModInitializer {
         FabricAnimalData.register();
         // The breeding ladders load only while one of their species is tracked.
         FabricSpeciesTracked.register();
+        FabricConfigEnabled.register();
         BarnyardRegistrations.registerAll(BarnyardRomanceFabric::register, () -> BarnyardTab.titled(FabricCreativeModeTab.builder())
                 .displayItems((parameters, output) -> BarnyardTab.contents().forEach(output::accept))
                 .build());
         CreativeModeTabEvents.modifyOutputEvent(BarnyardTab.FOOD_AND_DRINKS).register(output -> BarnyardTab.foodAndDrinks().forEach(output::accept));
         BarnyardRomance.setup();
+        registerFluidStorage();
         ResourceLoader data = ResourceLoader.get(PackType.SERVER_DATA);
         data.registerReloadListener(FoodReloadListeners.DIETS_ID, FoodReloadListeners.diets());
         data.registerReloadListener(FoodReloadListeners.FOODS_ID, FoodReloadListeners.foods());
@@ -72,6 +88,22 @@ public class BarnyardRomanceFabric implements ModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(HerdBookPayloads.RemoveFromBook.TYPE,
                 (payload, context) -> HerdBooks.removeRequested(context.player(), payload));
         CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> BarnyardCommands.register(dispatcher));
+    }
+
+    // Tanks and pipes from other mods fill and drain pails, and empty and fill buckets of each milk. Fabric API knows
+    // none of the milk buckets: it handles only BucketItems, and vanilla's milk bucket isn't one. The buckets go through
+    // the combined providers, so another mod can offer its own storage for the same bucket.
+    private static void registerFluidStorage() {
+        FluidStorage.ITEM.registerForItems((stack, context) -> new PailFluidStorage(context),
+                PailItems.WOODEN_PAIL, PailItems.COPPER_PAIL, PailItems.IRON_PAIL);
+        for (Holder<Fluid> milk : List.of(MilkFluids.COW, MilkFluids.GOAT, MilkFluids.SHEEP)) {
+            Fluid fluid = milk.value();
+            Item bucket = fluid.getBucket();
+            FluidStorage.combinedItemApiProvider(bucket).register(context ->
+                    new FullItemFluidStorage(context, Items.BUCKET, FluidVariant.of(fluid), FluidConstants.BUCKET));
+            FluidStorage.combinedItemApiProvider(Items.BUCKET).register(context ->
+                    new EmptyItemFluidStorage(context, bucket, fluid, FluidConstants.BUCKET));
+        }
     }
 
     @SuppressWarnings("unchecked")

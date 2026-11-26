@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+import net.minecraft.core.registries.Registries;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalPhase;
 import net.modcrafters.minecraft.barnyardromance.core.Feature;
 import net.modcrafters.minecraft.barnyardromance.core.FeatureRegistrar;
@@ -17,6 +18,9 @@ public final class MilkFeature implements Feature {
         registrar.slice(MilkSlices.LACTATION);
         registrar.hook(AnimalPhase.JOINED, "milk.joined", (animal, level) -> MilkActions.onJoin(animal));
         // A lambda, so MilkItems (and its items) load only once the registries are open.
-        registrar.content(sink -> MilkItems.register(sink));
+        registrar.content(sink -> {
+            MilkItems.register(sink);
+            sink.register(Registries.RECIPE_SERIALIZER, MilkConversionRecipe.ID, () -> MilkConversionRecipe.SERIALIZER);
+        });
     }
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "barnyard_romance:item/iron_pail",
+    "layer1": "barnyard_romance:item/iron_pail_grip"
+  }
+}

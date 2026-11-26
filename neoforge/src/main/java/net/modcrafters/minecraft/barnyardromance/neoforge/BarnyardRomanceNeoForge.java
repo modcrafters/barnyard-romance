@@ -17,6 +17,7 @@ import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardTab;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.neoforge.client.BarnyardRomanceNeoForgeClient;
 import net.modcrafters.minecraft.barnyardromance.neoforge.data.NeoForgeAnimalData;
+import net.modcrafters.minecraft.barnyardromance.neoforge.platform.NeoForgePlatformHelper;
 import net.minecraft.resources.Identifier;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceKey;
@@ -30,6 +31,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.NeoForgeMod;
 //? if >=1.21.2 {
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 //?} else
@@ -48,6 +50,14 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.material.Fluid;
+import net.modcrafters.minecraft.barnyardromance.neoforge.pail.MilkBucketFluidHandler;
+import net.modcrafters.minecraft.barnyardromance.neoforge.pail.PailFluidHandler;
+import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
+import net.modcrafters.minecraft.barnyardromance.pail.PailItems;
+import java.util.List;
 //? if >=1.21.9 {
 import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 //?} else
@@ -62,6 +72,10 @@ public class BarnyardRomanceNeoForge {
         NeoForgeBridge.register();
         NeoForgeAnimalData.register(modBus);
         SpeciesTrackedCondition.register(modBus);
+        ConfigEnabledCondition.register(modBus);
+        // Cow milk in pails is NeoForge's own milk fluid, which is off unless a mod asks for it.
+        NeoForgeMod.enableMilkFluid();
+        NeoForgePlatformHelper.FLUID_TYPES.register(modBus);
         modBus.addListener(BarnyardRomanceNeoForge::registerContent);
         modBus.addListener(BarnyardRomanceNeoForge::addToCreativeTabs);
         modBus.addListener(BarnyardRomanceNeoForge::registerPayloads);
@@ -110,6 +124,24 @@ public class BarnyardRomanceNeoForge {
         /*event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FeedBlocks.FEEDER_ENTITY,
                 (feeder, side) -> new SidedInvWrapper(feeder, side == null ? Direction.UP : side));
         *///?}
+        registerFluidCapabilities(event);
+    }
+
+    // Tanks and pipes from other mods fill and drain pails, and empty the goat and sheep milk buckets. NeoForge's own
+    // handler already covers vanilla's milk bucket, as the mod switches its milk on, and filling an empty bucket.
+    private static void registerFluidCapabilities(RegisterCapabilitiesEvent event) {
+        Item[] pails = {PailItems.WOODEN_PAIL, PailItems.COPPER_PAIL, PailItems.IRON_PAIL};
+        //? if >=1.21.9 {
+        event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> new PailFluidHandler(access), pails);
+        //?} else
+        //event.registerItem(Capabilities.FluidHandler.ITEM, (stack, context) -> new PailFluidHandler(stack), pails);
+        for (Holder<Fluid> milk : List.of(MilkFluids.GOAT, MilkFluids.SHEEP)) {
+            Item bucket = milk.value().getBucket();
+            //? if >=1.21.9 {
+            event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> new MilkBucketFluidHandler(access, bucket, milk.value()), bucket);
+            //?} else
+            //event.registerItem(Capabilities.FluidHandler.ITEM, (stack, context) -> new MilkBucketFluidHandler(stack, bucket, milk.value()), bucket);
+        }
     }
 
     // From 1.21.6 on, the client registers its own handler for ShowBook (see BarnyardRomanceNeoForgeClient).

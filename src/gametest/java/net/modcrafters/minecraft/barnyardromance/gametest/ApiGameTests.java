@@ -14,6 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.modcrafters.minecraft.barnyardromance.api.AnimalInfo;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardApi;
+import net.modcrafters.minecraft.barnyardromance.api.BarnyardPails;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.material.Fluids;
+import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
+import net.modcrafters.minecraft.barnyardromance.pail.PailItems;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.TamableAnimal;
@@ -87,7 +92,11 @@ public final class ApiGameTests {
             new BreedingGameTests.Case("befriended_fires_once_when_a_cow_becomes_familiar", 20, ApiGameTests::befriendedFiresOnceWhenACowBecomesFamiliar),
             new BreedingGameTests.Case("born_fires_with_the_mother_and_her_young", 200, ApiGameTests::bornFiresWithTheMotherAndHerYoung),
             new BreedingGameTests.Case("hatched_fires_with_the_parents", 20, ApiGameTests::hatchedFiresWithTheParents),
-            new BreedingGameTests.Case("a_wild_egg_hatches_with_no_parents", 40, ApiGameTests::aWildEggHatchesWithNoParents)
+            new BreedingGameTests.Case("a_wild_egg_hatches_with_no_parents", 40, ApiGameTests::aWildEggHatchesWithNoParents),
+            new BreedingGameTests.Case("the_api_fills_and_drains_a_pail", 20, ApiGameTests::theApiFillsAndDrainsAPail),
+            new BreedingGameTests.Case("the_api_obeys_the_tag", 20, ApiGameTests::theApiObeysTheTag),
+            new BreedingGameTests.Case("the_api_says_a_stick_is_no_pail", 20, ApiGameTests::theApiSaysAStickIsNoPail),
+            new BreedingGameTests.Case("the_api_drains_a_dropped_fluid", 20, ApiGameTests::theApiDrainsADroppedFluid)
     );
 
     public static final Handlers<Milking> MILKINGS = new Handlers<>(BarnyardEvents.MILKING, event -> event.animal().getUUID());
@@ -500,6 +509,47 @@ public final class ApiGameTests {
         public void remove(UUID animal) {
             byAnimal.remove(animal);
         }
+    }
+
+    public static void theApiFillsAndDrainsAPail(GameTestHelper helper) {
+        BarnyardPails pails = BarnyardApi.pails();
+        ItemStack pail = new ItemStack(PailItems.IRON_PAIL);
+
+        helper.assertTrue(pails.isPail(pail) && pails.capacity(pail) == 5000, "the iron pail reads as " + pails.capacity(pail));
+        helper.assertTrue(pails.fill(pail, MilkFluids.GOAT.value(), 1000, true) == 1000 && pails.amount(pail) == 0, "a simulated fill changed the pail");
+        helper.assertTrue(pails.fill(pail, MilkFluids.GOAT.value(), 1000, false) == 1000, "the fill didn't take a thousand");
+        helper.assertTrue(pails.fluid(pail).equals(Optional.of(MilkFluids.GOAT.value())), "the pail holds " + pails.fluid(pail));
+        helper.assertTrue(pails.drain(pail, 400, false) == 400, "the drain didn't give four hundred");
+        helper.assertTrue(pails.amount(pail) == 600, "the pail holds " + pails.amount(pail));
+        helper.succeed();
+    }
+
+    public static void theApiObeysTheTag(GameTestHelper helper) {
+        ItemStack pail = new ItemStack(PailItems.WOODEN_PAIL);
+
+        helper.assertTrue(BarnyardApi.pails().fill(pail, Fluids.WATER, 1000, false) == 0, "a pail took water");
+        helper.assertTrue(BarnyardApi.pails().amount(pail) == 0, "the pail holds " + BarnyardApi.pails().amount(pail));
+        helper.succeed();
+    }
+
+    public static void theApiSaysAStickIsNoPail(GameTestHelper helper) {
+        ItemStack stick = new ItemStack(Items.STICK);
+
+        helper.assertTrue(!BarnyardApi.pails().isPail(stick) && BarnyardApi.pails().capacity(stick) == 0, "a stick reads as a pail");
+        helper.assertTrue(BarnyardApi.pails().fluid(stick).isEmpty() && BarnyardApi.pails().amount(stick) == 0, "a stick holds something");
+        helper.assertTrue(BarnyardApi.pails().fill(stick, MilkFluids.GOAT.value(), 1000, false) == 0, "a stick took milk");
+        helper.succeed();
+    }
+
+    // A pail of a fluid that's gone reports no fluid but its amount, and still drains.
+    public static void theApiDrainsADroppedFluid(GameTestHelper helper) {
+        BarnyardPails pails = BarnyardApi.pails();
+        ItemStack pail = PailGameTests.pail(PailItems.IRON_PAIL, Identifier.parse("gone:whey"), 1500);
+
+        helper.assertTrue(pails.fluid(pail).isEmpty() && pails.amount(pail) == 1500, "the dropped fluid reads as " + pails.fluid(pail) + " " + pails.amount(pail));
+        helper.assertTrue(pails.fill(pail, MilkFluids.GOAT.value(), 1000, false) == 0, "a pail of gone:whey took goat milk");
+        helper.assertTrue(pails.drain(pail, 1000, false) == 1000 && pails.amount(pail) == 500, "the drain gave the wrong amount, leaving " + pails.amount(pail));
+        helper.succeed();
     }
 
     private static void assertRefusesEmpty(GameTestHelper helper, Runnable setEmpty) {
