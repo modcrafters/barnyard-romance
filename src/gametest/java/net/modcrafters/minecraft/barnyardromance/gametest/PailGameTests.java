@@ -82,6 +82,15 @@ public final class PailGameTests {
             new BreedingGameTests.Case("a_milk_bucket_pours_in", 20, PailGameTests::aMilkBucketPoursIn),
             new BreedingGameTests.Case("a_creative_empty_bucket_stays_empty", 20, PailGameTests::aCreativeEmptyBucketStaysEmpty),
             new BreedingGameTests.Case("a_creative_milk_bucket_stays_full", 20, PailGameTests::aCreativeMilkBucketStaysFull),
+            new BreedingGameTests.Case("an_empty_pail_fills_from_the_held_pail", 20, PailGameTests::anEmptyPailFillsFromTheHeldPail),
+            new BreedingGameTests.Case("a_pail_with_milk_pours_into_the_held_pail", 20, PailGameTests::aPailWithMilkPoursIntoTheHeldPail),
+            new BreedingGameTests.Case("a_partial_pour_leaves_the_rest", 20, PailGameTests::aPartialPourLeavesTheRest),
+            new BreedingGameTests.Case("two_milks_are_refused", 20, PailGameTests::twoMilksAreRefused),
+            new BreedingGameTests.Case("two_empty_pails_are_refused", 20, PailGameTests::twoEmptyPailsAreRefused),
+            new BreedingGameTests.Case("a_full_held_pail_refuses_a_pail_with_milk", 20, PailGameTests::aFullHeldPailRefusesAPailWithMilk),
+            new BreedingGameTests.Case("a_pail_of_an_unknown_fluid_is_refused", 20, PailGameTests::aPailOfAnUnknownFluidIsRefused),
+            new BreedingGameTests.Case("an_offhand_pail_pours_into_a_pail", 20, PailGameTests::anOffhandPailPoursIntoAPail),
+            new BreedingGameTests.Case("a_creative_pail_pour_leaves_the_slot_pail", 20, PailGameTests::aCreativePailPourLeavesTheSlotPail),
             new BreedingGameTests.Case("a_different_milk_bucket_is_refused", 20, PailGameTests::aDifferentMilkBucketIsRefused),
             new BreedingGameTests.Case("a_bucket_needs_a_full_thousand", 20, PailGameTests::aBucketNeedsAFullThousand),
             new BreedingGameTests.Case("pour_out_empties_the_pail", 20, PailGameTests::pourOutEmptiesThePail),
@@ -449,6 +458,112 @@ public final class PailGameTests {
         assertSlot(helper, menu, MilkItems.SHEEP_MILK_BUCKET);
         assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.SHEEP_ID, 1000));
         helper.succeed();
+    }
+
+    // An empty container fills from the pail in hand, as much as it takes: here a wooden pail's 2000.
+    public static void anEmptyPailFillsFromTheHeldPail(GameTestHelper helper) {
+        ItemStack pail = pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 2500);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, new ItemStack(PailItems.WOODEN_PAIL));
+
+        assertSlotPail(helper, menu, PailItems.WOODEN_PAIL, new PailContents(MilkFluids.GOAT_ID, 2000));
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 500));
+        helper.succeed();
+    }
+
+    // A container holding milk pours it into the pail in hand.
+    public static void aPailWithMilkPoursIntoTheHeldPail(GameTestHelper helper) {
+        ItemStack pail = pail(PailItems.WOODEN_PAIL, MilkFluids.GOAT_ID, 500);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 1000));
+
+        assertSlotPail(helper, menu, PailItems.IRON_PAIL, PailContents.EMPTY);
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 1500));
+        helper.succeed();
+    }
+
+    // Only what fits moves, and the rest stays in the container.
+    public static void aPartialPourLeavesTheRest(GameTestHelper helper) {
+        ItemStack pail = pail(PailItems.WOODEN_PAIL, MilkFluids.SHEEP_ID, 1500);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, pail(PailItems.COPPER_PAIL, MilkFluids.SHEEP_ID, 2000));
+
+        assertSlotPail(helper, menu, PailItems.COPPER_PAIL, new PailContents(MilkFluids.SHEEP_ID, 1500));
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.SHEEP_ID, 2000));
+        helper.succeed();
+    }
+
+    public static void twoMilksAreRefused(GameTestHelper helper) {
+        assertPailRefused(helper, pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 1000), pail(PailItems.WOODEN_PAIL, MilkFluids.COW_ID, 1000));
+    }
+
+    public static void twoEmptyPailsAreRefused(GameTestHelper helper) {
+        assertPailRefused(helper, new ItemStack(PailItems.IRON_PAIL), new ItemStack(PailItems.WOODEN_PAIL));
+    }
+
+    public static void aFullHeldPailRefusesAPailWithMilk(GameTestHelper helper) {
+        assertPailRefused(helper, pail(PailItems.WOODEN_PAIL, MilkFluids.GOAT_ID, 2000), pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 1000));
+    }
+
+    // The loaders' adapters see a pail of a fluid that's no longer registered as empty, but it can't take a second fluid.
+    public static void aPailOfAnUnknownFluidIsRefused(GameTestHelper helper) {
+        assertPailRefused(helper, pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 2500),
+                pail(PailItems.WOODEN_PAIL, Identifier.fromNamespaceAndPath("gone", "milk"), 1000));
+    }
+
+    public static void anOffhandPailPoursIntoAPail(GameTestHelper helper) {
+        ItemStack pail = pail(PailItems.IRON_PAIL, MilkFluids.GOAT_ID, 2500);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.OFF_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.OFF_HAND);
+
+        put(menu, player, new ItemStack(PailItems.WOODEN_PAIL));
+
+        assertSlotPail(helper, menu, PailItems.WOODEN_PAIL, new PailContents(MilkFluids.GOAT_ID, 2000));
+        assertHolds(helper, player.getOffhandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 500));
+        helper.succeed();
+    }
+
+    // Creative mode: the pail in hand takes the milk, and the pail in the slot keeps it too.
+    public static void aCreativePailPourLeavesTheSlotPail(GameTestHelper helper) {
+        ItemStack pail = new ItemStack(PailItems.IRON_PAIL);
+        Player player = holding(helper, pail, GameType.CREATIVE, InteractionHand.MAIN_HAND, new ArrayList<>());
+        player.getAbilities().instabuild = true;
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, pail(PailItems.WOODEN_PAIL, MilkFluids.GOAT_ID, 2000));
+
+        assertSlotPail(helper, menu, PailItems.WOODEN_PAIL, new PailContents(MilkFluids.GOAT_ID, 2000));
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 2000));
+        helper.succeed();
+    }
+
+    // The slot refuses the container, which stays on the cursor as it was, and the pail in hand doesn't change.
+    private static void assertPailRefused(GameTestHelper helper, ItemStack pail, ItemStack container) {
+        PailContents held = PailItem.contents(pail);
+        PailContents offered = PailItem.contents(container);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        helper.assertTrue(!menu.getSlot(PailMenu.BUCKET_SLOT).mayPlace(container), "the slot takes " + container);
+        put(menu, player, container);
+
+        ItemStack carried = menu.getCarried();
+        helper.assertTrue(carried.is(container.getItem()) && PailItem.contents(carried).equals(offered), "the refused pail became " + carried);
+        helper.assertTrue(!menu.getSlot(PailMenu.BUCKET_SLOT).hasItem(), "the slot holds " + menu.getSlot(PailMenu.BUCKET_SLOT).getItem());
+        assertHolds(helper, player.getMainHandItem(), pail, held);
+        helper.succeed();
+    }
+
+    private static void assertSlotPail(GameTestHelper helper, PailMenu menu, Item expected, PailContents contents) {
+        assertSlot(helper, menu, expected);
+        PailContents actual = PailItem.contents(menu.getSlot(PailMenu.BUCKET_SLOT).getItem());
+        helper.assertTrue(actual.equals(contents), "the slot's pail holds " + actual + ", not " + contents);
     }
 
     // Only buckets that trade with this pail go in: not another milk, not water, not anything else.

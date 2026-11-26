@@ -143,6 +143,51 @@ public class FabricPailGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void anEmptyPailFillsFromTheHeldPail(GameTestHelper helper) {
+        PailGameTests.anEmptyPailFillsFromTheHeldPail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPailWithMilkPoursIntoTheHeldPail(GameTestHelper helper) {
+        PailGameTests.aPailWithMilkPoursIntoTheHeldPail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPartialPourLeavesTheRest(GameTestHelper helper) {
+        PailGameTests.aPartialPourLeavesTheRest(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void twoMilksAreRefused(GameTestHelper helper) {
+        PailGameTests.twoMilksAreRefused(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void twoEmptyPailsAreRefused(GameTestHelper helper) {
+        PailGameTests.twoEmptyPailsAreRefused(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aFullHeldPailRefusesAPailWithMilk(GameTestHelper helper) {
+        PailGameTests.aFullHeldPailRefusesAPailWithMilk(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aPailOfAnUnknownFluidIsRefused(GameTestHelper helper) {
+        PailGameTests.aPailOfAnUnknownFluidIsRefused(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void anOffhandPailPoursIntoAPail(GameTestHelper helper) {
+        PailGameTests.anOffhandPailPoursIntoAPail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCreativePailPourLeavesTheSlotPail(GameTestHelper helper) {
+        PailGameTests.aCreativePailPourLeavesTheSlotPail(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void aDifferentMilkBucketIsRefused(GameTestHelper helper) {
         PailGameTests.aDifferentMilkBucketIsRefused(helper);
     }

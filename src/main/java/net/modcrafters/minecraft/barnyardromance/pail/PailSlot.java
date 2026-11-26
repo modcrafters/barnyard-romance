@@ -4,7 +4,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-// The pail window's slot. It takes one bucket that trades with the pail and trades it the moment it goes in, however
+// The pail window's slot. It takes one fluid container that pours with the pail and pours it the moment it goes in, however
 // it goes in: a click, a shift-click, a drag or a hotbar key all end in setByPlayer. A plain set, as the server's sync
 // uses, never trades.
 public class PailSlot extends Slot {
@@ -20,7 +20,7 @@ public class PailSlot extends Slot {
         return menu.trades(stack);
     }
 
-    // One at a time, so a stack of empty buckets moves in one by one and the rest stay with the player.
+    // One at a time, so a stack of empty containers moves in one by one and the rest stay with the player.
     @Override
     public int getMaxStackSize() {
         return 1;

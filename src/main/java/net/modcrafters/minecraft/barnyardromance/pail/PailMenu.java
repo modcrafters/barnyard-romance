@@ -11,23 +11,18 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.material.Fluid;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
-// The pail window: one slot that trades buckets with the pail in the player's hand, a Pour out button, then the
-// player's inventory and hotbar. The pail isn't copied into the window: the menu reads and writes the stack in the hand,
+// The pail window: one slot that pours between the pail in the player's hand and a fluid container, a Pour out
+// button, then the player's inventory and hotbar. The pail isn't copied into the window: the menu reads and writes the stack in the hand,
 // so the window closes as soon as that stack leaves the hand.
 public class PailMenu extends AbstractContainerMenu {
     public static final int BUCKET_SLOT = 0;
     // The Pour out button's id for clickMenuButton.
     public static final int POUR_OUT = 0;
-    // What a bucket holds.
-    public static final int BUCKET = 1000;
 
     public static final int WIDTH = 176;
     public static final int LINE_Y = 20;
@@ -108,42 +103,26 @@ public class PailMenu extends AbstractContainerMenu {
         return opened == null || (player.getItemInHand(hand()) == opened && !opened.isEmpty());
     }
 
-    // Whether this bucket would trade with the pail: an empty one when the pail has a full bucket of a fluid that has a
-    // bucket, or a full one of an accepted fluid when the pail has room for all of it.
+    // Whether one of this container would pour with the pail, that is, whether some fluid would move. A shift-click asks
+    // about a whole stack, of which the slot then takes one.
     boolean trades(ItemStack stack) {
-        ItemStack pail = pail();
-        if (stack.is(Items.BUCKET)) {
-            return filled(pail).isPresent();
-        }
-        Optional<Fluid> fluid = PailFluids.forBucket(stack.getItem(), PailItem.contents(pail).fluid());
-        return fluid.isPresent() && PailTransfer.insert(pail, fluid.get(), BUCKET, true) == BUCKET;
+        return PailPouring.INSTANCE.pour(stack, pail()).isPresent();
     }
 
-    // Trades a bucket put in the slot with the pail: an empty bucket comes back full, a full one comes back empty.
-    // In creative the pail still gains or loses its thousand, but the bucket comes back as it went in. Anything that
-    // doesn't trade comes back as it was. The pail changes in place, so it stays the stack in the hand.
+    // Pours between a container put in the slot and the pail: an empty container fills from the pail, and one holding
+    // a fluid pours into it, as much as each side allows. In creative the pail still changes, but the container comes
+    // back as it went in. Anything that doesn't pour comes back as it was. The pail changes in place, so it stays the
+    // stack in the hand.
     ItemStack trade(ItemStack stack) {
-        if (stack.getCount() != 1 || !trades(stack)) {
+        if (stack.getCount() != 1) {
             return stack;
         }
-        ItemStack pail = pail();
-        ItemStack traded;
-        if (stack.is(Items.BUCKET)) {
-            Item full = filled(pail).orElseThrow();
-            PailTransfer.extract(pail, null, BUCKET, false);
-            traded = new ItemStack(full);
-        } else {
-            PailTransfer.insert(pail, PailFluids.forBucket(stack.getItem(), PailItem.contents(pail).fluid()).orElseThrow(), BUCKET, false);
-            traded = new ItemStack(Items.BUCKET);
+        Optional<PailPouring.Poured> poured = PailPouring.INSTANCE.pour(stack, pail());
+        if (poured.isEmpty()) {
+            return stack;
         }
-        return player.hasInfiniteMaterials() ? stack : traded;
-    }
-
-    // The full bucket an empty one becomes, if the pail has a whole bucket of a fluid that has one.
-    private static Optional<Item> filled(ItemStack pail) {
-        return PailTransfer.fluid(pail)
-                .filter(fluid -> PailTransfer.extract(pail, fluid, BUCKET, true) == BUCKET)
-                .flatMap(PailFluids::bucketFor);
+        PailItem.setContents(pail(), poured.get().pail());
+        return player.hasInfiniteMaterials() ? stack : poured.get().container();
     }
 
     // Pour out: the pail is emptied on the spot, whatever it holds, even a fluid nothing accepts any more.
@@ -183,7 +162,7 @@ public class PailMenu extends AbstractContainerMenu {
         return moved;
     }
 
-    // The bucket in the slot goes back to the player, or on the ground. The server does this; the client's copy
+    // The container in the slot goes back to the player, or on the ground. The server does this; the client's copy
     // hears about it from the server.
     @Override
     public void removed(Player player) {
