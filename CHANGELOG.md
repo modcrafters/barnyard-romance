@@ -8,6 +8,8 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+## 0.0.6
+
 - Pails: a Wooden, Copper and Iron Pail hold 2000, 3000 and 5000 ml of one fluid, crafted with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip names what it holds and its fill bar takes the milk's colour.
 - Data packs can add metal pails of their own, such as a Lead Pail, with a `barnyard_romance:pail_shaped` recipe that gives a material name, a tint and the copper or iron pail's size. The Copper and Iron Pail recipes work the same way.
 - Milk animals straight into a pail: each milking adds 1000 ml, by the same rules as a bucket, from either hand and in creative mode too. A full pail, or one holding another milk, says so and costs the animal nothing. Water buffalo and yaks give cow milk, goats and sheep their own, Meadow's plain wooly cows give cow milk and warped ones nothing, and a pack's milk list can name a pail or the `#barnyard_romance:pails` tag.
