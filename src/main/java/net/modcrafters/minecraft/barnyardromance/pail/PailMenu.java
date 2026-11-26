@@ -104,9 +104,11 @@ public class PailMenu extends AbstractContainerMenu {
     }
 
     // Whether one of this container would pour with the pail, that is, whether some fluid would move. A shift-click asks
-    // about a whole stack, of which the slot then takes one.
+    // about a whole stack, of which the slot then takes one. The pail itself never goes in: it would pour into a copy of
+    // itself, and taking it out of the hand closes the window.
     boolean trades(ItemStack stack) {
-        return PailPouring.INSTANCE.pour(stack, pail()).isPresent();
+        ItemStack pail = pail();
+        return stack != pail && PailPouring.INSTANCE.pour(stack, pail).isPresent();
     }
 
     // Pours between a container put in the slot and the pail: an empty container fills from the pail, and one holding

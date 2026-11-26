@@ -91,6 +91,8 @@ public final class PailGameTests {
             new BreedingGameTests.Case("a_pail_of_an_unknown_fluid_is_refused", 20, PailGameTests::aPailOfAnUnknownFluidIsRefused),
             new BreedingGameTests.Case("an_offhand_pail_pours_into_a_pail", 20, PailGameTests::anOffhandPailPoursIntoAPail),
             new BreedingGameTests.Case("a_creative_pail_pour_leaves_the_slot_pail", 20, PailGameTests::aCreativePailPourLeavesTheSlotPail),
+            new BreedingGameTests.Case("the_held_pail_stays_out_of_its_own_slot", 20, PailGameTests::theHeldPailStaysOutOfItsOwnSlot),
+            new BreedingGameTests.Case("a_cow_milk_bucket_pours_in", 20, PailGameTests::aCowMilkBucketPoursIn),
             new BreedingGameTests.Case("a_different_milk_bucket_is_refused", 20, PailGameTests::aDifferentMilkBucketIsRefused),
             new BreedingGameTests.Case("a_bucket_needs_a_full_thousand", 20, PailGameTests::aBucketNeedsAFullThousand),
             new BreedingGameTests.Case("pour_out_empties_the_pail", 20, PailGameTests::pourOutEmptiesThePail),
@@ -540,6 +542,46 @@ public final class PailGameTests {
 
         assertSlotPail(helper, menu, PailItems.WOODEN_PAIL, new PailContents(MilkFluids.GOAT_ID, 2000));
         assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 2000));
+        helper.succeed();
+    }
+
+    // The pail the window works on can't go in its own slot, by shift-click or by its hotbar key, even part full.
+    public static void theHeldPailStaysOutOfItsOwnSlot(GameTestHelper helper) {
+        ItemStack pail = pail(PailItems.WOODEN_PAIL, MilkFluids.GOAT_ID, 1000);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+        int hotbar = -1;
+        for (int index = PailMenu.BUCKET_SLOT + 1; index < menu.slots.size(); index++) {
+            if (menu.getSlot(index).getItem() == pail) {
+                hotbar = index;
+            }
+        }
+        helper.assertTrue(hotbar >= 0, "the held pail isn't in the window's inventory slots");
+
+        helper.assertTrue(!menu.getSlot(PailMenu.BUCKET_SLOT).mayPlace(pail), "the slot takes the held pail");
+        menu.clicked(hotbar, 0, ContainerInput.QUICK_MOVE, player);
+        assertPailStaysInHand(helper, menu, player, pail, "a shift-click");
+        menu.clicked(PailMenu.BUCKET_SLOT, menu.getSlot(hotbar).getContainerSlot(), ContainerInput.SWAP, player);
+        assertPailStaysInHand(helper, menu, player, pail, "its hotbar key");
+        helper.succeed();
+    }
+
+    private static void assertPailStaysInHand(GameTestHelper helper, PailMenu menu, Player player, ItemStack pail, String how) {
+        helper.assertTrue(!menu.getSlot(PailMenu.BUCKET_SLOT).hasItem(), how + " put " + menu.getSlot(PailMenu.BUCKET_SLOT).getItem() + " in the slot");
+        helper.assertTrue(menu.stillValid(player), how + " closed the window");
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.GOAT_ID, 1000));
+    }
+
+    // Vanilla's milk bucket is cow milk to the pail on both loaders.
+    public static void aCowMilkBucketPoursIn(GameTestHelper helper) {
+        ItemStack pail = new ItemStack(PailItems.WOODEN_PAIL);
+        Player player = holding(helper, pail, GameType.SURVIVAL, InteractionHand.MAIN_HAND, new ArrayList<>());
+        PailMenu menu = new PailMenu(1, player.getInventory(), InteractionHand.MAIN_HAND);
+
+        put(menu, player, new ItemStack(Items.MILK_BUCKET));
+
+        assertSlot(helper, menu, Items.BUCKET);
+        assertHolds(helper, player.getMainHandItem(), pail, new PailContents(MilkFluids.COW_ID, 1000));
         helper.succeed();
     }
 

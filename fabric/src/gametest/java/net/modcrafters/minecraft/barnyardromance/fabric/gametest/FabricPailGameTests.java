@@ -188,6 +188,16 @@ public class FabricPailGameTests {
     }
 
     @GameTest(structure = PEN, maxTicks = 20)
+    public void theHeldPailStaysOutOfItsOwnSlot(GameTestHelper helper) {
+        PailGameTests.theHeldPailStaysOutOfItsOwnSlot(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void aCowMilkBucketPoursIn(GameTestHelper helper) {
+        PailGameTests.aCowMilkBucketPoursIn(helper);
+    }
+
+    @GameTest(structure = PEN, maxTicks = 20)
     public void aDifferentMilkBucketIsRefused(GameTestHelper helper) {
         PailGameTests.aDifferentMilkBucketIsRefused(helper);
     }
