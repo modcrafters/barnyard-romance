@@ -123,7 +123,8 @@ public final class Jdk {
         //? if >=1.21.1 {
         return list.reversed();
         //?} else {
-        /*return Lists.reverse(list);
+        /*// Guava's reverse view: live, and writes through, as List.reversed's does.
+        return Lists.reverse(list);
         *///?}
     }
 
