@@ -14,10 +14,12 @@ public class BarnyardRomanceGameTestsForge {
     public BarnyardRomanceGameTestsForge() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(BarnyardRomanceGameTestsForge::registerTests);
+        ForgeApiGameTests.listen();
     }
 
     private static void registerTests(RegisterGameTestsEvent event) {
         event.register(ForgeDataGameTests.class);
         event.register(ForgeContainerGameTests.class);
+        event.register(ForgeApiGameTests.class);
     }
 }

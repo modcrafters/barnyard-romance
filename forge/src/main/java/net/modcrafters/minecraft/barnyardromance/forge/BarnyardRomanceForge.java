@@ -28,6 +28,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.RegisterEvent;
 import net.modcrafters.minecraft.barnyardromance.BarnyardRomance;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.api.forge.ForgeBridge;
 import net.modcrafters.minecraft.barnyardromance.command.BarnyardCommands;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
@@ -56,7 +57,8 @@ public class BarnyardRomanceForge {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         // Installs the features first: the animal data keys and registry content come from them.
         BarnyardRomance.init();
-        // The public API's events become Forge events here, once the Forge bridge exists.
+        // The public API's events become Forge events here.
+        ForgeBridge.register();
         ForgeAnimalData.register(modBus);
         SpeciesTrackedCondition.register();
         ConfigEnabledCondition.register();
