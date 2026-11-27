@@ -29,12 +29,7 @@ public record AnimalSlice<T>(String name, T defaultValue, MapCodec<T> codec, Str
 
     static Set<String> fieldsOf(MapCodec<?> codec) {
         return codec.keys(NbtOps.INSTANCE)
-                //? if >=1.20.5 {
                 .map(key -> NbtOps.INSTANCE.getStringValue(key).getOrThrow())
-                //?} else {
-                /*.map(key -> NbtOps.INSTANCE.getStringValue(key).getOrThrow(false, error -> {
-                }))
-                *///?}
                 .collect(Collectors.toUnmodifiableSet());
     }
 }

@@ -120,8 +120,12 @@ tasks.named('processResources', ProcessResources) {
     }
 }
 
-// The common resources carry a pack.mcmeta too, for the newer pack formats. The one in forge/src comes first and wins.
+// The common resources carry a pack.mcmeta too, for the newer pack formats. The one in forge/src comes first and wins,
+// in the jar and in the sources jar.
 tasks.named('processResources', ProcessResources) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('sourcesJar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 

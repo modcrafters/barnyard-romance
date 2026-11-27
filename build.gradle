@@ -50,12 +50,16 @@ tasks.named('test', Test) {
     def apiJar = tasks.named('apiJar', Jar)
     dependsOn(apiJar)
     // ...and each loader's, for this Minecraft version: its API jar and its mod sources jar.
-    def loaders = ['fabric', 'neoforge', 'forge'].findAll { rootProject.findProject(":${it}:${stonecutter.current.project}") != null }
+    // Forge is left out until its loader code and native events are written (Task 4 of the 1.20.1 plan adds it back);
+    // ApiJarTest is told, so a version with no other loader skips its loader checks rather than passing them.
+    def pending = ['forge'].findAll { rootProject.findProject(":${it}:${stonecutter.current.project}") != null }
+    def loaders = ['fabric', 'neoforge'].findAll { rootProject.findProject(":${it}:${stonecutter.current.project}") != null }
     loaders.each { loader ->
         dependsOn(":${loader}:${stonecutter.current.project}:apiJar", ":${loader}:${stonecutter.current.project}:sourcesJar")
     }
     doFirst {
         systemProperty 'barnyard_romance.api_jar', apiJar.get().archiveFile.get().asFile.absolutePath
+        systemProperty 'barnyard_romance.loaders_pending', pending.join(';')
         systemProperty 'barnyard_romance.loader_jars', loaders.collect { loader ->
             def tasks = rootProject.project(":${loader}:${stonecutter.current.project}").tasks
             [loader, tasks.named('apiJar', Jar).get(), tasks.named('sourcesJar', Jar).get()]

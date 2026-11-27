@@ -10,6 +10,7 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 // The API jars other mods compile against hold the public API and nothing of the mod: the common one only the common
 // API, each loader's the common API and that loader's native events. A loader's mod sources jar carries its API too.
@@ -71,6 +72,9 @@ class ApiJarTest {
 
     private static List<LoaderJars> loaderJars() {
         String property = System.getProperty("barnyard_romance.loader_jars");
+        // A version whose only loader has no loader code yet (Forge on 1.20.1) has no loader jars to check.
+        String pending = System.getProperty("barnyard_romance.loaders_pending", "");
+        assumeFalse((property == null || property.isBlank()) && !pending.isBlank(), () -> "no loader jars yet: " + pending);
         assertTrue(property != null && !property.isBlank(), "the test task doesn't pass any loader's jars");
         return java.util.Arrays.stream(property.split(";")).map(entry -> {
             String[] parts = entry.split(java.util.regex.Pattern.quote("|"));

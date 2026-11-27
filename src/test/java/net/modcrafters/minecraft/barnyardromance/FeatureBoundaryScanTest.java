@@ -30,9 +30,15 @@ class FeatureBoundaryScanTest {
     private static final Set<String> HOOK_CLASSES = Set.of("BarnyardRomance", "BarnyardFeatures", "compat/JadeBridge");
     // Mixin accessors stay where Mixin needs them but count as core.
     private static final Set<String> CORE_CLASSES_IN_HOOK_PACKAGES = Set.of("mixin/AnimalEating",
-            "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor", "mixin/LlamaAccessor");
+            "mixin/AnimalLoveCauseAccessor", "mixin/OcelotAccessor", "mixin/MobGoalsAccessor", "mixin/LlamaAccessor",
+            "mixin/EntityRandomAccessor");
+    // 1.20.1's stand-ins for vanilla classes it doesn't have yet (versions/1.20.1/.../compat/legacy) count as core.
+    private static final String LEGACY_PACKAGE = "compat/legacy";
     // Files one version adds rather than overrides, as <version>/<path>; anything else under versions/ needs a main file.
     private static final Set<String> VERSION_ONLY = Set.of(
+            "1.20.1/mixin/EntityRandomAccessor",
+            "1.20.1/mixin/client/ChickenModelAccessor",
+            "1.20.1/mixin/client/QuadrupedModelAccessor",
             "1.21.1/mixin/client/ChickenModelAccessor",
             "1.21.1/mixin/client/QuadrupedModelAccessor",
             "26.3/mixin/client/LivingEntityRenderStateMixin",
@@ -85,6 +91,9 @@ class FeatureBoundaryScanTest {
                     continue;
                 }
                 String name = version + "/" + SourceScan.modPath(sources, file);
+                if (name.startsWith("1.20.1/" + LEGACY_PACKAGE + "/")) {
+                    continue;
+                }
                 if (VERSION_ONLY.contains(name)) {
                     versionOnly.add(name);
                 } else {
@@ -188,7 +197,7 @@ class FeatureBoundaryScanTest {
         if (HOOK_PACKAGES.contains(pkg)) {
             return Zone.HOOK;
         }
-        if (top.equals("core")) {
+        if (top.equals("core") || pkg.equals(LEGACY_PACKAGE)) {
             return Zone.CORE;
         }
         if (top.equals("api")) {
@@ -205,8 +214,16 @@ class FeatureBoundaryScanTest {
         return slash < 0 ? "unclassified class " + path + " in the root package" : "unclassified package " + path.substring(0, slash);
     }
 
+    // In the shared sources, or added by one version (an accessor only that version needs).
     private static boolean existsInMain(Path root, String old) {
-        Path main = root.resolve("src/main/java/" + MOD_PACKAGE.replace('.', '/'));
-        return Files.isDirectory(main.resolve(old)) || Files.exists(main.resolve(old + ".java"));
+        List<Path> dirs = new ArrayList<>(List.of(root.resolve("src/main/java")));
+        dirs.addAll(SourceScan.versionSources(root));
+        for (Path dir : dirs) {
+            Path main = dir.resolve(MOD_PACKAGE.replace('.', '/'));
+            if (Files.isDirectory(main.resolve(old)) || Files.exists(main.resolve(old + ".java"))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

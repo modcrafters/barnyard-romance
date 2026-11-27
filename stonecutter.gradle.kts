@@ -79,6 +79,9 @@ stonecutter parameters {
         string(current.parsed >= "1.20.5") {
             val legacy = "net.modcrafters.minecraft.barnyardromance.compat.legacy.Legacy"
             replace("ItemStack.isSameItemSameTags(", "ItemStack.isSameItemSameComponents(")
+            // DataResult.getOrThrow() came with DataFixerUpper 7; 6 takes whether to allow a partial result, and a
+            // callback for the error before it throws.
+            replace(".getOrThrow(false, error -> {})", ".getOrThrow()")
             replace(".getAbilities().instabuild/*hasInfiniteMaterials*/", ".hasInfiniteMaterials()")
             replace("$legacy.consume(stack, 1, player)", "stack.consume(1, player)")
             replace("$legacy.isPanicking(animal)", "animal.isPanicking()")
