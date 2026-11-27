@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.text.Names;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
@@ -58,7 +59,7 @@ public final class StatSheet {
         if (facts.maxHealth() > 0.0F) {
             lines.add(new StatLine(StatKind.HEALTH,
                     Text.of("gui.barnyard_romance.sheet.health", hp(facts.health()) + "/" + hp(facts.maxHealth())),
-                    Math.clamp(facts.health() / (double) facts.maxHealth(), 0.0, 1.0)));
+                    Jdk.clamp(facts.health() / (double) facts.maxHealth(), 0.0, 1.0)));
         }
         fertility(lines, facts);
         if (facts.vigour() >= 0.0) {

@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
@@ -24,7 +25,7 @@ public class FeederClientGameTest implements FabricClientGameTest {
             world.getServer().runCommand("tp @a 0.5 ~ 0.5 -90 25");
             world.getConnection().waitForClientboundPackets();
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ServerLevel level = player.level();
                 BlockPos ahead = player.blockPosition().east(3);
                 for (FeederKind kind : FeederKind.values()) {
@@ -39,7 +40,7 @@ public class FeederClientGameTest implements FabricClientGameTest {
             context.waitTicks(5);
             context.takeScreenshot("feeding_blocks");
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 BlockPos manger = player.blockPosition().east(3).south(FeederKind.MANGER.ordinal() - 2);
                 player.openMenu((FeederBlockEntity) player.level().getBlockEntity(manger));
             });

@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.familiarity;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
 import net.modcrafters.minecraft.barnyardromance.api.event.FamiliarityChange;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 
 // Every familiarity write on a loaded animal asks other mods first (the public FamiliarityChange event).
 public final class FamiliarityChanges {
@@ -29,6 +30,6 @@ public final class FamiliarityChanges {
         if (posted.after() == after) {
             return after;
         }
-        return Math.clamp(posted.after(), 0.0, Math.max(Math.max(0.0, cap), posted.before()));
+        return Jdk.clamp(posted.after(), 0.0, Math.max(Math.max(0.0, cap), posted.before()));
     }
 }

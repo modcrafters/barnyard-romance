@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -44,7 +45,7 @@ public final class Familiarity {
     }
 
     public static double gain(double familiarity, double amount) {
-        return Math.clamp(familiarity + Math.max(0.0, amount), 0.0, 1.0);
+        return Jdk.clamp(familiarity + Math.max(0.0, amount), 0.0, 1.0);
     }
 
     // Feeding times are overworld clock times (see GameDay): an animal eats once per day, and the day turns over at midnight.
@@ -110,7 +111,7 @@ public final class Familiarity {
     }
 
     public static double inherited(double mother) {
-        return Math.clamp(mother, 0.0, 1.0) / 2.0;
+        return Jdk.clamp(mother, 0.0, 1.0) / 2.0;
     }
 
     // A tamed animal below the threshold is grumpy (see FamiliarityCare), and says so next to its familiarity.

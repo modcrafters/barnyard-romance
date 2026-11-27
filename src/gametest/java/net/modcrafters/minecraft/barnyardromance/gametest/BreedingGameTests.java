@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.age.AgeController;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -287,7 +288,7 @@ public final class BreedingGameTests {
         father.setInLove(null);
         mother.spawnChildFromBreeding(helper.getLevel(), father);
 
-        Animal calf = forceBirth(helper, mother).getFirst();
+        Animal calf = Jdk.first(forceBirth(helper, mother));
 
         Lineage lineage = traits(helper, calf).lineage();
         helper.assertTrue(mother.getUUID().equals(lineage.mother()), "the calf's mother is " + lineage.mother());

@@ -6,7 +6,9 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.Items;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
@@ -121,7 +123,7 @@ public final class HerdBookGameTests {
         HerdBooks.RegisterResult result = HerdBooks.register(book, cow);
 
         helper.assertTrue(result == HerdBooks.RegisterResult.NOT_FAMILIAR, "a wild cow was " + result);
-        helper.assertTrue(book.get(HerdComponents.HERD_BOOK) == null, "a refused cow gave the book an ID");
+        helper.assertTrue(ItemData.get(book, HerdComponents.HERD_BOOK) == null, "a refused cow gave the book an ID");
         helper.succeed();
     }
 
@@ -176,7 +178,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, mother);
 
-        Animal calf = breed(helper, mother, father).getFirst();
+        Animal calf = Jdk.first(breed(helper, mother, father));
 
         HerdLedger.Node node = data(helper).ledger().node(calf.getUUID());
         helper.assertTrue(node != null && !node.everFamiliar(), "a calf at " + traits(helper, calf).get(CARE).familiarity() + " joined as familiar");
@@ -425,7 +427,7 @@ public final class HerdBookGameTests {
 
         helper.assertTrue(!HerdBooks.removeRequested(player, stranger, replies::add), "removing an animal that is not in the book worked");
 
-        helper.assertTrue(replies.size() == 1 && replies.getFirst() == book, "a failed removal sent " + replies.size() + " books back");
+        helper.assertTrue(replies.size() == 1 && Jdk.first(replies) == book, "a failed removal sent " + replies.size() + " books back");
         helper.succeed();
     }
 
@@ -724,9 +726,9 @@ public final class HerdBookGameTests {
         //?} else
         //ItemStack copy = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
         helper.assertTrue(copy.is(HerdItems.HERD_BOOK) && copy.getCount() == 1, "the copy is " + copy);
-        helper.assertTrue(bookId(helper, book).equals(copy.get(HerdComponents.HERD_BOOK)), "the copy has another ID");
+        helper.assertTrue(bookId(helper, book).equals(ItemData.get(copy, HerdComponents.HERD_BOOK)), "the copy has another ID");
         ItemStack kept = recipe.get().value().getRemainingItems(input).get(4);
-        helper.assertTrue(kept.is(HerdItems.HERD_BOOK) && bookId(helper, book).equals(kept.get(HerdComponents.HERD_BOOK)),
+        helper.assertTrue(kept.is(HerdItems.HERD_BOOK) && bookId(helper, book).equals(ItemData.get(kept, HerdComponents.HERD_BOOK)),
                 "the herd book didn't stay in the grid: " + kept);
         helper.succeed();
     }
@@ -785,7 +787,7 @@ public final class HerdBookGameTests {
     }
 
     private static UUID bookId(GameTestHelper helper, ItemStack book) {
-        UUID id = book.get(HerdComponents.HERD_BOOK);
+        UUID id = ItemData.get(book, HerdComponents.HERD_BOOK);
         if (id == null) {
             throw GameTestCompat.failure(helper, "the book has no ID");
         }

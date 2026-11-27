@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
@@ -56,7 +57,7 @@ public final class Hatching {
                     current,
                     new Parent(SizeRanges.rescale(Sex.FEMALE, data.motherScale(), laidIn, current), data.motherGrowth(), data.motherWeight()),
                     new Parent(SizeRanges.rescale(Sex.MALE, data.fatherScale(), laidIn, current), data.fatherGrowth(), data.fatherWeight()),
-                    Math.clamp(data.motherFamiliarity(), 0.0, 1.0),
+                    Jdk.clamp(data.motherFamiliarity(), 0.0, 1.0),
                     chick.getRandom(),
                     bornTick,
                     new Lineage(data.mother(), data.father())

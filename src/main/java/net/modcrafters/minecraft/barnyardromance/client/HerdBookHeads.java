@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 // 26.3 draws entities in screens from render states. On 1.21.1 the book goes without head close-ups, as designed.
 //? if >=26.1 {
 
@@ -87,7 +88,7 @@ public final class HerdBookHeads {
             scale = size * FILL / Math.max(boxWidth, boxHeight);
             translation = new Vector3f((box[0] + box[3]) / 2.0F, (box[1] + box[4]) / 2.0F, 0.0F);
         } else {
-            float head = Math.clamp(entity.getBbWidth() * 0.9F, 0.45F, 1.2F);
+            float head = Jdk.clamp(entity.getBbWidth() * 0.9F, 0.45F, 1.2F);
             scale = size / head;
             translation = new Vector3f(0.0F, entity.getEyeHeight(), 0.0F);
         }

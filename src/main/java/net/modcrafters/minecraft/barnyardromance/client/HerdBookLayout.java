@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.text.Names;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import org.jspecify.annotations.Nullable;
@@ -59,7 +60,7 @@ public final class HerdBookLayout {
         List<Folded<T>> rows = new ArrayList<>();
         for (T line : lines) {
             if (isDetail.test(line) && !rows.isEmpty()) {
-                rows.getLast().details().add(line);
+                Jdk.last(rows).details().add(line);
             } else {
                 rows.add(new Folded<>(line, new ArrayList<>()));
             }
@@ -90,7 +91,7 @@ public final class HerdBookLayout {
 
     // How many rows of a `size`-high icon are colored in, counting up from the bottom, at `percent` done.
     public static int filledRows(int percent, int size) {
-        return Math.clamp(Math.round(size * percent / 100.0F), 0, size);
+        return Jdk.clamp(Math.round(size * percent / 100.0F), 0, size);
     }
 
     // A bookmark shows its species' name whole up to 11 letters, else the first 10 and "…".

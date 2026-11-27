@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 import net.modcrafters.minecraft.barnyardromance.core.age.Aging;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -20,13 +21,13 @@ public final class Fertility {
     // Ticks from oldFrom on recover at oldFertilityFactor of the usual rate.
     public static double current(double fertility, long since, long now, long oldFrom) {
         if (since < 0L || now <= since) {
-            return Math.clamp(fertility, 0.0, 1.0);
+            return Jdk.clamp(fertility, 0.0, 1.0);
         }
         long young = Math.max(0L, Math.min(now, oldFrom) - since);
         long old = Math.max(0L, now - Math.max(since, oldFrom));
         var tuning = BarnyardConfig.current().tuning();
         double recovered = tuning.fertilityRecoveryPerDay() * (young + old * tuning.oldFertilityFactor()) / DAY_TICKS;
-        return Math.clamp(fertility + recovered, 0.0, 1.0);
+        return Jdk.clamp(fertility + recovered, 0.0, 1.0);
     }
 
     public static double current(AnimalTraits traits, AgeSettings age, long now) {

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core.age;
 
 import net.modcrafters.minecraft.barnyardromance.api.AgeStage;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 
 // Age is worked out from the birth tick and the clock, so nothing ticks and the client needs no extra sync.
@@ -37,7 +38,7 @@ public final class Aging {
         if (bornTick < 0L || age.deathAfterTicks() <= 0L) {
             return Long.MAX_VALUE;
         }
-        double factor = 1.0 + (Math.clamp(spreadRandom, 0.0, 1.0) * 2.0 - 1.0) * Math.clamp(spread, 0.0, 1.0);
+        double factor = 1.0 + (Jdk.clamp(spreadRandom, 0.0, 1.0) * 2.0 - 1.0) * Jdk.clamp(spread, 0.0, 1.0);
         return bornTick + Math.round(age.deathAfterTicks() * factor);
     }
 

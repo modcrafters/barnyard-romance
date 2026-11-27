@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.core.config;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -633,11 +634,11 @@ public final class BarnyardConfig {
     }
 
     private static double bellyMaxWiden(Double value, double fallback) {
-        return Math.clamp(value == null ? fallback : value, 0.0, 1.0);
+        return Jdk.clamp(value == null ? fallback : value, 0.0, 1.0);
     }
 
     private static double bellyStart(Double value, double fallback) {
-        return Math.clamp(value == null ? fallback : value, 0.0, MAX_BELLY_START);
+        return Jdk.clamp(value == null ? fallback : value, 0.0, MAX_BELLY_START);
     }
 
     private static String optionalString(JsonObject object, String name) {
@@ -651,11 +652,11 @@ public final class BarnyardConfig {
     }
 
     private static long ageTicks(Long value, long fallback) {
-        return Math.clamp(value == null ? fallback : value, 0L, MAX_AGE_TICKS);
+        return Jdk.clamp(value == null ? fallback : value, 0L, MAX_AGE_TICKS);
     }
 
     private static double clamp(double value, double min, double max) {
-        return Math.clamp(value, min, max);
+        return Jdk.clamp(value, min, max);
     }
 
     private record SpeciesSettings(

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.shear.api.ShearState;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
@@ -52,7 +53,7 @@ public record HerdEntry(
     public record Line(StatKind kind, Component text, float fill) {
         private static final StatKind[] KINDS = StatKind.values();
         public static final StreamCodec<RegistryFriendlyByteBuf, Line> STREAM_CODEC = StreamCodec.composite(
-                ByteBufCodecs.VAR_INT.map(i -> KINDS[Math.clamp(i, 0, KINDS.length - 1)], StatKind::ordinal), Line::kind,
+                ByteBufCodecs.VAR_INT.map(i -> KINDS[Jdk.clamp(i, 0, KINDS.length - 1)], StatKind::ordinal), Line::kind,
                 ComponentSerialization.STREAM_CODEC, Line::text,
                 ByteBufCodecs.FLOAT, Line::fill,
                 Line::new);
@@ -96,12 +97,12 @@ public record HerdEntry(
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
-                    Familiar.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, Familiar.values().length - 1)],
-                    Fed.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, Fed.values().length - 1)],
+                    Familiar.values()[Jdk.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, Familiar.values().length - 1)],
+                    Fed.values()[Jdk.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, Fed.values().length - 1)],
                     ByteBufCodecs.STRING_UTF8.decode(buf),
                     ByteBufCodecs.VAR_INT.decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
-                    ShearState.values()[Math.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, ShearState.values().length - 1)],
+                    ShearState.values()[Jdk.clamp(ByteBufCodecs.VAR_INT.decode(buf), 0, ShearState.values().length - 1)],
                     eggs(ByteBufCodecs.VAR_INT.decode(buf)),
                     ComponentSerialization.STREAM_CODEC.decode(buf),
                     OPTIONAL_UUID.decode(buf),

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.AgeSettings;
 
 public final class HornGrowth {
@@ -18,7 +19,7 @@ public final class HornGrowth {
             return 1.0;
         }
         long grownAt = bornTick + Math.max(0, growthTicks);
-        double t = Math.clamp((now - grownAt) / (double) age.youngTicks(), 0.0, 1.0);
+        double t = Jdk.clamp((now - grownAt) / (double) age.youngTicks(), 0.0, 1.0);
         return START + (1.0 - START) * t;
     }
 }

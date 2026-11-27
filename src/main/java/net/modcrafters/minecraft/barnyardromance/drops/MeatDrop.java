@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.drops;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import java.util.Set;
 
 public final class MeatDrop {
@@ -22,7 +23,7 @@ public final class MeatDrop {
 
     public static int count(double scale, double smallest, double largest, double unitRandom) {
         double span = largest - smallest;
-        double t = span <= 0.0 ? 1.0 : Math.clamp((scale - smallest) / span, 0.0, 1.0);
+        double t = span <= 0.0 ? 1.0 : Jdk.clamp((scale - smallest) / span, 0.0, 1.0);
         int min = (int) Math.round(2 + (8 - 2) * t);
         int max = (int) Math.round(3 + (9 - 3) * t);
         if (max < min) {

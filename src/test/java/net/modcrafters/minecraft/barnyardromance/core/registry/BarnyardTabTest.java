@@ -85,7 +85,8 @@ class BarnyardTabTest {
             } else {
                 Matcher matcher = add.matcher(line);
                 if (matcher.find()) {
-                    List<String> around = new ArrayList<>(blocks.reversed());
+                    List<String> around = new ArrayList<>();
+                    blocks.descendingIterator().forEachRemaining(around::add);
                     around.add(matcher.group(1));
                     adds.add(String.join(" | ", around));
                 }

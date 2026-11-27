@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.core.age.Growth;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
@@ -17,7 +18,7 @@ public final class PregnancyText {
 
     // Rounded, and never 100 while time is left: "due" says that.
     public static int percent(double progress) {
-        return Math.clamp(Math.round(progress * 100.0), 0, 99);
+        return Jdk.clamp(Math.round(progress * 100.0), 0, 99);
     }
 
     public static Text withFather(Text line, String fatherSpecies) {

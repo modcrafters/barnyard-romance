@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
@@ -43,7 +44,7 @@ public class HerdBookItem extends Item {
     //? if >=1.21.5 {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
-        UUID id = stack.get(HerdComponents.HERD_BOOK);
+        UUID id = ItemData.get(stack, HerdComponents.HERD_BOOK);
         if (id != null) {
             builder.accept(herdLine(id));
         }

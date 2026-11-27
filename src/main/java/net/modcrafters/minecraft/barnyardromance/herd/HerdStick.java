@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
@@ -38,7 +39,7 @@ public class HerdStick extends Item {
 
     public static ItemStack create(HerdTool tool) {
         ItemStack stack = new ItemStack(HerdItems.HERD_STICK);
-        stack.set(HerdComponents.HERD_TOOL, tool);
+        ItemData.set(stack, HerdComponents.HERD_TOOL, tool);
         stack.set(DataComponents.ITEM_NAME, TextComponents.of(tool.label()));
         stack.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable("item.barnyard_romance.lore.use_on_animal"))));
         return stack;
@@ -62,7 +63,7 @@ public class HerdStick extends Item {
         if (!(target instanceof Animal animal)) {
             return InteractionResult.PASS;
         }
-        HerdTool tool = stack.get(HerdComponents.HERD_TOOL);
+        HerdTool tool = ItemData.get(stack, HerdComponents.HERD_TOOL);
         if (tool == null) {
             return InteractionResult.PASS;
         }

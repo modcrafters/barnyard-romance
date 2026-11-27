@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.jspecify.annotations.Nullable;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 
 // How a species lays eggs instead of giving birth. plainEgg is the item a hen lays; null means vanilla's egg for the
 // hen's variant. Counts are eggs a day, ranges are blocks, and hatchTicks is how long a fertilized egg sits in a box.
@@ -42,12 +43,12 @@ public record EggSettings(
                 object.has("enabled") && isBoolean(object.get("enabled")) ? object.get("enabled").getAsBoolean() : fallback.enabled,
                 object.has("plainEgg") && isString(object.get("plainEgg")) ? object.get("plainEgg").getAsString() : fallback.plainEgg,
                 hatch,
-                (int) Math.clamp(whole(object, "smallPerDay", fallback.smallPerDay), 0, MAX_PER_DAY),
-                (int) Math.clamp(whole(object, "largePerDay", fallback.largePerDay), 0, MAX_PER_DAY),
-                (int) Math.clamp(whole(object, "happyBonus", fallback.happyBonus), 0, MAX_PER_DAY),
-                (int) Math.clamp(whole(object, "boxRange", fallback.boxRange), 0, MAX_RANGE),
-                (int) Math.clamp(whole(object, "roosterRange", fallback.roosterRange), 0, MAX_RANGE),
-                Math.clamp(number(object, "thrownHatchChance", fallback.thrownHatchChance), 0.0, 1.0)
+                (int) Jdk.clamp(whole(object, "smallPerDay", fallback.smallPerDay), 0, MAX_PER_DAY),
+                (int) Jdk.clamp(whole(object, "largePerDay", fallback.largePerDay), 0, MAX_PER_DAY),
+                (int) Jdk.clamp(whole(object, "happyBonus", fallback.happyBonus), 0, MAX_PER_DAY),
+                (int) Jdk.clamp(whole(object, "boxRange", fallback.boxRange), 0, MAX_RANGE),
+                (int) Jdk.clamp(whole(object, "roosterRange", fallback.roosterRange), 0, MAX_RANGE),
+                Jdk.clamp(number(object, "thrownHatchChance", fallback.thrownHatchChance), 0.0, 1.0)
         );
     }
 

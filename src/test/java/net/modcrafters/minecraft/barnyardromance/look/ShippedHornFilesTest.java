@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -82,7 +83,7 @@ class ShippedHornFilesTest {
 
         assertEquals(List.of("minecraft:goat"), goat.entities());
         assertEquals(0.8, goat.femaleChance(), 1.0e-9);
-        assertEquals(new HornAttach(List.of("head"), new Xyz(-0.5f, 0, 0)), goat.attach().getLast());
+        assertEquals(new HornAttach(List.of("head"), new Xyz(-0.5f, 0, 0)), Jdk.last(goat.attach()));
         assertTrue(goat.hide().contains(new HideRule(List.of("head", "right_horn"), null, null)));
         assertTrue(goat.hide().contains(new HideRule(List.of("head", "left_horn"), null, null)));
         for (HornPart part : goat.male()) {
@@ -97,8 +98,8 @@ class ShippedHornFilesTest {
         for (String name : List.of("cattle", "sheep", "goat", "chicken")) {
             List<HornAttach> attach = load(name).attach();
 
-            assertEquals(List.of("body", "EMF_body", "EMF_head2"), attach.getFirst().path(), name);
-            assertEquals(List.of("head"), attach.getLast().path(), name);
+            assertEquals(List.of("body", "EMF_body", "EMF_head2"), Jdk.first(attach).path(), name);
+            assertEquals(List.of("head"), Jdk.last(attach).path(), name);
         }
     }
 
@@ -118,7 +119,7 @@ class ShippedHornFilesTest {
             List<HornPart> parts = new ArrayList<>(file.male());
             parts.addAll(file.female());
             while (!parts.isEmpty()) {
-                HornPart part = parts.removeLast();
+                HornPart part = Jdk.removeLast(parts);
                 parts.addAll(part.children());
                 for (HornCube cube : part.cubes()) {
                     // A box's texture is 2 * (depth + width) wide and depth + height tall.

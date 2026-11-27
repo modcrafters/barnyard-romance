@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.neoforge.gametest;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.advancement.BarnyardAdvancements;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.gametest.AdvancementGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ApiGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
@@ -252,7 +253,7 @@ public final class NeoForgeBreedingGameTests {
 
         Pregnancy pregnancy = BreedingGameTests.pregnancy(helper, mother);
         //? if >=1.21.5 {
-        String first = pregnancy.litter().getFirst().getStringOr("id", "");
+        String first = Jdk.first(pregnancy.litter()).getStringOr("id", "");
         //?} else
         //String first = pregnancy.litter().getFirst().getString("id");
         helper.assertTrue("minecraft:cow".equals(first), "the first baby is " + first + ", not the swapped calf");

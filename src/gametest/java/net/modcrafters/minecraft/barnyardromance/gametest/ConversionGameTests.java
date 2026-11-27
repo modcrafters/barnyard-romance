@@ -9,6 +9,7 @@ import net.minecraft.world.item.Items;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Conversions;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
@@ -43,7 +44,7 @@ public final class ConversionGameTests {
         AnimalTraits before = traits(helper, mooshroom);
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, mooshroom);
-        UUID bookId = book.get(HerdComponents.HERD_BOOK);
+        UUID bookId = ItemData.get(book, HerdComponents.HERD_BOOK);
         UUID oldId = mooshroom.getUUID();
         ServerPlayer player = MockPlayers.inLevel(helper);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.SHEARS));

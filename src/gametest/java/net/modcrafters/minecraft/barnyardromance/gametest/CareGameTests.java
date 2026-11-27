@@ -1,5 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Refusable;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -458,9 +460,8 @@ public final class CareGameTests {
             GameTestCompat.setOverworldClock(helper, clock(12L) + 1_000L);
             GameTestCompat.interact(cow, player);
             HerdBookData data = HerdBookData.get(helper.getLevel().getServer());
-            entry = HerdBooks.entries(helper.getLevel().getServer(), data.ledger().books().keySet().stream()
-                            .filter(book -> data.ledger().isMember(book, cow.getUUID())).findFirst().orElseThrow(), helper.getLevel().getGameTime())
-                    .getFirst();
+            entry = Jdk.first(HerdBooks.entries(helper.getLevel().getServer(), data.ledger().books().keySet().stream()
+                    .filter(book -> data.ledger().isMember(book, cow.getUUID())).findFirst().orElseThrow(), helper.getLevel().getGameTime()));
         } finally {
             GameTestCompat.setOverworldClock(helper, before);
         }
@@ -675,7 +676,7 @@ public final class CareGameTests {
         HerdBooks.register(book, wolf);
         Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.1, -1L)));
 
-        HerdEntry entry = HerdBooks.entries(helper.getLevel().getServer(), book.get(HerdComponents.HERD_BOOK), helper.getLevel().getGameTime()).getFirst();
+        HerdEntry entry = Jdk.first(HerdBooks.entries(helper.getLevel().getServer(), ItemData.get(book, HerdComponents.HERD_BOOK), helper.getLevel().getGameTime()));
 
         helper.assertTrue(entry.lines().stream().anyMatch(line -> line.text().getContents().toString().contains("herd_book.grumpy")),
                 "the book doesn't say the wolf is grumpy: " + entry.lines());

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
 import net.modcrafters.minecraft.barnyardromance.core.ServerScoped;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
 import net.minecraft.core.BlockPos;
@@ -228,7 +229,7 @@ public final class Escapes {
         for (int i = 0; i < RINGS.length; i++) {
             rings.add(ring(animal, level, RINGS[i], i == RINGS.length - 1 ? FAR_SAMPLES : SAMPLES));
         }
-        List<BlockPos> far = rings.getLast();
+        List<BlockPos> far = Jdk.last(rings);
         int start = far.isEmpty() ? 0 : animal.getRandom().nextInt(far.size());
         for (int i = 0; i < far.size(); i++) {
             BlockPos spot = far.get((start + i) % far.size());

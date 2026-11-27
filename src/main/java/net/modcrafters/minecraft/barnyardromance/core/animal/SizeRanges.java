@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.core.animal;
 
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +23,7 @@ public final class SizeRanges {
     // or a broken one from a corrupt save (negative or NaN), puts it at the base.
     public static double rescale(Sex sex, double scale, SizeSettings from, SizeSettings to) {
         double offset = !(from.variation() > 0.0) ? 0.0 : (scale - base(sex, from)) * (to.variation() / from.variation());
-        return Math.clamp(base(sex, to) + offset, MIN_SCALE, MAX_SCALE);
+        return Jdk.clamp(base(sex, to) + offset, MIN_SCALE, MAX_SCALE);
     }
 
     // The traits moved into the current range. Traits with no range are taken to be in it already.

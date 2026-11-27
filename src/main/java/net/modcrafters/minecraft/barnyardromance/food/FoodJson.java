@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.food.api.FoodEffects;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -33,7 +34,7 @@ public final class FoodJson {
         List<DietEntry> eats = new ArrayList<>();
         for (JsonElement entry : list(object, "eats")) {
             JsonObject eat = object(entry, "eats entry");
-            eats.add(new DietEntry(items(eat), Math.clamp(number(eat, "factor", 1.0), 0.0, MAX_FACTOR)));
+            eats.add(new DietEntry(items(eat), Jdk.clamp(number(eat, "factor", 1.0), 0.0, MAX_FACTOR)));
         }
         return new Diet(ids(object, "species"), eats, matches(list(object, "refuses")));
     }
@@ -59,18 +60,18 @@ public final class FoodJson {
         if (object.has("pregnancySpeed")) {
             JsonObject speedObject = object(object.get("pregnancySpeed"), "pregnancySpeed");
             speed = Optional.of(new FoodEffects.PregnancySpeed(
-                    Math.clamp(number(speedObject, "factor", 2.0), MIN_SPEED, MAX_SPEED),
-                    Math.clamp(Math.round(number(speedObject, "ticks", 24_000.0)), 1L, MAX_SPEED_TICKS)
+                    Jdk.clamp(number(speedObject, "factor", 2.0), MIN_SPEED, MAX_SPEED),
+                    Jdk.clamp(Math.round(number(speedObject, "ticks", 24_000.0)), 1L, MAX_SPEED_TICKS)
             ));
         }
         return new FoodEffects(
-                optional(object, "familiarity").map(value -> Math.clamp(value, 0.0, 1.0)),
-                optional(object, "heal").map(value -> Math.clamp(value, 0.0, MAX_HEAL)),
+                optional(object, "familiarity").map(value -> Jdk.clamp(value, 0.0, 1.0)),
+                optional(object, "heal").map(value -> Jdk.clamp(value, 0.0, MAX_HEAL)),
                 speed,
-                Math.clamp(number(object, "pregnancyProgress", 0.0), -1.0, 1.0),
-                Math.clamp(number(object, "babyImprove", 0.0), 0.0, 1.0),
+                Jdk.clamp(number(object, "pregnancyProgress", 0.0), -1.0, 1.0),
+                Jdk.clamp(number(object, "babyImprove", 0.0), 0.0, 1.0),
                 object.has("startsMilk") && bool(object.get("startsMilk"), "startsMilk"),
-                Math.clamp(number(object, "vigour", 0.0), 0.0, 1.0)
+                Jdk.clamp(number(object, "vigour", 0.0), 0.0, 1.0)
         );
     }
 

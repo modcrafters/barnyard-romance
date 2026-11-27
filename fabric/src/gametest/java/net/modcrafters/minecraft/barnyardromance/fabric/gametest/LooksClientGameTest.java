@@ -3,6 +3,7 @@ package net.modcrafters.minecraft.barnyardromance.fabric.gametest;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.look.HornRoll;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -140,7 +141,7 @@ public class LooksClientGameTest implements FabricClientGameTest {
         world.getServer().runCommand("tp @a 0.5 ~ 0.5 -90 12");
         world.getConnection().waitForClientboundPackets();
         List<UUID> ids = world.getServer().computeOnServer(server -> {
-            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
             ServerLevel level = player.level();
             List<UUID> spawned = new ArrayList<>();
             for (int index = 0; index < specs.size(); index++) {

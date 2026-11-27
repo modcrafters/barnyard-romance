@@ -9,6 +9,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -452,7 +453,7 @@ public final class ApiGameTests {
     public static void aWildEggHatchesWithNoParents(GameTestHelper helper) {
         NestingBoxBlockEntity box = EggGameTests.box(helper, EggGameTests.BOX);
         ItemStack wild = WildEggs.taint(FertilizedEggItem.create(EggGameTests.eggData(EggGameTests.largeHen(), 1.2, 1_000L)));
-        wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
+        ItemData.set(wild, EggsComponents.WILD_EGG, ItemData.get(wild, EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
         EggGameTests.onceHatched(helper, chick -> {

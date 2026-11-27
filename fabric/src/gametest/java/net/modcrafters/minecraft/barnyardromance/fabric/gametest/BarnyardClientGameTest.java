@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.creativetab.v1.FabricCreativeModeInventory
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles;
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
@@ -89,7 +90,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
     // The superfood and milk bucket textures in the hotbar, to catch a missing texture.
     private static void superfoods(ClientGameTestContext context, TestSingleplayerContext world) {
         world.getServer().runOnServer(server -> {
-            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
             player.getInventory().setItem(0, new ItemStack(PregnancyItems.BREEDERS_MASH, 2));
             player.getInventory().setItem(1, new ItemStack(PregnancyItems.GOLDEN_BRAN, 2));
             player.getInventory().setItem(2, new ItemStack(MilkItems.SHEEP_MILK_BUCKET));
@@ -121,7 +122,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
     private static void sneakCard(ClientGameTestContext context, TestSingleplayerContext world, long now) {
         world.getServer().runCommand("tp @a ~ ~ ~ -90 8");
         UUID id = world.getServer().computeOnServer(server -> {
-            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
             Animal cow = EntityTypes.COW.create(player.level(), EntitySpawnReason.COMMAND);
             cow.snapTo(player.getX() + 3.0, player.getY(), player.getZ(), 90.0F, 0.0F);
             cow.setNoAi(true);
@@ -150,7 +151,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
     private static void oldHearts(ClientGameTestContext context, TestSingleplayerContext world, long now) {
         world.getServer().runCommand("tp @a ~ ~ ~ -75 5");
         UUID id = world.getServer().computeOnServer(server -> {
-            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
             Animal cow = EntityTypes.COW.create(player.level(), EntitySpawnReason.COMMAND);
             cow.snapTo(player.getX() + 5.0, player.getY(), player.getZ(), 90.0F, 0.0F);
             cow.setNoAi(true);
@@ -199,7 +200,7 @@ public class BarnyardClientGameTest implements FabricClientGameTest {
             boolean pregnant
     ) {
         UUID id = world.getServer().computeOnServer(server -> {
-            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
             ServerLevel level = player.level();
             Animal cow = type.create(level, EntitySpawnReason.COMMAND);
             AttributeInstance maxHealth = cow.getAttribute(Attributes.MAX_HEALTH);

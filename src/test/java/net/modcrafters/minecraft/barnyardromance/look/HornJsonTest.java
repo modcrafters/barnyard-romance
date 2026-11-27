@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.look;
 
 import org.junit.jupiter.api.Test;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,14 +75,14 @@ class HornJsonTest {
 
     @Test
     void attachPathsAreSplitOnSlashes() {
-        assertEquals(List.of("body", "neck", "head"), minimal(", \"attach\": \"body/neck/head\"").attach().getFirst().path());
+        assertEquals(List.of("body", "neck", "head"), Jdk.first(minimal(", \"attach\": \"body/neck/head\"").attach()).path());
     }
 
     @Test
     void readsOffsetAndHideFrom() {
         HornFile file = minimal(", \"offset\": [-0.5, 0, 0], \"hide\": [{\"part\": \"head\", \"size\": [1, 2, 1], \"from\": [3, -5.5, -4]}]");
 
-        assertEquals(new Xyz(-0.5f, 0, 0), file.attach().getFirst().offset());
+        assertEquals(new Xyz(-0.5f, 0, 0), Jdk.first(file.attach()).offset());
         assertEquals(new Xyz(3, -5.5f, -4), file.hide().get(0).from());
     }
 

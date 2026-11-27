@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggLaying;
@@ -249,7 +250,7 @@ public final class UntitledDuckModGameTests {
         List<Animal> released = helper.getLevel().getEntitiesOfClass(Animal.class, new AABB(floor).inflate(2.0, 3.0, 2.0),
                 animal -> animal.getType() == type(helper, DUCK));
         helper.assertTrue(released.size() == 1, "the sack released " + released.size() + " ducks");
-        AnimalTraits after = traits(helper, released.getFirst());
+        AnimalTraits after = traits(helper, Jdk.first(released));
         helper.assertTrue(after.sex() == before.sex(), "the duck's sex went from " + before.sex() + " to " + after.sex());
         helper.assertTrue(after.scale() == before.scale(), "the duck's scale went from " + before.scale() + " to " + after.scale());
         helper.assertTrue(after.get(CARE).familiarity() == before.get(CARE).familiarity(), "the duck's familiarity went from "

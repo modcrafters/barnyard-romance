@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import org.junit.jupiter.api.Test;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,7 +17,7 @@ class EggScheduleTest {
 
         assertEquals(3, times.size());
         assertSortedWithin(times, 6_000, 18_000);
-        assertEquals(12_000, times.getFirst());
+        assertEquals(12_000, Jdk.first(times));
     }
 
     @Test

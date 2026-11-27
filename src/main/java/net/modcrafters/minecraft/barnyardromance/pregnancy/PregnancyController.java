@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.SkippedTime;
 import net.modcrafters.minecraft.barnyardromance.advancement.api.AdvancementsApi;
@@ -225,7 +226,7 @@ public final class PregnancyController {
         int motherGrowth = motherTraits == null ? Growth.wild() : motherTraits.growthTicks();
         double motherWeight = motherTraits == null ? 0.5 : motherTraits.weight();
         // Superfoods like golden bran feed the litter on top of how well the mother knew her keeper.
-        double nutrition = Math.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
+        double nutrition = Jdk.clamp(pregnancy.motherFamiliarity() + pregnancy.care().nutritionBonus(), 0.0, 1.0);
         // The father's scale is moved from the range it was set in at conception to his species' range now.
         double fatherScale = SizeRanges.rescale(Sex.MALE, pregnancy.fatherScale(),
                 SizeRanges.orCurrent(pregnancy.fatherSizeRange(), pregnancy.fatherSpecies()), config.sizeFor(pregnancy.fatherSpecies()));

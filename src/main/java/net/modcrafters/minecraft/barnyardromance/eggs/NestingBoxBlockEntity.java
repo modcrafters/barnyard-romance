@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -148,7 +150,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         if (eggs.isEmpty() || occupant != null || !(level instanceof ServerLevel server) || !LayInNestGoal.walks(hen)) {
             return false;
         }
-        int slot = canPlaceEgg(eggs.getFirst());
+        int slot = canPlaceEgg(Jdk.first(eggs));
         if (slot < 0) {
             return false;
         }
@@ -294,11 +296,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
                 if (Hatching.hatch(server, left, box.exitPos(), now - overdue).isPresent()) {
                     box.items.set(slot, ItemStack.EMPTY);
                 } else {
-                    egg.set(EggsComponents.EGG_DATA, left);
+                    ItemData.set(egg, EggsComponents.EGG_DATA, left);
                     box.stuck.add(egg);
                 }
             } else if (counting || stamped) {
-                egg.set(EggsComponents.EGG_DATA, left);
+                ItemData.set(egg, EggsComponents.EGG_DATA, left);
             }
             box.setChanged();
         }
@@ -310,7 +312,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             setChanged();
             return;
         }
-        WildEgg wild = egg.get(EggsComponents.WILD_EGG);
+        WildEgg wild = ItemData.get(egg, EggsComponents.WILD_EGG);
         if (wild == null || elapsed <= 0L && wild.remainingTicks() > 0L) {
             return;
         }
@@ -323,11 +325,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             if (Hatching.hatchWild(server, left, exitPos(), now - overdue).isPresent()) {
                 items.set(slot, ItemStack.EMPTY);
             } else {
-                egg.set(EggsComponents.WILD_EGG, left);
+                ItemData.set(egg, EggsComponents.WILD_EGG, left);
                 stuck.add(egg);
             }
         } else {
-            egg.set(EggsComponents.WILD_EGG, left);
+            ItemData.set(egg, EggsComponents.WILD_EGG, left);
         }
         setChanged();
     }
