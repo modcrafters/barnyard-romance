@@ -315,9 +315,9 @@ repositories {
 
 dependencies {
     // NeoForge: barnyard_romance-api-neoforge-26.3 or barnyard_romance-api-neoforge-1.21.1
-    compileOnly "net.modcrafters.minecraft:barnyard_romance-api-neoforge-26.3:<version>"
+    compileOnly "net.modcrafters.minecraft.barnyardromance:barnyard_romance-api-neoforge-26.3:<version>"
     // Fabric: barnyard_romance-api-fabric-26.3
-    compileOnly "net.modcrafters.minecraft:barnyard_romance-api-fabric-26.3:<version>"
+    compileOnly "net.modcrafters.minecraft.barnyardromance:barnyard_romance-api-fabric-26.3:<version>"
 }
 ```
 

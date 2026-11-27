@@ -8,6 +8,10 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+### API
+
+- The API jars' maven group is now `net.modcrafters.minecraft.barnyardromance`, so they sit in a folder of their own: `net.modcrafters.minecraft.barnyardromance:barnyard_romance-api-<loader>-<mc>:<version>`.
+
 ## 0.0.6
 
 - Pails: a Wooden, Copper and Iron Pail hold 2000, 3000 and 5000 ml of one fluid, crafted with a stick above a V of planks, copper ingots or iron ingots. A pail's tooltip names what it holds and its fill bar takes the milk's colour.
