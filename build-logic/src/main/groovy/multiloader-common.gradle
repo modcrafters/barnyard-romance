@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-// Version projects sit at :<mc> for the common code and :<loader>:<mc> for fabric and neoforge.
+// Version projects sit at :<mc> for the common code and :<loader>:<mc> for fabric, neoforge and forge.
 def loaderName = project.parent == rootProject ? 'common' : project.parent.name
 // The common project for this Minecraft version, e.g. :26.3 for :fabric:26.3.
 def commonProject = loaderName == 'common' ? project : rootProject.project(":${project.name}")
@@ -110,6 +110,9 @@ tasks.withType(ProcessResources).configureEach {
             'mod_id'                       : mod_id,
             'license'                      : license,
             'description'                  : project.description,
+            'forge_version'                : findProperty('forge_version') ?: '',
+            'forge_version_range'          : findProperty('forge_version_range') ?: '',
+            'forge_loader_version_range'   : findProperty('forge_loader_version_range') ?: '',
             'neoforge_version'             : findProperty('neoforge_version') ?: '',
             'neoforge_loader_version_range': findProperty('neoforge_loader_version_range') ?: '',
             'credits'                      : credits,

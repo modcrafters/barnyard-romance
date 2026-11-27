@@ -4,13 +4,15 @@ plugins {
     id("net.fabricmc.fabric-loom") version "1.18.1" apply false
     // see https://projects.neoforged.net/neoforged/moddevgradle for new versions
     id("net.neoforged.moddev") version "2.0.147" apply false
+    // The same plugin for Forge 1.20.1, which NeoForm doesn't cover: it runs Forge and plain Minecraft through MCP.
+    id("net.neoforged.moddev.legacyforge") version "2.0.147" apply false
 }
 
 stonecutter active "26.3"
 
-// Lets code check the loader with `//? if fabric` or `//? if neoforge`.
+// Lets code check the loader with `//? if fabric`, `//? if neoforge` or `//? if forge`.
 stonecutter parameters {
-    constants.match(branch.id.ifEmpty { "common" }, "common", "fabric", "neoforge")
+    constants.match(branch.id.ifEmpty { "common" }, "common", "fabric", "neoforge", "forge")
 
     // The source is written for 26.3; older versions get the old names back. Each replacement turns the
     // first name into the second at and after its version, and back again before it. The version thresholds

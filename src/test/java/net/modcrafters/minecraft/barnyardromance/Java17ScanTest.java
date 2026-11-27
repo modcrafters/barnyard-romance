@@ -93,6 +93,7 @@ class Java17ScanTest {
     void theScannedFoldersExist() {
         Path root = SourceScan.repoRoot();
         assertTrue(Files.isDirectory(root.resolve("src/main/java")) && Files.isDirectory(root.resolve("src/gametest/java"))
-                && Files.isDirectory(root.resolve("fabric/src")) && Files.isDirectory(root.resolve("neoforge/src")));
+                && Files.isDirectory(root.resolve("fabric/src")) && Files.isDirectory(root.resolve("neoforge/src"))
+                && Files.isDirectory(root.resolve("forge/src")));
     }
 }

@@ -1,0 +1,116 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev.legacyforge'
+}
+
+// The Naturalist and farm-mods compat runs aren't wired for Forge yet.
+apply from: rootProject.file('gradle/jade-runs.gradle')
+apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // The common sources are compiled again here, compat/jade with them. Optional: nothing ships with Jade or needs it.
+    // Jade is published with SRG names, so it goes through the remapping configuration.
+    modCompileOnly "maven.modrinth:jade:${jade_loader_version}"
+    // Forge 1.20.1 doesn't bundle MixinExtras (NeoForge does): the mod brings its own, inside its jar.
+    compileOnly(annotationProcessor('io.github.llamalad7:mixinextras-common:0.5.3'))
+    jarJar('io.github.llamalad7:mixinextras-forge:0.5.3')
+    implementation('io.github.llamalad7:mixinextras-forge:0.5.3')
+    // Forge's Mixin refmaps: the annotation processor writes barnyard_romance.refmap.json (see the mixin block below).
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+// Mixin configs load from the jar's manifest on Forge 1.20.1.
+tasks.named('jar', Jar) {
+    manifest.attributes('MixinConfigs': "${mod_id}.mixins.json")
+}
+
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+    // Automatically enable AccessTransformers if the file exists
+    def at = rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+            // The public API and its Forge events load as part of the mod.
+            sourceSet sourceSets.api
+        }
+        // The game test mod, built from src/gametest. It never goes in the jar.
+        "${mod_id}_gametest" {
+            sourceSet sourceSets.gametest
+        }
+    }
+    runs {
+        configureEach {
+            // Only the game test runs load the game test mod, below.
+            loadedMods = [legacyForge.mods.named(mod_id).get()]
+            systemProperty('forge.enabledGameTestNamespaces', mod_id)
+            ideName = "Forge ${it.name.capitalize()} (${project.path})" // Unify the run config names with fabric
+        }
+        client {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        server {
+            server()
+            this.file('runs/server').createParentDirectories()
+            gameDirectory = this.mkdir(this.file('runs/server'))
+        }
+        gameTestServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.gametest
+            loadedMods = [legacyForge.mods.named(mod_id).get(), legacyForge.mods.named("${mod_id}_gametest").get()]
+            gameDirectory = this.mkdir(this.file('runs/gametest'))
+        }
+    }
+}
+
+// The refmap the annotation processor writes for the common mixins, which the mod's main source set compiles.
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
+}
+
+// Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
+// midnight partway through and hunger or Vigour refills would hit unrelated tests.
+['gameTestServer': 'runs/gametest'].each { runName, runDir ->
+    def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
+        description = "Deletes the ${runDir} world so the run starts fresh."
+        delete file("${runDir}/world")
+    }
+    legacyForge.runs.named(runName) { it.taskBefore(clean) }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named(variant) {
+        attributes {
+            attribute(loaderAttribute, 'forge')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName, it.getTaskName(null, 'jarJar')].each { variant ->
+        configurations.named(variant) {
+            attributes {
+                attribute(loaderAttribute, 'forge')
+            }
+        }
+    }
+}
+
+// The common resources carry a pack.mcmeta too, for the newer pack formats. The one in forge/src comes first and wins.
+tasks.named('processResources', ProcessResources) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
