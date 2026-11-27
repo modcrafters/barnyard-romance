@@ -12,9 +12,6 @@ import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.Map;
-//? if <1.20.5 {
-/*import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
-*///?}
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class AnimalSex {
@@ -36,8 +33,9 @@ public final class AnimalSex {
         AttributeInstance attribute = animal.getAttribute(Attributes.SCALE);
         return attribute == null ? 1.0 : attribute.getBaseValue();
         //?} else {
-        /*// 1.20.1 has no scale attribute: the body stays vanilla-sized, and the size is what the traits keep.
-        return Services.DATA.get(animal).map(AnimalTraits::scale).orElse(1.0);
+        /*// 1.20.1 has no scale attribute, so this is what TraitSetup would set it to: the size for a tracked adult,
+        // and 1.0 for a baby, an animal without traits or a species that is switched off.
+        return Tracked.traits(animal).map(traits -> animal.isBaby() ? 1.0 : traits.scale()).orElse(1.0);
         *///?}
     }
 
