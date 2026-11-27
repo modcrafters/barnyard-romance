@@ -120,6 +120,13 @@ legacyForge {
             gameTest(it, 'runs/farm-mods-gametest')
             systemProperty('barnyard_romance.expect_mods', farmModIds)
         }
+        // Our horns on Fresh Animations' models, see gradle/fresh-animations-runs.gradle.
+        clientFreshAnimations {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/fresh-animations-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
     }
 }
 
@@ -129,6 +136,7 @@ legacyForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestSe
 legacyForge.runs.clientFarmMods.taskBefore(farmModsInRun('clientFarmMods', 'runs/farm-mods-client'))
 legacyForge.runs.gameTestServerFarmMods.taskBefore(farmModsInRun('gameTestServerFarmMods', 'runs/farm-mods-gametest'))
 legacyForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
+freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client').each { legacyForge.runs.clientFreshAnimations.taskBefore(it) }
 
 // The refmap the annotation processor writes for the common and Forge mixins, which the mod's main source set compiles.
 // The configs are named here for the dev runs, which load the mod from its folders rather than a jar with a manifest.

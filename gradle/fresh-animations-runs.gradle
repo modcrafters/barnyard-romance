@@ -18,9 +18,12 @@ configurations {
     }
 }
 
+// The two mods are remapped first on Forge 1.20.1 (see gradle/modrinth-maven.gradle); the pack has no code.
+def freshAnimationsModsSource = runModsSource(configurations.freshAnimationsMods)
+
 dependencies {
-    freshAnimationsMods "maven.modrinth:entitytexturefeatures:${etf_loader_version}"
-    freshAnimationsMods "maven.modrinth:entity-model-features:${emf_loader_version}"
+    add(freshAnimationsModsSource, "maven.modrinth:entitytexturefeatures:${etf_loader_version}")
+    add(freshAnimationsModsSource, "maven.modrinth:entity-model-features:${emf_loader_version}")
     freshAnimationsPack "maven.modrinth:fresh-animations:${fresh_animations_version}@zip"
 }
 
@@ -35,6 +38,8 @@ ext.freshAnimationsInRun = { String runName, String gameDirectory ->
         description = "Copies Entity Texture Features and Entity Model Features to ${gameDirectory}/mods."
         from configurations.freshAnimationsMods
         into file("${gameDirectory}/mods")
+        // Both have no refmap on Forge 1.20.1 (see gradle/modrinth-maven.gradle).
+        doLast { devMixinNames(destinationDir) }
     }
     def pack = tasks.register("copy${runName.capitalize()}Pack", Copy) {
         group = 'fresh animations'
