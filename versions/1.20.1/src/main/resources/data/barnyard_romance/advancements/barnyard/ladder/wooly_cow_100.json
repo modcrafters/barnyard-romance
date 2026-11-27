@@ -19,7 +19,7 @@
     },
     "frame": "challenge",
     "icon": {
-      "item": "meadow:highland_wooly_cow_spawn_egg"
+      "item": "meadow:wooly_cow_spawn_egg"
     },
     "title": {
       "translate": "advancements.barnyard_romance.ladder.wooly_cow_100.title"
