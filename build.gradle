@@ -62,6 +62,16 @@ tasks.named('test', Test) {
                     .collect { it instanceof Jar ? it.archiveFile.get().asFile.absolutePath : it }.join('|')
         }.join(';')
     }
+    // SrgMixinNamesTest (1.20.1) reads the Forge jar that ships, reobfJar's, and the SRG mapping it was remapped with.
+    def forge = rootProject.findProject(":forge:${stonecutter.current.project}")
+    if (legacy && forge != null) {
+        dependsOn(":forge:${stonecutter.current.project}:reobfJar")
+        doFirst {
+            systemProperty 'barnyard_romance.forge_mod_jar', forge.tasks.named('reobfJar', Jar).get().archiveFile.get().asFile.absolutePath
+            systemProperty 'barnyard_romance.srg_mappings',
+                    new File(forge.obfuscation.srgToNamedMappings.get().asFile.parentFile, 'intermediateToNamed.srg').absolutePath
+        }
+    }
 }
 
 // The save fixture tests (saves/SaveFixturesTest) read and write NBT with the real codecs, so unit tests see
