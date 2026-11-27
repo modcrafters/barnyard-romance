@@ -7,7 +7,7 @@ plugins {
 // version, so Stonecutter only ever turns another version's names into 1.20.1's here, which leaves 1.20.1 code as it is,
 // and switching to 1.21.1 or 26.3 doesn't touch the folder at all.
 
-// The Naturalist and farm-mods compat runs aren't wired for Forge yet.
+apply from: rootProject.file('gradle/naturalist-runs.gradle')
 apply from: rootProject.file('gradle/jade-runs.gradle')
 apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
 
@@ -97,10 +97,23 @@ legacyForge {
         gameTestServer {
             gameTest(it, 'runs/gametest')
         }
+        // Compatibility testing with Naturalist, see gradle/naturalist-runs.gradle.
+        clientNaturalist {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/naturalist-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        gameTestServerNaturalist {
+            gameTest(it, 'runs/naturalist-gametest')
+            systemProperty('barnyard_romance.expect_naturalist', 'true')
+        }
     }
 }
 
 // taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
+legacyForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
+legacyForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
 legacyForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
 
 // The refmap the annotation processor writes for the common and Forge mixins, which the mod's main source set compiles.
@@ -111,7 +124,7 @@ mixin {
 }
 
 // Every game test run and its game folder. Each gets the two tasks below.
-def gameTestRuns = ['gameTestServer': 'runs/gametest']
+def gameTestRuns = ['gameTestServer': 'runs/gametest', 'gameTestServerNaturalist': 'runs/naturalist-gametest']
 
 // Forge 1.20.1 starts its game test server on a dedicated server's settings (server.properties), not the flat world
 // vanilla's game test server makes, so the tests would stand at y -60 in a normal world, among its caves, lava and water.
