@@ -324,7 +324,7 @@ public class HerdBookScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         drawBook(graphics, mouseX, mouseY);
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
@@ -334,6 +334,16 @@ public class HerdBookScreen extends Screen {
 
     @Override
     public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        drawBook(graphics, mouseX, mouseY);
+    }
+    *///?} else {
+    /*// A screen draws its own background here, before its widgets.
+    @Override
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        drawBookmarkTabs(graphics, mouseX, mouseY);
+        graphics.blit(BOOK, left(), top(), 0, 0, SIZE, SIZE);
         super.render(graphics, mouseX, mouseY, partialTick);
         drawBook(graphics, mouseX, mouseY);
     }
@@ -358,11 +368,19 @@ public class HerdBookScreen extends Screen {
     *///?}
 
     // The wheel turns pages like the arrows: down for the next page or animal, up for the one before.
+    //? if >=1.20.5 {
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         if (scrollY == 0.0) {
             return super.mouseScrolled(x, y, scrollX, scrollY);
         }
+    //?} else {
+    /*@Override
+    public boolean mouseScrolled(double x, double y, double scrollY) {
+        if (scrollY == 0.0) {
+            return super.mouseScrolled(x, y, scrollY);
+        }
+    *///?}
         int turns = this.wheel.scroll(scrollY);
         for (int i = 0; i < turns; i++) {
             back();
@@ -510,8 +528,8 @@ public class HerdBookScreen extends Screen {
         for (TabBox box : boxes) {
             String state = box.species().equals(this.species) ? "bookmark_selected" : box == hovered ? "bookmark_highlighted" : "bookmark";
             String side = box.side() == HerdBookLayout.Side.LEFT ? "_left" : "_right";
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/" + state + side),
-                    box.x0(), box.y(), box.x1() - box.x0(), TAB_HEIGHT);
+            Identifier sprite = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/" + state + side);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, box.x0(), box.y(), box.x1() - box.x0(), TAB_HEIGHT);
         }
     }
 
