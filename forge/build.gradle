@@ -23,7 +23,8 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
-// Mixin configs load from the jar's manifest on Forge 1.20.1.
+// Mixin configs load from the jar's manifest on Forge 1.20.1. The shippable jar is reobfJar's, which remaps this one
+// (kept in build/devlibs) to SRG names.
 tasks.named('jar', Jar) {
     manifest.attributes('MixinConfigs': "${mod_id}.mixins.json")
 }
@@ -110,7 +111,22 @@ sourceSets.configureEach {
     }
 }
 
+// ModDevGradle's mixin block only points the annotation processor at the refmap file and adds that file to the jar; it
+// doesn't write the "refmap" key into the config. NeoForge and Fabric configs don't have one (their runtimes map names
+// themselves), so the shared barnyard_romance.mixins.json stays as it is and only this build's copy gets the key.
+tasks.named('processResources', ProcessResources) {
+    filesMatching("${mod_id}.mixins.json") {
+        filter { line -> line == '{' ? '{\n  "refmap": "' + mod_id + '.refmap.json",' : line }
+    }
+}
+
 // The common resources carry a pack.mcmeta too, for the newer pack formats. The one in forge/src comes first and wins.
 tasks.named('processResources', ProcessResources) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// The jar task makes the dev jar (Mojang names); reobfJar's SRG-named jar is the one that runs in production, so that is
+// what goes on the maven as <loader>-<mc>.
+publishing.publications.named('mod', MavenPublication) {
+    setArtifacts([tasks.named('reobfJar'), tasks.named('sourcesJar')])
 }

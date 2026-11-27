@@ -238,7 +238,12 @@ jobs:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-        run: ./gradlew publishApiPublicationToReleaseRepository publishModPublicationToReleaseRepository
+        # Minecraft 1.20.1 (Forge) is left out until its code compiles; Task 11 of the 1.20.1 plan adds it back.
+        run: >-
+          ./gradlew publishApiPublicationToReleaseRepository publishModPublicationToReleaseRepository
+          -x :1.20.1:publishApiPublicationToReleaseRepository
+          -x :forge:1.20.1:publishApiPublicationToReleaseRepository
+          -x :forge:1.20.1:publishModPublicationToReleaseRepository
 
   bump:
     name: Next version
