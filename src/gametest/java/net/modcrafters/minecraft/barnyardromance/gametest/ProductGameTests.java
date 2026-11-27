@@ -661,16 +661,21 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
-    // Taming sets a wolf's health to 40; a big male gets his full 60, and keeps it through a save and load.
+    // Taming sets a wolf's health to 40 (20 before 1.20.5); a big male gets his full 60 (30), and keeps it through a
+    // save and load.
     public static void bigTamedWolvesKeepTheirHealth(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) sized(helper, BreedingGameTests.male(helper, EntityTypes.WOLF), 1.3);
+        //? if >=1.20.5 {
+        double full = 60.0;
+        //?} else
+        //double full = 30.0;
 
         wolf.tame(FoodGameTests.holding(helper, Items.BONE));
 
-        assertNear(helper, "the tamed male's max health", wolf.getMaxHealth(), 60.0);
-        assertNear(helper, "the tamed male's health", wolf.getHealth(), 60.0);
+        assertNear(helper, "the tamed male's max health", wolf.getMaxHealth(), full);
+        assertNear(helper, "the tamed male's health", wolf.getHealth(), full);
         TamableAnimal loaded = GameTestCompat.reloaded(helper, wolf);
-        assertNear(helper, "the reloaded male's health", loaded.getHealth(), 60.0);
+        assertNear(helper, "the reloaded male's health", loaded.getHealth(), full);
         assertNear(helper, "the reloaded male's bite", loaded.getAttributeValue(Attributes.ATTACK_DAMAGE), 8.0);
         helper.succeed();
     }

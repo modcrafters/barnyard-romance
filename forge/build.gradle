@@ -81,8 +81,10 @@ legacyForge {
             sourceSet = sourceSets.gametest
             loadedMods = [legacyForge.mods.named(mod_id).get(), legacyForge.mods.named("${mod_id}_gametest").get()]
             gameDirectory = this.mkdir(this.file('runs/gametest'))
-            // The game test mod's own mixins. A dev run names its mixin configs on the command line (see below).
-            programArguments.addAll '--mixin.config', "${mod_id}_gametest_forge.mixins.json"
+            // The game test mod's mixins: the shared ones (src/gametest) and Forge's own. A dev run names its mixin
+            // configs on the command line (see below); NeoForge and Fabric list them in the game test mod's metadata.
+            programArguments.addAll '--mixin.config', "${mod_id}_gametest.mixins.json",
+                    '--mixin.config', "${mod_id}_gametest_forge.mixins.json"
         }
     }
 }
@@ -103,6 +105,23 @@ mixin {
     }
     legacyForge.runs.named(runName) { it.taskBefore(clean) }
 }
+
+// Forge 1.20.1 starts its game test server on a dedicated server's settings (server.properties), not the flat world
+// vanilla's game test server makes, so the tests would stand at y -60 in a normal world, among its caves, lava and water.
+// These are the newer versions' game test world: flat, without structures, creative, on normal difficulty. The game
+// test mod sets the game rules (BarnyardRomanceGameTestsForge).
+def gameTestServerProperties = file('runs/gametest/server.properties')
+def writeGameTestServerProperties = tasks.register('writeGameTestServerProperties') {
+    description = 'Writes the game test server\'s world settings.'
+    outputs.file(gameTestServerProperties)
+    doLast {
+        gameTestServerProperties.parentFile.mkdirs()
+        gameTestServerProperties.text = ['level-type=minecraft\\:flat', 'generate-structures=false', 'gamemode=creative',
+                                         'difficulty=normal', 'spawn-monsters=false', 'spawn-animals=false', 'spawn-npcs=false']
+                .join('\n') + '\n'
+    }
+}
+legacyForge.runs.named('gameTestServer') { it.taskBefore(writeGameTestServerProperties) }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 

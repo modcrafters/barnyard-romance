@@ -31,7 +31,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.List;
@@ -542,10 +541,10 @@ public final class BreedingGameTests {
         return young;
     }
 
+    // The scale attribute where there is one; 1.20.1 has none, and there it's the size the body would take.
     private static void assertBodyScale(GameTestHelper helper, Animal animal, double expected) {
-        AttributeInstance scale = GameTestCompat.scaleAttribute(animal);
-        helper.assertTrue(scale != null && Math.abs(scale.getBaseValue() - expected) < 1.0e-6,
-                "the body's scale is " + (scale == null ? null : scale.getBaseValue()) + ", not " + expected);
+        double scale = AnimalSex.currentScale(animal);
+        helper.assertTrue(Math.abs(scale - expected) < 1.0e-6, "the body's scale is " + scale + ", not " + expected);
     }
 
     public static Animal female(GameTestHelper helper, EntityType<? extends Animal> type) {

@@ -36,6 +36,7 @@ class FeatureBoundaryScanTest {
     private static final String LEGACY_PACKAGE = "compat/legacy";
     // Files one version adds rather than overrides, as <version>/<path>; anything else under versions/ needs a main file.
     private static final Set<String> VERSION_ONLY = Set.of(
+            "1.20.1/mixin/AnimalHurtLoveMixin",
             "1.20.1/mixin/EntityRandomAccessor",
             "1.20.1/mixin/client/ChickenModelAccessor",
             "1.20.1/mixin/client/QuadrupedModelAccessor",

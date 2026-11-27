@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
 import net.modcrafters.minecraft.barnyardromance.api.event.ShearYield;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
@@ -47,18 +48,31 @@ public class SheepShearMixin {
         }
     }
 
-    // The wool the shears drop, sized the same way: every stack is one of the sheep's wool.
+    // The wool the shears drop, sized the same way. Only the wool is sized, as the first wool in the list; anything
+    // another mod added to the list stays as it is.
     @ModifyReturnValue(method = "onSheared", remap = false, at = @At("RETURN"))
     private List<ItemStack> barnyardromance$sizedPlayerWool(List<ItemStack> drops) {
-        if (drops.isEmpty()) {
+        ItemStack wool = ItemStack.EMPTY;
+        int count = 0;
+        List<ItemStack> others = new ArrayList<>();
+        for (ItemStack drop : drops) {
+            if (drop.is(ItemTags.WOOL)) {
+                wool = wool.isEmpty() ? drop : wool;
+                count += drop.getCount();
+            } else {
+                others.add(drop);
+            }
+        }
+        if (count == 0) {
             return drops;
         }
-        int count = barnyardromance$sizedWool(drops.size());
-        List<ItemStack> sized = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            sized.add(drops.get(0).copyWithCount(1));
+        int sized = barnyardromance$sizedWool(count);
+        List<ItemStack> result = new ArrayList<>(sized + others.size());
+        for (int i = 0; i < sized; i++) {
+            result.add(wool.copyWithCount(1));
         }
-        return sized;
+        result.addAll(others);
+        return result;
     }
 
     // The sized wool is offered to other mods as the sheep's own colour. Left as it was, vanilla spawns it as before;

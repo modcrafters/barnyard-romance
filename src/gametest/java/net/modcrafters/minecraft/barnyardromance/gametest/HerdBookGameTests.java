@@ -378,9 +378,23 @@ public final class HerdBookGameTests {
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
         HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, sent);
+        //? if <1.20.5 {
+        /*byte[] wire = new byte[buffer.readableBytes()];
+        buffer.getBytes(buffer.readerIndex(), wire);
+        *///?}
         HerdBookPayloads.ShowBook received = HerdBookPayloads.ShowBook.STREAM_CODEC.decode(buffer);
 
+        //? if >=1.20.5 {
         helper.assertTrue(received.equals(sent), "the book came back as " + received);
+        //?} else {
+        /*// Before 1.20.5 text goes over the network as chat JSON, which gives a translation's number arguments back as
+        // text: the same words on screen, but not an equal component. So what came back must send exactly as it came.
+        RegistryFriendlyByteBuf again = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(again, received);
+        byte[] resent = new byte[again.readableBytes()];
+        again.getBytes(again.readerIndex(), resent);
+        helper.assertTrue(java.util.Arrays.equals(wire, resent), "the book came back as " + received);
+        *///?}
         helper.succeed();
     }
 

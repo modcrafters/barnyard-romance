@@ -831,7 +831,7 @@ public final class PailGameTests {
 
     // Reloading datapacks mid-suite isn't practical (the ladder tests don't either), so this is three checks that
     // together cover it: a default run has no conversion in the recipe manager, the load condition follows the config,
-    // and the recipe file carries that condition for both loaders.
+    // and the recipe file carries that condition for every loader.
     public static void conversionLoadsOnlyWhenSwitchedOn(GameTestHelper helper) {
         helper.assertTrue(!BarnyardConfig.current().milkConversion(), "the test run has the conversion switched on");
         helper.assertTrue(result(helper, grid(new ItemStack(MilkItems.GOAT_MILK_BUCKET))).isEmpty(),
@@ -845,7 +845,10 @@ public final class PailGameTests {
         String json;
         // The loaders keep the mod's jar out of reach of this class's own loader, so ask the server's resources.
         java.util.Optional<net.minecraft.server.packs.resources.Resource> file = helper.getLevel().getServer().getResourceManager()
+        //? if >=1.20.5 {
                 .getResource(Identifier.fromNamespaceAndPath("barnyard_romance", "recipe/milk_conversion.json"));
+        //?} else
+        //.getResource(Identifier.fromNamespaceAndPath("barnyard_romance", "recipes/milk_conversion.json"));
         helper.assertTrue(file.isPresent(), "the recipe file is missing");
         try (java.io.InputStream stream = file.get().open()) {
             json = new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
@@ -853,12 +856,19 @@ public final class PailGameTests {
             throw new IllegalStateException(exception);
         }
         com.google.gson.JsonObject recipe = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+        //? if >=1.20.5 {
         com.google.gson.JsonObject neoforge = recipe.getAsJsonArray("neoforge:conditions").get(0).getAsJsonObject();
         com.google.gson.JsonObject fabric = recipe.getAsJsonArray("fabric:load_conditions").get(0).getAsJsonObject();
         helper.assertTrue(neoforge.get("type").getAsString().equals("barnyard_romance:config_enabled")
                 && neoforge.get("key").getAsString().equals("milkConversion"), "the NeoForge condition is " + neoforge);
         helper.assertTrue(fabric.get("condition").getAsString().equals("barnyard_romance:config_enabled")
                 && fabric.get("key").getAsString().equals("milkConversion"), "the Fabric condition is " + fabric);
+        //?} else {
+        /*// Forge 1.20.1 reads a recipe's conditions from a top-level "conditions" list.
+        com.google.gson.JsonObject forge = recipe.getAsJsonArray("conditions").get(0).getAsJsonObject();
+        helper.assertTrue(forge.get("type").getAsString().equals("barnyard_romance:config_enabled")
+                && forge.get("key").getAsString().equals("milkConversion"), "the Forge condition is " + forge);
+        *///?}
         helper.succeed();
     }
 

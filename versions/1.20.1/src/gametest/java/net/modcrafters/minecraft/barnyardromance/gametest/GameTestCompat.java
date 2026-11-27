@@ -1,11 +1,16 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import com.mojang.authlib.GameProfile;
+import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -151,6 +156,28 @@ public final class GameTestCompat {
                 return true;
             }
         };
+    }
+
+    // GameTestHelper.makeMockServerPlayerInLevel, but its connection has a channel: Forge 1.20.1 sets up a joining
+    // player's channel, and vanilla's mock connection has none, so vanilla's throws there. Like vanilla's, it joins
+    // through placeNewPlayer, with a new random id, so what it saves when it leaves is never read by another test.
+    public static ServerPlayer mockServerPlayer(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = new ServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+            @Override
+            public boolean isSpectator() {
+                return false;
+            }
+
+            @Override
+            public boolean isCreative() {
+                return true;
+            }
+        };
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        level.getServer().getPlayerList().placeNewPlayer(connection, player);
+        return player;
     }
 
     // GameTestHelper only finds entities around a position here, so this looks in the test's structure itself.

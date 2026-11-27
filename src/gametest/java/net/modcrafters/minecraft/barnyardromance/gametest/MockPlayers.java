@@ -16,7 +16,10 @@ public final class MockPlayers {
     }
 
     public static ServerPlayer inLevel(GameTestHelper helper) {
+        //? if >=1.20.5 {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        //?} else
+        //ServerPlayer player = GameTestCompat.mockServerPlayer(helper);
         ((GameTestHelperAccessor) helper).barnyardromance$testInfo().addListener(new GameTestListener() {
             @Override
             public void testStructureLoaded(GameTestInfo info) {

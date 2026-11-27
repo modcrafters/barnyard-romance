@@ -4,7 +4,9 @@
   "package": "net.modcrafters.minecraft.barnyardromance.forge.gametest.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
   "mixins": [
-    "SentPacketsMixin"
+    "GameTestChunksMixin",
+    "SentPacketsMixin",
+    "SheepExtraDropMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -541,7 +541,11 @@ public final class FoodGameTests {
                     Map.of("barnyard_romance:test_sugar", Set.of("minecraft:sugar")),
                     folder
             );
+            // Tag folders still have their plural names on 1.20.1.
+            //? if >=1.20.5 {
             Path tag = folder.resolve(FoodScanRunner.PACK).resolve("data/barnyard_romance/tags/item/test_sugar.json");
+            //?} else
+            //Path tag = folder.resolve(FoodScanRunner.PACK).resolve("data/barnyard_romance/tags/items/test_sugar.json");
             String written = Files.readString(tag);
 
             helper.assertTrue(summary.recipes() > 1000, "only " + summary.recipes() + " recipes were read");
@@ -567,10 +571,18 @@ public final class FoodGameTests {
         //?} else
         //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
+        //? if >=1.20.5 {
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
         for (Item item : List.of(HerdItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
             helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
+        //?} else {
+        /*// Forge 1.20.1 fills a creative tab through a client-only hook, so a server can't build one: this checks what the
+        // tab is given to show instead.
+        for (Item item : List.of(HerdItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
+            helper.assertTrue(BarnyardTab.contents().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
+        }
+        *///?}
         // The sticks follow the herdSticks option. Both settings are given here, so the global config stays alone.
         helper.assertTrue(HerdStick.tabStacks(true).stream().anyMatch(stack -> stack.is(HerdItems.HERD_STICK)), "the tab has no sticks with herdSticks on");
         helper.assertTrue(HerdStick.tabStacks(false).stream().noneMatch(stack -> stack.is(HerdItems.HERD_STICK)), "the tab has sticks with herdSticks off");
