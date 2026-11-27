@@ -28,7 +28,7 @@ class Java17ScanTest {
             Pattern.compile("\\.(getFirst|getLast|removeFirst|removeLast)\\(\\)"),
             REVERSED, Pattern.compile("\\.reversed\\(\\)"),
             "StringBuilder.repeat, use Jdk.repeat", Pattern.compile("(?i)(builder|\\bsb)\\w*\\.repeat\\("),
-            "a pattern-matching switch case, use if and instanceof", Pattern.compile("\\bcase [A-Z][A-Za-z.]+ [a-z]\\w* *(->|:)"),
+            "a pattern-matching switch case, use if and instanceof", Pattern.compile("\\bcase [A-Z][A-Za-z.]+ [a-z]\\w* *(->|:|when\\b)"),
             "a mod component on an ItemStack, use ItemData",
             Pattern.compile("\\.(get|set|has|remove|update|getOrDefault)\\(\\s*(?!Data)\\w*Components\\.[A-Z_]+"));
     // Comparator.reversed has been there since Java 8.
