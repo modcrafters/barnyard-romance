@@ -500,7 +500,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         tag.putLong("lastCounted", lastCounted);
         tag.putLong("lastClock", lastClock);
     }
-        *///?} else {
+    *///?} else {
     /*@Override
     public void load(CompoundTag tag) {
         super.load(tag);
@@ -523,5 +523,5 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         tag.putLong("lastCounted", lastCounted);
         tag.putLong("lastClock", lastClock);
     }
-        *///?}
+    *///?}
 }

@@ -376,7 +376,7 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         tag.putLong("settledDay", settledDay);
         tag.putLong("liveDay", liveDay);
     }
-        *///?} else {
+    *///?} else {
     /*@Override
     public void load(CompoundTag tag) {
         super.load(tag);
@@ -396,7 +396,7 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         tag.putLong("settledDay", settledDay);
         tag.putLong("liveDay", liveDay);
     }
-        *///?}
+    *///?}
 
     // Loaded from a save, or given new data in place: the herd is known, and the index is told of it if the block is
     // in a level already.
