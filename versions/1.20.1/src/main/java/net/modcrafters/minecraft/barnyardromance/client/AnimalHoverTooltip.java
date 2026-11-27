@@ -17,7 +17,6 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector4f;
 
 import java.util.Optional;
@@ -62,7 +61,7 @@ public final class AnimalHoverTooltip {
                 anchor.get(), graphics.guiWidth(), graphics.guiHeight());
     }
 
-    // The FOV setting times the player's FOV modifier (sprinting, the spyglass), then the camera's rotation.
+    // The FOV setting times the player's FOV modifier (sprinting, the spyglass), then the camera's turn (viewRotation).
     // View bobbing and the short FOV transition are left out; the card is only an anchor above the head.
     private static Optional<ScreenPoint> project(Minecraft minecraft, Vec3 world, int width, int height) {
         Camera camera = minecraft.gameRenderer.getMainCamera();
@@ -74,8 +73,14 @@ public final class AnimalHoverTooltip {
                 1.0f
         );
         double fov = minecraft.options.fov().get() * Mth.clamp(minecraft.player.getFieldOfViewModifier(), 0.1F, 1.5F);
-        Matrix4f viewRotation = new Matrix4f().rotation(camera.rotation().conjugate(new Quaternionf()));
-        minecraft.gameRenderer.getProjectionMatrix(fov).mul(viewRotation).transform(clip);
+        minecraft.gameRenderer.getProjectionMatrix(fov).mul(viewRotation(camera.getXRot(), camera.getYRot())).transform(clip);
         return ClipProjection.toScreen(clip.x, clip.y, clip.w, width, height);
+    }
+
+    // The world's turn into the camera's view, as GameRenderer.renderLevel makes it on 1.20.1: the pitch, then the yaw
+    // turned half round. 1.20.1's camera rotation faces the other way (1.20.5 turned it round), so its conjugate, which
+    // the newer versions' view is, would put everything in front of the camera behind it.
+    static Matrix4f viewRotation(float xRot, float yRot) {
+        return new Matrix4f().rotationX(xRot * Mth.DEG_TO_RAD).rotateY((yRot + 180.0F) * Mth.DEG_TO_RAD);
     }
 }
