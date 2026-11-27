@@ -11,9 +11,9 @@ import java.util.zip.ZipEntry;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-// The API jar other mods compile against holds the public API and nothing of the mod; each loader's holds only that
-// loader's native events, and its mod sources jar carries them. The test task builds the jars first and passes their
-// paths.
+// The API jars other mods compile against hold the public API and nothing of the mod: the common one only the common
+// API, each loader's the common API and that loader's native events. A loader's mod sources jar carries its API too.
+// The test task builds the jars first and passes their paths.
 class ApiJarTest {
     private static final String API = "net/modcrafters/minecraft/barnyardromance/api/";
 
@@ -33,15 +33,19 @@ class ApiJarTest {
         }
     }
 
-    // A modder adds the loader's API jar beside the common one, so it holds no second copy of the common API.
+    // A modder adds only the loader's API jar, so it holds the whole API: the common API and that loader's native
+    // events, and nothing of the mod or of another loader.
     @Test
-    void loaderApiJarsHoldOnlyTheirNativeEvents() throws IOException {
+    void loaderApiJarsHoldTheWholeApi() throws IOException {
         for (LoaderJars loader : loaderJars()) {
             String own = API + loader.name() + "/";
+            String other = API + (loader.name().equals("fabric") ? "neoforge" : "fabric") + "/";
             List<String> classes = entries(loader.api()).stream().filter(name -> name.endsWith(".class")).toList();
-            List<String> strays = classes.stream().filter(name -> !name.startsWith(own)).toList();
+            List<String> strays = classes.stream().filter(name -> !name.startsWith(API) || name.startsWith(other)).toList();
 
             assertTrue(strays.isEmpty(), () -> loader.name() + "'s API jar holds " + strays);
+            assertTrue(classes.contains(API + "Sex.class"), () -> loader.name() + "'s API jar has no Sex");
+            assertTrue(classes.contains(API + "BarnyardEvents.class"), () -> loader.name() + "'s API jar has no BarnyardEvents");
             assertTrue(classes.contains(own + loader.knownType() + ".class"), () -> loader.name() + "'s API jar has no " + loader.knownType());
         }
     }
