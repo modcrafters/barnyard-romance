@@ -33,12 +33,6 @@ tasks.named('compileJava', JavaCompile) {
     exclude '**/barnyardromance/mixin/AnimalEating.java'
 }
 
-// The shared game tests don't build on 1.20.1 yet, so for now the game test mod is forge/src/gametest alone, with the
-// shared test resources (the test structures).
-tasks.named('compileGametestJava', JavaCompile) {
-    setSource(sourceSets.gametest.java)
-}
-
 // Mixin configs load from the jar's manifest on Forge 1.20.1: the common ones and Forge's own. The shippable jar is
 // reobfJar's, which remaps this one (kept in build/devlibs) to SRG names.
 def mixinConfigs = ["${mod_id}.mixins.json", "${mod_id}.forge.mixins.json"]*.toString()

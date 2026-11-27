@@ -1,6 +1,5 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -335,7 +334,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
         HerdBookPayloads.RemoveFromBook request = new HerdBookPayloads.RemoveFromBook(id, cow.getUUID());
 
         helper.assertTrue(!HerdBooks.removeRequested(player, request), "a removal without the book in hand worked");
@@ -420,7 +419,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, book);
         List<ItemStack> replies = new java.util.ArrayList<>();
         HerdBookPayloads.RemoveFromBook stranger = new HerdBookPayloads.RemoveFromBook(id, UUID.randomUUID());
@@ -718,7 +717,7 @@ public final class HerdBookGameTests {
                 ItemStack.EMPTY, new ItemStack(Items.INK_SAC), ItemStack.EMPTY
         ));
 
-        Optional<RecipeHolder<CraftingRecipe>> recipe = server(helper).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
 
         helper.assertTrue(recipe.isPresent(), "a herd book, a book, a feather and an ink sac craft nothing");
         //? if >=1.21.2 {
@@ -751,7 +750,7 @@ public final class HerdBookGameTests {
         ));
 
         for (CraftingInput input : List.of(fresh, extra, noInk)) {
-            helper.assertTrue(server(helper).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel()).isEmpty(),
+            helper.assertTrue(GameTestCompat.craftingRecipe(helper, input).isEmpty(),
                     "a copy was crafted from " + input.items());
         }
         helper.succeed();

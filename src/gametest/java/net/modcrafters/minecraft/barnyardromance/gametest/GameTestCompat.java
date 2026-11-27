@@ -2,8 +2,10 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import com.mojang.authlib.GameProfile;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
@@ -12,21 +14,31 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 // Game test steps that look different on older versions. versions/1.21.1 has the same class for 1.21.1.
@@ -131,5 +143,35 @@ public final class GameTestCompat {
             copy.load(TagValueInput.create(reporter, level.registryAccess(), output.buildResult()));
             return copy;
         }
+    }
+
+    // A mock player in this game mode, not in the level.
+    public static Player mockPlayer(GameTestHelper helper, GameType gameType) {
+        return helper.makeMockPlayer(gameType);
+    }
+
+    // The live entities of this type in the test's structure.
+    public static <T extends Entity> List<T> entities(GameTestHelper helper, EntityType<T> type) {
+        return helper.getEntities(type);
+    }
+
+    // The body's scale, or null where there is none (1.20.1 has no scale attribute).
+    public static @Nullable AttributeInstance scaleAttribute(LivingEntity entity) {
+        return entity.getAttribute(Attributes.SCALE);
+    }
+
+    // The block entity's save, with its id and position, as a chunk writes it.
+    public static CompoundTag saved(GameTestHelper helper, BlockEntity blockEntity) {
+        return blockEntity.saveWithFullMetadata(helper.getLevel().registryAccess());
+    }
+
+    // A new block entity made from such a save. It is not in the level.
+    public static @Nullable BlockEntity loaded(GameTestHelper helper, BlockPos pos, BlockState state, CompoundTag saved) {
+        return BlockEntity.loadStatic(pos, state, saved, helper.getLevel().registryAccess());
+    }
+
+    // The crafting recipe the server finds for this grid.
+    public static Optional<RecipeHolder<CraftingRecipe>> craftingRecipe(GameTestHelper helper, CraftingInput input) {
+        return helper.getLevel().getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
     }
 }

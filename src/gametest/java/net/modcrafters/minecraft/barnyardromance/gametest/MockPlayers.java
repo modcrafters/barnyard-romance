@@ -22,6 +22,7 @@ public final class MockPlayers {
             public void testStructureLoaded(GameTestInfo info) {
             }
 
+            //? if >=1.20.5 {
             @Override
             public void testPassed(GameTestInfo info, GameTestRunner runner) {
                 leave(player);
@@ -35,6 +36,17 @@ public final class MockPlayers {
             @Override
             public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {
             }
+            //?} else {
+            /*@Override
+            public void testPassed(GameTestInfo info) {
+                leave(player);
+            }
+
+            @Override
+            public void testFailed(GameTestInfo info) {
+                leave(player);
+            }
+            *///?}
         });
         return player;
     }

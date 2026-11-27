@@ -32,7 +32,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 
 import java.util.List;
@@ -98,13 +97,13 @@ public final class BreedingGameTests {
         helper.assertTrue(Services.DATA.get(father, PregnancyFeature.PREGNANCY).isEmpty(), "the father became pregnant");
         assertResting(helper, mother, now);
         assertResting(helper, father, now);
-        helper.assertTrue(!helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "breeding gave no XP");
+        helper.assertTrue(!GameTestCompat.entities(helper, EntityTypes.EXPERIENCE_ORB).isEmpty(), "breeding gave no XP");
 
         int litterSize = pregnancy.litterSize();
         Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
         helper.succeedWhen(() -> {
             helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the mother is still pregnant");
-            List<? extends Animal> babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
+            List<? extends Animal> babies = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
             helper.assertTrue(babies.size() == litterSize, "expected " + litterSize + " piglets, found " + babies.size());
             for (Animal baby : babies) {
                 helper.assertTrue(Services.DATA.get(baby).isPresent(), "a piglet was born without traits");
@@ -138,7 +137,7 @@ public final class BreedingGameTests {
         helper.assertTrue(Services.DATA.get(first, PregnancyFeature.PREGNANCY).isEmpty() && Services.DATA.get(second, PregnancyFeature.PREGNANCY).isEmpty(), "a same-sex pair conceived");
         helper.assertTrue(!first.isInLove() && !second.isInLove(), "a same-sex pair stayed in love");
         helper.assertTrue(traits(helper, first).get(BREEDING).loveUntil() < 0L && traits(helper, second).get(BREEDING).loveUntil() < 0L, "love was not cleared on a same-sex pair");
-        helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a same-sex pair gave XP");
+        helper.assertTrue(GameTestCompat.entities(helper, EntityTypes.EXPERIENCE_ORB).isEmpty(), "a same-sex pair gave XP");
         helper.succeed();
     }
 
@@ -190,7 +189,7 @@ public final class BreedingGameTests {
         father.spawnChildFromBreeding(helper.getLevel(), mother);
 
         helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "a worn-out mother conceived");
-        helper.assertTrue(helper.getEntities(EntityTypes.EXPERIENCE_ORB).isEmpty(), "a worn-out mating gave XP");
+        helper.assertTrue(GameTestCompat.entities(helper, EntityTypes.EXPERIENCE_ORB).isEmpty(), "a worn-out mating gave XP");
         assertResting(helper, mother, now);
         assertResting(helper, father, now);
         helper.succeed();
@@ -211,7 +210,7 @@ public final class BreedingGameTests {
             AnimalTraits traits = traits(helper, mother);
             helper.assertTrue(Math.abs(traits.get(BREEDING).fertility() - 0.75) < 1.0e-6, "the mother's fertility is " + traits.get(BREEDING).fertility() + ", not 0.75");
             helper.assertTrue(traits.get(BREEDING).fertilityTick() >= now, "the birth was not dated");
-            List<? extends Animal> babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
+            List<? extends Animal> babies = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
             helper.assertTrue(!babies.isEmpty(), "no piglets were born");
             for (Animal baby : babies) {
                 AnimalTraits child = traits(helper, baby);
@@ -322,9 +321,9 @@ public final class BreedingGameTests {
     public static List<Animal> forceBirth(GameTestHelper helper, Animal mother) {
         Pregnancy pregnancy = pregnancy(helper, mother);
         Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
-        List<Animal> before = List.copyOf(helper.getEntities(mother.getType()).stream().map(Animal.class::cast).toList());
+        List<Animal> before = List.copyOf(GameTestCompat.entities(helper, mother.getType()).stream().map(Animal.class::cast).toList());
         PregnancyController.catchUp(mother, helper.getLevel());
-        List<Animal> young = helper.getEntities(mother.getType()).stream()
+        List<Animal> young = GameTestCompat.entities(helper, mother.getType()).stream()
                 .map(Animal.class::cast)
                 .filter(animal -> !before.contains(animal))
                 .toList();
@@ -504,13 +503,13 @@ public final class BreedingGameTests {
         Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
         PregnancyController.catchUp(mother, helper.getLevel());
 
-        List<Animal> foals = helper.getEntities(EntityTypes.LLAMA).stream().map(Animal.class::cast).filter(Animal::isBaby).toList();
+        List<Animal> foals = GameTestCompat.entities(helper, EntityTypes.LLAMA).stream().map(Animal.class::cast).filter(Animal::isBaby).toList();
         helper.assertTrue(!foals.isEmpty(), "no llama was born");
         for (Animal foal : foals) {
             helper.assertTrue(foal.getType() == EntityTypes.LLAMA, "the foal is a " + foal.getType());
             helper.assertTrue(AnimalSex.speciesId(foal).equals("minecraft:llama"), "the foal's species is " + AnimalSex.speciesId(foal));
         }
-        helper.assertTrue(helper.getEntities(EntityTypes.TRADER_LLAMA).stream().noneMatch(Animal::isBaby), "a trader llama foal was born");
+        helper.assertTrue(GameTestCompat.entities(helper, EntityTypes.TRADER_LLAMA).stream().noneMatch(Animal::isBaby), "a trader llama foal was born");
         helper.succeed();
     }
 
@@ -524,8 +523,8 @@ public final class BreedingGameTests {
             mother.spawnChildFromBreeding(helper.getLevel(), father);
         });
 
-        helper.assertTrue(helper.getEntities(EntityTypes.TRADER_LLAMA).stream().anyMatch(Animal::isBaby), "no trader llama foal was born");
-        helper.assertTrue(helper.getEntities(EntityTypes.LLAMA).stream().noneMatch(Animal::isBaby), "a switched-off trader llama's foal is a llama");
+        helper.assertTrue(GameTestCompat.entities(helper, EntityTypes.TRADER_LLAMA).stream().anyMatch(Animal::isBaby), "no trader llama foal was born");
+        helper.assertTrue(GameTestCompat.entities(helper, EntityTypes.LLAMA).stream().noneMatch(Animal::isBaby), "a switched-off trader llama's foal is a llama");
         helper.succeed();
     }
 
@@ -533,9 +532,9 @@ public final class BreedingGameTests {
     private static List<Animal> bornMules(GameTestHelper helper, Animal mother) {
         Pregnancy pregnancy = pregnancy(helper, mother);
         Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(helper.getLevel().getGameTime() - pregnancy.durationTicks()));
-        List<Animal> before = List.copyOf(helper.getEntities(EntityTypes.MULE).stream().map(Animal.class::cast).toList());
+        List<Animal> before = List.copyOf(GameTestCompat.entities(helper, EntityTypes.MULE).stream().map(Animal.class::cast).toList());
         PregnancyController.catchUp(mother, helper.getLevel());
-        List<Animal> young = helper.getEntities(EntityTypes.MULE).stream()
+        List<Animal> young = GameTestCompat.entities(helper, EntityTypes.MULE).stream()
                 .map(Animal.class::cast)
                 .filter(animal -> !before.contains(animal))
                 .toList();
@@ -544,7 +543,7 @@ public final class BreedingGameTests {
     }
 
     private static void assertBodyScale(GameTestHelper helper, Animal animal, double expected) {
-        AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
+        AttributeInstance scale = GameTestCompat.scaleAttribute(animal);
         helper.assertTrue(scale != null && Math.abs(scale.getBaseValue() - expected) < 1.0e-6,
                 "the body's scale is " + (scale == null ? null : scale.getBaseValue()) + ", not " + expected);
     }

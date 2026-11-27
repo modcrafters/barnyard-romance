@@ -215,7 +215,7 @@ public final class CareGameTests {
     // A pet tamed before hunger was kept gets a newly tamed pet's week of grace.
     public static void oldTamedWolfGetsTamingGrace(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
-        wolf.tame(helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL));
+        wolf.tame(GameTestCompat.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL));
         Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.0, -1L).withHunger(Hunger.NONE)));
 
         FamiliarityCare.settle(wolf, clock(10L));
@@ -229,7 +229,7 @@ public final class CareGameTests {
     public static void tamedWolfLastsAWeekUnfed(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) female(helper, EntityTypes.WOLF);
         Services.DATA.set(wolf, traits(helper, wolf).with(CARE, traits(helper, wolf).get(CARE).fed(0.0, -1L)));
-        wolf.tame(helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL));
+        wolf.tame(GameTestCompat.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL));
         FamiliarityCare.settle(wolf, clock(10L));
 
         FamiliarityCare.settle(wolf, clock(10L + FamiliarityCare.TAMING_GRACE_DAYS));
@@ -554,10 +554,18 @@ public final class CareGameTests {
         wolf.setOrderedToSit(false);
         owner.setPos(wolf.getX() + 20.0, wolf.getY(), wolf.getZ());
 
-        helper.assertTrue(new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a grumpy wolf doesn't follow its owner");
+        helper.assertTrue(followOwner(wolf).canUse(), "a grumpy wolf doesn't follow its owner");
         wolf.setOrderedToSit(true);
-        helper.assertTrue(!new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a grumpy wolf told to sit follows its owner");
+        helper.assertTrue(!followOwner(wolf).canUse(), "a grumpy wolf told to sit follows its owner");
         helper.succeed();
+    }
+
+    // A wolf's own follow goal: speed 1, from 10 blocks away to 2.
+    private static FollowOwnerGoal followOwner(TamableAnimal wolf) {
+        //? if >=1.20.5 {
+        return new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F);
+        //?} else
+        //return new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F, false);
     }
 
     // While it sits sulking it stays put.
@@ -570,7 +578,7 @@ public final class CareGameTests {
         Sulk.ownerHurt(wolf, owner, helper.getLevel().getGameTime());
 
         helper.assertTrue(Sulk.sulking(wolf), "the wolf didn't sulk");
-        helper.assertTrue(!new FollowOwnerGoal(wolf, 1.0, 10.0F, 2.0F).canUse(), "a sulking wolf follows its owner");
+        helper.assertTrue(!followOwner(wolf).canUse(), "a sulking wolf follows its owner");
         helper.succeed();
     }
 
@@ -804,7 +812,7 @@ public final class CareGameTests {
     public static void herdStickUpStopsAtTheCap(GameTestHelper helper) {
         Animal cow = female(helper, EntityTypes.COW);
         Services.DATA.set(cow, traits(helper, cow).with(CARE, traits(helper, cow).get(CARE).fed(0.4, -1L).withOrigin(Origin.WILD)));
-        Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
+        Player player = GameTestCompat.mockPlayer(helper, net.minecraft.world.level.GameType.CREATIVE);
 
         // Below the config gate, so this never depends on the herdSticks option.
         HerdTool tool = HerdTool.familiarity(1);

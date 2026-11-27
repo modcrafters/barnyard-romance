@@ -370,7 +370,7 @@ public final class ApiGameTests {
     // An excluded species is left alone, by the creative herd stick too: no events, no familiarity, no taming.
     public static void theHerdStickLeavesAnExcludedWolfAlone(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.WOLF), 0.2);
-        Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
+        Player player = GameTestCompat.mockPlayer(helper, net.minecraft.world.level.GameType.CREATIVE);
         AtomicInteger heard = new AtomicInteger();
         BarnyardConfig config = BarnyardConfig.current();
         FAMILIARITY_CHANGES.add(wolf.getUUID(), change -> heard.incrementAndGet());
@@ -429,7 +429,7 @@ public final class ApiGameTests {
         helper.succeedWhen(() -> {
             Born born = heard.get();
             helper.assertTrue(born != null, "no Born was heard");
-            List<UUID> piglets = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).map(Animal::getUUID).sorted().toList();
+            List<UUID> piglets = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).map(Animal::getUUID).sorted().toList();
             List<UUID> young = born.young().stream().map(Animal::getUUID).sorted().toList();
             helper.assertTrue(!young.isEmpty() && young.equals(piglets), "Born named " + young + ", the pen has " + piglets);
             BIRTHS.remove(mother.getUUID());

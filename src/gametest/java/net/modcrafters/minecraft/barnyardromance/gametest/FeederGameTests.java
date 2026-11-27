@@ -54,7 +54,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.animal.Animal;
@@ -65,12 +65,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -254,7 +252,7 @@ public final class FeederGameTests {
         onceLanded(helper, type, new int[][]{{2, 3}, {6, 3}, {2, 5}, {6, 5}}, cows -> {
             cows.forEach(cow -> familiar(cow, 0.8));
             if (block == FeedBlocks.PET_BOWL) {
-                Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+                Player owner = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
                 cows.forEach(pet -> ((TamableAnimal) pet).tame(owner));
             }
             FeederBlockEntity manger = blockAt(helper, block, walkingLayer(helper, Jdk.first(cows), 4, 4));
@@ -425,7 +423,11 @@ public final class FeederGameTests {
             animals.forEach(FeederGameTests::holdStill);
             penIn(helper, Jdk.first(animals));
             Services.DATA.set(animals.get(1), AnimalTraits.of(Sex.FEMALE, 1.3).with(CARE, FamiliarityState.NONE.fed(0.8, -1L).withOrigin(Origin.FARM)));
-            animals.get(1).getAttribute(Attributes.SCALE).setBaseValue(1.3);
+            // 1.20.1 has no scale attribute: there the body stays vanilla-sized.
+            AttributeInstance scale = GameTestCompat.scaleAttribute(animals.get(1));
+            if (scale != null) {
+                scale.setBaseValue(1.3);
+            }
             animals.get(1).refreshDimensions();
             familiar(animals.get(0), 0.8);
             familiar(animals.get(2), 0.8);
@@ -474,7 +476,7 @@ public final class FeederGameTests {
     // Food for two days of ten: every cow eats on the first two and goes hungry on the other eight.
     public static void catchUpSharesTwoDaysOfFoodOverTenDays(GameTestHelper helper) {
         threeCowsAndAManger(helper, (cows, manger) -> {
-            FeederMenu menu = new FeederMenu(1, helper.makeMockPlayer(GameType.SURVIVAL).getInventory(), manger);
+            FeederMenu menu = new FeederMenu(1, GameTestCompat.mockPlayer(helper, GameType.SURVIVAL).getInventory(), manger);
             helper.assertTrue(menu.animals() == 3 && menu.days() == 2, "the window says " + menu.days() + " days for " + menu.animals() + " animals");
 
             manger.tick(helper.getLevel(), clock(DAY));
@@ -951,7 +953,7 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.WOLF, new int[][]{{7, 4}}, FeedBlocks.PET_BOWL, new int[]{2, 4},
                 m -> {
                     TamableAnimal wolf = (TamableAnimal) Jdk.first(m.animals);
-                    wolf.tame(helper.makeMockPlayer(GameType.SURVIVAL));
+                    wolf.tame(GameTestCompat.mockPlayer(helper, GameType.SURVIVAL));
                     wolf.setOrderedToSit(true);
                     wolf.setInSittingPose(true);
                     m.feeder.setItem(0, new ItemStack(Items.BEEF, 2));
@@ -1048,11 +1050,10 @@ public final class FeederGameTests {
                         // Unloaded: saved and taken out of the level, so nothing ticks it. It comes back three days on,
                         // as from a save, and settles the days it missed.
                         BlockPos pos = m.at;
-                        CompoundTag saved = m.feeder.saveWithFullMetadata(helper.getLevel().registryAccess());
+                        CompoundTag saved = GameTestCompat.saved(helper, m.feeder);
                         helper.getLevel().removeBlockEntity(pos);
                         m.clock += 3L * 24_000L;
-                        reloaded[0] = (FeederBlockEntity) BlockEntity.loadStatic(pos, helper.getLevel().getBlockState(pos), saved,
-                                helper.getLevel().registryAccess());
+                        reloaded[0] = (FeederBlockEntity) GameTestCompat.loaded(helper, pos, helper.getLevel().getBlockState(pos), saved);
                         helper.getLevel().setBlockEntity(reloaded[0]);
                         reloaded[0].runOnClock(helper.getLevel(), m.clock);
                         return;
@@ -1345,8 +1346,7 @@ public final class FeederGameTests {
             stacks.add(new ItemStack(item));
         }
         CraftingInput input = CraftingInput.of(3, grid.length / 3, stacks);
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
         // The holder's id is a ResourceKey on 26.3 and a plain id on 1.21.1; both print the recipe's name.
         helper.assertTrue(recipe.isPresent() && recipe.get().id().toString().contains("barnyard_romance:" + name),
                 "the " + name + " grid makes " + recipe.map(holder -> holder.id().toString()).orElse("nothing"));

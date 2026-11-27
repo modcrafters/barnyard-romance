@@ -75,7 +75,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -369,8 +368,7 @@ public final class EggGameTests {
                 new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT)
         ));
 
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
 
         helper.assertTrue(egg.is(COMMON_EGGS), "a fertilized egg isn't in c:eggs");
         helper.assertTrue(recipe.isPresent(), "cake doesn't take a fertilized egg");
@@ -561,7 +559,10 @@ public final class EggGameTests {
                 1.2, Growth.wild(), 0.5, "", 1_000L, 1_000L);
         ItemStack third = WildEggs.taint(FertilizedEggItem.create(duck));
 
+        //? if >=1.20.5 {
         helper.assertTrue(ItemStack.isSameItemSameComponents(first, second), "two wild hen's eggs differ: " + first.getComponents() + " / " + second.getComponents());
+        //?} else
+        //helper.assertTrue(ItemStack.isSameItemSameComponents(first, second), "two wild hen's eggs differ: " + first.getTag() + " / " + second.getTag());
         helper.assertTrue(first.getMaxStackSize() == 16, "a wild egg stacks to " + first.getMaxStackSize());
         helper.assertTrue(!ItemStack.isSameItemSameComponents(first, third), "a wild duck egg stacks with a hen's");
         helper.assertTrue(first.is(COMMON_EGGS), "a wild egg isn't in c:eggs");
@@ -702,8 +703,7 @@ public final class EggGameTests {
                 plank.copy(), plank.copy(), plank.copy()
         ));
 
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
 
         helper.assertTrue(recipe.isPresent(), "planks round wheat craft nothing");
         //? if >=1.21.2 {
@@ -849,11 +849,11 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         box.setItem(0, FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L)));
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
-        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        CompoundTag saved = GameTestCompat.saved(helper, box);
         saved.putLong("lastCounted", helper.getLevel().getGameTime() - 50_000L);
         helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) GameTestCompat.loaded(helper, helper.absolutePos(BOX), helper.getBlockState(BOX), saved);
         helper.getLevel().setBlockEntity(loaded);
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), loaded);
 
@@ -868,11 +868,11 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         box.setItem(0, FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L)));
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
-        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        CompoundTag saved = GameTestCompat.saved(helper, box);
         saved.putLong("lastCounted", helper.getLevel().getGameTime() - 5_000L);
         helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) GameTestCompat.loaded(helper, helper.absolutePos(BOX), helper.getBlockState(BOX), saved);
         helper.getLevel().setBlockEntity(loaded);
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), loaded);
 
@@ -1228,10 +1228,10 @@ public final class EggGameTests {
         Animal hen = hen(helper, mediumHen(), 0.5);
         UUID id = hen.getUUID();
         box.enter(hen, List.of(new ItemStack(Items.EGG)), helper.getLevel().getGameTime());
-        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        CompoundTag saved = GameTestCompat.saved(helper, box);
         helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        BlockEntity loaded = GameTestCompat.loaded(helper, helper.absolutePos(BOX), helper.getBlockState(BOX), saved);
         helper.getLevel().setBlockEntity(loaded);
         ((NestingBoxBlockEntity) loaded).finishSitting();
 

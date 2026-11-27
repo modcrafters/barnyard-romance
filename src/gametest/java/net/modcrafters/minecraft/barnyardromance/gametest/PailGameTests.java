@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.minecraft.core.Holder;
+//? if >=1.20.5
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -21,7 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
+//? if >=1.20.5
 import net.minecraft.world.item.component.DyedItemColor;
 //? if >=1.21.5
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -153,12 +155,20 @@ public final class PailGameTests {
     // Built-in and custom metal pails share one recipe type: a name, and a tint the tooltip doesn't call a dye.
     private static void assertMetalPail(GameTestHelper helper, ItemStack pail, String name, int tint) {
         helper.assertTrue(pail.getHoverName().getString().equals(name), "the crafted pail is named " + name + ", not " + pail.getHoverName().getString());
+        //? if >=1.20.5 {
         DyedItemColor dye = pail.get(DataComponents.DYED_COLOR);
         helper.assertTrue(dye != null && dye.rgb() == tint, name + " stores its tint");
+        //?} else {
+        /*// The tint is the tag's display.color before 1.20.5, and HideFlags hides the dye line (MetalPail.applyTo).
+        net.minecraft.nbt.CompoundTag display = pail.getTagElement("display");
+        helper.assertTrue(display != null && display.getInt("color") == tint, name + " stores its tint");
+        helper.assertTrue((pail.getOrCreateTag().getInt("HideFlags") & ItemStack.TooltipPart.DYE.getMask()) != 0,
+                name + " hides the dye line in its tooltip");
+        *///?}
         //? if >=1.21.5 {
         helper.assertTrue(!pail.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).shows(DataComponents.DYED_COLOR),
                 name + " hides the dye line in its tooltip");
-        //?} else
+        //?} else if >=1.20.5
         //helper.assertTrue(!dye.showInTooltip(), name + " hides the dye line in its tooltip");
     }
 
@@ -206,14 +216,14 @@ public final class PailGameTests {
         helper.assertTrue(!PailFluids.accepts(Fluids.LAVA), "a pail takes lava");
         helper.assertTrue(!PailFluids.accepts(Fluids.EMPTY), "a pail takes the empty fluid");
         for (Holder<Fluid> milk : List.of(MilkFluids.COW, MilkFluids.GOAT, MilkFluids.SHEEP)) {
-            helper.assertTrue(PailFluids.accepts(milk.value()), "a pail doesn't take " + milk.getRegisteredName());
+            helper.assertTrue(PailFluids.accepts(milk.value()), "a pail doesn't take " + BuiltInRegistries.FLUID.getKey(milk.value()));
         }
         helper.succeed();
     }
 
     public static void ourMilksAreInCMilk(GameTestHelper helper) {
         for (Holder<Fluid> milk : List.of(MilkFluids.COW, MilkFluids.GOAT, MilkFluids.SHEEP)) {
-            helper.assertTrue(milk.is(C_MILK), milk.getRegisteredName() + " isn't in c:milk");
+            helper.assertTrue(milk.is(C_MILK), BuiltInRegistries.FLUID.getKey(milk.value()) + " isn't in c:milk");
         }
         helper.succeed();
     }
@@ -886,8 +896,7 @@ public final class PailGameTests {
 
     private static ItemStack result(GameTestHelper helper, List<ItemStack> grid) {
         CraftingInput input = CraftingInput.of(3, 3, grid);
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
         if (recipe.isEmpty()) {
             return ItemStack.EMPTY;
         }

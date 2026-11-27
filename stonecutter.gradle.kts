@@ -73,6 +73,10 @@ stonecutter parameters {
             replace("$legacy.LegacyStreamCodecs.UUID", "UUIDUtil.STREAM_CODEC")
             // A container that keeps its slots in a list, as 1.20.5's BaseContainerBlockEntity does.
             replace("$legacy.BaseContainerBlockEntity;", "net.minecraft.world.level.block.entity.BaseContainerBlockEntity;")
+            // The game tests' own stand-ins (versions/1.20.1/src/gametest): a crafting grid, and a recipe with its id.
+            val gametestLegacy = "net.modcrafters.minecraft.barnyardromance.gametest.legacy"
+            replace("$gametestLegacy.CraftingInput;", "net.minecraft.world.item.crafting.CraftingInput;")
+            replace("$gametestLegacy.RecipeHolder;", "net.minecraft.world.item.crafting.RecipeHolder;")
         }
         // Methods 1.20.5 and later added or renamed, as 1.20.1 has them. The calls the mod's own helper stands in for
         // (compat.legacy.Legacy) are written out whole, receiver and all, so nothing else turns into them.

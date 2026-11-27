@@ -18,7 +18,11 @@ import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.Pregnancy;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
+//? if >=1.20.5 {
 import net.minecraft.advancements.AdvancementHolder;
+//?} else {
+/*import net.minecraft.advancements.Advancement;
+*///?}
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -312,7 +316,10 @@ public final class AdvancementGameTests {
     }
 
     static boolean ladderLoaded(GameTestHelper helper, String ladder, int step) {
+        //? if >=1.20.5 {
         return helper.getLevel().getServer().getAdvancements().get(Ladders.advancement(ladder, step)) != null;
+        //?} else
+        //return helper.getLevel().getServer().getAdvancements().getAdvancement(Ladders.advancement(ladder, step)) != null;
     }
 
     public static void aBredEggHatchingCreditsPlayersNearby(GameTestHelper helper) {
@@ -523,13 +530,19 @@ public final class AdvancementGameTests {
     }
 
     public static boolean earned(ServerPlayer player, Identifier id) {
+        //? if >=1.20.5 {
         AdvancementHolder holder = player.level().getServer().getAdvancements().get(id);
+        //?} else
+        //Advancement holder = player.level().getServer().getAdvancements().getAdvancement(id);
         return holder != null && player.getAdvancements().getOrStartProgress(holder).isDone();
     }
 
     // Whether one criterion of an advancement is done, such as one animal of vanilla's Two by Two.
     static boolean criterionDone(ServerPlayer player, Identifier id, String criterion) {
+        //? if >=1.20.5 {
         AdvancementHolder holder = player.level().getServer().getAdvancements().get(id);
+        //?} else
+        //Advancement holder = player.level().getServer().getAdvancements().getAdvancement(id);
         if (holder == null) {
             return false;
         }

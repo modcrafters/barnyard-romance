@@ -3,7 +3,6 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
@@ -190,7 +189,7 @@ public final class TrackingGameTests {
     }
 
     private static AttributeInstance scale(GameTestHelper helper, Animal animal) {
-        AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
+        AttributeInstance scale = GameTestCompat.scaleAttribute(animal);
         helper.assertTrue(scale != null, "a fox has no scale");
         return scale;
     }
