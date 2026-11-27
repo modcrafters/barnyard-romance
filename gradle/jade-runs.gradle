@@ -12,8 +12,12 @@ configurations {
     }
 }
 
+// Forge 1.20.1's Jade is published with SRG names, and the dev game runs on Mojang's: there it goes through a remapping
+// configuration, which hands jadeMod the remapped jar.
+def jadeModSource = extensions.findByName('obfuscation') != null ? obfuscation.createRemappingConfiguration(configurations.jadeMod).name : 'jadeMod'
+
 dependencies {
-    jadeMod "maven.modrinth:jade:${jade_loader_version}"
+    add(jadeModSource, "maven.modrinth:jade:${jade_loader_version}")
 }
 
 // Call for each Jade run. The mods folder is synced, so it holds exactly this jar.

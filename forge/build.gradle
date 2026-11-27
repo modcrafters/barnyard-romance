@@ -71,6 +71,13 @@ legacyForge {
             programArguments.addAll '--width', '2560', '--height', '1440'
             systemProperty('barnyard_romance.herd_sticks', 'true')
         }
+        // Our stats in Jade's tooltip, see gradle/jade-runs.gradle.
+        clientJade {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/jade-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
         server {
             server()
             this.file('runs/server').createParentDirectories()
@@ -88,6 +95,9 @@ legacyForge {
         }
     }
 }
+
+// taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
+legacyForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
 
 // The refmap the annotation processor writes for the common and Forge mixins, which the mod's main source set compiles.
 // The configs are named here for the dev runs, which load the mod from its folders rather than a jar with a manifest.
