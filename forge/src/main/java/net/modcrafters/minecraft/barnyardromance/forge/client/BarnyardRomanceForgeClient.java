@@ -21,6 +21,7 @@ import net.modcrafters.minecraft.barnyardromance.client.NestingBoxScreen;
 import net.modcrafters.minecraft.barnyardromance.client.OldHeartParticle;
 import net.modcrafters.minecraft.barnyardromance.client.PailScreen;
 import net.modcrafters.minecraft.barnyardromance.client.PregnancyHeartParticle;
+import net.modcrafters.minecraft.barnyardromance.compat.legacy.LegacyGui;
 import net.modcrafters.minecraft.barnyardromance.core.config.ClientConfig;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 import net.modcrafters.minecraft.barnyardromance.core.registry.BarnyardParticles;
@@ -84,6 +85,7 @@ public final class BarnyardRomanceForgeClient {
     private static void registerReloadListeners(RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(HornShapes.listener());
         event.registerReloadListener(HeadShapes.listener());
+        event.registerReloadListener(LegacyGui.reloadListener());
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
