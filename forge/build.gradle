@@ -58,6 +58,17 @@ legacyForge {
             sourceSet sourceSets.gametest
         }
     }
+    // A game test run: the mod and the game test mod, in its own game folder. A dev run names its mixin configs on the
+    // command line, the shared ones (src/gametest) and Forge's own; NeoForge and Fabric list them in the game test mod's
+    // metadata.
+    def gameTest = { run, String gameDirectory ->
+        run.type = 'gameTestServer'
+        run.sourceSet = sourceSets.gametest
+        run.loadedMods = [legacyForge.mods.named(mod_id).get(), legacyForge.mods.named("${mod_id}_gametest").get()]
+        run.gameDirectory = this.mkdir(this.file(gameDirectory))
+        run.programArguments.addAll '--mixin.config', "${mod_id}_gametest.mixins.json",
+                '--mixin.config', "${mod_id}_gametest_forge.mixins.json"
+    }
     runs {
         configureEach {
             // Only the game test runs load the game test mod, below.
@@ -84,14 +95,7 @@ legacyForge {
             gameDirectory = this.mkdir(this.file('runs/server'))
         }
         gameTestServer {
-            type = 'gameTestServer'
-            sourceSet = sourceSets.gametest
-            loadedMods = [legacyForge.mods.named(mod_id).get(), legacyForge.mods.named("${mod_id}_gametest").get()]
-            gameDirectory = this.mkdir(this.file('runs/gametest'))
-            // The game test mod's mixins: the shared ones (src/gametest) and Forge's own. A dev run names its mixin
-            // configs on the command line (see below); NeoForge and Fabric list them in the game test mod's metadata.
-            programArguments.addAll '--mixin.config', "${mod_id}_gametest.mixins.json",
-                    '--mixin.config', "${mod_id}_gametest_forge.mixins.json"
+            gameTest(it, 'runs/gametest')
         }
     }
 }
@@ -106,32 +110,38 @@ mixin {
     mixinConfigs.each { config it }
 }
 
-// Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
-// midnight partway through and hunger or Vigour refills would hit unrelated tests.
-['gameTestServer': 'runs/gametest'].each { runName, runDir ->
-    def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
-        description = "Deletes the ${runDir} world so the run starts fresh."
-        delete file("${runDir}/world")
-    }
-    legacyForge.runs.named(runName) { it.taskBefore(clean) }
-}
+// Every game test run and its game folder. Each gets the two tasks below.
+def gameTestRuns = ['gameTestServer': 'runs/gametest']
 
 // Forge 1.20.1 starts its game test server on a dedicated server's settings (server.properties), not the flat world
 // vanilla's game test server makes, so the tests would stand at y -60 in a normal world, among its caves, lava and water.
 // These are the newer versions' game test world: flat, without structures, creative, on normal difficulty. The game
 // test mod sets the game rules (BarnyardRomanceGameTestsForge).
-def gameTestServerProperties = file('runs/gametest/server.properties')
-def writeGameTestServerProperties = tasks.register('writeGameTestServerProperties') {
-    description = 'Writes the game test server\'s world settings.'
-    outputs.file(gameTestServerProperties)
-    doLast {
-        gameTestServerProperties.parentFile.mkdirs()
-        gameTestServerProperties.text = ['level-type=minecraft\\:flat', 'generate-structures=false', 'gamemode=creative',
-                                         'difficulty=normal', 'spawn-monsters=false', 'spawn-animals=false', 'spawn-npcs=false']
-                .join('\n') + '\n'
+def gameTestServerProperties = ['level-type=minecraft\\:flat', 'generate-structures=false', 'gamemode=creative',
+                                'difficulty=normal', 'spawn-monsters=false', 'spawn-animals=false', 'spawn-npcs=false']
+
+gameTestRuns.each { runName, runDir ->
+    // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
+    // midnight partway through and hunger or Vigour refills would hit unrelated tests.
+    def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
+        description = "Deletes the ${runDir} world so the run starts fresh."
+        delete file("${runDir}/world")
+    }
+    def properties = file("${runDir}/server.properties")
+    def writeProperties = tasks.register("write${runName.capitalize()}Properties") {
+        description = "Writes the ${runDir} game test server's world settings."
+        inputs.property('settings', gameTestServerProperties)
+        outputs.file(properties)
+        doLast {
+            properties.parentFile.mkdirs()
+            properties.text = gameTestServerProperties.join('\n') + '\n'
+        }
+    }
+    legacyForge.runs.named(runName) {
+        it.taskBefore(clean)
+        it.taskBefore(writeProperties)
     }
 }
-legacyForge.runs.named('gameTestServer') { it.taskBefore(writeGameTestServerProperties) }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 

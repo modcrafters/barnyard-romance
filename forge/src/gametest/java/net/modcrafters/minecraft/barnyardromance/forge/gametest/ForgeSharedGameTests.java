@@ -28,22 +28,28 @@ import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.gametest.AdvancementGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ApiGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.AutumnityEnvironmentalGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ConversionGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CourtshipGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.DataLoadGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.FarmModsGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FeederGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FightGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FoodGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.FriendsAndFoesGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.GameTestCompat;
 import net.modcrafters.minecraft.barnyardromance.gametest.HerdBookGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.MeadowGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.MockPlayers;
+import net.modcrafters.minecraft.barnyardromance.gametest.NaturalistGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.PailGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ProductGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.StatGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.TrackingGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.UntitledDuckModGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.UpkeepGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.VigourGameTests;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.PregnancyFeature;
@@ -59,7 +65,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // The shared game tests (src/gametest) that run on Forge 1.20.1, each made into a test function as NeoForge 1.21.1
 // does: one batch per test, in the shared pen. A batch's tests stand side by side, and an animal in love would court a
-// neighbour's. The compat test classes (Naturalist, the farm mods) run only in the compat runs, as on NeoForge.
+// neighbour's. The compat test classes (Naturalist, the farm mods) are in every run, as on NeoForge: they test only in
+// the compat runs, which load the mods, and pass at once in the others.
 // Below them, the tests NeoForge's wrapper adds for its own events, on Forge's events of the same name.
 @GameTestHolder(Constants.MOD_ID)
 public final class ForgeSharedGameTests {
@@ -95,6 +102,12 @@ public final class ForgeSharedGameTests {
         cases.addAll(HerdBookGameTests.CASES);
         cases.addAll(CareGameTests.CASES);
         cases.addAll(EggGameTests.CASES);
+        cases.addAll(NaturalistGameTests.CASES);
+        cases.addAll(FarmModsGameTests.CASES);
+        cases.addAll(UntitledDuckModGameTests.CASES);
+        cases.addAll(FriendsAndFoesGameTests.CASES);
+        cases.addAll(MeadowGameTests.CASES);
+        cases.addAll(AutumnityEnvironmentalGameTests.CASES);
         cases.addAll(TrackingGameTests.CASES);
         cases.addAll(ConversionGameTests.CASES);
         cases.addAll(VigourGameTests.CASES);

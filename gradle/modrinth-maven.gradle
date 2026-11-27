@@ -15,3 +15,10 @@ if (repositories.findByName('Modrinth') == null) {
         }
     }
 }
+
+// The configuration a run's mod jars are added to, for a run script's own configuration of them. Forge 1.20.1's mods
+// are published with SRG names, and the dev game runs on Mojang's: there the jars go through a remapping configuration
+// (ModDevGradle's legacyforge), which hands runJars the remapped jars. Elsewhere they go straight into runJars.
+ext.runModsSource = { Configuration runJars ->
+    extensions.findByName('obfuscation') != null ? obfuscation.createRemappingConfiguration(runJars).name : runJars.name
+}
