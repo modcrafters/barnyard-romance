@@ -194,10 +194,11 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: bash .github/scripts/release-publish.sh upload "${{ needs.notes.outputs.version }}" notes/release-notes.md jars
 
-  # The public API jars, for other mods to compile against, go to the maven in MAVEN_URL (with MAVEN_USERNAME and
-  # MAVEN_PASSWORD if it needs a login). Without MAVEN_URL this job only says so.
+  # The public API jars, for other mods to compile against, and the loader mod jars, for their dev runs, go to the
+  # maven in MAVEN_URL (with MAVEN_USERNAME and MAVEN_PASSWORD if it needs a login). Without MAVEN_URL this job only
+  # says so.
   maven:
-    name: API jars to the maven
+    name: API and mod jars to the maven
     needs: [notes, publish]
     runs-on: ubuntu-latest
     steps:
@@ -231,13 +232,13 @@ jobs:
         if: steps.maven.outputs.set == 'true'
         run: bash .github/scripts/release-version.sh write gradle.properties "${{ needs.notes.outputs.version }}"
 
-      - name: Publish the API jars
+      - name: Publish the API and mod jars
         if: steps.maven.outputs.set == 'true'
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-        run: ./gradlew publishApiPublicationToReleaseRepository
+        run: ./gradlew publishApiPublicationToReleaseRepository publishModPublicationToReleaseRepository
 
   bump:
     name: Next version

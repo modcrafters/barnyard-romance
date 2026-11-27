@@ -11,6 +11,7 @@ After publishing, the action prepares the next development version and archives 
 ### API
 
 - The API jars moved on the maven to a folder of their own, with shorter names: `net.modcrafters.minecraft.barnyardromance:<loader>-<mc>-api:<version>`, such as `fabric-26.3-api`. Each loader's jar now holds the whole API on its own, and `<mc>-api`, such as `26.3-api`, is for a multi-loader mod's common code.
+- The mod jars are on the maven too, as `<loader>-<mc>`, such as `neoforge-26.3`, so a mod can run Barnyard Romance in its dev runs while it compiles against the API.
 
 ## 0.0.6
 

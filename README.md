@@ -318,6 +318,9 @@ dependencies {
     compileOnly "net.modcrafters.minecraft.barnyardromance:neoforge-26.3-api:<version>"
     // Fabric: fabric-26.3-api
     compileOnly "net.modcrafters.minecraft.barnyardromance:fabric-26.3-api:<version>"
+
+    // Optional: the mod itself in your dev runs, to test against: neoforge-26.3, neoforge-1.21.1 or fabric-26.3
+    runtimeOnly "net.modcrafters.minecraft.barnyardromance:neoforge-26.3:<version>"
 }
 ```
 

@@ -70,6 +70,22 @@ tasks.named('apiJavadoc', Javadoc) {
     source(configurations.commonApiJava)
 }
 
+// The mod itself on the release maven, as <loader>-<mc> beside its <loader>-<mc>-api, so another mod can compile
+// against the API and still run the real mod in its dev runs. The released jar runs there as it is: 26.3 isn't
+// obfuscated, and NeoForge 1.21.1 runs Mojang's names. Only the jar and its sources go up, with no dependencies in
+// the metadata, so this build's own dependencies never reach another mod's build.
+publishing {
+    publications {
+        register('mod', MavenPublication) {
+            groupId = rootProject.group
+            artifactId = "${project.parent.name}-${minecraft_version}"
+            version = project.version
+            artifact tasks.named('jar')
+            artifact tasks.named('sourcesJar')
+        }
+    }
+}
+
 processResources {
     dependsOn(configurations.commonResources)
     from(configurations.commonResources)
