@@ -59,6 +59,37 @@ stonecutter parameters {
                 """\bextractEntityInInventoryFollowsMouse\b""", "renderEntityInInventoryFollowsMouse"
             )
         }
+        // 1.20.1 has no stream codecs, custom payloads or item components (all 1.20.5), so it imports the mod's own
+        // stand-ins of the same shape from compat.legacy, which only the 1.20.1 build has.
+        string(current.parsed >= "1.20.5") {
+            val legacy = "net.modcrafters.minecraft.barnyardromance.compat.legacy"
+            replace("$legacy.StreamCodec;", "net.minecraft.network.codec.StreamCodec;")
+            replace("$legacy.ByteBufCodecs;", "net.minecraft.network.codec.ByteBufCodecs;")
+            replace("$legacy.RegistryFriendlyByteBuf;", "net.minecraft.network.RegistryFriendlyByteBuf;")
+            replace("$legacy.CustomPacketPayload;", "net.minecraft.network.protocol.common.custom.CustomPacketPayload;")
+            replace("$legacy.DataComponentType;", "net.minecraft.core.component.DataComponentType;")
+            replace("$legacy.ComponentSerialization;", "net.minecraft.network.chat.ComponentSerialization;")
+            // UUIDUtil's stream codec, which 1.20.1's UUIDUtil doesn't have.
+            replace("$legacy.LegacyStreamCodecs.UUID", "UUIDUtil.STREAM_CODEC")
+        }
+        // The id factories came in 1.21; 1.20.1 calls the mod's own (compat.legacy.Ids), which use its constructors.
+        // Replacements all run in one pass and the longest match wins, so these name the class themselves: on 1.21.1
+        // the factory belongs to ResourceLocation and on 26.3 to Identifier. Each pattern going to Ids, and the one
+        // coming back from it on 26.3, also takes the character after the bracket, so it beats the other group's.
+        val idsFactory = "net.modcrafters.minecraft.barnyardromance.compat.legacy.Ids"
+        val ids = """\Q$idsFactory.\E(fromNamespaceAndPath|withDefaultNamespace|parse)\("""
+        regex(current.parsed >= "1.20.5") {
+            replace(
+                ids, "ResourceLocation.\$1(",
+                """\b(?:Identifier|ResourceLocation)\.(fromNamespaceAndPath|withDefaultNamespace|parse)\(([\s\S])""", "$idsFactory.\$1(\$2"
+            )
+        }
+        regex(current.parsed >= "1.21.11") {
+            replace(
+                """$ids([\s\S])""", "Identifier.\$1(\$2",
+                """\bIdentifier\.(fromNamespaceAndPath|withDefaultNamespace|parse)\(""", "ResourceLocation.\$1("
+            )
+        }
         // GUI sprites name their render pipeline.
         regex(current.parsed >= "1.21.6") {
             replace(

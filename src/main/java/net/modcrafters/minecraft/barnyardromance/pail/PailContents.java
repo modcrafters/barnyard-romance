@@ -21,7 +21,11 @@ public record PailContents(@Nullable Identifier fluid, int amount) {
             Codec.INT.optionalFieldOf("amount", 0).forGetter(PailContents::amount)
     ).apply(instance, (fluid, amount) -> new PailContents(fluid.orElse(null), amount)));
     public static final StreamCodec<ByteBuf, PailContents> STREAM_CODEC = StreamCodec.composite(
+            //? if >=1.20.5 {
             ByteBufCodecs.optional(Identifier.STREAM_CODEC), contents -> Optional.ofNullable(contents.fluid()),
+            //?} else {
+            /*ByteBufCodecs.optional(net.modcrafters.minecraft.barnyardromance.compat.legacy.LegacyStreamCodecs.IDENTIFIER), contents -> Optional.ofNullable(contents.fluid()),
+            *///?}
             ByteBufCodecs.VAR_INT, PailContents::amount,
             (fluid, amount) -> new PailContents(fluid.orElse(null), amount));
 
