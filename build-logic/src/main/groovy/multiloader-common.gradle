@@ -152,8 +152,10 @@ publishing {
 
 // The public API's own jars, which other mods compile against. The common project's holds the API for its Minecraft
 // version; a loader's holds only that loader's native events, as its api output also carries the common API compiled
-// with them. The loader's published metadata depends on the common one, so a modder adds one dependency.
-def apiArchiveName = loaderName == 'common' ? "${mod_id}-api-${minecraft_version}" : "${mod_id}-api-${loaderName}-${minecraft_version}"
+// with them. The loader's published metadata depends on the common one, so a modder adds one dependency. On the maven
+// the group already names the mod, so the artifact ids leave it out: api-<mc> and api-<loader>-<mc>.
+def apiArtifactId = loaderName == 'common' ? "api-${minecraft_version}" : "api-${loaderName}-${minecraft_version}"
+def apiArchiveName = "${mod_id}-${apiArtifactId}"
 def apiClasses = loaderName == 'common' ? 'net/modcrafters/minecraft/barnyardromance/api/**' : "net/modcrafters/minecraft/barnyardromance/api/${loaderName}/**"
 def generateApi = tasks.matching { it.name == 'stonecutterGenerateApi' }
 def apiJar = tasks.register('apiJar', Jar) {
@@ -187,13 +189,13 @@ publishing {
     publications {
         register('api', MavenPublication) {
             groupId = rootProject.group
-            artifactId = apiArchiveName
+            artifactId = apiArtifactId
             version = project.version
             artifact apiJar
             artifact apiSourcesJar
             artifact apiJavadocJar
             if (loaderName != 'common') {
-                def commonApi = "${mod_id}-api-${minecraft_version}"
+                def commonApi = "api-${minecraft_version}"
                 pom.withXml {
                     def dependency = asNode().appendNode('dependencies').appendNode('dependency')
                     dependency.appendNode('groupId', rootProject.group)
