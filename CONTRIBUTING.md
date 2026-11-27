@@ -43,31 +43,33 @@ A new shared game test also needs a `@GameTest` wrapper in `fabric/src/gametest/
 
 ### With Naturalist
 
-These runs test compatibility with [Naturalist](https://modrinth.com/mod/naturalist). Each has its own game folder under `runs/naturalist-*`, and Gradle copies the jar into that folder's `mods`, so the mod doesn't compile against Naturalist or ship it. On NeoForge the IntelliJ run configs copy it too, after a Gradle sync. Fabric's runs start from Gradle only.
+These runs test compatibility with [Naturalist](https://modrinth.com/mod/naturalist). Each has its own game folder under `runs/naturalist-*`, and Gradle copies the jar into that folder's `mods`, so the mod doesn't compile against Naturalist or ship it. On NeoForge and Forge the IntelliJ run configs copy it too, after a Gradle sync. Fabric's runs start from Gradle only.
 
 | Command | What it runs |
 | --- | --- |
-| `gradlew :neoforge:1.21.1:runClientNaturalist`, `gradlew :fabric:26.3:runClientNaturalist` | The game with Naturalist |
-| `gradlew :neoforge:1.21.1:runGameTestServerNaturalist`, `gradlew :fabric:26.3:runGametestNaturalist` | Game tests with Naturalist loaded |
+| `gradlew :neoforge:1.21.1:runClientNaturalist`, `gradlew :fabric:26.3:runClientNaturalist`, `gradlew :forge:1.20.1:runClientNaturalist` | The game with Naturalist |
+| `gradlew :neoforge:1.21.1:runGameTestServerNaturalist`, `gradlew :fabric:26.3:runGametestNaturalist`, `gradlew :forge:1.20.1:runGameTestServerNaturalist` | Game tests with Naturalist loaded |
 
 Naturalist needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.101` to the `:neoforge:26.3` versions of these commands.
 
 ### With the farm-animal mods
 
-These runs test compatibility with the farm-animal mods the mod has hooks for: [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod), [Friends&Foes](https://modrinth.com/mod/friends-and-foes), [Meadow](https://modrinth.com/mod/lets-do-meadow), [Autumnity](https://modrinth.com/mod/autumnity) and [Environmental](https://modrinth.com/mod/environmental), with the libraries they need. Each run has its own game folder under `runs/farm-mods-*`, and Gradle copies exactly the jars for that build into its `mods`, so the mod doesn't compile against them or ship them. On NeoForge the IntelliJ run configs copy them too, after a Gradle sync. Fabric's runs start from Gradle only. The jars are pinned by Modrinth version id in `gradle/farm-mods-runs.gradle`.
+These runs test compatibility with the farm-animal mods the mod has hooks for: [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod), [Friends&Foes](https://modrinth.com/mod/friends-and-foes), [Meadow](https://modrinth.com/mod/lets-do-meadow), [Autumnity](https://modrinth.com/mod/autumnity) and [Environmental](https://modrinth.com/mod/environmental), with the libraries they need. Each run has its own game folder under `runs/farm-mods-*`, and Gradle copies exactly the jars for that build into its `mods`, so the mod doesn't compile against them or ship them. On NeoForge and Forge the IntelliJ run configs copy them too, after a Gradle sync. Fabric's runs start from Gradle only. The jars are pinned by Modrinth version id in `gradle/farm-mods-runs.gradle`.
 
 | Command | What it runs |
 | --- | --- |
-| `gradlew :neoforge:1.21.1:runClientFarmMods`, `gradlew :neoforge:26.3:runClientFarmMods`, `gradlew :fabric:26.3:runClientFarmMods` | The game with the farm-animal mods |
-| `gradlew :neoforge:1.21.1:runGameTestServerFarmMods`, `gradlew :neoforge:26.3:runGameTestServerFarmMods`, `gradlew :fabric:26.3:runGametestFarmMods` | Game tests with the mods loaded |
+| `gradlew :neoforge:1.21.1:runClientFarmMods`, `gradlew :neoforge:26.3:runClientFarmMods`, `gradlew :fabric:26.3:runClientFarmMods`, `gradlew :forge:1.20.1:runClientFarmMods` | The game with the farm-animal mods |
+| `gradlew :neoforge:1.21.1:runGameTestServerFarmMods`, `gradlew :neoforge:26.3:runGameTestServerFarmMods`, `gradlew :fabric:26.3:runGametestFarmMods`, `gradlew :forge:1.20.1:runGameTestServerFarmMods` | Game tests with the mods loaded |
 
-NeoForge 1.21.1 loads all five mods. Only Untitled Duck Mod and Friends&Foes have a 26.3 build, so the 26.3 runs load just those two. A run names the mods it should have in `-Dbarnyard_romance.expect_mods`, and a farm-mod game test fails, rather than passes empty, when one of them is missing.
+NeoForge 1.21.1 and Forge 1.20.1 load all five mods. Only Untitled Duck Mod and Friends&Foes have a 26.3 build, so the 26.3 runs load just those two. A run names the mods it should have in `-Dbarnyard_romance.expect_mods`, and a farm-mod game test fails, rather than passes empty, when one of them is missing.
 
 Untitled Duck Mod needs a newer NeoForge on 26.3 than the mod builds against, so add `-Pneoforge_version=26.3.0.103` to the `:neoforge:26.3` versions of these commands.
 
 ### With Fresh Animations
 
-`gradlew :fabric:26.3:runClientFreshAnimations`, `gradlew :neoforge:26.3:runClientFreshAnimations` or `gradlew :neoforge:1.21.1:runClientFreshAnimations` starts the game with [Fresh Animations](https://modrinth.com/resourcepack/fresh-animations) and the two mods it needs, Entity Texture Features and Entity Model Features. The run has its own game folder, `runs/fresh-animations-client`. Gradle copies the two jars into its `mods` and the pack into its `resourcepacks`, and switches the pack on in its `options.txt`. On NeoForge the IntelliJ run config does the same after a Gradle sync.
+`gradlew :fabric:26.3:runClientFreshAnimations`, `gradlew :neoforge:26.3:runClientFreshAnimations`, `gradlew :neoforge:1.21.1:runClientFreshAnimations` or `gradlew :forge:1.20.1:runClientFreshAnimations` starts the game with [Fresh Animations](https://modrinth.com/resourcepack/fresh-animations) and the two mods it needs, Entity Texture Features and Entity Model Features. The run has its own game folder, `runs/fresh-animations-client`. Gradle copies the two jars into its `mods` and the pack into its `resourcepacks`, and switches the pack on in its `options.txt`. On NeoForge and Forge the IntelliJ run config does the same after a Gradle sync.
+
+Forge 1.20.1's mods are published with Minecraft's SRG names, and its dev game runs on Mojang's, so on Forge every one of these runs remaps its jars first (`runModsSource` in `gradle/modrinth-maven.gradle`). A dev run can't show whether a mixin into another mod's class finds its target in a real game: the mod's compat mixins name such a method by both names on 1.20.1, so check the jar's refmap and a real Forge server when you change one.
 
 ## Before a release
 
