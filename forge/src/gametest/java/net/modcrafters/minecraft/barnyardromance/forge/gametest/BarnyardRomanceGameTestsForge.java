@@ -18,5 +18,6 @@ public class BarnyardRomanceGameTestsForge {
 
     private static void registerTests(RegisterGameTestsEvent event) {
         event.register(ForgeDataGameTests.class);
+        event.register(ForgeContainerGameTests.class);
     }
 }

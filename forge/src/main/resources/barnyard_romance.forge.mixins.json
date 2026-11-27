@@ -5,9 +5,9 @@
   "compatibilityLevel": "JAVA_${java_version}",
   "mixins": [
     "CapabilityProviderAccessor",
-    "FeederCapabilityMixin",
     "MilkBucketItemMixin",
-    "ShearsItemMixin"
+    "ShearsItemMixin",
+    "SidedContainerMixin"
   ],
   "client": [],
   "server": [],
