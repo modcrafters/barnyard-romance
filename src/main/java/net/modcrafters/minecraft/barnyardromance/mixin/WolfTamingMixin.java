@@ -10,7 +10,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // A tamed wolf loading from its save skips this, so its health is not reset.
 @Mixin(Wolf.class)
 public class WolfTamingMixin {
+    // 1.20.1 has no applyTamingSideEffects: setTame sets the health there. It also runs when a tamed wolf loads, where
+    // vanilla 1.20.1 already sets the health to 20, a full tamed wolf's, so a big wolf loads full too.
+    //? if >=1.20.5 {
     @Inject(method = "applyTamingSideEffects", at = @At("TAIL"))
+    //?} else
+    //@Inject(method = "setTame", at = @At("TAIL"))
     private void barnyardromance$fullHealth(CallbackInfo callback) {
         Wolf wolf = (Wolf) (Object) this;
         if (wolf.isTame()) {

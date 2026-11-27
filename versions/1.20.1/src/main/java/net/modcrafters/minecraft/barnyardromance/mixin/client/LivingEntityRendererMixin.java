@@ -20,7 +20,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-// 1.20.1's copy: render() draws the model straight away, so the belly, hiding and horns all happen inside it.
+// 1.20.1's copy: render() draws the model straight away, so the belly, hiding and horns all happen inside it. Models
+// draw with a colour as four floats there.
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extends EntityModel<T>> {
     @Shadow
@@ -58,7 +59,7 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V"
+                    target = "Lnet/minecraft/client/model/EntityModel;renderToBuffer(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V"
             )
     )
     private void barnyardromance$hideVanillaHorns(
@@ -67,17 +68,20 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             VertexConsumer buffer,
             int light,
             int overlay,
-            int color,
+            float red,
+            float green,
+            float blue,
+            float alpha,
             Operation<Void> original
     ) {
         HornDraw draw = barnyardromance$horns;
         if (draw == null) {
-            original.call(drawn, poseStack, buffer, light, overlay, color);
+            original.call(drawn, poseStack, buffer, light, overlay, red, green, blue, alpha);
             return;
         }
         Runnable undo = VanillaHornHider.hide(path -> ModelParts.find(drawn, path), draw.horns().file().hide());
         try {
-            original.call(drawn, poseStack, buffer, light, overlay, color);
+            original.call(drawn, poseStack, buffer, light, overlay, red, green, blue, alpha);
         } finally {
             undo.run();
         }
