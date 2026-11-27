@@ -7,6 +7,7 @@ import net.modcrafters.minecraft.barnyardromance.gametest.AdvancementGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ApiGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.BreedingGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.CareGameTests;
+import net.modcrafters.minecraft.barnyardromance.gametest.DataLoadGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.ConversionGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.EggGameTests;
 import net.modcrafters.minecraft.barnyardromance.gametest.FeederGameTests;
@@ -146,6 +147,7 @@ public final class NeoForgeBreedingGameTests {
         cases.addAll(FightGameTests.CASES);
         cases.addAll(AdvancementGameTests.CASES);
         cases.addAll(ApiGameTests.CASES);
+        cases.addAll(DataLoadGameTests.CASES);
         cases.addAll(NeoForgeApiGameTests.CASES);
         cases.addAll(NeoForgePailFluidTests.CASES);
         cases.add(new BreedingGameTests.Case("unload_event_refreshes_the_record", 20,

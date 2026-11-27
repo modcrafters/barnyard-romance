@@ -1,0 +1,10 @@
+{
+  "conditions": [
+    {
+      "type": "barnyard_romance:config_enabled",
+      "key": "milkConversion"
+    }
+  ],
+  "type": "barnyard_romance:milk_conversion",
+  "category": "misc"
+}

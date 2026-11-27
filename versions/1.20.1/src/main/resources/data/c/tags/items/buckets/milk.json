@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:milk_bucket",
+    "barnyard_romance:sheep_milk_bucket",
+    "barnyard_romance:goat_milk_bucket"
+  ]
+}

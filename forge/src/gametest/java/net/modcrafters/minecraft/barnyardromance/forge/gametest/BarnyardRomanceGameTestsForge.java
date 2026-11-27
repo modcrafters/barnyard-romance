@@ -21,5 +21,6 @@ public class BarnyardRomanceGameTestsForge {
         event.register(ForgeDataGameTests.class);
         event.register(ForgeContainerGameTests.class);
         event.register(ForgeApiGameTests.class);
+        event.register(ForgeSharedGameTests.class);
     }
 }

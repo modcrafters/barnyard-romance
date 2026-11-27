@@ -60,9 +60,34 @@ def versionOverrides = [rootProject.projectDir, project.parent.projectDir].uniqu
         }
     }
 }
+// Before 1.20.5 (1.20.1 here) the game reads data from its older folder names. Shared data keeps the newer names, and
+// processResources moves each file into the older folder; a 1.20.1 copy in versions/1.20.1/src is written in the older
+// folder already. The mod's own folders (data/<namespace>/barnyard_romance/...) and damage type tags keep their names.
+def legacyDataFolders = stonecutter.eval(stonecutter.current.version, '<1.20.5')
+def legacyFolderNames = [
+        'advancement'     : 'advancements',
+        'recipe'          : 'recipes',
+        'loot_table'      : 'loot_tables',
+        'tags/item'       : 'tags/items',
+        'tags/block'      : 'tags/blocks',
+        'tags/entity_type': 'tags/entity_types',
+        'tags/fluid'      : 'tags/fluids'
+]
+def legacyDataPath = { String path ->
+    def match = path =~ /^(data\/[^\/]+\/)(advancement|recipe|loot_table|tags\/item|tags\/block|tags\/entity_type|tags\/fluid)(\/.+)$/
+    match.matches() ? match.group(1) + legacyFolderNames[match.group(2)] + match.group(3) : path
+}
 def overridden = { FileTreeElement element ->
-    !element.directory && versionOverrides.any { dirs ->
-        element.file.toPath().startsWith(dirs.shared) && new File(dirs.local, element.relativePath.pathString).exists()
+    if (element.directory) {
+        return false
+    }
+    def path = element.relativePath.pathString
+    // A 1.20.1 copy sits at the shared file's path after the move, so Stonecutter, which only matches the same path,
+    // keeps the shared file, and it is left out here.
+    def moved = legacyDataFolders ? legacyDataPath(path) : path
+    versionOverrides.any { dirs ->
+        (element.file.toPath().startsWith(dirs.shared) && new File(dirs.local, path).exists()) ||
+                (moved != path && new File(dirs.local, moved).exists())
     }
 }
 tasks.withType(SourceTask).configureEach { exclude(overridden) }
@@ -133,6 +158,17 @@ tasks.withType(ProcessResources).configureEach {
 
     filesMatching(['pack.mcmeta', 'fabric.mod.json', '*.mixins.json']) {
         expand jsonExpandProps
+    }
+
+    // The older data folder names (see legacyDataFolders above), for the mod's data and the game test mod's.
+    if (legacyDataFolders) {
+        eachFile { details ->
+            def moved = legacyDataPath(details.path)
+            if (moved != details.path) {
+                details.path = moved
+            }
+        }
+        includeEmptyDirs = false
     }
 
     inputs.properties(expandProps)

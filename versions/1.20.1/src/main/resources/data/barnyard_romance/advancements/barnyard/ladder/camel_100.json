@@ -1,0 +1,33 @@
+{
+  "conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "minecraft:camel"
+      ]
+    }
+  ],
+  "parent": "barnyard_romance:barnyard/ladder/camel_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.camel_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "item": "minecraft:camel_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.camel_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

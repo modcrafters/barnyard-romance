@@ -1,0 +1,35 @@
+{
+  "conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "naturalist:duck",
+        "untitledduckmod:duck",
+        "environmental:duck"
+      ]
+    }
+  ],
+  "parent": "barnyard_romance:barnyard/which_came_first",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.duck_10.description"
+    },
+    "frame": "task",
+    "icon": {
+      "item": "minecraft:feather"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.duck_10.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

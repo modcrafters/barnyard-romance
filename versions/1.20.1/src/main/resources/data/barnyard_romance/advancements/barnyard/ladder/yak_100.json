@@ -1,0 +1,33 @@
+{
+  "conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "environmental:yak"
+      ]
+    }
+  ],
+  "parent": "barnyard_romance:barnyard/ladder/yak_10",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.yak_100.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "item": "environmental:yak_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.yak_100.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

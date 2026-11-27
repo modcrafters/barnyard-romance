@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "tag": "minecraft:planks"
+    },
+    "H": {
+      "item": "minecraft:hay_block"
+    }
+  },
+  "pattern": [
+    "P P",
+    "PHP",
+    "PPP"
+  ],
+  "result": {
+    "item": "barnyard_romance:feeder"
+  }
+}
