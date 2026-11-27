@@ -71,12 +71,46 @@ stonecutter parameters {
             replace("$legacy.ComponentSerialization;", "net.minecraft.network.chat.ComponentSerialization;")
             // UUIDUtil's stream codec, which 1.20.1's UUIDUtil doesn't have.
             replace("$legacy.LegacyStreamCodecs.UUID", "UUIDUtil.STREAM_CODEC")
+            // A container that keeps its slots in a list, as 1.20.5's BaseContainerBlockEntity does.
+            replace("$legacy.BaseContainerBlockEntity;", "net.minecraft.world.level.block.entity.BaseContainerBlockEntity;")
+        }
+        // Methods 1.20.5 and later added or renamed, as 1.20.1 has them. The calls the mod's own helper stands in for
+        // (compat.legacy.Legacy) are written out whole, receiver and all, so nothing else turns into them.
+        string(current.parsed >= "1.20.5") {
+            val legacy = "net.modcrafters.minecraft.barnyardromance.compat.legacy.Legacy"
+            replace("ItemStack.isSameItemSameTags(", "ItemStack.isSameItemSameComponents(")
+            replace(".getAbilities().instabuild/*hasInfiniteMaterials*/", ".hasInfiniteMaterials()")
+            replace("$legacy.consume(stack, 1, player)", "stack.consume(1, player)")
+            replace("$legacy.isPanicking(animal)", "animal.isPanicking()")
+            replace("$legacy.isInLiquid(animal)", "animal.isInLiquid()")
+            replace("$legacy.random(self)", "self.getRandom()")
+            replace("$legacy.dropContentsOnDestroy(", "Containers.dropContentsOnDestroy(")
+            // Tooltips get the level rather than a context; the mod's items don't read either, so the name stays.
+            replace(
+                "ItemStack stack, net.minecraft.world.level.Level context, List<Component> lines, TooltipFlag flag",
+                "ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag"
+            )
+            // A block's use without an item was its plain use, with a hand.
+            replace(
+                "public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, net.minecraft.world.InteractionHand hand, BlockHitResult hit) {",
+                "protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {"
+            )
+            // A superfood's lore line is a component from 1.20.5; before that the item writes it (LoreItem).
+            replace("new net.modcrafters.minecraft.barnyardromance.compat.legacy.LoreItem(ItemProperties.superfood(", "new Item(ItemProperties.superfood(")
+        }
+        // Block methods were public before 1.20.5. Only the block overrides the mod has, by their first parameter.
+        regex(current.parsed >= "1.20.5") {
+            val overrides = """(?:void onRemove|RenderShape getRenderShape|boolean hasAnalogOutputSignal|int getAnalogOutputSignal|""" +
+                    """BlockState rotate|BlockState mirror|VoxelShape getShape|VoxelShape getCollisionShape)\(BlockState """
+            replace("""\bpublic (?=$overrides)""", "protected ", """\bprotected (?=$overrides)""", "public ")
         }
         // The id factories came in 1.21; 1.20.1 calls the mod's own (compat.legacy.Ids), which use its constructors.
         // Replacements all run in one pass and the longest match wins, so these name the class themselves: on 1.21.1
         // the factory belongs to ResourceLocation and on 26.3 to Identifier. Each pattern going to Ids, and the one
-        // coming back from it on 26.3, also takes the character after the bracket, so it beats the other group's.
+        // coming back from it on 26.3, also takes the character after the bracket, so it beats the other group's. That
+        // character can't start another replacement, so a call's first argument is never another replaced name.
         val idsFactory = "net.modcrafters.minecraft.barnyardromance.compat.legacy.Ids"
+        val legacyGui = "net.modcrafters.minecraft.barnyardromance.compat.legacy.LegacyGui"
         val ids = """\Q$idsFactory.\E(fromNamespaceAndPath|withDefaultNamespace|parse)\("""
         regex(current.parsed >= "1.20.5") {
             replace(
@@ -95,6 +129,19 @@ stonecutter parameters {
             replace(
                 """\.blitSprite\((?!RenderPipelines)""", ".blitSprite(RenderPipelines.GUI_TEXTURED, ",
                 """\.blitSprite\(RenderPipelines\.GUI_TEXTURED, """, ".blitSprite("
+            )
+            // Back from 1.20.1 (below), taking a character more so it beats the next group's way back to 1.21.1.
+            replace(
+                """\Q$legacyGui.blitSprite(graphics, \E([\s\S])""", "graphics.blitSprite(RenderPipelines.GUI_TEXTURED, \$1",
+                // Nothing goes the other way: the next group takes 1.20.1 back to 1.21.1 itself.
+                """(?!)never""", "never"
+            )
+        }
+        // 1.20.1 has no GUI sprite atlas: compat.legacy.LegacyGui draws each sprite from its own file.
+        regex(current.parsed >= "1.20.5") {
+            replace(
+                """\Q$legacyGui.blitSprite(graphics, \E""", "graphics.blitSprite(",
+                """\bgraphics\.blitSprite\((?:RenderPipelines\.GUI_TEXTURED, )?([\s\S])""", "$legacyGui.blitSprite(graphics, \$1"
             )
         }
     }

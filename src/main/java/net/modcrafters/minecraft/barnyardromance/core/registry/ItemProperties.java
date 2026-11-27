@@ -1,11 +1,15 @@
 package net.modcrafters.minecraft.barnyardromance.core.registry;
 
+//? if >=1.20.5 {
 import net.minecraft.core.component.DataComponents;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+//? if >=1.20.5 {
 import net.minecraft.world.item.component.ItemLore;
+//?}
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 
 import java.util.List;
@@ -35,8 +39,14 @@ public final class ItemProperties {
         List<Component> lore = effectLine
                 ? List.of(Component.translatable(key + ".use"), Component.translatable(key + ".effect"))
                 : List.of(Component.translatable(key + ".use"));
+        //? if >=1.20.5 {
         return of(id)
                 .rarity(Rarity.UNCOMMON)
                 .component(DataComponents.LORE, new ItemLore(lore));
+        //?} else {
+        /*// 1.20.1 has no lore component: the properties carry the lines for the item to show (LoreItem).
+        return new net.modcrafters.minecraft.barnyardromance.compat.legacy.LoreProperties(lore)
+                .rarity(Rarity.UNCOMMON);
+        *///?}
     }
 }

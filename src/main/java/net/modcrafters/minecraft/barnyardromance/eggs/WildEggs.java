@@ -5,8 +5,10 @@ import net.modcrafters.minecraft.barnyardromance.core.config.Range;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
+//? if >=1.20.5 {
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+//?}
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
@@ -44,8 +46,11 @@ public final class WildEggs {
         }
         ItemData.remove(stack, EggsComponents.EGG_DATA);
         ItemData.set(stack, EggsComponents.WILD_EGG, outside);
+        // 1.20.1 has no stack size or name components: the egg item gives both for a wild egg (FertilizedEggItem).
+        //? if >=1.20.5 {
         stack.set(DataComponents.MAX_STACK_SIZE, STACK);
         stack.set(DataComponents.ITEM_NAME, Component.translatable("item.barnyard_romance.fertilized_egg.wild"));
+        //?}
         return stack;
     }
 

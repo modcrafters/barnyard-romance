@@ -52,7 +52,7 @@ public class HerdBookItem extends Item {
     //?} else {
     /*@Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
-        UUID id = stack.get(HerdComponents.HERD_BOOK);
+        UUID id = ItemData.get(stack, HerdComponents.HERD_BOOK);
         if (id != null) {
             lines.add(herdLine(id));
         }

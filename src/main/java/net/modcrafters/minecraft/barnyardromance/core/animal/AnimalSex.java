@@ -12,6 +12,9 @@ import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.Map;
+//? if <1.20.5 {
+/*import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
+*///?}
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class AnimalSex {
@@ -29,8 +32,13 @@ public final class AnimalSex {
     }
 
     public static double currentScale(Animal animal) {
+        //? if >=1.20.5 {
         AttributeInstance attribute = animal.getAttribute(Attributes.SCALE);
         return attribute == null ? 1.0 : attribute.getBaseValue();
+        //?} else {
+        /*// 1.20.1 has no scale attribute: the body stays vanilla-sized, and the size is what the traits keep.
+        return Services.DATA.get(animal).map(AnimalTraits::scale).orElse(1.0);
+        *///?}
     }
 
     // Only the animals familiarity tames (wolves, cats, horses and the rest of the horse family) count: a parrot tamed

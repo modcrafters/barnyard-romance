@@ -139,10 +139,17 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    //? if >=1.20.5 {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
     }
+    //?} else {
+    /*@Override
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
+    }
+    *///?}
 
     // The hen leaves the world to sit in the box, saved whole, and comes back out with all her eggs laid. She sits
     // longer for more eggs (EggRules.sitTicks). Her nest is the one her first egg goes in.
@@ -470,7 +477,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         output.putLong("lastCounted", lastCounted);
         output.putLong("lastClock", lastClock);
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -493,5 +500,28 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         tag.putLong("lastCounted", lastCounted);
         tag.putLong("lastClock", lastClock);
     }
-    *///?}
+        *///?} else {
+    /*@Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, items);
+        occupant = tag.contains("occupant")
+                ? NestOccupant.CODEC.parse(NbtOps.INSTANCE, tag.get("occupant")).result().orElse(null)
+                : null;
+        lastCounted = tag.contains("lastCounted") ? tag.getLong("lastCounted") : NEVER;
+        lastClock = tag.contains("lastClock") ? tag.getLong("lastClock") : NEVER;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, items);
+        if (occupant != null) {
+            NestOccupant.CODEC.encodeStart(NbtOps.INSTANCE, occupant).result().ifPresent(saved -> tag.put("occupant", saved));
+        }
+        tag.putLong("lastCounted", lastCounted);
+        tag.putLong("lastClock", lastClock);
+    }
+        *///?}
 }

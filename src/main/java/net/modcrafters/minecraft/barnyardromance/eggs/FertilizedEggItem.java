@@ -84,4 +84,17 @@ public class FertilizedEggItem extends EggItem {
         lines.add(Text.of("item.barnyard_romance.fertilized_egg.parents_unknown"));
         return lines;
     }
+
+    //? if <1.20.5 {
+    /*// 1.20.1 has no name or stack size components. Forge asks the item for a stack's size (IForgeItem), so this
+    // overrides that, and a wild egg stacks as it does on the newer versions.
+    @Override
+    public Component getName(ItemStack stack) {
+        return WildEggs.wild(stack) ? Component.translatable("item.barnyard_romance.fertilized_egg.wild") : super.getName(stack);
+    }
+
+    public int getMaxStackSize(ItemStack stack) {
+        return WildEggs.wild(stack) ? WildEggs.STACK : getMaxStackSize();
+    }
+    *///?}
 }

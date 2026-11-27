@@ -14,7 +14,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 // The server's food level selects a baked model on every client; no inventory packets or renderer needed.
 public class GrainFeederBlock extends FeederBlock {
     public static final IntegerProperty FOOD_LEVEL = IntegerProperty.create("food_level", 0, FeederFill.LEVELS);
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*public static final MapCodec<GrainFeederBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.xmap(FeederKind::valueOf, FeederKind::name).fieldOf("kind").forGetter(FeederBlock::kind),
             propertiesCodec()
@@ -32,7 +32,7 @@ public class GrainFeederBlock extends FeederBlock {
         builder.add(FOOD_LEVEL);
     }
 
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*@Override
     protected MapCodec<? extends GrainFeederBlock> codec() {
         return CODEC;

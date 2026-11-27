@@ -69,13 +69,9 @@ class ItemDataTest {
 
     @Test
     void differentValuesMakeDifferentStacks() {
-        //? if >=1.20.5 {
+        // isSameItemSameTags on 1.20.1 (see stonecutter.gradle.kts).
         assertFalse(ItemStack.isSameItemSameComponents(book(BOOK), book(OTHER_BOOK)));
         assertTrue(ItemStack.isSameItemSameComponents(book(BOOK), book(BOOK)));
-        //?} else {
-        /*assertFalse(ItemStack.isSameItemSameTags(book(BOOK), book(OTHER_BOOK)));
-        assertTrue(ItemStack.isSameItemSameTags(book(BOOK), book(BOOK)));
-        *///?}
     }
 
     @Test
@@ -103,11 +99,9 @@ class ItemDataTest {
         ItemData.set(cleared, HerdComponents.HERD_BOOK, null);
         assertFalse(ItemData.has(cleared, HerdComponents.HERD_BOOK));
         // Without its data the book stacks with a plain one again.
-        //? if >=1.20.5 {
         assertTrue(ItemStack.isSameItemSameComponents(stack, new ItemStack(Items.BOOK)));
-        //?} else {
-        /*assertTrue(ItemStack.isSameItemSameTags(stack, new ItemStack(Items.BOOK)));
-        assertNull(cleared.getTag());
-        *///?}
+        // An emptied tag goes too, so the stack is a plain one again.
+        //? if <1.20.5
+        //assertNull(cleared.getTag());
     }
 }

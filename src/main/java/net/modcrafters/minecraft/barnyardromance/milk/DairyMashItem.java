@@ -16,7 +16,10 @@ import java.util.function.Consumer;
 //import java.util.List;
 
 // Dairy Mash says how long the milk it starts lasts, from the config (milkKeepsFlowingTicks), in the lore's style.
+//? if >=1.20.5 {
 public class DairyMashItem extends Item {
+//?} else
+//public class DairyMashItem extends net.modcrafters.minecraft.barnyardromance.compat.legacy.LoreItem {
     public DairyMashItem(Properties properties) {
         super(properties);
     }
@@ -30,6 +33,8 @@ public class DairyMashItem extends Item {
     /*@Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
         lines.add(effectLine());
+        // The lore line after it, as the lore component comes after the item's own lines.
+        super.appendHoverText(stack, context, lines, flag);
     }
     *///?}
 

@@ -7,6 +7,15 @@ import net.modcrafters.minecraft.barnyardromance.core.config.ExcludedTag;
 import net.modcrafters.minecraft.barnyardromance.core.config.IncludedTag;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggsItems;
 import net.minecraft.world.level.block.DispenserBlock;
+//? if <1.20.5 {
+/*import net.minecraft.Util;
+import net.minecraft.core.Position;
+import net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+*///?}
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
 
 public final class BarnyardRomance {
@@ -15,7 +24,17 @@ public final class BarnyardRomance {
 
     // Once the items are registered: dispensers throw fertilized eggs like vanilla's.
     public static void setup() {
+        //? if >=1.20.5 {
         DispenserBlock.registerProjectileBehavior(EggsItems.FERTILIZED_EGG);
+        //?} else {
+        /*// 1.20.1 has no ProjectileItem: this is the behaviour it registers for its own eggs.
+        DispenserBlock.registerBehavior(EggsItems.FERTILIZED_EGG, new AbstractProjectileDispenseBehavior() {
+            @Override
+            protected Projectile getProjectile(Level level, Position position, ItemStack stack) {
+                return Util.make(new ThrownEgg(level, position.x(), position.y(), position.z()), egg -> egg.setItem(stack));
+            }
+        });
+        *///?}
     }
 
     // What's kept in memory for a server's levels is let go when it stops, so a world left for the title screen isn't

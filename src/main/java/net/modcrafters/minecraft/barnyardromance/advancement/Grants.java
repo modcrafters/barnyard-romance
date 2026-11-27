@@ -1,6 +1,10 @@
 package net.modcrafters.minecraft.barnyardromance.advancement;
 
+//? if >=1.20.5 {
 import net.minecraft.advancements.AdvancementHolder;
+//?} else {
+/*import net.minecraft.advancements.Advancement;
+*///?}
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -49,7 +53,11 @@ public final class Grants {
     // An advancement a datapack removed, or a criterion it renamed, is left alone.
     static void award(ServerPlayer player, Identifier advancement, String criterion) {
         MinecraftServer server = player.level().getServer();
+        //? if >=1.20.5 {
         AdvancementHolder holder = server == null ? null : server.getAdvancements().get(advancement);
+        //?} else {
+        /*Advancement holder = server == null ? null : server.getAdvancements().getAdvancement(advancement);
+        *///?}
         if (holder != null) {
             player.getAdvancements().award(holder, criterion);
         }
