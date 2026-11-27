@@ -13,7 +13,7 @@ One codebase builds three jars: Fabric and NeoForge for 26.3, and NeoForge for 1
 - Common code is in `src/`, Fabric code in `fabric/src` and NeoForge code in `neoforge/src`. Shared code keeps to Java 21.
 - The public API other mods compile against is its own source set, `src/api`. Each loader's `src/api` holds that loader's native events (`api/neoforge`, `api/fabric`). The mod jars include all of it; `apiJar` builds the separate API jars.
 - Code that differs between versions is marked with comments such as `//? if >=1.21.6 {`. The optional **Stonecutter Dev** plugin highlights them.
-- To work on another version, run the Gradle task `Set active project to <mc>`. Run `Reset active project` before you commit: git must always hold the 26.3 state.
+- To work on another version, run the Gradle task `Set active project to <mc>`. Run `Reset active project` before you commit: git must always hold the 26.3 state. The one exception is `forge/src`: Forge only has 1.20.1, so its code is written for 1.20.1 and stays that way.
 
 ## How the code is split
 

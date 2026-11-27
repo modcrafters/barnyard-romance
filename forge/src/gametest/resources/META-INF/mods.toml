@@ -1,0 +1,16 @@
+# Game tests for the mod. Only the game test runs load this mod; it never ships. Its mixin config is named on the
+# game test run's command line (forge/build.gradle).
+modLoader = "javafml"
+loaderVersion = "${forge_loader_version_range}"
+license = "${license}"
+[[mods]]
+modId = "${mod_id}_gametest"
+version = "${version}"
+displayName = "${mod_name} Game Tests"
+description = '''Game tests for ${mod_name}.'''
+[[dependencies.${mod_id}_gametest]]
+modId = "${mod_id}"
+mandatory = true
+versionRange = "[${version},)"
+ordering = "AFTER"
+side = "BOTH"

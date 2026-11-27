@@ -3,6 +3,10 @@ plugins {
     id 'net.neoforged.moddev.legacyforge'
 }
 
+// forge/src is written as 1.20.1 code (ResourceLocation, the compat.legacy stand-ins), not 26.3's. Forge has no other
+// version, so Stonecutter only ever turns another version's names into 1.20.1's here, which leaves 1.20.1 code as it is,
+// and switching to 1.21.1 or 26.3 doesn't touch the folder at all.
+
 // The Naturalist and farm-mods compat runs aren't wired for Forge yet.
 apply from: rootProject.file('gradle/jade-runs.gradle')
 apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
@@ -23,10 +27,23 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
-// Mixin configs load from the jar's manifest on Forge 1.20.1. The shippable jar is reobfJar's, which remaps this one
-// (kept in build/devlibs) to SRG names.
+// AnimalEating is a 26.3-only mixin (extra_mixins there) whose target 1.20.1 doesn't have. The other loaders compile it
+// without loading it, but here the Mixin annotation processor checks every mixin it compiles and rejects it.
+tasks.named('compileJava', JavaCompile) {
+    exclude '**/barnyardromance/mixin/AnimalEating.java'
+}
+
+// The shared game tests don't build on 1.20.1 yet, so for now the game test mod is forge/src/gametest alone, with the
+// shared test resources (the test structures).
+tasks.named('compileGametestJava', JavaCompile) {
+    setSource(sourceSets.gametest.java)
+}
+
+// Mixin configs load from the jar's manifest on Forge 1.20.1: the common ones and Forge's own. The shippable jar is
+// reobfJar's, which remaps this one (kept in build/devlibs) to SRG names.
+def mixinConfigs = ["${mod_id}.mixins.json", "${mod_id}.forge.mixins.json"]*.toString()
 tasks.named('jar', Jar) {
-    manifest.attributes('MixinConfigs': "${mod_id}.mixins.json")
+    manifest.attributes('MixinConfigs': mixinConfigs.join(','))
 }
 
 legacyForge {
@@ -70,14 +87,17 @@ legacyForge {
             sourceSet = sourceSets.gametest
             loadedMods = [legacyForge.mods.named(mod_id).get(), legacyForge.mods.named("${mod_id}_gametest").get()]
             gameDirectory = this.mkdir(this.file('runs/gametest'))
+            // The game test mod's own mixins. A dev run names its mixin configs on the command line (see below).
+            programArguments.addAll '--mixin.config', "${mod_id}_gametest_forge.mixins.json"
         }
     }
 }
 
-// The refmap the annotation processor writes for the common mixins, which the mod's main source set compiles.
+// The refmap the annotation processor writes for the common and Forge mixins, which the mod's main source set compiles.
+// The configs are named here for the dev runs, which load the mod from its folders rather than a jar with a manifest.
 mixin {
     add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
+    mixinConfigs.each { config it }
 }
 
 // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
@@ -112,10 +132,10 @@ sourceSets.configureEach {
 }
 
 // ModDevGradle's mixin block only points the annotation processor at the refmap file and adds that file to the jar; it
-// doesn't write the "refmap" key into the config. NeoForge and Fabric configs don't have one (their runtimes map names
-// themselves), so the shared barnyard_romance.mixins.json stays as it is and only this build's copy gets the key.
+// doesn't write the "refmap" key into the configs. NeoForge and Fabric configs don't have one (their runtimes map names
+// themselves), so the shared barnyard_romance.mixins.json stays as it is and only this build's copies get the key.
 tasks.named('processResources', ProcessResources) {
-    filesMatching("${mod_id}.mixins.json") {
+    filesMatching(mixinConfigs) {
         filter { line -> line == '{' ? '{\n  "refmap": "' + mod_id + '.refmap.json",' : line }
     }
 }
