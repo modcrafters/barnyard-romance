@@ -59,6 +59,17 @@ tasks.named('jar', Jar) {
     from(sourceSets.api.output)
 }
 
+// The loader's API jar holds the whole API, so its sources and javadoc take in the common API too.
+tasks.named('apiSourcesJar', Jar) {
+    dependsOn(configurations.commonApiJava)
+    from(configurations.commonApiJava)
+}
+
+tasks.named('apiJavadoc', Javadoc) {
+    dependsOn(configurations.commonApiJava)
+    source(configurations.commonApiJava)
+}
+
 processResources {
     dependsOn(configurations.commonResources)
     from(configurations.commonResources)

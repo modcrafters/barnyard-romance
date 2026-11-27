@@ -10,7 +10,7 @@ After publishing, the action prepares the next development version and archives 
 
 ### API
 
-- The API jars moved on the maven to a folder of their own, and their names no longer repeat the mod: `net.modcrafters.minecraft.barnyardromance:api-<loader>-<mc>:<version>`, such as `api-fabric-26.3`.
+- The API jars moved on the maven to a folder of their own, with shorter names: `net.modcrafters.minecraft.barnyardromance:<loader>-<mc>-api:<version>`, such as `fabric-26.3-api`. Each loader's jar now holds the whole API on its own, and `<mc>-api`, such as `26.3-api`, is for a multi-loader mod's common code.
 
 ## 0.0.6
 

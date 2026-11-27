@@ -306,7 +306,7 @@ All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To transl
 
 ## For mod developers
 
-Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. The jars are on the maven at `https://maven.moddev.zone/releases`. Add the jar for your loader and Minecraft version as a compile-only dependency; it brings the common API jar with it.
+Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. The jars are on the maven at `https://maven.moddev.zone/releases`. Add the one jar for your loader and Minecraft version as a compile-only dependency. It holds the whole API, your loader's own events included.
 
 ```groovy
 repositories {
@@ -314,12 +314,14 @@ repositories {
 }
 
 dependencies {
-    // NeoForge: api-neoforge-26.3 or api-neoforge-1.21.1
-    compileOnly "net.modcrafters.minecraft.barnyardromance:api-neoforge-26.3:<version>"
-    // Fabric: api-fabric-26.3
-    compileOnly "net.modcrafters.minecraft.barnyardromance:api-fabric-26.3:<version>"
+    // NeoForge: neoforge-26.3-api or neoforge-1.21.1-api
+    compileOnly "net.modcrafters.minecraft.barnyardromance:neoforge-26.3-api:<version>"
+    // Fabric: fabric-26.3-api
+    compileOnly "net.modcrafters.minecraft.barnyardromance:fabric-26.3-api:<version>"
 }
 ```
+
+There is also a jar with no loader in its name, `26.3-api` or `1.21.1-api`, for a mod that builds for several loaders from one codebase. That mod's common code can't depend on any one loader, so it compiles against this jar instead: the same API without the loader events. Each loader's code then takes its loader's jar as usual.
 
 - Only touch the API when the mod `barnyard_romance` is loaded. Never shade the API or nest it in your jar: Barnyard Romance already carries it, and two copies clash.
 - `BarnyardEvents` has the events. `Taming`, `Milking`, `DeathDrop`, `ShearYield` and `FamiliarityChange` come before Barnyard Romance acts and can be cancelled or changed. `Befriended`, `Born` and `Hatched` come after. They fire on the server, only for animals Barnyard Romance tracks. Register listeners while your mod starts.

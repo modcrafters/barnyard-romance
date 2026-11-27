@@ -150,20 +150,21 @@ publishing {
     }
 }
 
-// The public API's own jars, which other mods compile against. The common project's holds the API for its Minecraft
-// version; a loader's holds only that loader's native events, as its api output also carries the common API compiled
-// with them. The loader's published metadata depends on the common one, so a modder adds one dependency. On the maven
-// the group already names the mod, so the artifact ids leave it out: api-<mc> and api-<loader>-<mc>.
-def apiArtifactId = loaderName == 'common' ? "api-${minecraft_version}" : "api-${loaderName}-${minecraft_version}"
-def apiArchiveName = "${mod_id}-${apiArtifactId}"
-def apiClasses = loaderName == 'common' ? 'net/modcrafters/minecraft/barnyardromance/api/**' : "net/modcrafters/minecraft/barnyardromance/api/${loaderName}/**"
+// The public API's own jars, which other mods compile against. A loader's holds the whole API, the common API
+// compiled into its api output plus that loader's native events, so a modder adds that one jar. The common project's
+// holds only the common API, for a multi-loader mod's common code, which can't see any loader. On the maven the group
+// already names the mod, so the artifact ids leave it out and lead with what sorts them: <mc>-api and
+// <loader>-<mc>-api. The jars built locally keep barnyard_romance-api-[<loader>-]<mc>, which the release workflow's
+// mod jar patterns don't match.
+def apiArtifactId = loaderName == 'common' ? "${minecraft_version}-api" : "${loaderName}-${minecraft_version}-api"
+def apiArchiveName = loaderName == 'common' ? "${mod_id}-api-${minecraft_version}" : "${mod_id}-api-${loaderName}-${minecraft_version}"
 def generateApi = tasks.matching { it.name == 'stonecutterGenerateApi' }
 def apiJar = tasks.register('apiJar', Jar) {
     group = 'build'
     description = 'The public API jar other mods compile against.'
     archiveBaseName = apiArchiveName
     from(sourceSets.api.output) {
-        include apiClasses
+        include 'net/modcrafters/minecraft/barnyardromance/api/**'
     }
 }
 def apiSourcesJar = tasks.register('apiSourcesJar', Jar) {
@@ -194,16 +195,6 @@ publishing {
             artifact apiJar
             artifact apiSourcesJar
             artifact apiJavadocJar
-            if (loaderName != 'common') {
-                def commonApi = "api-${minecraft_version}"
-                pom.withXml {
-                    def dependency = asNode().appendNode('dependencies').appendNode('dependency')
-                    dependency.appendNode('groupId', rootProject.group)
-                    dependency.appendNode('artifactId', commonApi)
-                    dependency.appendNode('version', project.version)
-                    dependency.appendNode('scope', 'compile')
-                }
-            }
         }
     }
     // The release maven: set MAVEN_URL, MAVEN_USERNAME and MAVEN_PASSWORD to publish the API jars there with
