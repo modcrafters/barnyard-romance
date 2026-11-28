@@ -172,12 +172,14 @@ subprojects {
     }
 }
 
-// Forge is left out until its code compiles (Task 11 of the 1.20.1 plan adds it back).
-// Builds every loader jar and copies them to build/libs/<mod version>/ (the common jars aren't mods).
+// Builds every loader jar and copies them to build/libs/<mod version>/ (the common jars aren't mods). Forge's is
+// reobfJar's, with SRG names: its jar task makes the dev jar, which only runs in the dev game.
 tasks.register<Copy>("collectJars") {
     group = "build"
     val jars = stonecutter.tasks.named<Jar>("jar") { branch.id.isNotEmpty() && branch.id != "forge" }
-    dependsOn(jars.map { it.values })
+    val reobfJars = stonecutter.tasks.named<Jar>("reobfJar") { branch.id == "forge" }
+    dependsOn(jars.map { it.values }, reobfJars.map { it.values })
     from(jars.map { it.values.map { jar -> jar.flatMap(Jar::getArchiveFile) } })
+    from(reobfJars.map { it.values.map { jar -> jar.flatMap(Jar::getArchiveFile) } })
     into(layout.buildDirectory.dir("libs/${project.version}"))
 }

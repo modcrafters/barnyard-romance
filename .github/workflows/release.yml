@@ -90,9 +90,10 @@ jobs:
           ./gradlew "Reset active project"
           git diff --exit-code
 
-      - name: Check switching to 1.21.1 and back changes nothing
+      - name: Check switching to 1.21.1 and 1.20.1 and back changes nothing
         run: |
           ./gradlew "Set active project to 1.21.1"
+          ./gradlew "Set active project to 1.20.1"
           ./gradlew "Reset active project"
           git diff --exit-code
 
@@ -164,9 +165,40 @@ jobs:
             !**/*-javadoc.jar
             !**/*-dev.jar
 
+  # build/libs holds reobfJar's jar, with SRG names, the one a real game runs. The dev jar is in build/devlibs.
+  mc-1-20-1:
+    name: Minecraft 1.20.1 (Forge)
+    needs: notes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Set the published version
+        run: bash .github/scripts/release-version.sh write gradle.properties "${{ needs.notes.outputs.version }}"
+
+      - name: Unit tests and jar
+        run: ./gradlew :1.20.1:test :forge:1.20.1:build :forge:1.20.1:runGameTestServer
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: jars-1.20.1
+          if-no-files-found: error
+          path: |
+            forge/versions/1.20.1/build/libs/barnyard_romance-forge-1.20.1-*.jar
+            !**/*-sources.jar
+            !**/*-javadoc.jar
+            !**/*-dev.jar
+
   publish:
     name: Publish
-    needs: [notes, mc-26-3, mc-1-21-1]
+    needs: [notes, mc-26-3, mc-1-21-1, mc-1-20-1]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -222,6 +254,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
+            17
             21
             25
 
@@ -238,12 +271,7 @@ jobs:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-        # Minecraft 1.20.1 (Forge) is left out until its code compiles; Task 11 of the 1.20.1 plan adds it back.
-        run: >-
-          ./gradlew publishApiPublicationToReleaseRepository publishModPublicationToReleaseRepository
-          -x :1.20.1:publishApiPublicationToReleaseRepository
-          -x :forge:1.20.1:publishApiPublicationToReleaseRepository
-          -x :forge:1.20.1:publishModPublicationToReleaseRepository
+        run: ./gradlew publishApiPublicationToReleaseRepository publishModPublicationToReleaseRepository
 
   bump:
     name: Next version

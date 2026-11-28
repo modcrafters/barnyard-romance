@@ -1,4 +1,4 @@
-"""Version catalog captured on 2026-11-02, with synthetic environment IDs."""
+"""Version catalog captured on 2026-11-02, with synthetic environment IDs. The 1.20.1, Forge and Java 17 rows came later, for the Forge 1.20.1 jar."""
 import contextlib
 import io
 import json
@@ -18,13 +18,18 @@ TYPES = [
     {"id": 615, "slug": "addons"},
     {"id": 75208, "slug": "environment"},
     {"id": 68441, "slug": "modloader"},
+    {"id": 75125, "slug": "minecraft-1-20"},
     {"id": 77784, "slug": "minecraft-1-21"},
     {"id": 88556, "slug": "minecraft-26-3"},
 ]
 VERSIONS = [
     {"id": 99901, "gameVersionTypeID": 75208, "name": "Client"},
     {"id": 99902, "gameVersionTypeID": 75208, "name": "Server"},
+    {"id": 7498, "gameVersionTypeID": 68441, "name": "Forge"},
     {"id": 7499, "gameVersionTypeID": 68441, "name": "Fabric"},
+    {"id": 8326, "gameVersionTypeID": 2, "name": "Java 17"},
+    {"id": 9990, "gameVersionTypeID": 75125, "name": "1.20.1"},
+    {"id": 9991, "gameVersionTypeID": 1, "name": "1.20.1"},
     {"id": 10150, "gameVersionTypeID": 68441, "name": "NeoForge"},
     {"id": 11135, "gameVersionTypeID": 2, "name": "Java 21"},
     {"id": 11779, "gameVersionTypeID": 77784, "name": "1.21.1"},
@@ -37,14 +42,24 @@ VERSIONS = [
 
 
 class CurseForgeVersionsTest(unittest.TestCase):
-    def test_actual_duplicate_names_resolve_for_all_three_jars(self):
+    def test_actual_duplicate_names_resolve_for_every_jar(self):
         for game, loader, java, expected in (
+            ("1.20.1", "Forge", "Java 17", [9990, 7498, 99901, 99902, 8326]),
+            ("1.20.1", "NeoForge", "Java 17", [9990, 10150, 99901, 99902, 8326]),
             ("1.21.1", "NeoForge", "Java 21", [11779, 10150, 99901, 99902, 11135]),
             ("26.3", "Fabric", "Java 25", [17045, 7499, 99901, 99902, 14454]),
             ("26.3", "NeoForge", "Java 25", [17045, 10150, 99901, 99902, 14454]),
         ):
             with self.subTest(game=game, loader=loader):
                 self.assertEqual(resolve(VERSIONS, TYPES, game, loader, java), expected)
+
+    def test_a_jar_for_several_loaders_names_each(self):
+        self.assertEqual(resolve(VERSIONS, TYPES, "1.20.1", "Forge,NeoForge", "Java 17"),
+                         [9990, 7498, 10150, 99901, 99902, 8326])
+
+    def test_every_loader_of_several_must_exist(self):
+        with self.assertRaisesRegex(ValueError, "'Quilt' in category 'modloader'"):
+            resolve(VERSIONS, TYPES, "1.20.1", "Forge,Quilt", "Java 17")
 
     def test_data_envelopes(self):
         self.assertEqual(resolve({"data": VERSIONS}, {"data": TYPES}, "26.3", "Fabric", "Java 25"), [17045, 7499, 99901, 99902, 14454])
@@ -89,7 +104,7 @@ class CurseForgeVersionsTest(unittest.TestCase):
                 (root / "versions.json").write_text(json.dumps(versions), encoding="utf-8")
                 (root / "types.json").write_text(json.dumps(TYPES), encoding="utf-8")
                 (root / "notes.md").write_text("- Release notes.\n", encoding="utf-8")
-                for target in ("neoforge-1.21.1", "fabric-26.3", "neoforge-26.3"):
+                for target in ("forge-1.20.1", "neoforge-1.21.1", "fabric-26.3", "neoforge-26.3"):
                     (root / f"barnyard_romance-{target}-0.0.2-alpha.jar").touch()
                 trace = root / "uploads.txt"
                 env = dict(os.environ, MODRINTH_TOKEN="test", CURSEFORGE_TOKEN="test",
@@ -109,7 +124,7 @@ http_code() {
     *) echo "Unexpected network request" >&2; exit 1 ;;
   esac
 }
-modrinth_upload() { echo "Modrinth $1" >> "$TEST_DIR/uploads.txt"; }
+modrinth_upload() { echo "Modrinth $1 $3" >> "$TEST_DIR/uploads.txt"; }
 curseforge_upload() { echo "CurseForge $4" >> "$TEST_DIR/uploads.txt"; }
 github_release() { echo "GitHub $1" >> "$TEST_DIR/uploads.txt"; }
 upload 0.0.2-alpha "$TEST_DIR/notes.md" "$TEST_DIR"
@@ -122,8 +137,15 @@ upload 0.0.2-alpha "$TEST_DIR/notes.md" "$TEST_DIR"
                 if valid:
                     self.assertEqual(result.returncode, 0, result.stderr)
                     uploads = trace.read_text().splitlines()
-                    self.assertEqual(len(uploads), 7)
-                    self.assertEqual(uploads[3:6], [
+                    self.assertEqual(len(uploads), 9)
+                    self.assertEqual(uploads[0:4], [
+                        "Modrinth 0.0.2-alpha+1.20.1 forge neoforge",
+                        "Modrinth 0.0.2-alpha+1.21.1 neoforge",
+                        "Modrinth 0.0.2-alpha+26.3+fabric fabric",
+                        "Modrinth 0.0.2-alpha+26.3+neoforge neoforge",
+                    ])
+                    self.assertEqual(uploads[4:8], [
+                        "CurseForge [9990, 7498, 10150, 99901, 99902, 8326]",
                         "CurseForge [11779, 10150, 99901, 99902, 11135]",
                         "CurseForge [17045, 7499, 99901, 99902, 14454]",
                         "CurseForge [17045, 10150, 99901, 99902, 14454]",

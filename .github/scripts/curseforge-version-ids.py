@@ -32,7 +32,9 @@ def resolve(versions, types, game, loader, java):
 
     # 1.21.1 belongs to minecraft-1-21; 26.3 belongs to minecraft-26-3.
     category = "minecraft-" + "-".join(game.split(".")[:2])
-    result = [find(game, category), find(loader, "modloader"),
+    # A jar for several loaders names them with commas: "Forge,NeoForge".
+    loaders = [find(name, "modloader") for name in loader.split(",")]
+    result = [find(game, category), *loaders,
               find("Client", "environment"), find("Server", "environment")]
     java_id = find(java, "java", required=False)
     if java_id is not None:
@@ -42,7 +44,7 @@ def resolve(versions, types, game, loader, java):
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
-        sys.exit("Usage: curseforge-version-ids.py <versions.json> <types.json> <game> <loader> <java>")
+        sys.exit("Usage: curseforge-version-ids.py <versions.json> <types.json> <game> <loader[,loader...]> <java>")
     try:
         versions = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
         types = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
