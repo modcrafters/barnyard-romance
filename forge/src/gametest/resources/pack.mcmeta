@@ -1,0 +1,6 @@
+{
+    "pack": {
+        "description": "${mod_name} Game Tests",
+        "pack_format": 15
+    }
+}

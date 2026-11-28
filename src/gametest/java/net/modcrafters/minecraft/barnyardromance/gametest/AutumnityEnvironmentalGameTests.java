@@ -320,11 +320,11 @@ public final class AutumnityEnvironmentalGameTests {
 
         var pregnancy = Services.DATA.get(mother, PregnancyFeature.PREGNANCY).orElseThrow(() -> GameTestCompat.failure(helper, "the sow didn't conceive"));
         int litterSize = pregnancy.litterSize();
-        helper.assertTrue(helper.getEntities(EntityTypes.PIG).stream().noneMatch(Animal::isBaby), "piglets were born at conception");
+        helper.assertTrue(GameTestCompat.entities(helper, EntityTypes.PIG).stream().noneMatch(Animal::isBaby), "piglets were born at conception");
         Services.DATA.set(mother, PregnancyFeature.PREGNANCY, pregnancy.withConceivedAt(now - pregnancy.durationTicks()));
         helper.succeedWhen(() -> {
             helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the sow is still pregnant");
-            List<? extends Animal> babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
+            List<? extends Animal> babies = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).toList();
             helper.assertTrue(babies.size() == litterSize, "expected " + litterSize + " piglets, found " + babies.size());
         });
     }
@@ -345,7 +345,7 @@ public final class AutumnityEnvironmentalGameTests {
 
             mother.spawnChildFromBreeding(helper.getLevel(), father);
 
-            long babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).count();
+            long babies = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).count();
             helper.assertTrue(babies >= 2, "an excluded sow bore " + babies + " piglets, with no extras from Environmental");
         } finally {
             BarnyardConfig.set(config);
@@ -368,7 +368,7 @@ public final class AutumnityEnvironmentalGameTests {
             mother.spawnChildFromBreeding(helper.getLevel(), father);
 
             helper.assertTrue(Services.DATA.get(mother, PregnancyFeature.PREGNANCY).isEmpty(), "the sow conceived with pregnancy off");
-            long babies = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).count();
+            long babies = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).count();
             helper.assertTrue(babies >= 2, "a sow bred with pregnancy off bore " + babies + " piglets, with no extras from Environmental");
         });
         helper.succeed();

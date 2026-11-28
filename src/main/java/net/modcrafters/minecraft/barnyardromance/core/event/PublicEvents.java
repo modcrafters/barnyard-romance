@@ -16,17 +16,13 @@ final class PublicEvents {
     }
 
     static void forward(AnimalEvent event) {
-        switch (event) {
-            case AnimalEvent.Born born when Tracked.traits(born.mother()).isPresent() ->
-                    BarnyardEvents.BORN.post(new Born(born.mother(), List.copyOf(born.young()), born.breeder()));
-            case AnimalEvent.Hatched hatched when Tracked.traits(hatched.chick()).isPresent() -> {
-                Lineage parents = hatched.parents();
-                BarnyardEvents.HATCHED.post(new Hatched(hatched.chick(), parents == null ? null : parents.mother(), parents == null ? null : parents.father()));
-            }
-            case AnimalEvent.Befriended befriended when Tracked.traits(befriended.animal()).isPresent() ->
-                    BarnyardEvents.BEFRIENDED.post(new Befriended(befriended.animal(), befriended.player()));
-            default -> {
-            }
+        if (event instanceof AnimalEvent.Born born && Tracked.traits(born.mother()).isPresent()) {
+            BarnyardEvents.BORN.post(new Born(born.mother(), List.copyOf(born.young()), born.breeder()));
+        } else if (event instanceof AnimalEvent.Hatched hatched && Tracked.traits(hatched.chick()).isPresent()) {
+            Lineage parents = hatched.parents();
+            BarnyardEvents.HATCHED.post(new Hatched(hatched.chick(), parents == null ? null : parents.mother(), parents == null ? null : parents.father()));
+        } else if (event instanceof AnimalEvent.Befriended befriended && Tracked.traits(befriended.animal()).isPresent()) {
+            BarnyardEvents.BEFRIENDED.post(new Befriended(befriended.animal(), befriended.player()));
         }
     }
 }

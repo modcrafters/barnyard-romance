@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.eggs.api.EggOutlook;
 import net.modcrafters.minecraft.barnyardromance.herd.api.Familiar;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdEntry;
@@ -188,7 +189,7 @@ public class HerdBookScreen extends Screen {
         }
         List<String> bookmarks = HerdBookLayout.bookmarks(this.rows);
         if (!bookmarks.contains(this.species)) {
-            this.species = bookmarks.isEmpty() ? "" : bookmarks.getFirst();
+            this.species = bookmarks.isEmpty() ? "" : Jdk.first(bookmarks);
             this.page = 0;
         }
         this.page = Math.min(this.page, Math.max(0, contents().size() - 1));
@@ -323,7 +324,7 @@ public class HerdBookScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         drawBook(graphics, mouseX, mouseY);
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
@@ -333,6 +334,16 @@ public class HerdBookScreen extends Screen {
 
     @Override
     public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        drawBook(graphics, mouseX, mouseY);
+    }
+    *///?} else {
+    /*// A screen draws its own background here, before its widgets.
+    @Override
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        drawBookmarkTabs(graphics, mouseX, mouseY);
+        graphics.blit(BOOK, left(), top(), 0, 0, SIZE, SIZE);
         super.render(graphics, mouseX, mouseY, partialTick);
         drawBook(graphics, mouseX, mouseY);
     }
@@ -357,11 +368,19 @@ public class HerdBookScreen extends Screen {
     *///?}
 
     // The wheel turns pages like the arrows: down for the next page or animal, up for the one before.
+    //? if >=1.20.5 {
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         if (scrollY == 0.0) {
             return super.mouseScrolled(x, y, scrollX, scrollY);
         }
+    //?} else {
+    /*@Override
+    public boolean mouseScrolled(double x, double y, double scrollY) {
+        if (scrollY == 0.0) {
+            return super.mouseScrolled(x, y, scrollY);
+        }
+    *///?}
         int turns = this.wheel.scroll(scrollY);
         for (int i = 0; i < turns; i++) {
             back();
@@ -465,7 +484,7 @@ public class HerdBookScreen extends Screen {
         for (HerdBookLayout.Tab tab : tabs) {
             if (tab.side() == HerdBookLayout.Side.RIGHT) {
                 while (columnStarts.size() <= tab.column() + 1) {
-                    columnStarts.add(columnStarts.getLast());
+                    columnStarts.add(Jdk.last(columnStarts));
                 }
                 int end = columnStarts.get(tab.column()) + tabWidth(tab.species()) + TAB_SELECTED;
                 columnStarts.set(tab.column() + 1, Math.max(columnStarts.get(tab.column() + 1), end));
@@ -509,15 +528,15 @@ public class HerdBookScreen extends Screen {
         for (TabBox box : boxes) {
             String state = box.species().equals(this.species) ? "bookmark_selected" : box == hovered ? "bookmark_highlighted" : "bookmark";
             String side = box.side() == HerdBookLayout.Side.LEFT ? "_left" : "_right";
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/" + state + side),
-                    box.x0(), box.y(), box.x1() - box.x0(), TAB_HEIGHT);
+            Identifier sprite = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "herd_book/" + state + side);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, box.x0(), box.y(), box.x1() - box.x0(), TAB_HEIGHT);
         }
     }
 
     private void drawBookmarks(GuiGraphicsExtractor graphics) {
         List<TabBox> boxes = tabBoxes();
         // Hits are checked first to last, so the tabs drawn on top go first.
-        for (TabBox box : boxes.reversed()) {
+        for (TabBox box : Jdk.reversed(boxes)) {
             String name = bookmarkName(box.species());
             int textX = (box.shown0() + box.shown1() - this.font.width(box.label()) + 1) / 2;
             graphics.text(this.font, box.label(), textX, box.y() + 3, box.species().equals(this.species) ? TEXT : TAB_TEXT, false);
@@ -531,13 +550,15 @@ public class HerdBookScreen extends Screen {
         List<HerdBookLayout.Line> lines = pages.get(Math.min(this.page, pages.size() - 1));
         int lineY = y;
         for (int i = 0; i < lines.size(); i++) {
-            switch (lines.get(i)) {
-                case HerdBookLayout.Header header -> graphics.text(this.font, Component.translatable(switch (header.group()) {
+            HerdBookLayout.Line line = lines.get(i);
+            if (line instanceof HerdBookLayout.Header header) {
+                graphics.text(this.font, Component.translatable(switch (header.group()) {
                     case FEMALES -> "gui.barnyard_romance.herd_book.females";
                     case MALES -> "gui.barnyard_romance.herd_book.males";
                     case KIDS -> "gui.barnyard_romance.herd_book.kids";
                 }), x, lineY, HEADER, false);
-                case HerdBookLayout.Animal row -> drawRow(graphics, this.entries.get(row.id()), x, lineY);
+            } else if (line instanceof HerdBookLayout.Animal row) {
+                drawRow(graphics, this.entries.get(row.id()), x, lineY);
             }
             lineY += LINE;
         }
@@ -874,7 +895,7 @@ public class HerdBookScreen extends Screen {
     private static void bar(GuiGraphicsExtractor graphics, int x0, int y, int x1, float fill, int color) {
         graphics.fill(x0, y, x1, y + BAR_HEIGHT, BAR_EDGE);
         graphics.fill(x0 + 1, y + 1, x1 - 1, y + BAR_HEIGHT - 1, BAR_EMPTY);
-        int filled = Math.round(Math.clamp(fill, 0.0F, 1.0F) * (x1 - x0 - 2));
+        int filled = Math.round(Jdk.clamp(fill, 0.0F, 1.0F) * (x1 - x0 - 2));
         if (filled > 0) {
             graphics.fill(x0 + 1, y + 1, x0 + 1 + filled, y + BAR_HEIGHT - 1, color);
         }

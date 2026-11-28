@@ -16,12 +16,16 @@ public final class MockPlayers {
     }
 
     public static ServerPlayer inLevel(GameTestHelper helper) {
+        //? if >=1.20.5 {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        //?} else
+        //ServerPlayer player = GameTestCompat.mockServerPlayer(helper);
         ((GameTestHelperAccessor) helper).barnyardromance$testInfo().addListener(new GameTestListener() {
             @Override
             public void testStructureLoaded(GameTestInfo info) {
             }
 
+            //? if >=1.20.5 {
             @Override
             public void testPassed(GameTestInfo info, GameTestRunner runner) {
                 leave(player);
@@ -35,6 +39,17 @@ public final class MockPlayers {
             @Override
             public void testAddedForRerun(GameTestInfo original, GameTestInfo copy, GameTestRunner runner) {
             }
+            //?} else {
+            /*@Override
+            public void testPassed(GameTestInfo info) {
+                leave(player);
+            }
+
+            @Override
+            public void testFailed(GameTestInfo info) {
+                leave(player);
+            }
+            *///?}
         });
         return player;
     }

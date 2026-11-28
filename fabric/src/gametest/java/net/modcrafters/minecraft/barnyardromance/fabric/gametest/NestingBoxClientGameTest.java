@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.NestingBoxHen;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.eggs.EggData;
 import net.modcrafters.minecraft.barnyardromance.familiarity.FamiliarityCare;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
@@ -51,7 +52,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             world.getServer().runCommand("tp @a 0.5 ~ 0.5 -90 25");
             world.getConnection().waitForClientboundPackets();
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ServerLevel level = player.level();
                 BlockPos at = player.blockPosition().east(3);
                 level.setBlockAndUpdate(at, EggsBlocks.NESTING_BOX.defaultBlockState()
@@ -80,7 +81,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             }
             context.takeScreenshot("nesting_box_hen");
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 player.openMenu((NestingBoxBlockEntity) player.level().getBlockEntity(player.blockPosition().east(3)));
             });
             world.getConnection().waitForClientboundPackets();
@@ -88,7 +89,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             context.takeScreenshot("nesting_box_window");
             context.setScreen(() -> null);
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ServerLevel level = player.level();
                 level.removeBlock(player.blockPosition().east(3), false);
                 // Breaking the box let its hen out and dropped its eggs; clear them for the next picture.
@@ -102,7 +103,7 @@ public class NestingBoxClientGameTest implements FabricClientGameTest {
             context.takeScreenshot("rooster_and_hen");
             // The herd book's egg icons: fertilized eggs, one egg fewer for an unfamiliar hen, and none for a hungry one.
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ServerLevel level = player.level();
                 level.setBlockAndUpdate(player.blockPosition().north(3), EggsBlocks.NESTING_BOX.defaultBlockState());
                 ItemStack book = new ItemStack(HerdItems.HERD_BOOK);

@@ -44,9 +44,11 @@ public final class CreditData extends SavedData {
             CODEC,
             null
     );
-    //?} else {
+    //?} else if >=1.20.5 {
     /*private static final String NAME = Constants.MOD_ID + "_advancement_credit";
     private static final SavedData.Factory<CreditData> FACTORY = new SavedData.Factory<>(CreditData::new, CreditData::load, null);
+    *///?} else {
+    /*private static final String NAME = Constants.MOD_ID + "_advancement_credit";
     *///?}
 
     private final CreditLedger ledger;
@@ -68,11 +70,14 @@ public final class CreditData extends SavedData {
     public static CreditData get(MinecraftServer server) {
         //? if >=1.21.5 {
         return server.overworld().getDataStorage().computeIfAbsent(TYPE);
-        //?} else
-        //return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        //?} else if >=1.20.5 {
+        /*return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        *///?} else {
+        /*return server.overworld().getDataStorage().computeIfAbsent(CreditData::load, CreditData::new, NAME);
+        *///?}
     }
 
-    //? if <1.21.5 {
+    //? if >=1.20.5 && <1.21.5 {
     /*private static CreditData load(CompoundTag tag, HolderLookup.Provider registries) {
         return CODEC.parse(NbtOps.INSTANCE, tag.get("credit"))
                 .resultOrPartial(error -> Constants.LOG.error("Failed to load advancement credit: {}", error))
@@ -81,6 +86,20 @@ public final class CreditData extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+        CODEC.encodeStart(NbtOps.INSTANCE, this)
+                .resultOrPartial(error -> Constants.LOG.error("Failed to save advancement credit: {}", error))
+                .ifPresent(credit -> tag.put("credit", credit));
+        return tag;
+    }
+    *///?} else if <1.20.5 {
+    /*private static CreditData load(CompoundTag tag) {
+        return CODEC.parse(NbtOps.INSTANCE, tag.get("credit"))
+                .resultOrPartial(error -> Constants.LOG.error("Failed to load advancement credit: {}", error))
+                .orElseGet(CreditData::new);
+    }
+
+    @Override
+    public CompoundTag save(CompoundTag tag) {
         CODEC.encodeStart(NbtOps.INSTANCE, this)
                 .resultOrPartial(error -> Constants.LOG.error("Failed to save advancement credit: {}", error))
                 .ifPresent(credit -> tag.put("credit", credit));

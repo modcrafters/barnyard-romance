@@ -31,6 +31,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // woven in (MoobloomSwap.applied()): a carry without the swap would move the herd book to a cow that never joins. If
 // the swap is missing, one warning is logged and the sheared moobloom just loses its record. The swap is a plain Mixin
 // @Redirect because MixinExtras' injectors are woven after the plugin's postApply, where the check could not see them.
+// On Forge 1.20.1 Minecraft's methods have SRG names in a real game (Mojang's in the dev runs), so that build has the
+// refmap remap the create call (remap = true on its @At); transformToCow is the mod's own name in both.
 @Pseudo
 @Mixin(targets = "com.faboslav.friendsandfoes.common.entity.MoobloomEntity", remap = false)
 public class MoobloomConversionMixin {
@@ -71,7 +73,10 @@ public class MoobloomConversionMixin {
                     //? if >=1.21.2 {
                     + "Lnet/minecraft/world/entity/EntitySpawnReason;"
                     //?}
-                    + ")Lnet/minecraft/world/entity/Entity;"),
+                    + ")Lnet/minecraft/world/entity/Entity;"
+                    //? if <1.20.5
+                    //, remap = true
+            ),
             require = 0
     )
     //? if >=1.21.2 {

@@ -47,7 +47,11 @@ final class AnimalStatsProvider implements IEntityComponentProvider {
     // The mark is a sibling, not the parent, so its colour stays off the size text.
     private static Component withSexMark(Sex sex, Component size) {
         boolean female = sex == Sex.FEMALE;
+        //? if >=1.20.5 {
         Component mark = Component.literal(female ? "♀" : "♂").withColor(female ? FEMALE : MALE);
+        //?} else {
+        /*Component mark = Component.literal(female ? "♀" : "♂").withStyle(style -> style.withColor(female ? FEMALE : MALE));
+        *///?}
         return Component.empty().append(mark).append(" ").append(size);
     }
 

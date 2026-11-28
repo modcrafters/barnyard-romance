@@ -1,0 +1,28 @@
+{
+  "entities": ["meadow:wooly_cow"],
+  "attach": ["head"],
+  "texture": "meadow:textures/entity/cow/highland_cattle.png",
+  "texture_size": [128, 128],
+  "female_chance": 0.25,
+  "hide": [
+    "head/horn_right_top_r1",
+    "head/horn_left_top_r1"
+  ],
+  "male": [
+    {
+      "pivot": [2.3, -2.75, -2], "rotation": [0, 0, 5], "side": "left", "mirror": true,
+      "cubes": [
+        { "from": [0, -1, -1], "size": [7, 2, 2], "uv": [66, 12], "inflate": 0.4 },
+        { "from": [5.5, -4, -1], "size": [2, 3, 2], "uv": [6, 10], "inflate": 0.38 }
+      ]
+    }
+  ],
+  "female": [
+    {
+      "pivot": [2.3, -2.75, -2], "rotation": [0, 0, 5], "side": "left", "mirror": true,
+      "cubes": [
+        { "from": [0, -4, -1], "size": [2, 3, 2], "uv": [6, 10], "inflate": -0.45 }
+      ]
+    }
+  ]
+}

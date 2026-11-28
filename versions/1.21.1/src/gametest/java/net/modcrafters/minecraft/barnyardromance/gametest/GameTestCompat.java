@@ -10,18 +10,29 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 // The 1.21.1 copy of src/.../gametest/GameTestCompat. Test positions here count from the structure block, which
@@ -124,5 +135,29 @@ public final class GameTestCompat {
         }
         copy.load(saved);
         return copy;
+    }
+
+    public static Player mockPlayer(GameTestHelper helper, GameType gameType) {
+        return helper.makeMockPlayer(gameType);
+    }
+
+    public static <T extends Entity> List<T> entities(GameTestHelper helper, EntityType<T> type) {
+        return helper.getEntities(type);
+    }
+
+    public static @Nullable AttributeInstance scaleAttribute(LivingEntity entity) {
+        return entity.getAttribute(Attributes.SCALE);
+    }
+
+    public static CompoundTag saved(GameTestHelper helper, BlockEntity blockEntity) {
+        return blockEntity.saveWithFullMetadata(helper.getLevel().registryAccess());
+    }
+
+    public static @Nullable BlockEntity loaded(GameTestHelper helper, BlockPos pos, BlockState state, CompoundTag saved) {
+        return BlockEntity.loadStatic(pos, state, saved, helper.getLevel().registryAccess());
+    }
+
+    public static Optional<RecipeHolder<CraftingRecipe>> craftingRecipe(GameTestHelper helper, CraftingInput input) {
+        return helper.getLevel().getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
     }
 }

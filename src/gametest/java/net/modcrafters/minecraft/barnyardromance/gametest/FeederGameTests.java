@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import com.mojang.serialization.JsonOps;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.feed.MangerBlock;
 import net.modcrafters.minecraft.barnyardromance.feed.GrainFeederBlock;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -18,6 +19,13 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockItem;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederTooltip;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederHerd;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederMenu;
 import net.modcrafters.minecraft.barnyardromance.feed.MorningFeeding;
@@ -53,7 +61,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.animal.Animal;
@@ -64,12 +72,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -123,6 +129,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("feeder_takes_wheat_but_not_beef", 20, FeederGameTests::feederTakesWheatButNotBeef),
             new BreedingGameTests.Case("feeder_refuses_superfoods", 20, FeederGameTests::feederRefusesSuperfoods),
             new BreedingGameTests.Case("bird_feeder_takes_seeds", 20, FeederGameTests::birdFeederTakesSeeds),
+            new BreedingGameTests.Case("feeding_block_items_list_their_animals", 20, FeederGameTests::feedingBlockItemsListTheirAnimals),
             new BreedingGameTests.Case("a_hopper_fills_a_manger_and_keeps_what_it_refuses", HOPPER_TICKS + 40,
                     FeederGameTests::aHopperFillsAMangerAndKeepsWhatItRefuses),
             new BreedingGameTests.Case("a_hopper_cannot_empty_a_manger", HOPPER_TICKS + 40, FeederGameTests::aHopperCannotEmptyAManger),
@@ -253,10 +260,10 @@ public final class FeederGameTests {
         onceLanded(helper, type, new int[][]{{2, 3}, {6, 3}, {2, 5}, {6, 5}}, cows -> {
             cows.forEach(cow -> familiar(cow, 0.8));
             if (block == FeedBlocks.PET_BOWL) {
-                Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+                Player owner = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
                 cows.forEach(pet -> ((TamableAnimal) pet).tame(owner));
             }
-            FeederBlockEntity manger = blockAt(helper, block, walkingLayer(helper, cows.getFirst(), 4, 4));
+            FeederBlockEntity manger = blockAt(helper, block, walkingLayer(helper, Jdk.first(cows), 4, 4));
             BlockPos pos = manger.getBlockPos();
             if (manger.getBlockState().hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                 helper.getLevel().setBlock(pos, manger.getBlockState().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Block.UPDATE_CLIENTS);
@@ -328,6 +335,38 @@ public final class FeederGameTests {
         helper.succeed();
     }
 
+    // Each block item's tooltip names the animals in its feeds_from tag, in order: other mods' animals only when they're
+    // installed. The server has no mod lang, so the names are read from the lines' parts, not their text.
+    public static void feedingBlockItemsListTheirAnimals(GameTestHelper helper) {
+        for (FeederKind kind : FeederKind.values()) {
+            Item item = FeedBlocks.item(kind);
+            helper.assertTrue(item instanceof FeederBlockItem block && block.kind() == kind, kind + "'s item is not a FeederBlockItem of its kind");
+            List<String> expected = new ArrayList<>();
+            for (Holder<EntityType<?>> holder : BuiltInRegistries.ENTITY_TYPE.getTagOrEmpty(kind.animals())) {
+                expected.add(holder.value().getDescription().getString());
+            }
+            List<Component> lines = FeederTooltip.lines(kind);
+            helper.assertTrue(!lines.isEmpty(), kind + " has no Feeds line");
+            helper.assertTrue(lines.get(0).getContents() instanceof TranslatableContents contents && contents.getKey().equals(FeederTooltip.KEY),
+                    kind + "'s first line is not Feeds: %s");
+            List<String> rows = new ArrayList<>();
+            rows.add(((Component) ((TranslatableContents) lines.get(0).getContents()).getArgs()[0]).getString());
+            for (int i = 1; i < lines.size(); i++) {
+                rows.add(lines.get(i).getString());
+            }
+            List<String> names = new ArrayList<>();
+            for (String row : rows) {
+                String trimmed = row.endsWith(",") ? row.substring(0, row.length() - 1) : row;
+                names.addAll(List.of(trimmed.split(", ")));
+            }
+            helper.assertTrue(names.equals(expected), kind + " lists " + names + ", its tag holds " + expected);
+            if (kind == FeederKind.TROUGH) {
+                helper.assertTrue(names.equals(List.of(EntityTypes.RABBIT.getDescription().getString())), "the Trough lists " + names);
+            }
+        }
+        helper.succeed();
+    }
+
     // The refused beef sits first in the hopper, so the hopper has to pass it over to move the wheat.
     public static void aHopperFillsAMangerAndKeepsWhatItRefuses(GameTestHelper helper) {
         BlockPos below = FEEDER.below();
@@ -395,7 +434,7 @@ public final class FeederGameTests {
     public static void aMangerFindsTheCowsInItsPen(GameTestHelper helper) {
         onceLanded(helper, new int[][]{{1, 3}, {3, 3}, {1, 5}, {6, 4}}, cows -> {
             cows.forEach(cow -> familiar(cow, 0.8));
-            BlockPos middle = walkingLayer(helper, cows.getFirst(), 2, 4);
+            BlockPos middle = walkingLayer(helper, Jdk.first(cows), 2, 4);
             fenceRing(helper, middle);
             FeederBlockEntity manger = mangerAt(helper, middle);
 
@@ -422,14 +461,18 @@ public final class FeederGameTests {
         int[][] corners = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
         EggGameTests.once(helper, () -> ready(helper, animals), () -> {
             animals.forEach(FeederGameTests::holdStill);
-            penIn(helper, animals.getFirst());
+            penIn(helper, Jdk.first(animals));
             Services.DATA.set(animals.get(1), AnimalTraits.of(Sex.FEMALE, 1.3).with(CARE, FamiliarityState.NONE.fed(0.8, -1L).withOrigin(Origin.FARM)));
-            animals.get(1).getAttribute(Attributes.SCALE).setBaseValue(1.3);
+            // 1.20.1 has no scale attribute: there the body stays vanilla-sized.
+            AttributeInstance scale = GameTestCompat.scaleAttribute(animals.get(1));
+            if (scale != null) {
+                scale.setBaseValue(1.3);
+            }
             animals.get(1).refreshDimensions();
             familiar(animals.get(0), 0.8);
             familiar(animals.get(2), 0.8);
             familiar(animals.get(3), 0.8);
-            FeederBlockEntity side = mangerAt(helper, walkingLayer(helper, animals.getFirst(), 1, 4));
+            FeederBlockEntity side = mangerAt(helper, walkingLayer(helper, Jdk.first(animals), 1, 4));
             side.refreshHerd(helper.getLevel());
             assertHerd(helper, side, animals);
 
@@ -450,7 +493,7 @@ public final class FeederGameTests {
             side.refreshHerd(helper.getLevel());
             assertHerd(helper, side, animals);
 
-            FeederBlockEntity middle = mangerAt(helper, walkingLayer(helper, animals.getFirst(), 4, 4));
+            FeederBlockEntity middle = mangerAt(helper, walkingLayer(helper, Jdk.first(animals), 4, 4));
             middle.refreshHerd(helper.getLevel());
             assertHerd(helper, middle, animals);
             helper.succeed();
@@ -461,7 +504,7 @@ public final class FeederGameTests {
         onceLanded(helper, new int[][]{{3, 4}, {5, 4}}, cows -> {
             familiar(cows.get(0), 0.8);
             familiar(cows.get(1), 0.2);
-            FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, cows.getFirst(), 4, 4));
+            FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, Jdk.first(cows), 4, 4));
 
             manger.refreshHerd(helper.getLevel());
 
@@ -473,7 +516,7 @@ public final class FeederGameTests {
     // Food for two days of ten: every cow eats on the first two and goes hungry on the other eight.
     public static void catchUpSharesTwoDaysOfFoodOverTenDays(GameTestHelper helper) {
         threeCowsAndAManger(helper, (cows, manger) -> {
-            FeederMenu menu = new FeederMenu(1, helper.makeMockPlayer(GameType.SURVIVAL).getInventory(), manger);
+            FeederMenu menu = new FeederMenu(1, GameTestCompat.mockPlayer(helper, GameType.SURVIVAL).getInventory(), manger);
             helper.assertTrue(menu.animals() == 3 && menu.days() == 2, "the window says " + menu.days() + " days for " + menu.animals() + " animals");
 
             manger.tick(helper.getLevel(), clock(DAY));
@@ -521,7 +564,7 @@ public final class FeederGameTests {
                     return;
                 }
                 cows.forEach(FeederGameTests::holdStill);
-                BlockPos at = walkingLayer(helper, cows.getFirst(), 4, 4);
+                BlockPos at = walkingLayer(helper, Jdk.first(cows), 4, 4);
                 FeederBlockEntity manger = stockedFor20(helper, cows, at);
 
                 manger.tick(helper.getLevel(), clock(DAY));
@@ -554,8 +597,8 @@ public final class FeederGameTests {
                     return;
                 }
                 cows.forEach(FeederGameTests::holdStill);
-                first[0] = stockedFor20(helper, cows, walkingLayer(helper, cows.getFirst(), 4, 4));
-                FeederBlockEntity second = mangerAt(helper, walkingLayer(helper, cows.getFirst(), 4, 7));
+                first[0] = stockedFor20(helper, cows, walkingLayer(helper, Jdk.first(cows), 4, 4));
+                FeederBlockEntity second = mangerAt(helper, walkingLayer(helper, Jdk.first(cows), 4, 7));
                 second.refreshHerd(helper.getLevel());
                 assertHerd(helper, second, cows);
 
@@ -576,7 +619,7 @@ public final class FeederGameTests {
     // the Manger at midnight.
     public static void aDayThePenWasLoadedTakesNoFood(GameTestHelper helper) {
         onceLanded(helper, new int[][]{{3, 4}}, cows -> {
-            Animal cow = cows.getFirst();
+            Animal cow = Jdk.first(cows);
             FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, cow, 4, 4));
             manger.setItem(0, new ItemStack(Items.WHEAT, 6));
             unsettled(cow, 0.8, DAY - 1L, Upkeep.NONE);
@@ -600,7 +643,7 @@ public final class FeederGameTests {
             if (manger[0] == null) {
                 if (ready(helper, cows)) {
                     cows.forEach(FeederGameTests::holdStill);
-                    manger[0] = mangerAt(helper, walkingLayer(helper, cows.getFirst(), 4, 4));
+                    manger[0] = mangerAt(helper, walkingLayer(helper, Jdk.first(cows), 4, 4));
                     manger[0].setItem(0, new ItemStack(Items.WHEAT, 20));
                     cows.forEach(cow -> unsettled(cow, 0.8, DAY - 10L, Upkeep.NONE));
                     // A tick just before sunrise on her first day: the Manger finds its herd, as a block just placed
@@ -629,7 +672,7 @@ public final class FeederGameTests {
     // held no food, so she went hungry and lays nothing today; planned from her unsettled day she'd lay a clutch.
     public static void aHerdHenHungryYesterdayLaysNothing(GameTestHelper helper) {
         onceLanded(helper, EntityTypes.CHICKEN, new int[][]{{3, 4}}, hens -> {
-            Animal hen = hens.getFirst();
+            Animal hen = Jdk.first(hens);
             FeederBlockEntity feeder = blockAt(helper, FeedBlocks.BIRD_FEEDER, walkingLayer(helper, hen, 4, 4));
             unsettled(hen, 0.8, DAY - 1L, Upkeep.NONE);
             // A tick just before her day, as a block placed earlier would have had: it finds its herd and has nothing
@@ -652,7 +695,7 @@ public final class FeederGameTests {
     // food with no nutrition), and the second she goes hungry (1 damage): back where she started. Unhealed, she'd be at 5.
     public static void aCatchUpMealHeals(GameTestHelper helper) {
         onceLanded(helper, new int[][]{{3, 4}}, cows -> {
-            Animal cow = cows.getFirst();
+            Animal cow = Jdk.first(cows);
             FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, cow, 4, 4));
             manger.setItem(0, new ItemStack(Items.WHEAT, 1));
             unsettled(cow, 0.8, DAY - 2L, Upkeep.NONE);
@@ -686,7 +729,7 @@ public final class FeederGameTests {
     // Whichever Manger gets to her first settles her missed days; the other leaves her be.
     public static void aCowInTwoHerdsIsSettledOnce(GameTestHelper helper) {
         onceLanded(helper, new int[][]{{4, 4}}, cows -> {
-            Animal cow = cows.getFirst();
+            Animal cow = Jdk.first(cows);
             unsettled(cow, 0.8, DAY - 2L, Upkeep.NONE);
             FeederBlockEntity first = mangerAt(helper, walkingLayer(helper, cow, 2, 4));
             FeederBlockEntity second = mangerAt(helper, walkingLayer(helper, cow, 6, 4));
@@ -762,7 +805,7 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
-                    if (ateOn(helper, m.animals.getFirst(), DAY)) {
+                    if (ateOn(helper, Jdk.first(m.animals), DAY)) {
                         helper.assertTrue(AdvancementGameTests.earned(watching, BarnyardAdvancements.SELF_SERVICE),
                                 "a morning meal at a manger didn't earn Self-Service nearby");
                         helper.succeed();
@@ -779,7 +822,7 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
-                    Animal cow = m.animals.getFirst();
+                    Animal cow = Jdk.first(m.animals);
                     if (ate[0] < 0L) {
                         if (ateOn(helper, cow, DAY)) {
                             ate[0] = m.clock;
@@ -812,7 +855,7 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
-                    Animal cow = m.animals.getFirst();
+                    Animal cow = Jdk.first(m.animals);
                     if (ate[0] < 0L) {
                         if (ateOn(helper, cow, DAY)) {
                             ate[0] = m.clock;
@@ -900,10 +943,10 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> {
                     m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1));
-                    m.animals.getFirst().setHealth(6.0F);
+                    Jdk.first(m.animals).setHealth(6.0F);
                 },
                 m -> {
-                    Animal cow = m.animals.getFirst();
+                    Animal cow = Jdk.first(m.animals);
                     if (!ateOn(helper, cow, DAY)) {
                         return;
                     }
@@ -949,15 +992,15 @@ public final class FeederGameTests {
         long[] moved = {-1L};
         morning(helper, EntityTypes.WOLF, new int[][]{{7, 4}}, FeedBlocks.PET_BOWL, new int[]{2, 4},
                 m -> {
-                    TamableAnimal wolf = (TamableAnimal) m.animals.getFirst();
-                    wolf.tame(helper.makeMockPlayer(GameType.SURVIVAL));
+                    TamableAnimal wolf = (TamableAnimal) Jdk.first(m.animals);
+                    wolf.tame(GameTestCompat.mockPlayer(helper, GameType.SURVIVAL));
                     wolf.setOrderedToSit(true);
                     wolf.setInSittingPose(true);
                     m.feeder.setItem(0, new ItemStack(Items.BEEF, 2));
                     seat[0] = wolf.position();
                 },
                 m -> {
-                    TamableAnimal wolf = (TamableAnimal) m.animals.getFirst();
+                    TamableAnimal wolf = (TamableAnimal) Jdk.first(m.animals);
                     helper.assertTrue(wolf.isOrderedToSit() && wolf.isInSittingPose(), "the wolf got up");
                     helper.assertTrue(wolf.position().distanceTo(seat[0]) < 0.1, "the sitting wolf moved from " + seat[0] + " to " + wolf.position());
                     helper.assertTrue(!EatAtFeederGoal.walking(wolf), "the sitting wolf was sent to the Pet Bowl");
@@ -985,12 +1028,12 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, new int[][]{{7, 7}}, FeedBlocks.MANGER, new int[]{3, 4},
                 m -> {
                     m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1));
-                    Animal cow = m.animals.getFirst();
+                    Animal cow = Jdk.first(m.animals);
                     Vec3 corner = helper.absoluteVec(new Vec3(7.69, 0.0, 7.70));
                     cow.teleportTo(corner.x, cow.getY(), corner.z);
                 },
                 m -> {
-                    if (ateOn(helper, m.animals.getFirst(), DAY)) {
+                    if (ateOn(helper, Jdk.first(m.animals), DAY)) {
                         helper.assertTrue(m.feeder.food() == 0, "the Manger holds " + contents(m.feeder));
                         helper.succeed();
                     }
@@ -1003,7 +1046,7 @@ public final class FeederGameTests {
         morning(helper, EntityTypes.COW, new int[][]{{7, 4}}, FeedBlocks.MANGER, new int[]{1, 4},
                 m -> m.feeder.setItem(0, new ItemStack(Items.WHEAT, 1)),
                 m -> {
-                    Animal cow = m.animals.getFirst();
+                    Animal cow = Jdk.first(m.animals);
                     if (!ateOn(helper, cow, DAY)) {
                         return;
                     }
@@ -1047,11 +1090,10 @@ public final class FeederGameTests {
                         // Unloaded: saved and taken out of the level, so nothing ticks it. It comes back three days on,
                         // as from a save, and settles the days it missed.
                         BlockPos pos = m.at;
-                        CompoundTag saved = m.feeder.saveWithFullMetadata(helper.getLevel().registryAccess());
+                        CompoundTag saved = GameTestCompat.saved(helper, m.feeder);
                         helper.getLevel().removeBlockEntity(pos);
                         m.clock += 3L * 24_000L;
-                        reloaded[0] = (FeederBlockEntity) BlockEntity.loadStatic(pos, helper.getLevel().getBlockState(pos), saved,
-                                helper.getLevel().registryAccess());
+                        reloaded[0] = (FeederBlockEntity) GameTestCompat.loaded(helper, pos, helper.getLevel().getBlockState(pos), saved);
                         helper.getLevel().setBlockEntity(reloaded[0]);
                         reloaded[0].runOnClock(helper.getLevel(), m.clock);
                         return;
@@ -1106,14 +1148,14 @@ public final class FeederGameTests {
                 if (!ready(helper, animals)) {
                     return;
                 }
-                penIn(helper, animals.getFirst());
+                penIn(helper, Jdk.first(animals));
                 // Back to where they started, in case one wandered to the edge and is now in the fence.
                 for (int i = 0; i < animals.size(); i++) {
                     BlockPos start = walkingLayer(helper, animals.get(i), columns[i][0], columns[i][1]);
                     animals.get(i).teleportTo(start.getX() + 0.5, animals.get(i).getY(), start.getZ() + 0.5);
                 }
                 animals.forEach(animal -> unsettled(animal, 0.8, DAY, Upkeep.NONE));
-                BlockPos pos = walkingLayer(helper, animals.getFirst(), at[0], at[1]);
+                BlockPos pos = walkingLayer(helper, Jdk.first(animals), at[0], at[1]);
                 morning[0] = new Morning(animals, blockAt(helper, block, pos), pos);
                 morning[0].feeder.runOnClock(helper.getLevel(), morning[0].clock);
                 setUp.accept(morning[0]);
@@ -1165,7 +1207,7 @@ public final class FeederGameTests {
     // Three familiar cows at 10 health and 80%, ten days unsettled, around a Manger holding 6 wheat.
     private static void threeCowsAndAManger(GameTestHelper helper, BiConsumer<List<Animal>, FeederBlockEntity> then) {
         onceLanded(helper, new int[][]{{3, 4}, {5, 4}, {4, 6}}, cows -> {
-            FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, cows.getFirst(), 4, 4));
+            FeederBlockEntity manger = mangerAt(helper, walkingLayer(helper, Jdk.first(cows), 4, 4));
             manger.setItem(0, new ItemStack(Items.WHEAT, 6));
             cows.forEach(cow -> unsettled(cow, 0.8, DAY - 10L, Upkeep.NONE));
             manger.refreshHerd(helper.getLevel());
@@ -1344,8 +1386,7 @@ public final class FeederGameTests {
             stacks.add(new ItemStack(item));
         }
         CraftingInput input = CraftingInput.of(3, grid.length / 3, stacks);
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
         // The holder's id is a ResourceKey on 26.3 and a plain id on 1.21.1; both print the recipe's name.
         helper.assertTrue(recipe.isPresent() && recipe.get().id().toString().contains("barnyard_romance:" + name),
                 "the " + name + " grid makes " + recipe.map(holder -> holder.id().toString()).orElse("nothing"));

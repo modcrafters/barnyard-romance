@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.advancement;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.FamiliarityApi;
@@ -89,11 +90,11 @@ public final class BarnyardAdvancements {
             }
             MinecraftServer server = level.getServer();
             Grants.grant(server, breeder, SPECIAL_DELIVERY, Grants.CRITERION);
-            Lineage lineage = Services.DATA.get(babies.getFirst()).map(AnimalTraits::lineage).orElse(Lineage.UNKNOWN);
+            Lineage lineage = Services.DATA.get(Jdk.first(babies)).map(AnimalTraits::lineage).orElse(Lineage.UNKNOWN);
             if (FamilyTree.third(level, lineage)) {
                 Grants.grant(server, breeder, FAMILY_TREE, Grants.CRITERION);
             }
-            counted(server, breeder, AnimalSex.speciesId(babies.getFirst()), babies.size());
+            counted(server, breeder, AnimalSex.speciesId(Jdk.first(babies)), babies.size());
         } catch (RuntimeException exception) {
             Constants.LOG.warn("Failed to grant a {} birth", AnimalSex.speciesId(mother), exception);
         }

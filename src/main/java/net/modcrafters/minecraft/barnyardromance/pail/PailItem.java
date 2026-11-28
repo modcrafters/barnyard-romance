@@ -13,6 +13,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 //? if >=1.21.5 {
 import net.minecraft.world.item.component.TooltipDisplay;
 import java.util.function.Consumer;
@@ -37,16 +39,16 @@ public class PailItem extends Item {
 
     // EMPTY when the pail has no component, so a new pail needs no setup.
     public static PailContents contents(ItemStack stack) {
-        PailContents contents = stack.get(PailComponents.CONTENTS);
+        PailContents contents = ItemData.get(stack, PailComponents.CONTENTS);
         return contents == null ? PailContents.EMPTY : contents;
     }
 
     // An empty pail carries no component, so it stacks and compares like a new one.
     public static void setContents(ItemStack stack, PailContents contents) {
         if (contents.isEmpty()) {
-            stack.remove(PailComponents.CONTENTS);
+            ItemData.remove(stack, PailComponents.CONTENTS);
         } else {
-            stack.set(PailComponents.CONTENTS, contents);
+            ItemData.set(stack, PailComponents.CONTENTS, contents);
         }
     }
 
@@ -58,7 +60,7 @@ public class PailItem extends Item {
     @Override
     public int getBarWidth(ItemStack stack) {
         // At least one pixel, so a nearly empty pail still shows its bar.
-        return Math.clamp(Math.round((float) contents(stack).amount() * BAR_WIDTH / capacity), 1, BAR_WIDTH);
+        return Jdk.clamp(Math.round((float) contents(stack).amount() * BAR_WIDTH / capacity), 1, BAR_WIDTH);
     }
 
     @Override

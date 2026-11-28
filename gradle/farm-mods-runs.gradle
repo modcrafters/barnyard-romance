@@ -4,7 +4,8 @@
 // published jars don't see them.
 //
 // Every jar is a Modrinth version id, not a version number: a number repeats across loaders and Minecraft versions.
-// Friends&Foes has a project for Fabric and another for NeoForge. Meadow's Foundation library is bundled inside it.
+// Friends&Foes has a project for Fabric and another for NeoForge and Forge. Meadow's Foundation library is bundled
+// inside its 1.21.1 build; its 1.20.1 build needs Architectury instead.
 // Untitled Duck Mod 1.8.1 on NeoForge 26.3 needs NeoForge 26.3.0.103, a newer one than the mod builds against, so add
 // -Pneoforge_version=26.3.0.103 to those runs.
 
@@ -35,6 +36,20 @@ def farmModsByBuild = [
                         ['resourceful-lib', 'g9rQSbAF'],        // 6.0.1
                 ],
         ],
+        'forge 1.20.1'   : [
+                modIds: ['untitledduckmod', 'friendsandfoes', 'meadow', 'autumnity', 'environmental'],
+                jars  : [
+                        ['untitled-duck-mod', 'nc27c1zo'],      // 1.7.0-fix+forge
+                        ['friends-and-foes-forge', '4JpeH1Xr'], // forge-5.0.5+mc1.20.1
+                        ['lets-do-meadow', 'phZQOZzG'],         // 1.3.25
+                        ['autumnity', 'F0pPtIPH'],              // 5.0.2
+                        ['environmental', 'DA9khYQj'],          // 4.1.2
+                        ['geckolib', 'aC5KMoNg'],               // 4.8.4
+                        ['resourceful-lib', 'OhsHaCcW'],        // 2.1.29
+                        ['architectury-api', '1MKTLiiG'],       // 9.2.14+forge
+                        ['blueprint', 'ZQKDh6gd'],              // 7.1.5
+                ],
+        ],
         'fabric 26.3'    : [
                 modIds: ['untitledduckmod', 'friendsandfoes'],
                 jars  : [
@@ -59,9 +74,12 @@ configurations {
     }
 }
 
+// Remapped first on Forge 1.20.1 (see gradle/modrinth-maven.gradle).
+def farmModsSource = runModsSource(configurations.farmMods)
+
 dependencies {
     farmBuild.jars.each { slug, versionId ->
-        farmMods "maven.modrinth:${slug}:${versionId}"
+        add(farmModsSource, "maven.modrinth:${slug}:${versionId}")
     }
 }
 

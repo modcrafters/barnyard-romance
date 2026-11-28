@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
 import net.minecraft.core.Holder;
+//? if >=1.20.5
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
@@ -21,7 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
+//? if >=1.20.5
 import net.minecraft.world.item.component.DyedItemColor;
 //? if >=1.21.5
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -153,12 +155,20 @@ public final class PailGameTests {
     // Built-in and custom metal pails share one recipe type: a name, and a tint the tooltip doesn't call a dye.
     private static void assertMetalPail(GameTestHelper helper, ItemStack pail, String name, int tint) {
         helper.assertTrue(pail.getHoverName().getString().equals(name), "the crafted pail is named " + name + ", not " + pail.getHoverName().getString());
+        //? if >=1.20.5 {
         DyedItemColor dye = pail.get(DataComponents.DYED_COLOR);
         helper.assertTrue(dye != null && dye.rgb() == tint, name + " stores its tint");
+        //?} else {
+        /*// The tint is the tag's display.color before 1.20.5, and HideFlags hides the dye line (MetalPail.applyTo).
+        net.minecraft.nbt.CompoundTag display = pail.getTagElement("display");
+        helper.assertTrue(display != null && display.getInt("color") == tint, name + " stores its tint");
+        helper.assertTrue((pail.getOrCreateTag().getInt("HideFlags") & ItemStack.TooltipPart.DYE.getMask()) != 0,
+                name + " hides the dye line in its tooltip");
+        *///?}
         //? if >=1.21.5 {
         helper.assertTrue(!pail.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT).shows(DataComponents.DYED_COLOR),
                 name + " hides the dye line in its tooltip");
-        //?} else
+        //?} else if >=1.20.5
         //helper.assertTrue(!dye.showInTooltip(), name + " hides the dye line in its tooltip");
     }
 
@@ -206,14 +216,14 @@ public final class PailGameTests {
         helper.assertTrue(!PailFluids.accepts(Fluids.LAVA), "a pail takes lava");
         helper.assertTrue(!PailFluids.accepts(Fluids.EMPTY), "a pail takes the empty fluid");
         for (Holder<Fluid> milk : List.of(MilkFluids.COW, MilkFluids.GOAT, MilkFluids.SHEEP)) {
-            helper.assertTrue(PailFluids.accepts(milk.value()), "a pail doesn't take " + milk.getRegisteredName());
+            helper.assertTrue(PailFluids.accepts(milk.value()), "a pail doesn't take " + BuiltInRegistries.FLUID.getKey(milk.value()));
         }
         helper.succeed();
     }
 
     public static void ourMilksAreInCMilk(GameTestHelper helper) {
         for (Holder<Fluid> milk : List.of(MilkFluids.COW, MilkFluids.GOAT, MilkFluids.SHEEP)) {
-            helper.assertTrue(milk.is(C_MILK), milk.getRegisteredName() + " isn't in c:milk");
+            helper.assertTrue(milk.is(C_MILK), BuiltInRegistries.FLUID.getKey(milk.value()) + " isn't in c:milk");
         }
         helper.succeed();
     }
@@ -821,7 +831,7 @@ public final class PailGameTests {
 
     // Reloading datapacks mid-suite isn't practical (the ladder tests don't either), so this is three checks that
     // together cover it: a default run has no conversion in the recipe manager, the load condition follows the config,
-    // and the recipe file carries that condition for both loaders.
+    // and the recipe file carries that condition for every loader.
     public static void conversionLoadsOnlyWhenSwitchedOn(GameTestHelper helper) {
         helper.assertTrue(!BarnyardConfig.current().milkConversion(), "the test run has the conversion switched on");
         helper.assertTrue(result(helper, grid(new ItemStack(MilkItems.GOAT_MILK_BUCKET))).isEmpty(),
@@ -835,7 +845,10 @@ public final class PailGameTests {
         String json;
         // The loaders keep the mod's jar out of reach of this class's own loader, so ask the server's resources.
         java.util.Optional<net.minecraft.server.packs.resources.Resource> file = helper.getLevel().getServer().getResourceManager()
+        //? if >=1.20.5 {
                 .getResource(Identifier.fromNamespaceAndPath("barnyard_romance", "recipe/milk_conversion.json"));
+        //?} else
+        //.getResource(Identifier.fromNamespaceAndPath("barnyard_romance", "recipes/milk_conversion.json"));
         helper.assertTrue(file.isPresent(), "the recipe file is missing");
         try (java.io.InputStream stream = file.get().open()) {
             json = new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
@@ -843,12 +856,19 @@ public final class PailGameTests {
             throw new IllegalStateException(exception);
         }
         com.google.gson.JsonObject recipe = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
+        //? if >=1.20.5 {
         com.google.gson.JsonObject neoforge = recipe.getAsJsonArray("neoforge:conditions").get(0).getAsJsonObject();
         com.google.gson.JsonObject fabric = recipe.getAsJsonArray("fabric:load_conditions").get(0).getAsJsonObject();
         helper.assertTrue(neoforge.get("type").getAsString().equals("barnyard_romance:config_enabled")
                 && neoforge.get("key").getAsString().equals("milkConversion"), "the NeoForge condition is " + neoforge);
         helper.assertTrue(fabric.get("condition").getAsString().equals("barnyard_romance:config_enabled")
                 && fabric.get("key").getAsString().equals("milkConversion"), "the Fabric condition is " + fabric);
+        //?} else {
+        /*// Forge 1.20.1 reads a recipe's conditions from a top-level "conditions" list.
+        com.google.gson.JsonObject forge = recipe.getAsJsonArray("conditions").get(0).getAsJsonObject();
+        helper.assertTrue(forge.get("type").getAsString().equals("barnyard_romance:config_enabled")
+                && forge.get("key").getAsString().equals("milkConversion"), "the Forge condition is " + forge);
+        *///?}
         helper.succeed();
     }
 
@@ -886,8 +906,7 @@ public final class PailGameTests {
 
     private static ItemStack result(GameTestHelper helper, List<ItemStack> grid) {
         CraftingInput input = CraftingInput.of(3, 3, grid);
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
         if (recipe.isEmpty()) {
             return ItemStack.EMPTY;
         }

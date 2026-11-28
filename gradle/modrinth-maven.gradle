@@ -15,3 +15,123 @@ if (repositories.findByName('Modrinth') == null) {
         }
     }
 }
+
+// The configuration a run's mod jars are added to, for a run script's own configuration of them. Forge 1.20.1's mods
+// are published with SRG names, and the dev game runs on Mojang's: there the jars go through a remapping configuration
+// (ModDevGradle's legacyforge), which hands runJars the remapped jars. Elsewhere they go straight into runJars.
+ext.runModsSource = { Configuration runJars ->
+    extensions.findByName('obfuscation') != null ? obfuscation.createRemappingConfiguration(runJars).name : runJars.name
+}
+
+// Some Forge 1.20.1 mods have no refmap: their mixins name Minecraft's members by SRG name (m_168019_, f_91074_) right in
+// their class files, which the jar remapping above leaves as they are, so in the dev game those mixins find nothing and
+// stop it at start. This renames every SRG member name left in the class files of the jars in dir to its Mojang name,
+// as the dev game itself does for a mod's refmap. Elsewhere it does nothing.
+ext.devMixinNames = { File dir ->
+    if (extensions.findByName('obfuscation') == null) {
+        return
+    }
+    // SRG name -> Mojang name, and a method's Mojang descriptor, from the mappings the dev game remaps refmaps with.
+    // Only SRG names: the file maps the members Mojang never obfuscated too, to themselves.
+    def srgName = ~/\b[mf]_\d+_\b/
+    Map<String, String> names = [:]
+    Map<String, String> descriptors = [:]
+    new File(obfuscation.srgToNamedMappings.get().asFile.parentFile, 'intermediateToNamed.srg').eachLine('UTF-8') { line ->
+        def cells = line.split(' ')
+        String srg = cells.length > 2 ? cells[1].substring(cells[1].lastIndexOf('/') + 1) : ''
+        if (!(srg ==~ srgName)) {
+            return
+        }
+        if (cells[0] == 'FD:') { // FD: owner/f_1_ owner/name
+            names[srg] = cells[2].substring(cells[2].lastIndexOf('/') + 1)
+        } else if (cells[0] == 'MD:') { // MD: owner/m_1_ (desc) owner/name (desc)
+            names[srg] = cells[3].substring(cells[3].lastIndexOf('/') + 1)
+            // An override that narrows the return type shares the name with another descriptor: that one stays bare.
+            descriptors[srg] = descriptors.containsKey(srg) && descriptors[srg] != cells[4] ? null : cells[4]
+        }
+    }
+    // A method selector without a descriptor (m_1_, or Lowner;m_1_) gets its descriptor too: SRG names a method's
+    // overloads apart, and their one Mojang name doesn't.
+    def selectorEnd = ~/(?:^|[;.\/])(m_\d+_)$/
+    def rename = { String text ->
+        if (!text.contains('_')) {
+            return text
+        }
+        def end = text =~ selectorEnd
+        String descriptor = end.find() ? descriptors[end.group(1)] : null
+        String renamed = text.replaceAll(srgName) { String srg -> names[srg] ?: srg }
+        return descriptor != null ? renamed + descriptor : renamed
+    }
+    dir.listFiles().findAll { it.name.endsWith('.jar') }.each { jar ->
+        def renamed = new File(jar.parentFile, jar.name + '.tmp')
+        boolean changed = false
+        new java.util.zip.ZipFile(jar).withCloseable { zip ->
+            renamed.withOutputStream { stream ->
+                def out = new java.util.zip.ZipOutputStream(stream)
+                zip.entries().each { entry ->
+                    byte[] bytes = zip.getInputStream(entry).readAllBytes()
+                    if (entry.name.endsWith('.class')) {
+                        byte[] after = renameInClass(bytes, rename)
+                        changed |= !after.is(bytes)
+                        bytes = after
+                    }
+                    out.putNextEntry(new java.util.zip.ZipEntry(entry.name))
+                    out.write(bytes)
+                    out.closeEntry()
+                }
+                out.finish()
+            }
+        }
+        if (changed) {
+            java.nio.file.Files.move(renamed.toPath(), jar.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        } else {
+            renamed.delete()
+        }
+    }
+}
+
+// The class file with rename applied to each string of its constant pool, or the same array if nothing changed. Only
+// the pool's strings change, and nothing refers to their byte offsets, so the rest of the file is copied as it is.
+def renameInClass(byte[] bytes, Closure<String> rename) {
+    def input = new DataInputStream(new ByteArrayInputStream(bytes))
+    def buffer = new ByteArrayOutputStream(bytes.length + 256)
+    def output = new DataOutputStream(buffer)
+    output.writeInt(input.readInt()) // magic
+    output.writeInt(input.readInt()) // minor and major version
+    int count = input.readUnsignedShort()
+    output.writeShort(count)
+    boolean changed = false
+    for (int index = 1; index < count; index++) {
+        int tag = input.readUnsignedByte()
+        output.writeByte(tag)
+        switch (tag) {
+            case 1: // Utf8
+                String text = input.readUTF()
+                String after = rename(text)
+                changed |= after != text
+                output.writeUTF(after)
+                break
+            case [3, 4, 9, 10, 11, 12, 17, 18]: // Integer, Float, the member refs, NameAndType, the dynamics
+                output.writeInt(input.readInt())
+                break
+            case [5, 6]: // Long, Double: two slots
+                output.writeLong(input.readLong())
+                index++
+                break
+            case [7, 8, 16, 19, 20]: // Class, String, MethodType, Module, Package
+                output.writeShort(input.readUnsignedShort())
+                break
+            case 15: // MethodHandle
+                output.writeByte(input.readUnsignedByte())
+                output.writeShort(input.readUnsignedShort())
+                break
+            default:
+                throw new GradleException("Unknown constant pool tag ${tag}")
+        }
+    }
+    if (!changed) {
+        return bytes
+    }
+    output.write(input.readAllBytes())
+    return buffer.toByteArray()
+}

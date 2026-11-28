@@ -20,6 +20,10 @@ import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 
 import java.util.Optional;
+//? if <1.20.5 {
+/*import java.nio.charset.StandardCharsets;
+import java.util.UUID;
+*///?}
 
 // An animal's traits on the server: rolled the first time it joins a level, and its size put on its body when it joins
 // and when it grows up (see BreedingFeature).
@@ -63,10 +67,13 @@ public final class TraitSetup {
     // back to vanilla's: the scale the mod gave it is undone, unless something else has changed it since, and a wolf
     // loses the strength its size gave it.
     private static void leaveVanilla(Animal animal, AnimalTraits traits) {
+        // 1.20.1 has no scale attribute: the size is kept and used, but the body stays vanilla-sized.
+        //? if >=1.20.5 {
         AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
         if (scale != null && scale.getBaseValue() != 1.0 && Math.abs(scale.getBaseValue() - traits.scale()) < 1.0e-6) {
             scale.setBaseValue(1.0);
         }
+        //?}
         if (animal instanceof Wolf) {
             float maxBefore = animal.getMaxHealth();
             float share = animal.getHealth() / maxBefore;
@@ -78,12 +85,26 @@ public final class TraitSetup {
         }
     }
 
+    //? if >=1.20.5 {
     private static void remove(Animal animal, Holder<Attribute> attribute, Identifier id) {
         AttributeInstance instance = animal.getAttribute(attribute);
         if (instance != null) {
             instance.removeModifier(id);
         }
     }
+    //?} else {
+    /*private static void remove(Animal animal, Attribute attribute, Identifier id) {
+        AttributeInstance instance = animal.getAttribute(attribute);
+        if (instance != null) {
+            instance.removeModifier(modifierId(id));
+        }
+    }
+
+    // Modifiers are keyed by UUID here: the same id always gives the same one.
+    private static UUID modifierId(Identifier id) {
+        return UUID.nameUUIDFromBytes(id.toString().getBytes(StandardCharsets.UTF_8));
+    }
+    *///?}
 
     // A grown wolf bites and lasts by its size (see WolfStrength); a pup is a vanilla pup until it grows up.
     private static void applyWolfStrength(Animal animal, AnimalTraits traits, SizeSettings size) {
@@ -99,12 +120,22 @@ public final class TraitSetup {
     }
 
     // Saved with the animal, so a big wolf's health is not cut down to vanilla's maximum while it loads.
+    //? if >=1.20.5 {
     private static void multiply(Animal animal, Holder<Attribute> attribute, Identifier id, double multiplier) {
         AttributeInstance instance = animal.getAttribute(attribute);
         if (instance != null) {
             instance.addOrReplacePermanentModifier(new AttributeModifier(id, multiplier - 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
     }
+    //?} else {
+    /*private static void multiply(Animal animal, Attribute attribute, Identifier id, double multiplier) {
+        AttributeInstance instance = animal.getAttribute(attribute);
+        if (instance != null) {
+            instance.removeModifier(modifierId(id));
+            instance.addPermanentModifier(new AttributeModifier(modifierId(id), id.toString(), multiplier - 1.0, AttributeModifier.Operation.MULTIPLY_TOTAL));
+        }
+    }
+    *///?}
 
     private static AnimalTraits roll(Animal animal, BarnyardConfig config, String speciesId) {
         Sex sex = SexRoll.roll(animal.getRandom().nextDouble(), config.femaleRatio());
@@ -123,9 +154,12 @@ public final class TraitSetup {
     }
 
     private static void applyScale(Animal animal, double scale) {
+        // 1.20.1 has no scale attribute (see leaveVanilla).
+        //? if >=1.20.5 {
         AttributeInstance attribute = animal.getAttribute(Attributes.SCALE);
         if (attribute != null) {
             attribute.setBaseValue(scale);
         }
+        //?}
     }
 }

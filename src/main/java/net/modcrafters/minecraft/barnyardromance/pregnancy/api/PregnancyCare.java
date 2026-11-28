@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.pregnancy.api;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 // What food did for a pregnancy: ticks gained or lost, one speed boost, and a better-fed litter.
 // The boost is read from the clock, so nothing ticks.
 public record PregnancyCare(long bankedTicks, long boostFrom, long boostUntil, double boostFactor, double nutritionBonus) {
@@ -25,7 +26,7 @@ public record PregnancyCare(long bankedTicks, long boostFrom, long boostUntil, d
     }
 
     public PregnancyCare improve(double amount) {
-        return new PregnancyCare(bankedTicks, boostFrom, boostUntil, boostFactor, Math.clamp(nutritionBonus + amount, 0.0, 1.0));
+        return new PregnancyCare(bankedTicks, boostFrom, boostUntil, boostFactor, Jdk.clamp(nutritionBonus + amount, 0.0, 1.0));
     }
 
     // A running boost started and ends that many ticks earlier, for time skipped.

@@ -1,0 +1,246 @@
+plugins {
+    id 'multiloader-loader'
+    id 'net.neoforged.moddev.legacyforge'
+}
+
+// forge/src is written as 1.20.1 code (ResourceLocation, the compat.legacy stand-ins), not 26.3's. Forge has no other
+// version, so Stonecutter only ever turns another version's names into 1.20.1's here, which leaves 1.20.1 code as it is,
+// and switching to 1.21.1 or 26.3 doesn't touch the folder at all.
+
+apply from: rootProject.file('gradle/naturalist-runs.gradle')
+apply from: rootProject.file('gradle/farm-mods-runs.gradle')
+apply from: rootProject.file('gradle/jade-runs.gradle')
+apply from: rootProject.file('gradle/fresh-animations-runs.gradle')
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // The common sources are compiled again here, compat/jade with them. Optional: nothing ships with Jade or needs it.
+    // Jade is published with SRG names, so it goes through the remapping configuration.
+    modCompileOnly "maven.modrinth:jade:${jade_loader_version}"
+    // Forge 1.20.1 doesn't bundle MixinExtras (NeoForge does): the mod brings its own, inside its jar.
+    compileOnly(annotationProcessor('io.github.llamalad7:mixinextras-common:0.5.3'))
+    jarJar('io.github.llamalad7:mixinextras-forge:0.5.3')
+    implementation('io.github.llamalad7:mixinextras-forge:0.5.3')
+    // Forge's Mixin refmaps: the annotation processor writes barnyard_romance.refmap.json (see the mixin block below).
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+// AnimalEating is a 26.3-only mixin (extra_mixins there) whose target 1.20.1 doesn't have. The other loaders compile it
+// without loading it, but here the Mixin annotation processor checks every mixin it compiles and rejects it.
+tasks.named('compileJava', JavaCompile) {
+    exclude '**/barnyardromance/mixin/AnimalEating.java'
+}
+
+// Mixin configs load from the jar's manifest on Forge 1.20.1: the common ones and Forge's own. The shippable jar is
+// reobfJar's, which remaps this one (kept in build/devlibs) to SRG names.
+def mixinConfigs = ["${mod_id}.mixins.json", "${mod_id}.forge.mixins.json"]*.toString()
+tasks.named('jar', Jar) {
+    manifest.attributes('MixinConfigs': mixinConfigs.join(','))
+}
+
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+    // Automatically enable AccessTransformers if the file exists
+    def at = rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+            // The public API and its Forge events load as part of the mod.
+            sourceSet sourceSets.api
+        }
+        // The game test mod, built from src/gametest. It never goes in the jar.
+        "${mod_id}_gametest" {
+            sourceSet sourceSets.gametest
+        }
+    }
+    // A game test run: the mod and the game test mod, in its own game folder. A dev run names its mixin configs on the
+    // command line, the shared ones (src/gametest) and Forge's own; NeoForge and Fabric list them in the game test mod's
+    // metadata.
+    def gameTest = { run, String gameDirectory ->
+        run.type = 'gameTestServer'
+        run.sourceSet = sourceSets.gametest
+        run.loadedMods = [legacyForge.mods.named(mod_id).get(), legacyForge.mods.named("${mod_id}_gametest").get()]
+        run.gameDirectory = this.mkdir(this.file(gameDirectory))
+        run.programArguments.addAll '--mixin.config', "${mod_id}_gametest.mixins.json",
+                '--mixin.config', "${mod_id}_gametest_forge.mixins.json"
+    }
+    runs {
+        configureEach {
+            // Only the game test runs load the game test mod, below.
+            loadedMods = [legacyForge.mods.named(mod_id).get()]
+            systemProperty('forge.enabledGameTestNamespaces', mod_id)
+            ideName = "Forge ${it.name.capitalize()} (${project.path})" // Unify the run config names with fabric
+        }
+        client {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        // Our stats in Jade's tooltip, see gradle/jade-runs.gradle.
+        clientJade {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/jade-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        server {
+            server()
+            this.file('runs/server').createParentDirectories()
+            gameDirectory = this.mkdir(this.file('runs/server'))
+        }
+        gameTestServer {
+            gameTest(it, 'runs/gametest')
+        }
+        // Compatibility testing with Naturalist, see gradle/naturalist-runs.gradle.
+        clientNaturalist {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/naturalist-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        gameTestServerNaturalist {
+            gameTest(it, 'runs/naturalist-gametest')
+            systemProperty('barnyard_romance.expect_naturalist', 'true')
+        }
+        // Compatibility testing with the farm-animal mods, see gradle/farm-mods-runs.gradle.
+        clientFarmMods {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/farm-mods-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+        gameTestServerFarmMods {
+            gameTest(it, 'runs/farm-mods-gametest')
+            systemProperty('barnyard_romance.expect_mods', farmModIds)
+        }
+        // Our horns on Fresh Animations' models, see gradle/fresh-animations-runs.gradle.
+        clientFreshAnimations {
+            client()
+            gameDirectory = this.mkdir(this.file('runs/fresh-animations-client'))
+            programArguments.addAll '--width', '2560', '--height', '1440'
+            systemProperty('barnyard_romance.herd_sticks', 'true')
+        }
+    }
+}
+
+// taskBefore also covers the IntelliJ run configs, which don't start the Gradle run task.
+legacyForge.runs.clientNaturalist.taskBefore(naturalistInRun('clientNaturalist', 'runs/naturalist-client'))
+legacyForge.runs.gameTestServerNaturalist.taskBefore(naturalistInRun('gameTestServerNaturalist', 'runs/naturalist-gametest'))
+legacyForge.runs.clientFarmMods.taskBefore(farmModsInRun('clientFarmMods', 'runs/farm-mods-client'))
+legacyForge.runs.gameTestServerFarmMods.taskBefore(farmModsInRun('gameTestServerFarmMods', 'runs/farm-mods-gametest'))
+legacyForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
+freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client').each { legacyForge.runs.clientFreshAnimations.taskBefore(it) }
+
+// IntelliJ starts an Application run config on the project JDK (Java 25, see CONTRIBUTING), not on its module's JDK,
+// even when it hands the run to Gradle. Forge 1.20.1's Mixin can't read Java 25's classes and the game stops at start-up,
+// so each Forge run config names this build's Java 17 toolchain as its JRE. ModDevGradle has no setting for that, so the
+// key goes into the extra properties it sends to IntelliJ with each run config; IntelliJ's importer reads it.
+if (Boolean.getBoolean('idea.sync.active')) {
+    afterEvaluate {
+        def jdkHome = javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath.asFile.absolutePath
+        rootProject.idea.project.settings.runConfigurations
+                .matching { it.name.endsWith("(${project.path})") }
+                .configureEach { config ->
+                    def extra = config.class.declaredFields.find { it.name == 'extraProperties' }
+                    if (extra == null) {
+                        throw new GradleException("ModDevGradle's run config ${config.name} has no extraProperties any more, " +
+                                'so it would start on the project JDK instead of Java 17: see forge/build.gradle.')
+                    }
+                    extra.accessible = true
+                    extra.get(config).put('alternativeJrePath', jdkHome)
+                }
+    }
+}
+
+// The refmap the annotation processor writes for the common and Forge mixins, which the mod's main source set compiles.
+// The configs are named here for the dev runs, which load the mod from its folders rather than a jar with a manifest.
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    mixinConfigs.each { config it }
+}
+
+// Every game test run and its game folder. Each gets the two tasks below.
+def gameTestRuns = ['gameTestServer': 'runs/gametest', 'gameTestServerNaturalist': 'runs/naturalist-gametest',
+                    'gameTestServerFarmMods': 'runs/farm-mods-gametest']
+
+// Forge 1.20.1 starts its game test server on a dedicated server's settings (server.properties), not the flat world
+// vanilla's game test server makes, so the tests would stand at y -60 in a normal world, among its caves, lava and water.
+// These are the newer versions' game test world: flat, without structures, creative, on normal difficulty. The game
+// test mod sets the game rules (BarnyardRomanceGameTestsForge).
+def gameTestServerProperties = ['level-type=minecraft\\:flat', 'generate-structures=false', 'gamemode=creative',
+                                'difficulty=normal', 'spawn-monsters=false', 'spawn-animals=false', 'spawn-npcs=false']
+
+gameTestRuns.each { runName, runDir ->
+    // Game tests start from a fresh world, as on CI. A saved world keeps its clock, so a later run could cross
+    // midnight partway through and hunger or Vigour refills would hit unrelated tests.
+    def clean = tasks.register("clean${runName.capitalize()}World", Delete) {
+        description = "Deletes the ${runDir} world so the run starts fresh."
+        delete file("${runDir}/world")
+    }
+    def properties = file("${runDir}/server.properties")
+    def writeProperties = tasks.register("write${runName.capitalize()}Properties") {
+        description = "Writes the ${runDir} game test server's world settings."
+        inputs.property('settings', gameTestServerProperties)
+        outputs.file(properties)
+        doLast {
+            properties.parentFile.mkdirs()
+            properties.text = gameTestServerProperties.join('\n') + '\n'
+        }
+    }
+    legacyForge.runs.named(runName) {
+        it.taskBefore(clean)
+        it.taskBefore(writeProperties)
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
+    configurations.named(variant) {
+        attributes {
+            attribute(loaderAttribute, 'forge')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName, it.getTaskName(null, 'jarJar')].each { variant ->
+        configurations.named(variant) {
+            attributes {
+                attribute(loaderAttribute, 'forge')
+            }
+        }
+    }
+}
+
+// ModDevGradle's mixin block only points the annotation processor at the refmap file and adds that file to the jar; it
+// doesn't write the "refmap" key into the configs. NeoForge and Fabric configs don't have one (their runtimes map names
+// themselves), so the shared barnyard_romance.mixins.json stays as it is and only this build's copies get the key.
+tasks.named('processResources', ProcessResources) {
+    filesMatching(mixinConfigs) {
+        filter { line -> line == '{' ? '{\n  "refmap": "' + mod_id + '.refmap.json",' : line }
+    }
+}
+
+// The common resources carry a pack.mcmeta too, for the newer pack formats. The one in forge/src comes first and wins,
+// in the jar and in the sources jar.
+tasks.named('processResources', ProcessResources) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('sourcesJar', Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// The jar task makes the dev jar (Mojang names); reobfJar's SRG-named jar is the one that runs in production, so that is
+// what goes on the maven as <loader>-<mc>.
+publishing.publications.named('mod', MavenPublication) {
+    setArtifacts([tasks.named('reobfJar'), tasks.named('sourcesJar')])
+}

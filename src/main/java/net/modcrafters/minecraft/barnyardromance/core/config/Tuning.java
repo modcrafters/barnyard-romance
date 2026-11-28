@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.core.config;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 
 // The numbers behind familiarity, growth, inheritance, fertility, old age, food healing, milk, yield, Vigour, fights,
 // feeders, escapes and grumpy pets. Ranges are in blocks.
@@ -78,7 +79,7 @@ public record Tuning(
             fast = slow;
             slow = swap;
         }
-        int wild = Math.clamp(ticks(object, "growthWildTicks", DEFAULTS.growthWildTicks), fast, slow);
+        int wild = Jdk.clamp(ticks(object, "growthWildTicks", DEFAULTS.growthWildTicks), fast, slow);
         return new Tuning(
                 unit(object, "familiarityGain", DEFAULTS.familiarityGain),
                 unit(object, "familiarityThreshold", DEFAULTS.familiarityThreshold),
@@ -95,7 +96,7 @@ public record Tuning(
                 unit(object, "oldFertilityFactor", DEFAULTS.oldFertilityFactor),
                 unit(object, "deathSpread", DEFAULTS.deathSpread),
                 unit(object, "foodHealFactor", DEFAULTS.foodHealFactor),
-                Math.clamp(number(object, "foodHealDefault", DEFAULTS.foodHealDefault), 0.0, MAX_FOOD_HEAL),
+                Jdk.clamp(number(object, "foodHealDefault", DEFAULTS.foodHealDefault), 0.0, MAX_FOOD_HEAL),
                 milkTicks(object, "lactationTicks", DEFAULTS.lactationTicks),
                 milkTicks(object, "milkKeepsFlowingTicks", DEFAULTS.milkKeepsFlowingTicks),
                 milkings(object, "milkingsPerDaySmall", DEFAULTS.milkingsPerDaySmall),
@@ -113,21 +114,21 @@ public record Tuning(
                 unit(object, "refusalChance", DEFAULTS.refusalChance),
                 unit(object, "vigourPerMating", DEFAULTS.vigourPerMating),
                 unit(object, "vigourPerEgg", DEFAULTS.vigourPerEgg),
-                Math.clamp(number(object, "hungryMatingHealth", DEFAULTS.hungryMatingHealth), 0.0, MAX_HEALTH_COST),
-                Math.clamp(number(object, "hungryEggHealth", DEFAULTS.hungryEggHealth), 0.0, MAX_HEALTH_COST),
+                Jdk.clamp(number(object, "hungryMatingHealth", DEFAULTS.hungryMatingHealth), 0.0, MAX_HEALTH_COST),
+                Jdk.clamp(number(object, "hungryEggHealth", DEFAULTS.hungryEggHealth), 0.0, MAX_HEALTH_COST),
                 // Configs from before the rename say rivalRange.
                 range(object, object.has("matingRange") ? "matingRange" : "rivalRange", DEFAULTS.matingRange),
                 unit(object, "rivalFightChance", DEFAULTS.rivalFightChance),
                 unit(object, "roosterFightChance", DEFAULTS.roosterFightChance),
                 unit(object, "wildFightChance", DEFAULTS.wildFightChance),
                 range(object, "fightStopRange", DEFAULTS.fightStopRange),
-                (int) Math.clamp(Math.round(number(object, "fightTruceTicks", DEFAULTS.fightTruceTicks)), 0L, Integer.MAX_VALUE),
+                (int) Jdk.clamp(Math.round(number(object, "fightTruceTicks", DEFAULTS.fightTruceTicks)), 0L, Integer.MAX_VALUE),
                 range(object, "feederRange", DEFAULTS.feederRange),
-                (int) Math.clamp(Math.round(number(object, "mangerFullDays", DEFAULTS.mangerFullDays)), 1L, 365L),
-                (int) Math.clamp(Math.round(number(object, "feederFullDays", DEFAULTS.feederFullDays)), 1L, 365L),
-                (int) Math.clamp(Math.round(number(object, "troughFullDays", DEFAULTS.troughFullDays)), 1L, 365L),
-                (int) Math.clamp(Math.round(number(object, "birdFeederFullDays", DEFAULTS.birdFeederFullDays)), 1L, 365L),
-                (int) Math.clamp(Math.round(number(object, "petBowlFullDays", DEFAULTS.petBowlFullDays)), 1L, 365L),
+                (int) Jdk.clamp(Math.round(number(object, "mangerFullDays", DEFAULTS.mangerFullDays)), 1L, 365L),
+                (int) Jdk.clamp(Math.round(number(object, "feederFullDays", DEFAULTS.feederFullDays)), 1L, 365L),
+                (int) Jdk.clamp(Math.round(number(object, "troughFullDays", DEFAULTS.troughFullDays)), 1L, 365L),
+                (int) Jdk.clamp(Math.round(number(object, "birdFeederFullDays", DEFAULTS.birdFeederFullDays)), 1L, 365L),
+                (int) Jdk.clamp(Math.round(number(object, "petBowlFullDays", DEFAULTS.petBowlFullDays)), 1L, 365L),
                 unit(object, "escapeBelow", DEFAULTS.escapeBelow),
                 unit(object, "escapeChance", DEFAULTS.escapeChance),
                 range(object, "sulkRange", DEFAULTS.sulkRange)
@@ -190,27 +191,27 @@ public record Tuning(
     }
 
     private static double unit(JsonObject object, String name, double fallback) {
-        return Math.clamp(number(object, name, fallback), 0.0, 1.0);
+        return Jdk.clamp(number(object, name, fallback), 0.0, 1.0);
     }
 
     private static long milkTicks(JsonObject object, String name, long fallback) {
-        return Math.clamp(Math.round(number(object, name, fallback)), 1L, MAX_MILK_TICKS);
+        return Jdk.clamp(Math.round(number(object, name, fallback)), 1L, MAX_MILK_TICKS);
     }
 
     private static int milkings(JsonObject object, String name, int fallback) {
-        return (int) Math.clamp(Math.round(number(object, name, fallback)), 0L, MAX_MILKINGS);
+        return (int) Jdk.clamp(Math.round(number(object, name, fallback)), 0L, MAX_MILKINGS);
     }
 
     private static double yieldFactor(JsonObject object, String name, double fallback) {
-        return Math.clamp(number(object, name, fallback), 0.0, MAX_YIELD);
+        return Jdk.clamp(number(object, name, fallback), 0.0, MAX_YIELD);
     }
 
     private static int range(JsonObject object, String name, int fallback) {
-        return (int) Math.clamp(Math.round(number(object, name, fallback)), 1L, MAX_RANGE);
+        return (int) Jdk.clamp(Math.round(number(object, name, fallback)), 1L, MAX_RANGE);
     }
 
     private static int ticks(JsonObject object, String name, int fallback) {
-        return (int) Math.clamp(Math.round(number(object, name, fallback)), 1L, Integer.MAX_VALUE);
+        return (int) Jdk.clamp(Math.round(number(object, name, fallback)), 1L, Integer.MAX_VALUE);
     }
 
     private static double number(JsonObject object, String name, double fallback) {

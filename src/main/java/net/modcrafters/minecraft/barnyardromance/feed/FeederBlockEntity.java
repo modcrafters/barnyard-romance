@@ -356,7 +356,7 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
         output.putLong("settledDay", settledDay);
         output.putLong("liveDay", liveDay);
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -372,6 +372,26 @@ public class FeederBlockEntity extends BaseContainerBlockEntity implements World
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         ContainerHelper.saveAllItems(tag, items, registries);
+        UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, herd.members()).result().ifPresent(saved -> tag.put("herd", saved));
+        tag.putLong("settledDay", settledDay);
+        tag.putLong("liveDay", liveDay);
+    }
+    *///?} else {
+    /*@Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, items);
+        herd.set(tag.contains("herd") ? UUIDUtil.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("herd")).result().orElse(List.of()) : List.of());
+        settledDay = tag.contains("settledDay") ? tag.getLong("settledDay") : NEVER;
+        liveDay = tag.contains("liveDay") ? tag.getLong("liveDay") : NEVER;
+        loaded();
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, items);
         UUIDUtil.CODEC.listOf().encodeStart(NbtOps.INSTANCE, herd.members()).result().ifPresent(saved -> tag.put("herd", saved));
         tag.putLong("settledDay", settledDay);
         tag.putLong("liveDay", liveDay);

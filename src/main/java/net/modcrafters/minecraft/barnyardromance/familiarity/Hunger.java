@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.familiarity;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 // Hungry days, saved with the traits. A hungry day is an overworld-clock day (GameDay, midnight to midnight) in which
 // the animal ate nothing; each one costs familiarity. Days are settled lazily, like fertility: settledDay is the
 // first day not yet accounted for, lastAteDay the day of the last meal and lastHungryDay the latest hungry day.
@@ -41,6 +42,6 @@ public record Hunger(long settledDay, long lastAteDay, long lastHungryDay) {
     }
 
     public static double afterHunger(double familiarity, int hungryDays, double lossPerDay) {
-        return Math.clamp(familiarity - hungryDays * lossPerDay, 0.0, 1.0);
+        return Jdk.clamp(familiarity - hungryDays * lossPerDay, 0.0, 1.0);
     }
 }

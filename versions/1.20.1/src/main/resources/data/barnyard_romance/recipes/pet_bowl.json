@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:brick"
+    }
+  },
+  "pattern": [
+    "B B",
+    "BBB"
+  ],
+  "result": {
+    "item": "barnyard_romance:pet_bowl"
+  }
+}

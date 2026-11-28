@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:egg",
+    {
+      "id": "#forge:eggs",
+      "required": false
+    },
+    "barnyard_romance:fertilized_egg"
+  ]
+}

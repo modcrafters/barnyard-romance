@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.breeding;
 
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 
 public final class ScaleRoll {
@@ -12,17 +13,17 @@ public final class ScaleRoll {
     }
 
     public static double roll(Sex sex, SizeSettings size, double unitRandom) {
-        return fromPercent(sex, size, Math.clamp(unitRandom, 0.0, 1.0));
+        return fromPercent(sex, size, Jdk.clamp(unitRandom, 0.0, 1.0));
     }
 
     public static double rollWild(Sex sex, SizeSettings size, double unitRandom) {
-        double percent = Math.min(Math.clamp(unitRandom, 0.0, 1.0) * 0.5, 0.5 - 1.0e-6);
+        double percent = Math.min(Jdk.clamp(unitRandom, 0.0, 1.0) * 0.5, 0.5 - 1.0e-6);
         return fromPercent(sex, size, percent);
     }
 
     // A wandering trader's stock: always in the top half of its range, so bigger than the species' middle.
     public static double rollWildTop(Sex sex, SizeSettings size, double unitRandom) {
-        return fromPercent(sex, size, 0.5 + Math.clamp(unitRandom, 0.0, 1.0) * 0.5);
+        return fromPercent(sex, size, 0.5 + Jdk.clamp(unitRandom, 0.0, 1.0) * 0.5);
     }
 
     public static double percent(Sex sex, double scale, SizeSettings size) {
@@ -31,12 +32,12 @@ public final class ScaleRoll {
             return 0.0;
         }
         double base = sex == Sex.FEMALE ? size.femaleScale() : size.maleScale();
-        return Math.clamp((scale - (base - size.variation())) / span, 0.0, 1.0);
+        return Jdk.clamp((scale - (base - size.variation())) / span, 0.0, 1.0);
     }
 
     public static double fromPercent(Sex sex, SizeSettings size, double percent) {
         double base = sex == Sex.FEMALE ? size.femaleScale() : size.maleScale();
-        double value = (base - size.variation()) + Math.clamp(percent, 0.0, 1.0) * size.variation() * 2.0;
-        return Math.clamp(value, MIN_SCALE, MAX_SCALE);
+        double value = (base - size.variation()) + Jdk.clamp(percent, 0.0, 1.0) * size.variation() * 2.0;
+        return Jdk.clamp(value, MIN_SCALE, MAX_SCALE);
     }
 }

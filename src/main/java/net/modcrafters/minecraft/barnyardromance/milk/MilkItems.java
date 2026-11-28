@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.milk;
 
+//? if >=1.20.5 {
 import net.minecraft.core.component.DataComponents;
+//?}
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;

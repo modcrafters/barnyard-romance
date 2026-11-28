@@ -29,10 +29,16 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyCodecs;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+//? if >=1.20.5 {
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.ItemLore;
+//?} else {
+/*import net.minecraft.advancements.Advancement;
+import net.minecraft.world.item.TooltipFlag;
+*///?}
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -51,7 +57,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 
@@ -197,7 +202,7 @@ public final class FoodGameTests {
     }
 
     public static Player holding(GameTestHelper helper, Item item) {
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(item));
         return player;
     }
@@ -466,9 +471,16 @@ public final class FoodGameTests {
         // Crafted stacks carry the tooltip too, because it is the item's default lore. Dairy Mash writes its effect
         // line itself, from the config.
         for (Item item : List.of(PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN, MilkItems.DAIRY_MASH)) {
-            ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
             int lines = item == MilkItems.DAIRY_MASH ? 1 : 2;
+            //? if >=1.20.5 {
+            ItemLore lore = new ItemStack(item).get(DataComponents.LORE);
             helper.assertTrue(lore != null && lore.lines().size() == lines, item + " has no tooltip");
+            //?} else {
+            /*// No lore component before 1.20.5: the item writes its lines into the tooltip (compat.legacy.LoreItem).
+            List<Component> tooltip = new ArrayList<>();
+            item.appendHoverText(new ItemStack(item), helper.getLevel(), tooltip, TooltipFlag.NORMAL);
+            helper.assertTrue(tooltip.size() >= lines, item + " has no tooltip");
+            *///?}
         }
         helper.succeed();
     }
@@ -477,14 +489,29 @@ public final class FoodGameTests {
     public static void everyRecipeUnlocksInTheRecipeBook(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         Set<String> unlocked = new HashSet<>();
+        //? if >=1.20.5 {
         for (AdvancementHolder advancement : server.getAdvancements().getAllAdvancements()) {
             advancement.value().rewards().recipes().forEach(recipe -> unlocked.add(modId(recipe.toString())));
         }
+        //?} else {
+        /*for (Advancement advancement : server.getAdvancements().getAllAdvancements()) {
+            for (Identifier recipe : advancement.getRewards().getRecipes()) {
+                unlocked.add(modId(recipe.toString()));
+            }
+        }
+        *///?}
         int recipes = 0;
+        //? if >=1.20.5 {
         for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
             String id = modId(holder.id().toString());
+            boolean special = holder.value().isSpecial();
+        //?} else {
+        /*for (Recipe<?> recipe : server.getRecipeManager().getRecipes()) {
+            String id = modId(recipe.getId().toString());
+            boolean special = recipe.isSpecial();
+        *///?}
             // Special recipes, such as copying a herd book, never show in the recipe book, so nothing unlocks them.
-            if (!id.isEmpty() && !holder.value().isSpecial()) {
+            if (!id.isEmpty() && !special) {
                 recipes++;
                 helper.assertTrue(unlocked.contains(id), "nothing unlocks the " + id + " recipe");
             }
@@ -514,7 +541,11 @@ public final class FoodGameTests {
                     Map.of("barnyard_romance:test_sugar", Set.of("minecraft:sugar")),
                     folder
             );
+            // Tag folders still have their plural names on 1.20.1.
+            //? if >=1.20.5 {
             Path tag = folder.resolve(FoodScanRunner.PACK).resolve("data/barnyard_romance/tags/item/test_sugar.json");
+            //?} else
+            //Path tag = folder.resolve(FoodScanRunner.PACK).resolve("data/barnyard_romance/tags/items/test_sugar.json");
             String written = Files.readString(tag);
 
             helper.assertTrue(summary.recipes() > 1000, "only " + summary.recipes() + " recipes were read");
@@ -540,10 +571,18 @@ public final class FoodGameTests {
         //?} else
         //CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(BarnyardTab.ID);
         helper.assertTrue(tab != null, "the Barnyard Romance tab is not registered");
+        //? if >=1.20.5 {
         tab.buildContents(new CreativeModeTab.ItemDisplayParameters(helper.getLevel().enabledFeatures(), true, helper.getLevel().registryAccess()));
         for (Item item : List.of(HerdItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
             helper.assertTrue(tab.getDisplayItems().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
         }
+        //?} else {
+        /*// Forge 1.20.1 fills a creative tab through a client-only hook, so a server can't build one: this checks what the
+        // tab is given to show instead.
+        for (Item item : List.of(HerdItems.HERD_BOOK, PregnancyItems.BREEDERS_MASH, PregnancyItems.GOLDEN_BRAN)) {
+            helper.assertTrue(BarnyardTab.contents().stream().anyMatch(stack -> stack.is(item)), item + " is not in the Barnyard Romance tab");
+        }
+        *///?}
         // The sticks follow the herdSticks option. Both settings are given here, so the global config stays alone.
         helper.assertTrue(HerdStick.tabStacks(true).stream().anyMatch(stack -> stack.is(HerdItems.HERD_STICK)), "the tab has no sticks with herdSticks on");
         helper.assertTrue(HerdStick.tabStacks(false).stream().noneMatch(stack -> stack.is(HerdItems.HERD_STICK)), "the tab has sticks with herdSticks off");

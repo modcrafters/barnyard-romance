@@ -6,7 +6,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
+//? if >=1.20.5 {
 import net.minecraft.core.component.DataComponents;
+//?}
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -17,7 +19,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+//? if >=1.20.5 {
 import net.minecraft.world.item.crafting.RecipeHolder;
+//?}
 //? if >=1.21.2 {
 import net.minecraft.server.packs.metadata.pack.PackFormat;
 import net.minecraft.util.context.ContextMap;
@@ -51,7 +55,11 @@ public final class FoodScanRunner {
     }
 
     public static Path defaultFolder(MinecraftServer server) {
+        //? if >=1.20.5 {
         return server.getServerDirectory().resolve("barnyard_romance").resolve("scan");
+        //?} else {
+        /*return server.getServerDirectory().toPath().resolve("barnyard_romance").resolve("scan");
+        *///?}
     }
 
     // Every group tag the loaded diets name (see FoodScan.groupTags), with its members today.
@@ -69,8 +77,12 @@ public final class FoodScanRunner {
         //? if >=1.21.2 {
         ContextMap context = SlotDisplayContext.fromLevel(server.overworld());
         //?}
+        //? if >=1.20.5 {
         for (RecipeHolder<?> holder : server.getRecipeManager().getRecipes()) {
             Recipe<?> recipe = holder.value();
+        //?} else {
+        /*for (Recipe<?> recipe : server.getRecipeManager().getRecipes()) {
+        *///?}
             String type = String.valueOf(BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType()));
             //? if >=1.21.2 {
             String result = result(recipe, context);
@@ -103,7 +115,11 @@ public final class FoodScanRunner {
                 }
                 ingredients.add(items);
             }
-            recipes.add(new FoodScan.ScanRecipe(holder.id().toString(), type, result, ingredients));
+            *///?}
+            //? if >=1.20.5 && <1.21.2 {
+            /*recipes.add(new FoodScan.ScanRecipe(holder.id().toString(), type, result, ingredients));
+            *///?} else if <1.20.5 {
+            /*recipes.add(new FoodScan.ScanRecipe(recipe.getId().toString(), type, result, ingredients));
             *///?}
         }
         FoodScan.ScanResult result = FoodScan.run(recipes, groups, FoodScanRunner::isFood);
@@ -130,7 +146,11 @@ public final class FoodScanRunner {
         ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(itemId)));
         //?} else
         //ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(Identifier.parse(itemId)));
+        //? if >=1.20.5 {
         if (stack.has(DataComponents.FOOD) || stack.is(FOODS)) {
+        //?} else {
+        /*if (stack.isEdible() || stack.is(FOODS)) {
+        *///?}
             return true;
         }
         for (Diet diet : FoodData.diets().values()) {
@@ -148,7 +168,11 @@ public final class FoodScanRunner {
     private static Set<String> members(String tagId) {
         Set<String> items = new LinkedHashSet<>();
         for (Holder<Item> item : BuiltInRegistries.ITEM.getTagOrEmpty(TagKey.create(Registries.ITEM, Identifier.parse(tagId)))) {
+            //? if >=1.20.5 {
             items.add(item.getRegisteredName());
+            //?} else {
+            /*items.add(BuiltInRegistries.ITEM.getKey(item.value()).toString());
+            *///?}
         }
         return items;
     }
@@ -187,7 +211,12 @@ public final class FoodScanRunner {
             JsonObject tagFile = new JsonObject();
             tagFile.addProperty("replace", false);
             tagFile.add("values", values);
+            //? if >=1.20.5 {
             Path file = pack.resolve("data").resolve(tag.getNamespace()).resolve("tags").resolve("item").resolve(tag.getPath() + ".json");
+            //?} else {
+            /*// Tag folders still have their plural names.
+            Path file = pack.resolve("data").resolve(tag.getNamespace()).resolve("tags").resolve("items").resolve(tag.getPath() + ".json");
+            *///?}
             Files.createDirectories(file.getParent());
             Files.writeString(file, GSON.toJson(tagFile), StandardCharsets.UTF_8);
             report.add("#" + tag, because);

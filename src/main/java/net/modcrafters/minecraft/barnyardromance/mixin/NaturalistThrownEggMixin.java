@@ -17,10 +17,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 // egg, and makes the mod's one-in-eight roll miss while Naturalist's ducks lay by those rules; a duck a pack switches
 // off keeps the mod's hatching. require = 0 loses a hook the mod renames instead of crashing the game; the plugin only
 // lists this when the mod is there.
+// On Forge 1.20.1 the mod's classes run with Minecraft's SRG names in a real game (Mojang's in the dev runs), and this
+// @Pseudo mixin's selectors aren't remapped, so that build names onHit both ways (m_6532_ there) and has the refmap remap
+// the nextInt call (remap = true on its @At).
 @Pseudo
 @Mixin(targets = "com.crispytwig.naturalist.world.entity.projectile.throwableitemprojectile.ThrownDuckEgg", remap = false)
 public class NaturalistThrownEggMixin {
+    //? if >=1.20.5 {
     @Inject(method = "onHit", at = @At("HEAD"), require = 0)
+    //?} else
+    //@Inject(method = {"onHit", "m_6532_"}, at = @At("HEAD"), require = 0)
     private void barnyardromance$hatch(HitResult result, CallbackInfo callback) {
         ThrowableItemProjectile self = (ThrowableItemProjectile) (Object) this;
         if (self.level() instanceof ServerLevel level) {
@@ -28,7 +34,10 @@ public class NaturalistThrownEggMixin {
         }
     }
 
+    //? if >=1.20.5 {
     @ModifyExpressionValue(method = "onHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextInt(I)I", ordinal = 0), require = 0)
+    //?} else
+    //@ModifyExpressionValue(method = {"onHit", "m_6532_"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;nextInt(I)I", ordinal = 0, remap = true), require = 0)
     private int barnyardromance$noModHatchlings(int roll) {
         return ThrownEggs.blocksModChicks("naturalist:duck") ? 1 : roll;
     }

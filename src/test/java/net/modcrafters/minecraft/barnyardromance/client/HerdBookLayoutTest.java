@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.text.English;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +72,7 @@ class HerdBookLayoutTest {
         List<List<HerdBookLayout.Line>> pages = HerdBookLayout.contents(rows, "minecraft:cow");
 
         assertEquals(2, pages.size());
-        assertEquals(HerdBookLayout.LINES, pages.getFirst().size());
+        assertEquals(HerdBookLayout.LINES, Jdk.first(pages).size());
         assertEquals(21 - HerdBookLayout.LINES, pages.get(1).size());
     }
 
@@ -88,8 +89,8 @@ class HerdBookLayoutTest {
 
         // The females' header and the females fill all but the last line; the males' header would be that last line,
         // so it starts page 2.
-        assertEquals(HerdBookLayout.LINES - 1, pages.getFirst().size());
-        assertEquals(new HerdBookLayout.Header(HerdBookLayout.Group.MALES), pages.get(1).getFirst());
+        assertEquals(HerdBookLayout.LINES - 1, Jdk.first(pages).size());
+        assertEquals(new HerdBookLayout.Header(HerdBookLayout.Group.MALES), Jdk.first(pages.get(1)));
         assertEquals(1, HerdBookLayout.pageOf(pages, id(50)));
     }
 

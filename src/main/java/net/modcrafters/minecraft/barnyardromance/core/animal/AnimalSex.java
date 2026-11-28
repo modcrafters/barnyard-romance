@@ -29,8 +29,14 @@ public final class AnimalSex {
     }
 
     public static double currentScale(Animal animal) {
+        //? if >=1.20.5 {
         AttributeInstance attribute = animal.getAttribute(Attributes.SCALE);
         return attribute == null ? 1.0 : attribute.getBaseValue();
+        //?} else {
+        /*// 1.20.1 has no scale attribute, so this is what TraitSetup would set it to: the size for a tracked adult,
+        // and 1.0 for a baby, an animal without traits or a species that is switched off.
+        return Tracked.traits(animal).map(traits -> animal.isBaby() ? 1.0 : traits.scale()).orElse(1.0);
+        *///?}
     }
 
     // Only the animals familiarity tames (wolves, cats, horses and the rest of the horse family) count: a parrot tamed

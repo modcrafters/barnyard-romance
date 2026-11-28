@@ -1,12 +1,13 @@
 package net.modcrafters.minecraft.barnyardromance.gametest;
 
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.Items;
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBookData;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Lineage;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
@@ -121,7 +122,7 @@ public final class HerdBookGameTests {
         HerdBooks.RegisterResult result = HerdBooks.register(book, cow);
 
         helper.assertTrue(result == HerdBooks.RegisterResult.NOT_FAMILIAR, "a wild cow was " + result);
-        helper.assertTrue(book.get(HerdComponents.HERD_BOOK) == null, "a refused cow gave the book an ID");
+        helper.assertTrue(ItemData.get(book, HerdComponents.HERD_BOOK) == null, "a refused cow gave the book an ID");
         helper.succeed();
     }
 
@@ -176,7 +177,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, mother);
 
-        Animal calf = breed(helper, mother, father).getFirst();
+        Animal calf = Jdk.first(breed(helper, mother, father));
 
         HerdLedger.Node node = data(helper).ledger().node(calf.getUUID());
         helper.assertTrue(node != null && !node.everFamiliar(), "a calf at " + traits(helper, calf).get(CARE).familiarity() + " joined as familiar");
@@ -333,7 +334,7 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
         HerdBookPayloads.RemoveFromBook request = new HerdBookPayloads.RemoveFromBook(id, cow.getUUID());
 
         helper.assertTrue(!HerdBooks.removeRequested(player, request), "a removal without the book in hand worked");
@@ -377,9 +378,23 @@ public final class HerdBookGameTests {
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
 
         HerdBookPayloads.ShowBook.STREAM_CODEC.encode(buffer, sent);
+        //? if <1.20.5 {
+        /*byte[] wire = new byte[buffer.readableBytes()];
+        buffer.getBytes(buffer.readerIndex(), wire);
+        *///?}
         HerdBookPayloads.ShowBook received = HerdBookPayloads.ShowBook.STREAM_CODEC.decode(buffer);
 
+        //? if >=1.20.5 {
         helper.assertTrue(received.equals(sent), "the book came back as " + received);
+        //?} else {
+        /*// Before 1.20.5 text goes over the network as chat JSON, which gives a translation's number arguments back as
+        // text: the same words on screen, but not an equal component. So what came back must send exactly as it came.
+        RegistryFriendlyByteBuf again = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
+        HerdBookPayloads.ShowBook.STREAM_CODEC.encode(again, received);
+        byte[] resent = new byte[again.readableBytes()];
+        again.getBytes(again.readerIndex(), resent);
+        helper.assertTrue(java.util.Arrays.equals(wire, resent), "the book came back as " + received);
+        *///?}
         helper.succeed();
     }
 
@@ -418,14 +433,14 @@ public final class HerdBookGameTests {
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, cow);
         UUID id = bookId(helper, book);
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, book);
         List<ItemStack> replies = new java.util.ArrayList<>();
         HerdBookPayloads.RemoveFromBook stranger = new HerdBookPayloads.RemoveFromBook(id, UUID.randomUUID());
 
         helper.assertTrue(!HerdBooks.removeRequested(player, stranger, replies::add), "removing an animal that is not in the book worked");
 
-        helper.assertTrue(replies.size() == 1 && replies.getFirst() == book, "a failed removal sent " + replies.size() + " books back");
+        helper.assertTrue(replies.size() == 1 && Jdk.first(replies) == book, "a failed removal sent " + replies.size() + " books back");
         helper.succeed();
     }
 
@@ -716,7 +731,7 @@ public final class HerdBookGameTests {
                 ItemStack.EMPTY, new ItemStack(Items.INK_SAC), ItemStack.EMPTY
         ));
 
-        Optional<RecipeHolder<CraftingRecipe>> recipe = server(helper).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
 
         helper.assertTrue(recipe.isPresent(), "a herd book, a book, a feather and an ink sac craft nothing");
         //? if >=1.21.2 {
@@ -724,9 +739,9 @@ public final class HerdBookGameTests {
         //?} else
         //ItemStack copy = recipe.get().value().assemble(input, helper.getLevel().registryAccess());
         helper.assertTrue(copy.is(HerdItems.HERD_BOOK) && copy.getCount() == 1, "the copy is " + copy);
-        helper.assertTrue(bookId(helper, book).equals(copy.get(HerdComponents.HERD_BOOK)), "the copy has another ID");
+        helper.assertTrue(bookId(helper, book).equals(ItemData.get(copy, HerdComponents.HERD_BOOK)), "the copy has another ID");
         ItemStack kept = recipe.get().value().getRemainingItems(input).get(4);
-        helper.assertTrue(kept.is(HerdItems.HERD_BOOK) && bookId(helper, book).equals(kept.get(HerdComponents.HERD_BOOK)),
+        helper.assertTrue(kept.is(HerdItems.HERD_BOOK) && bookId(helper, book).equals(ItemData.get(kept, HerdComponents.HERD_BOOK)),
                 "the herd book didn't stay in the grid: " + kept);
         helper.succeed();
     }
@@ -749,7 +764,7 @@ public final class HerdBookGameTests {
         ));
 
         for (CraftingInput input : List.of(fresh, extra, noInk)) {
-            helper.assertTrue(server(helper).getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel()).isEmpty(),
+            helper.assertTrue(GameTestCompat.craftingRecipe(helper, input).isEmpty(),
                     "a copy was crafted from " + input.items());
         }
         helper.succeed();
@@ -785,7 +800,7 @@ public final class HerdBookGameTests {
     }
 
     private static UUID bookId(GameTestHelper helper, ItemStack book) {
-        UUID id = book.get(HerdComponents.HERD_BOOK);
+        UUID id = ItemData.get(book, HerdComponents.HERD_BOOK);
         if (id == null) {
             throw GameTestCompat.failure(helper, "the book has no ID");
         }

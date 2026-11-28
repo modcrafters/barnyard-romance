@@ -1,6 +1,8 @@
 package net.modcrafters.minecraft.barnyardromance.food;
 
+//? if >=1.20.5 {
 import net.minecraft.core.component.DataComponents;
+//?}
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -46,7 +48,12 @@ public record MinecraftItemFacts(Animal animal, ItemStack stack) implements Item
 
     @Override
     public OptionalInt nutrition() {
+        //? if >=1.20.5 {
         FoodProperties food = stack.get(DataComponents.FOOD);
         return food == null ? OptionalInt.empty() : OptionalInt.of(food.nutrition());
+        //?} else {
+        /*FoodProperties food = stack.getItem().getFoodProperties();
+        return food == null ? OptionalInt.empty() : OptionalInt.of(food.getNutrition());
+        *///?}
     }
 }

@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.look;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -65,6 +66,42 @@ class ShippedHornFilesTest {
         assertTrue(hide.contains(new HideRule(List.of("head"), new Xyz(1, 2, 1), null)));
     }
 
+    // Meadow's wooly cow: its own Highland horns, bigger on bulls and as small nubs on one cow in four, drawn from
+    // Meadow's skin, whose horn pixels are the same in every variant.
+    @Test
+    void woolyCowBullsHaveBigHornsAndSomeCowsNubs() throws IOException {
+        HornFile wooly = load("wooly_cow");
+
+        assertEquals(List.of("meadow:wooly_cow"), wooly.entities());
+        assertEquals("meadow:textures/entity/cow/highland_cattle.png", wooly.texture());
+        assertEquals(128, wooly.textureWidth());
+        assertEquals(128, wooly.textureHeight());
+        assertEquals(0.25, wooly.femaleChance(), 1.0e-9);
+        assertTrue(wooly.hide().contains(new HideRule(List.of("head", "horn_right_top_r1"), null, null)));
+        assertTrue(wooly.hide().contains(new HideRule(List.of("head", "horn_left_top_r1"), null, null)));
+        assertFalse(wooly.male().isEmpty());
+        assertFalse(wooly.female().isEmpty());
+    }
+
+    // Meadow's head wears a wool box inflated by 0.2, so its top is at y -4.2 (y grows downward). A cow's nubs and the
+    // root of a bull's bar must reach into it, not float a sliver above it.
+    @Test
+    void woolyCowHornsSitInTheWool() throws IOException {
+        HornFile wooly = load("wooly_cow");
+        double woolTop = -4.2;
+
+        for (HornPart nub : wooly.female()) {
+            HornCube cube = nub.cubes().get(0);
+            double bottom = nub.pivot().y() + cube.from().y() + cube.size().y() + cube.inflate();
+            assertTrue(bottom >= woolTop - 1.0e-6, "a cow's nub floats above the wool, its bottom at " + bottom);
+        }
+        for (HornPart horn : wooly.male()) {
+            HornCube bar = horn.cubes().get(0);
+            double top = horn.pivot().y() + bar.from().y() - bar.inflate();
+            assertTrue(top >= woolTop - 1.0e-6, "a bull's bar stands proud of the wool at its root, its top at " + top);
+        }
+    }
+
     @Test
     void sheepHaveRamsAndSomeEwesWithHorns() throws IOException {
         HornFile sheep = load("sheep");
@@ -82,7 +119,7 @@ class ShippedHornFilesTest {
 
         assertEquals(List.of("minecraft:goat"), goat.entities());
         assertEquals(0.8, goat.femaleChance(), 1.0e-9);
-        assertEquals(new HornAttach(List.of("head"), new Xyz(-0.5f, 0, 0)), goat.attach().getLast());
+        assertEquals(new HornAttach(List.of("head"), new Xyz(-0.5f, 0, 0)), Jdk.last(goat.attach()));
         assertTrue(goat.hide().contains(new HideRule(List.of("head", "right_horn"), null, null)));
         assertTrue(goat.hide().contains(new HideRule(List.of("head", "left_horn"), null, null)));
         for (HornPart part : goat.male()) {
@@ -97,8 +134,8 @@ class ShippedHornFilesTest {
         for (String name : List.of("cattle", "sheep", "goat", "chicken")) {
             List<HornAttach> attach = load(name).attach();
 
-            assertEquals(List.of("body", "EMF_body", "EMF_head2"), attach.getFirst().path(), name);
-            assertEquals(List.of("head"), attach.getLast().path(), name);
+            assertEquals(List.of("body", "EMF_body", "EMF_head2"), Jdk.first(attach).path(), name);
+            assertEquals(List.of("head"), Jdk.last(attach).path(), name);
         }
     }
 
@@ -118,7 +155,7 @@ class ShippedHornFilesTest {
             List<HornPart> parts = new ArrayList<>(file.male());
             parts.addAll(file.female());
             while (!parts.isEmpty()) {
-                HornPart part = parts.removeLast();
+                HornPart part = Jdk.removeLast(parts);
                 parts.addAll(part.children());
                 for (HornCube cube : part.cubes()) {
                     // A box's texture is 2 * (depth + width) wide and depth + height tall.

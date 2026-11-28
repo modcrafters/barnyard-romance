@@ -24,20 +24,23 @@ public final class English {
     }
 
     public static String of(Text text, Map<String, String> lang) {
-        return switch (text) {
-            case Text.Plain plain -> plain.value();
-            case Text.Join join -> {
-                StringBuilder joined = new StringBuilder();
-                for (int index = 0; index < join.parts().size(); index++) {
-                    if (index > 0) {
-                        joined.append(join.separator());
-                    }
-                    joined.append(of(join.parts().get(index), lang));
+        if (text instanceof Text.Plain plain) {
+            return plain.value();
+        }
+        if (text instanceof Text.Join join) {
+            StringBuilder joined = new StringBuilder();
+            for (int index = 0; index < join.parts().size(); index++) {
+                if (index > 0) {
+                    joined.append(join.separator());
                 }
-                yield joined.toString();
+                joined.append(of(join.parts().get(index), lang));
             }
-            case Text.Key key -> fill(key, lang);
-        };
+            return joined.toString();
+        }
+        if (text instanceof Text.Key key) {
+            return fill(key, lang);
+        }
+        throw new IllegalArgumentException("Unknown text " + text);
     }
 
     public static synchronized Map<String, String> lang() {

@@ -53,7 +53,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -213,8 +212,7 @@ public final class ProductGameTests {
                     new ItemStack(Items.SUGAR), new ItemStack(Items.EGG), new ItemStack(Items.SUGAR),
                     new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT)
             ));
-            Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                    .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+            Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
             helper.assertTrue(recipe.isPresent(), "no recipe takes " + milk);
             //? if >=1.21.2 {
             ItemStack result = recipe.get().value().assemble(input);
@@ -236,7 +234,7 @@ public final class ProductGameTests {
     }
 
     public static void goatMilkClearsEffects(GameTestHelper helper) {
-        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player player = GameTestCompat.mockPlayer(helper, GameType.SURVIVAL);
         player.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
         ItemStack left = new ItemStack(MilkItems.GOAT_MILK_BUCKET).finishUsingItem(helper.getLevel(), player);
 
@@ -663,16 +661,21 @@ public final class ProductGameTests {
         helper.succeed();
     }
 
-    // Taming sets a wolf's health to 40; a big male gets his full 60, and keeps it through a save and load.
+    // Taming sets a wolf's health to 40 (20 before 1.20.5); a big male gets his full 60 (30), and keeps it through a
+    // save and load.
     public static void bigTamedWolvesKeepTheirHealth(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) sized(helper, BreedingGameTests.male(helper, EntityTypes.WOLF), 1.3);
+        //? if >=1.20.5 {
+        double full = 60.0;
+        //?} else
+        //double full = 30.0;
 
         wolf.tame(FoodGameTests.holding(helper, Items.BONE));
 
-        assertNear(helper, "the tamed male's max health", wolf.getMaxHealth(), 60.0);
-        assertNear(helper, "the tamed male's health", wolf.getHealth(), 60.0);
+        assertNear(helper, "the tamed male's max health", wolf.getMaxHealth(), full);
+        assertNear(helper, "the tamed male's health", wolf.getHealth(), full);
         TamableAnimal loaded = GameTestCompat.reloaded(helper, wolf);
-        assertNear(helper, "the reloaded male's health", loaded.getHealth(), 60.0);
+        assertNear(helper, "the reloaded male's health", loaded.getHealth(), full);
         assertNear(helper, "the reloaded male's bite", loaded.getAttributeValue(Attributes.ATTACK_DAMAGE), 8.0);
         helper.succeed();
     }

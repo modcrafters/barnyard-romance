@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.feed;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 // One item is one animal's daily meal, as in the feeder window. A nonempty store never looks empty,
 // and the full stage requires the configured number of herd-days to actually be stocked.
 public final class FeederFill {
@@ -13,6 +14,6 @@ public final class FeederFill {
             return 0;
         }
         long target = (long) Math.max(1, animals) * Math.max(1, fullDays);
-        return (int) Math.clamp((long) food * LEVELS / target, 1L, LEVELS);
+        return (int) Jdk.clamp((long) food * LEVELS / target, 1L, LEVELS);
     }
 }

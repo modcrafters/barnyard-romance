@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Publishes the three jars for one tag: NeoForge 1.21.1, Fabric 26.3, and NeoForge 26.3.
+# Publishes the four jars for one tag: Forge 1.20.1, NeoForge 1.21.1, Fabric 26.3, and NeoForge 26.3.
 # Each loader gets its own Modrinth version and CurseForge file, so the download button
-# is the jar for that loader. GitHub gets one release with all three attached.
+# is the jar for that loader. The Forge 1.20.1 jar also loads on NeoForge 1.20.1, so its
+# version and file carry both loaders. GitHub gets one release with all four attached.
 # Usage:
 #   release-publish.sh check-env
 #   release-publish.sh classify <jars-dir> <version>
@@ -28,14 +29,18 @@ check_env() {
   [[ "$CURSEFORGE_PROJECT_ID" =~ ^[0-9]+$ ]] || die "CURSEFORGE_PROJECT_ID should be the number from the CurseForge project page"
 }
 
-# Sets neo_121, fabric_263, and neo_263. A sources jar, or a jar from another version, is ignored.
+# Sets forge_120, neo_121, fabric_263, and neo_263. A sources jar, or a jar from another version, is ignored.
 classify() {
   local dir=$1 version=$2 jar base
-  neo_121='' fabric_263='' neo_263=''
+  forge_120='' neo_121='' fabric_263='' neo_263=''
   [[ -d "$dir" ]] || die "No jar directory at ${dir}"
   while IFS= read -r jar; do
     base=$(basename "$jar")
     case "$base" in
+      "barnyard_romance-forge-1.20.1-${version}.jar")
+        [[ -z "$forge_120" ]] || die "Two Forge 1.20.1 jars named ${base}"
+        forge_120=$jar
+        ;;
       "barnyard_romance-neoforge-1.21.1-${version}.jar")
         [[ -z "$neo_121" ]] || die "Two NeoForge 1.21.1 jars named ${base}"
         neo_121=$jar
@@ -50,6 +55,7 @@ classify() {
         ;;
     esac
   done < <(find "$dir" -type f -name '*.jar' | sort)
+  [[ -n "$forge_120" ]] || die "Missing barnyard_romance-forge-1.20.1-${version}.jar"
   [[ -n "$neo_121" ]] || die "Missing barnyard_romance-neoforge-1.21.1-${version}.jar"
   [[ -n "$fabric_263" ]] || die "Missing barnyard_romance-fabric-26.3-${version}.jar"
   [[ -n "$neo_263" ]] || die "Missing barnyard_romance-neoforge-26.3-${version}.jar"
@@ -67,8 +73,9 @@ curseforge_game_versions() {
   python3 "$here/curseforge-version-ids.py" "$versions_file" "$types_file" "$@"
 }
 
+# loaders is one Modrinth loader, or several separated by spaces.
 modrinth_upload() {
-  local version_number=$1 name=$2 loader=$3 game=$4 jar=$5
+  local version_number=$1 name=$2 loaders=$3 game=$4 jar=$5
   local encoded code deps
   encoded=$(jq -nr --arg value "$version_number" '$value|@uri')
   code=$(http_code "$work/exists.json" \
@@ -84,7 +91,7 @@ modrinth_upload() {
     cat "$work/exists.json" >&2
     exit 1
   }
-  if [[ "$loader" == fabric ]]; then
+  if [[ "$loaders" == fabric ]]; then
     deps="[{\"project_id\":\"${fabric_api}\",\"dependency_type\":\"required\"}]"
   else
     deps='[]'
@@ -96,7 +103,7 @@ modrinth_upload() {
     --arg project_id "$MODRINTH_PROJECT_ID" \
     --arg version_type "$release_type" \
     --arg game "$game" \
-    --arg loader "$loader" \
+    --arg loaders "$loaders" \
     --argjson dependencies "$deps" \
     '{
       name: $name,
@@ -105,7 +112,7 @@ modrinth_upload() {
       dependencies: $dependencies,
       game_versions: [$game],
       version_type: $version_type,
-      loaders: [$loader],
+      loaders: ($loaders | split(" ")),
       featured: true,
       project_id: $project_id,
       file_parts: ["jar"],
@@ -192,7 +199,7 @@ github_release() {
 upload() {
   local version=$1
   notes=$2
-  local jars=$3 code cf_neo_121 cf_fabric_263 cf_neo_263
+  local jars=$3 code cf_forge_120 cf_neo_121 cf_fabric_263 cf_neo_263
   check_env
   [[ -f "$notes" ]] || die "No changelog at ${notes}"
   [[ -n "${TAG:-}" ]] || die "TAG is missing"
@@ -224,7 +231,8 @@ upload() {
   }
 
   # Resolve every target before the first upload, so a catalog error cannot
-  # leave a release published only on Modrinth.
+  # leave a release published only on Modrinth. The Forge 1.20.1 file names NeoForge too.
+  cf_forge_120=$(curseforge_game_versions 1.20.1 Forge,NeoForge "Java 17")
   cf_neo_121=$(curseforge_game_versions 1.21.1 NeoForge "Java 21")
   cf_fabric_263=$(curseforge_game_versions 26.3 Fabric "Java 25")
   cf_neo_263=$(curseforge_game_versions 26.3 NeoForge "Java 25")
@@ -239,15 +247,17 @@ upload() {
     echo "CurseForge file list returned ${code}. A repeated run may upload the same jar again." >&2
   fi
 
+  modrinth_upload "${version}+1.20.1" "Barnyard Romance ${version} for Forge 1.20.1" "forge neoforge" 1.20.1 "$forge_120"
   modrinth_upload "${version}+1.21.1" "Barnyard Romance ${version} for NeoForge 1.21.1" neoforge 1.21.1 "$neo_121"
   modrinth_upload "${version}+26.3+fabric" "Barnyard Romance ${version} for Fabric 26.3" fabric 26.3 "$fabric_263"
   modrinth_upload "${version}+26.3+neoforge" "Barnyard Romance ${version} for NeoForge 26.3" neoforge 26.3 "$neo_263"
 
+  curseforge_upload "Barnyard Romance ${version} for Forge 1.20.1" Forge "$forge_120" "$cf_forge_120"
   curseforge_upload "Barnyard Romance ${version} for NeoForge 1.21.1" NeoForge "$neo_121" "$cf_neo_121"
   curseforge_upload "Barnyard Romance ${version} for Fabric 26.3" Fabric "$fabric_263" "$cf_fabric_263"
   curseforge_upload "Barnyard Romance ${version} for NeoForge 26.3" NeoForge "$neo_263" "$cf_neo_263"
 
-  github_release "$TAG" "$neo_121" "$fabric_263" "$neo_263"
+  github_release "$TAG" "$forge_120" "$neo_121" "$fabric_263" "$neo_263"
 }
 
 [[ $# -ge 1 ]] || die "Usage: release-publish.sh check-env|classify|upload ..."
@@ -258,7 +268,7 @@ case "$cmd" in
   classify)
     [[ $# -eq 2 ]] || die "Usage: release-publish.sh classify <jars-dir> <version>"
     classify "$1" "$2"
-    printf '%s\n' "$neo_121" "$fabric_263" "$neo_263"
+    printf '%s\n' "$forge_120" "$neo_121" "$fabric_263" "$neo_263"
     ;;
   upload)
     [[ $# -eq 3 ]] || die "Usage: release-publish.sh upload <version> <changelog> <jars-dir>"

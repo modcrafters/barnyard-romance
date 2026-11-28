@@ -296,7 +296,10 @@ public final class UpkeepGameTests {
             helper.assertTrue(upkeep.cared() && !upkeep.ranAway(), "a leashed runaway's upkeep is " + upkeep);
             helper.assertTrue(!Escapes.queued(cow) && cow.position().equals(at), "a leashed cow set off");
 
+            //? if >=1.20.5 {
             cow.setLeashData(null);
+            //?} else
+            //cow.dropLeash(true, false);
             withConfig("{\"tuning\": {\"escapeChance\": 1.0}}", () -> FamiliarityCare.settle(cow, clock(DAY + 1L)));
 
             upkeep = traits(helper, cow).get(CARE).upkeep();
@@ -356,7 +359,7 @@ public final class UpkeepGameTests {
     public static void aTamedParrotNeverRunsAway(GameTestHelper helper) {
         TamableAnimal parrot = GameTestCompat.spawn(helper, EntityTypes.PARROT, 3, 1, 4);
         Services.DATA.set(parrot, AnimalTraits.of(Sex.FEMALE, 1.0).with(CARE, FamiliarityState.NONE.fed(1.0, -1L)));
-        parrot.tame(helper.makeMockPlayer(GameType.SURVIVAL));
+        parrot.tame(GameTestCompat.mockPlayer(helper, GameType.SURVIVAL));
         settledOn(parrot, traits(helper, parrot), 0.12, 6.0F, DAY - 5L, Upkeep.NONE.caredFor());
 
         withConfig("{\"tuning\": {\"escapeChance\": 1.0}, \"species\": {\"minecraft:parrot\": {\"enabled\": true}}}", () -> FamiliarityCare.settle(parrot, clock(DAY)));

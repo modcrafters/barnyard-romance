@@ -2,6 +2,7 @@ package net.modcrafters.minecraft.barnyardromance.core;
 
 import org.junit.jupiter.api.Test;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +29,8 @@ class AnimalTicksTest {
     void hooksRunInTheWrittenOrderNotRegistrationOrder() {
         List<String> ran = new ArrayList<>();
         FeatureSet features = FeatureSet.of(List.of(feature("backwards", registrar -> {
-            for (AnimalPhase phase : List.of(AnimalPhase.values()).reversed()) {
-                for (String name : AnimalTicks.order(phase).reversed()) {
+            for (AnimalPhase phase : Jdk.reversed(List.of(AnimalPhase.values()))) {
+                for (String name : Jdk.reversed(AnimalTicks.order(phase))) {
                     if (!name.equals("core.age")) {
                         registrar.hook(phase, name, (animal, level) -> ran.add(name));
                     }

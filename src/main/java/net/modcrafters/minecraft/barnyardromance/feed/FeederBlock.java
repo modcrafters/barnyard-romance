@@ -36,7 +36,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 // A Bird Feeder, Trough, Feeder, Manger or Pet Bowl: a store of plain food for the animals of its kind. A right click
 // opens it; breaking it drops what's inside.
 public class FeederBlock extends BaseEntityBlock {
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*public static final MapCodec<FeederBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.xmap(FeederKind::valueOf, FeederKind::name).fieldOf("kind").forGetter(FeederBlock::kind),
             propertiesCodec()
@@ -81,7 +81,7 @@ public class FeederBlock extends BaseEntityBlock {
         builder.add(BlockStateProperties.HORIZONTAL_FACING);
     }
 
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*@Override
     protected MapCodec<? extends FeederBlock> codec() {
         return CODEC;

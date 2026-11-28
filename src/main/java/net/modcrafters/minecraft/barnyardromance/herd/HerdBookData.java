@@ -86,9 +86,11 @@ public final class HerdBookData extends SavedData {
             CODEC,
             null
     );
-    //?} else {
+    //?} else if >=1.20.5 {
     /*private static final String NAME = Constants.MOD_ID + "_herd_books";
     private static final SavedData.Factory<HerdBookData> FACTORY = new SavedData.Factory<>(HerdBookData::new, HerdBookData::load, null);
+    *///?} else {
+    /*private static final String NAME = Constants.MOD_ID + "_herd_books";
     *///?}
 
     private final HerdLedger ledger;
@@ -114,8 +116,11 @@ public final class HerdBookData extends SavedData {
     public static HerdBookData get(MinecraftServer server) {
         //? if >=1.21.5 {
         HerdBookData data = server.overworld().getDataStorage().computeIfAbsent(TYPE);
-        //?} else
-        //HerdBookData data = server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        //?} else if >=1.20.5 {
+        /*HerdBookData data = server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
+        *///?} else {
+        /*HerdBookData data = server.overworld().getDataStorage().computeIfAbsent(HerdBookData::load, HerdBookData::new, NAME);
+        *///?}
         data.fillSizeRanges();
         return data;
     }
@@ -141,7 +146,7 @@ public final class HerdBookData extends SavedData {
         }
     }
 
-    //? if <1.21.5 {
+    //? if >=1.20.5 && <1.21.5 {
     /*private static HerdBookData load(CompoundTag tag, HolderLookup.Provider registries) {
         return CODEC.parse(NbtOps.INSTANCE, tag.get("herd"))
                 .resultOrPartial(error -> Constants.LOG.error("Failed to load herd books: {}", error))
@@ -150,6 +155,20 @@ public final class HerdBookData extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+        CODEC.encodeStart(NbtOps.INSTANCE, this)
+                .resultOrPartial(error -> Constants.LOG.error("Failed to save herd books: {}", error))
+                .ifPresent(herd -> tag.put("herd", herd));
+        return tag;
+    }
+    *///?} else if <1.20.5 {
+    /*private static HerdBookData load(CompoundTag tag) {
+        return CODEC.parse(NbtOps.INSTANCE, tag.get("herd"))
+                .resultOrPartial(error -> Constants.LOG.error("Failed to load herd books: {}", error))
+                .orElseGet(HerdBookData::new);
+    }
+
+    @Override
+    public CompoundTag save(CompoundTag tag) {
         CODEC.encodeStart(NbtOps.INSTANCE, this)
                 .resultOrPartial(error -> Constants.LOG.error("Failed to save herd books: {}", error))
                 .ifPresent(herd -> tag.put("herd", herd));

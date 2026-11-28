@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.FeaturesRepository;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.rivalry.api.RivalryApi;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
@@ -51,7 +52,7 @@ public final class HerdBooks {
             return RegisterResult.NOT_TRACKED;
         }
         // Membership comes first, so a member gone grumpy or decayed still opens its page.
-        UUID existing = book.get(HerdComponents.HERD_BOOK);
+        UUID existing = ItemData.get(book, HerdComponents.HERD_BOOK);
         if (existing != null && HerdBookData.get(level.getServer()).ledger().isMember(existing, animal.getUUID())) {
             return RegisterResult.ALREADY;
         }
@@ -63,10 +64,10 @@ public final class HerdBooks {
             return RegisterResult.NOT_FAMILIAR;
         }
         HerdBookData data = HerdBookData.get(level.getServer());
-        UUID id = book.get(HerdComponents.HERD_BOOK);
+        UUID id = ItemData.get(book, HerdComponents.HERD_BOOK);
         if (id == null) {
             id = UUID.randomUUID();
-            book.set(HerdComponents.HERD_BOOK, id);
+            ItemData.set(book, HerdComponents.HERD_BOOK, id);
         }
         if (!data.ledger().register(id, node(animal, traits.get(), true))) {
             return RegisterResult.ALREADY;
@@ -207,7 +208,7 @@ public final class HerdBooks {
 
     // focus, when present, turns the open book to that animal's page.
     public static void show(ServerPlayer player, ItemStack book, boolean open, Optional<UUID> focus) {
-        UUID id = book.get(HerdComponents.HERD_BOOK);
+        UUID id = ItemData.get(book, HerdComponents.HERD_BOOK);
         MinecraftServer server = player.level().getServer();
         List<HerdEntry> entries = id == null ? List.of() : entries(server, id, player.level().getGameTime());
         Services.NETWORK.sendToPlayer(player, new HerdBookPayloads.ShowBook(Optional.ofNullable(id), entries, open, focus, menus(server, entries)));
@@ -270,7 +271,7 @@ public final class HerdBooks {
     private static @Nullable ItemStack heldBook(Player player, UUID book) {
         for (InteractionHand hand : InteractionHand.values()) {
             ItemStack stack = player.getItemInHand(hand);
-            if (book.equals(stack.get(HerdComponents.HERD_BOOK))) {
+            if (book.equals(ItemData.get(stack, HerdComponents.HERD_BOOK))) {
                 return stack;
             }
         }

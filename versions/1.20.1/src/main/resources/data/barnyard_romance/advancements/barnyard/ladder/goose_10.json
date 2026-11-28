@@ -1,0 +1,33 @@
+{
+  "conditions": [
+    {
+      "type": "barnyard_romance:species_tracked",
+      "species": [
+        "untitledduckmod:goose"
+      ]
+    }
+  ],
+  "parent": "barnyard_romance:barnyard/which_came_first",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.barnyard_romance.ladder.goose_10.description"
+    },
+    "frame": "task",
+    "icon": {
+      "item": "untitledduckmod:goose_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.barnyard_romance.ladder.goose_10.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

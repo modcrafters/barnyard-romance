@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.age.GameDay;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +23,7 @@ public final class EggSchedule {
     public static List<Integer> plan(int sinceMidnight, int count, double roll) {
         int start = sinceMidnight < SUNSET ? Math.max(sinceMidnight, SUNRISE) : sinceMidnight;
         int end = sinceMidnight < SUNSET ? SUNSET : DAY;
-        int time = Math.min(end - 1, start + (int) Math.floor(Math.clamp(roll, 0.0, 1.0) * (end - start)));
+        int time = Math.min(end - 1, start + (int) Math.floor(Jdk.clamp(roll, 0.0, 1.0) * (end - start)));
         return List.copyOf(Collections.nCopies(count, time));
     }
 

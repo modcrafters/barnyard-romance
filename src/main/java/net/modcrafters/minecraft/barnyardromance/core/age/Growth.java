@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.age;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
 
@@ -26,13 +27,13 @@ public final class Growth {
         if (slow <= fast) {
             return 1.0;
         }
-        return Math.clamp((slow - ticks) / (double) (slow - fast), 0.0, 1.0);
+        return Jdk.clamp((slow - ticks) / (double) (slow - fast), 0.0, 1.0);
     }
 
     public static int fromPercent(double percent) {
         int fast = fast();
         int slow = slow();
-        double clamped = Math.clamp(percent, 0.0, 1.0);
+        double clamped = Jdk.clamp(percent, 0.0, 1.0);
         return (int) Math.round(slow - clamped * (slow - fast));
     }
 

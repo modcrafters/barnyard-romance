@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.modcrafters.minecraft.barnyardromance.forge.mixin",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "mixins": [
+    "CapabilityProviderAccessor",
+    "MilkBucketItemMixin",
+    "ShearsItemMixin",
+    "SidedContainerMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

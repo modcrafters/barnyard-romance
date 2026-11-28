@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.breeding;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.SizeSettings;
 
 // How hard a wolf bites and how much health it has, as multipliers of vanilla's, from where its size sits between
@@ -29,7 +30,7 @@ public final class WolfStrength {
         if (span <= 0.0) {
             return 0.5;
         }
-        return Math.clamp((scale - size.smallest()) / span, 0.0, 1.0);
+        return Jdk.clamp((scale - size.smallest()) / span, 0.0, 1.0);
     }
 
     // A straight line from the smallest to vanilla, then another from vanilla to the largest, so halfway is always 1.

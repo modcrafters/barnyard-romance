@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 
 // Four identical sides: only the seed level is saved, never a placement direction.
 public final class BirdFeederBlock extends GrainFeederBlock {
-    //? if <1.21.2
+    //? if >=1.20.5 && <1.21.2
     //public static final MapCodec<BirdFeederBlock> CODEC = simpleCodec(BirdFeederBlock::new);
 
     public BirdFeederBlock(Properties properties) {
@@ -20,7 +20,7 @@ public final class BirdFeederBlock extends GrainFeederBlock {
         builder.add(FOOD_LEVEL);
     }
 
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*@Override
     protected MapCodec<BirdFeederBlock> codec() {
         return CODEC;

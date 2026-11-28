@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 public final class TooltipPlacement {
     private static final int MARGIN = 4;
     private static final int GAP = 6;
@@ -19,6 +20,6 @@ public final class TooltipPlacement {
         if (max < MARGIN) {
             return MARGIN;
         }
-        return Math.clamp(value, MARGIN, max);
+        return Jdk.clamp(value, MARGIN, max);
     }
 }

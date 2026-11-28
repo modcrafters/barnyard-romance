@@ -4,16 +4,19 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.FeederScreen;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
 import net.modcrafters.minecraft.barnyardromance.feed.FeedBlocks;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-// The feeding blocks in a real client: the five placeholder blocks in a row, and a stocked Manger's window.
+// The feeding blocks in a real client: the five blocks in a row, the Manger item's tooltip, and a stocked Manger's window.
 public class FeederClientGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
@@ -24,7 +27,7 @@ public class FeederClientGameTest implements FabricClientGameTest {
             world.getServer().runCommand("tp @a 0.5 ~ 0.5 -90 25");
             world.getConnection().waitForClientboundPackets();
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ServerLevel level = player.level();
                 BlockPos ahead = player.blockPosition().east(3);
                 for (FeederKind kind : FeederKind.values()) {
@@ -38,8 +41,21 @@ public class FeederClientGameTest implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
             context.waitTicks(5);
             context.takeScreenshot("feeding_blocks");
+            // The Manger in the first hotbar slot of the inventory, hovered: its tooltip lists the animals it feeds.
+            context.setScreen(() -> context.computeOnClient(client -> new InventoryScreen(client.player)));
+            context.waitTicks(2);
+            double[] slot = context.computeOnClient(client -> {
+                InventoryScreen screen = (InventoryScreen) client.gui.screen();
+                Slot hotbar = screen.getMenu().getSlot(36);
+                double scale = client.getWindow().getGuiScale();
+                return new double[]{((screen.width - 176) / 2 + hotbar.x + 8) * scale, ((screen.height - 166) / 2 + hotbar.y + 8) * scale};
+            });
+            context.getInput().setCursorPos(slot[0], slot[1]);
+            context.waitTicks(3);
+            context.takeScreenshot("manger_tooltip");
+            context.setScreen(() -> null);
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 BlockPos manger = player.blockPosition().east(3).south(FeederKind.MANGER.ordinal() - 2);
                 player.openMenu((FeederBlockEntity) player.level().getBlockEntity(manger));
             });

@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-// Version projects sit at :<mc> for the common code and :<loader>:<mc> for fabric and neoforge.
+// Version projects sit at :<mc> for the common code and :<loader>:<mc> for fabric, neoforge and forge.
 def loaderName = project.parent == rootProject ? 'common' : project.parent.name
 // The common project for this Minecraft version, e.g. :26.3 for :fabric:26.3.
 def commonProject = loaderName == 'common' ? project : rootProject.project(":${project.name}")
@@ -60,9 +60,34 @@ def versionOverrides = [rootProject.projectDir, project.parent.projectDir].uniqu
         }
     }
 }
+// Before 1.20.5 (1.20.1 here) the game reads data from its older folder names. Shared data keeps the newer names, and
+// processResources moves each file into the older folder; a 1.20.1 copy in versions/1.20.1/src is written in the older
+// folder already. The mod's own folders (data/<namespace>/barnyard_romance/...) and damage type tags keep their names.
+def legacyDataFolders = stonecutter.eval(stonecutter.current.version, '<1.20.5')
+def legacyFolderNames = [
+        'advancement'     : 'advancements',
+        'recipe'          : 'recipes',
+        'loot_table'      : 'loot_tables',
+        'tags/item'       : 'tags/items',
+        'tags/block'      : 'tags/blocks',
+        'tags/entity_type': 'tags/entity_types',
+        'tags/fluid'      : 'tags/fluids'
+]
+def legacyDataPath = { String path ->
+    def match = path =~ /^(data\/[^\/]+\/)(advancement|recipe|loot_table|tags\/item|tags\/block|tags\/entity_type|tags\/fluid)(\/.+)$/
+    match.matches() ? match.group(1) + legacyFolderNames[match.group(2)] + match.group(3) : path
+}
 def overridden = { FileTreeElement element ->
-    !element.directory && versionOverrides.any { dirs ->
-        element.file.toPath().startsWith(dirs.shared) && new File(dirs.local, element.relativePath.pathString).exists()
+    if (element.directory) {
+        return false
+    }
+    def path = element.relativePath.pathString
+    // A 1.20.1 copy sits at the shared file's path after the move, so Stonecutter, which only matches the same path,
+    // keeps the shared file, and it is left out here.
+    def moved = legacyDataFolders ? legacyDataPath(path) : path
+    versionOverrides.any { dirs ->
+        (element.file.toPath().startsWith(dirs.shared) && new File(dirs.local, path).exists()) ||
+                (moved != path && new File(dirs.local, moved).exists())
     }
 }
 tasks.withType(SourceTask).configureEach { exclude(overridden) }
@@ -110,6 +135,9 @@ tasks.withType(ProcessResources).configureEach {
             'mod_id'                       : mod_id,
             'license'                      : license,
             'description'                  : project.description,
+            'forge_version'                : findProperty('forge_version') ?: '',
+            'forge_version_range'          : findProperty('forge_version_range') ?: '',
+            'forge_loader_version_range'   : findProperty('forge_loader_version_range') ?: '',
             'neoforge_version'             : findProperty('neoforge_version') ?: '',
             'neoforge_loader_version_range': findProperty('neoforge_loader_version_range') ?: '',
             'credits'                      : credits,
@@ -132,6 +160,17 @@ tasks.withType(ProcessResources).configureEach {
         expand jsonExpandProps
     }
 
+    // The older data folder names (see legacyDataFolders above), for the mod's data and the game test mod's.
+    if (legacyDataFolders) {
+        eachFile { details ->
+            def moved = legacyDataPath(details.path)
+            if (moved != details.path) {
+                details.path = moved
+            }
+        }
+        includeEmptyDirs = false
+    }
+
     inputs.properties(expandProps)
 }
 
@@ -150,18 +189,21 @@ publishing {
     }
 }
 
-// The public API's own jars, which other mods compile against. The common project's holds the API for its Minecraft
-// version; a loader's holds only that loader's native events, as its api output also carries the common API compiled
-// with them. The loader's published metadata depends on the common one, so a modder adds one dependency.
+// The public API's own jars, which other mods compile against. A loader's holds the whole API, the common API
+// compiled into its api output plus that loader's native events, so a modder adds that one jar. The common project's
+// holds only the common API, for a multi-loader mod's common code, which can't see any loader. On the maven the group
+// already names the mod, so the artifact ids leave it out and lead with what sorts them: <mc>-api and
+// <loader>-<mc>-api. The jars built locally keep barnyard_romance-api-[<loader>-]<mc>, which the release workflow's
+// mod jar patterns don't match.
+def apiArtifactId = loaderName == 'common' ? "${minecraft_version}-api" : "${loaderName}-${minecraft_version}-api"
 def apiArchiveName = loaderName == 'common' ? "${mod_id}-api-${minecraft_version}" : "${mod_id}-api-${loaderName}-${minecraft_version}"
-def apiClasses = loaderName == 'common' ? 'net/modcrafters/minecraft/barnyardromance/api/**' : "net/modcrafters/minecraft/barnyardromance/api/${loaderName}/**"
 def generateApi = tasks.matching { it.name == 'stonecutterGenerateApi' }
 def apiJar = tasks.register('apiJar', Jar) {
     group = 'build'
     description = 'The public API jar other mods compile against.'
     archiveBaseName = apiArchiveName
     from(sourceSets.api.output) {
-        include apiClasses
+        include 'net/modcrafters/minecraft/barnyardromance/api/**'
     }
 }
 def apiSourcesJar = tasks.register('apiSourcesJar', Jar) {
@@ -187,26 +229,17 @@ publishing {
     publications {
         register('api', MavenPublication) {
             groupId = rootProject.group
-            artifactId = apiArchiveName
+            artifactId = apiArtifactId
             version = project.version
             artifact apiJar
             artifact apiSourcesJar
             artifact apiJavadocJar
-            if (loaderName != 'common') {
-                def commonApi = "${mod_id}-api-${minecraft_version}"
-                pom.withXml {
-                    def dependency = asNode().appendNode('dependencies').appendNode('dependency')
-                    dependency.appendNode('groupId', rootProject.group)
-                    dependency.appendNode('artifactId', commonApi)
-                    dependency.appendNode('version', project.version)
-                    dependency.appendNode('scope', 'compile')
-                }
-            }
         }
     }
     // The release maven: set MAVEN_URL, MAVEN_USERNAME and MAVEN_PASSWORD to publish the API jars there with
-    // publishApiPublicationToReleaseRepository. Without MAVEN_URL there is no such repository. Only the API goes
-    // there, even from a plain publish (see the onlyIf below).
+    // publishApiPublicationToReleaseRepository, and the loader mod jars with publishModPublicationToReleaseRepository.
+    // Without MAVEN_URL there is no such repository. Only those go there, even from a plain publish (see the onlyIf
+    // below).
     repositories {
         if (System.getenv('MAVEN_URL')) {
             maven {
@@ -223,9 +256,10 @@ publishing {
     }
 }
 
-// The release maven is for the API jars other mods compile against; players get the mod jars from the mod sites.
+// The release maven is for other mods' builds: the API jars they compile against and the loader mod jars their dev
+// runs load. Players still get the mod from the mod sites.
 tasks.withType(PublishToMavenRepository).configureEach {
-    onlyIf('only the API goes to the release maven') {
-        repository.name != 'release' || publication.name == 'api'
+    onlyIf('only the API and mod jars go to the release maven') {
+        repository.name != 'release' || publication.name in ['api', 'mod']
     }
 }

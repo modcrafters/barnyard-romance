@@ -16,7 +16,10 @@ public enum SizeClass {
     public static SizeClass of(double scale, double base, double variation) {
         double span = variation * 2.0;
         double t = span <= 0.0 ? 1.0 : (scale - (base - variation)) / span;
+        //? if >=1.21.1 {
         t = Math.clamp(t, 0.0, 1.0);
+        //?} else
+        //t = Math.max(0.0, Math.min(1.0, t));
         int index = (int) Math.floor(t * 4.0 + 1.0e-9);
         if (index >= 3) {
             return XL;

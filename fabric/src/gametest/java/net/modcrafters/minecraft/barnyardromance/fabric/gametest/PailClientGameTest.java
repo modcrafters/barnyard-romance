@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.PailScreen;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.milk.MilkItems;
 import net.modcrafters.minecraft.barnyardromance.pail.MilkFluids;
 import net.modcrafters.minecraft.barnyardromance.pail.PailContents;
@@ -28,7 +29,7 @@ public class PailClientGameTest implements FabricClientGameTest {
             // Looking straight up, so the use goes to no block.
             world.getServer().runCommand("tp @a 0.5 ~ 0.5 0 -90");
             world.getServer().runOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ItemStack pail = new ItemStack(PailItems.IRON_PAIL);
                 PailItem.setContents(pail, new PailContents(MilkFluids.GOAT_ID, 2500));
                 player.getInventory().setItem(0, pail);
@@ -73,7 +74,7 @@ public class PailClientGameTest implements FabricClientGameTest {
     // What the server has: the pail's amount, the empty buckets left in the hotbar, and the goat milk bucket in the slot.
     private static void expect(TestSingleplayerContext world, int amount, int buckets) {
         String wrong = world.getServer().computeOnServer(server -> {
-            ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+            ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
             PailContents contents = PailItem.contents(player.getMainHandItem());
             ItemStack hotbar = player.getInventory().getItem(1);
             boolean slotRight = player.containerMenu.getSlot(PailMenu.BUCKET_SLOT).getItem().is(MilkItems.GOAT_MILK_BUCKET);

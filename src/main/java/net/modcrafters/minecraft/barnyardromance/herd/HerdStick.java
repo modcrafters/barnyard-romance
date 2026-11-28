@@ -1,6 +1,7 @@
 package net.modcrafters.minecraft.barnyardromance.herd;
 
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.core.text.TextComponents;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.compat.VersionCompat;
@@ -16,7 +17,9 @@ import net.modcrafters.minecraft.barnyardromance.pregnancy.api.PregnancyApi;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
+//? if >=1.20.5 {
 import net.minecraft.core.component.DataComponents;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,7 +28,13 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+//? if >=1.20.5 {
 import net.minecraft.world.item.component.ItemLore;
+//?}
+//? if <1.20.5 {
+/*import net.minecraft.ChatFormatting;
+import net.minecraft.world.item.TooltipFlag;
+*///?}
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +45,29 @@ public class HerdStick extends Item {
         super(properties);
     }
 
+    //? if <1.20.5 {
+    /*@Override
+    public Component getName(ItemStack stack) {
+        HerdTool tool = ItemData.get(stack, HerdComponents.HERD_TOOL);
+        return tool == null ? super.getName(stack) : TextComponents.of(tool.label());
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
+        if (ItemData.has(stack, HerdComponents.HERD_TOOL)) {
+            lines.add(Component.translatable("item.barnyard_romance.lore.use_on_animal").withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.ITALIC));
+        }
+    }
+    *///?}
+
     public static ItemStack create(HerdTool tool) {
         ItemStack stack = new ItemStack(HerdItems.HERD_STICK);
-        stack.set(HerdComponents.HERD_TOOL, tool);
+        ItemData.set(stack, HerdComponents.HERD_TOOL, tool);
+        // 1.20.1 has no name or lore components: the stick shows them from its tool (getName, appendHoverText).
+        //? if >=1.20.5 {
         stack.set(DataComponents.ITEM_NAME, TextComponents.of(tool.label()));
         stack.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable("item.barnyard_romance.lore.use_on_animal"))));
+        //?}
         return stack;
     }
 
@@ -62,7 +89,7 @@ public class HerdStick extends Item {
         if (!(target instanceof Animal animal)) {
             return InteractionResult.PASS;
         }
-        HerdTool tool = stack.get(HerdComponents.HERD_TOOL);
+        HerdTool tool = ItemData.get(stack, HerdComponents.HERD_TOOL);
         if (tool == null) {
             return InteractionResult.PASS;
         }

@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.core.text;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import java.util.List;
 
 // Text for players, kept free of Minecraft classes so pure helpers can build it and unit tests can read it.
@@ -38,7 +39,7 @@ public sealed interface Text permits Text.Key, Text.Plain, Text.Join {
 
     // A value from 0 to 1 as a whole percent.
     static Text percent(double value) {
-        long points = Math.round(Math.clamp(value, 0.0, 1.0) * 100.0);
+        long points = Math.round(Jdk.clamp(value, 0.0, 1.0) * 100.0);
         return of("gui.barnyard_romance.percent", points);
     }
 

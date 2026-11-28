@@ -26,8 +26,15 @@ public class PailSlot extends Slot {
         return 1;
     }
 
+    //? if >=1.20.5 {
     @Override
     public void setByPlayer(ItemStack stack, ItemStack previous) {
         super.setByPlayer(menu.trade(stack), previous);
     }
+    //?} else {
+    /*@Override
+    public void setByPlayer(ItemStack stack) {
+        super.setByPlayer(menu.trade(stack));
+    }
+    *///?}
 }

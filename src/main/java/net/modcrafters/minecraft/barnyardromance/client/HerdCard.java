@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.client;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.familiarity.Familiarity;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
@@ -162,7 +163,7 @@ public final class HerdCard {
 
     static void bar(GuiGraphicsExtractor graphics, int x, int y, int width, int height, double fill, int color) {
         graphics.fill(x, y, x + width, y + height, TRACK);
-        int filled = (int) Math.round(Math.clamp(fill, 0.0, 1.0) * (width - 2));
+        int filled = (int) Math.round(Jdk.clamp(fill, 0.0, 1.0) * (width - 2));
         if (filled > 0) {
             graphics.fill(x + 1, y + 1, x + 1 + filled, y + height - 1, color);
         }

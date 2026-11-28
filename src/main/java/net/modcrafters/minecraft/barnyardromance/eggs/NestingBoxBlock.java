@@ -29,7 +29,7 @@ import net.minecraft.server.level.ServerLevel;
 
 // A plank crate with a round hole in the front and hay inside, where hens lay. Placed with the hole facing the player.
 public class NestingBoxBlock extends BaseEntityBlock {
-    //? if <1.21.2
+    //? if >=1.20.5 && <1.21.2
     //public static final MapCodec<NestingBoxBlock> CODEC = simpleCodec(NestingBoxBlock::new);
 
     public NestingBoxBlock(Properties properties) {
@@ -37,7 +37,7 @@ public class NestingBoxBlock extends BaseEntityBlock {
         this.registerDefaultState(this.stateDefinition.any().setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
     }
 
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*@Override
     protected MapCodec<NestingBoxBlock> codec() {
         return CODEC;

@@ -13,7 +13,8 @@ configurations {
 }
 
 dependencies {
-    jadeMod "maven.modrinth:jade:${jade_loader_version}"
+    // Remapped first on Forge 1.20.1 (see gradle/modrinth-maven.gradle).
+    add(runModsSource(configurations.jadeMod), "maven.modrinth:jade:${jade_loader_version}")
 }
 
 // Call for each Jade run. The mods folder is synced, so it holds exactly this jar.

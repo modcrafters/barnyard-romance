@@ -1,7 +1,9 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -137,10 +139,17 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    //? if >=1.20.5 {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
     }
+    //?} else {
+    /*@Override
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
+    }
+    *///?}
 
     // The hen leaves the world to sit in the box, saved whole, and comes back out with all her eggs laid. She sits
     // longer for more eggs (EggRules.sitTicks). Her nest is the one her first egg goes in.
@@ -148,7 +157,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         if (eggs.isEmpty() || occupant != null || !(level instanceof ServerLevel server) || !LayInNestGoal.walks(hen)) {
             return false;
         }
-        int slot = canPlaceEgg(eggs.getFirst());
+        int slot = canPlaceEgg(Jdk.first(eggs));
         if (slot < 0) {
             return false;
         }
@@ -294,11 +303,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
                 if (Hatching.hatch(server, left, box.exitPos(), now - overdue).isPresent()) {
                     box.items.set(slot, ItemStack.EMPTY);
                 } else {
-                    egg.set(EggsComponents.EGG_DATA, left);
+                    ItemData.set(egg, EggsComponents.EGG_DATA, left);
                     box.stuck.add(egg);
                 }
             } else if (counting || stamped) {
-                egg.set(EggsComponents.EGG_DATA, left);
+                ItemData.set(egg, EggsComponents.EGG_DATA, left);
             }
             box.setChanged();
         }
@@ -310,7 +319,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             setChanged();
             return;
         }
-        WildEgg wild = egg.get(EggsComponents.WILD_EGG);
+        WildEgg wild = ItemData.get(egg, EggsComponents.WILD_EGG);
         if (wild == null || elapsed <= 0L && wild.remainingTicks() > 0L) {
             return;
         }
@@ -323,11 +332,11 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
             if (Hatching.hatchWild(server, left, exitPos(), now - overdue).isPresent()) {
                 items.set(slot, ItemStack.EMPTY);
             } else {
-                egg.set(EggsComponents.WILD_EGG, left);
+                ItemData.set(egg, EggsComponents.WILD_EGG, left);
                 stuck.add(egg);
             }
         } else {
-            egg.set(EggsComponents.WILD_EGG, left);
+            ItemData.set(egg, EggsComponents.WILD_EGG, left);
         }
         setChanged();
     }
@@ -468,7 +477,7 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         output.putLong("lastCounted", lastCounted);
         output.putLong("lastClock", lastClock);
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
@@ -487,6 +496,29 @@ public class NestingBoxBlockEntity extends BaseContainerBlockEntity implements W
         ContainerHelper.saveAllItems(tag, items, registries);
         if (occupant != null) {
             NestOccupant.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), occupant).result().ifPresent(saved -> tag.put("occupant", saved));
+        }
+        tag.putLong("lastCounted", lastCounted);
+        tag.putLong("lastClock", lastClock);
+    }
+    *///?} else {
+    /*@Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, items);
+        occupant = tag.contains("occupant")
+                ? NestOccupant.CODEC.parse(NbtOps.INSTANCE, tag.get("occupant")).result().orElse(null)
+                : null;
+        lastCounted = tag.contains("lastCounted") ? tag.getLong("lastCounted") : NEVER;
+        lastClock = tag.contains("lastClock") ? tag.getLong("lastClock") : NEVER;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        ContainerHelper.saveAllItems(tag, items);
+        if (occupant != null) {
+            NestOccupant.CODEC.encodeStart(NbtOps.INSTANCE, occupant).result().ifPresent(saved -> tag.put("occupant", saved));
         }
         tag.putLong("lastCounted", lastCounted);
         tag.putLong("lastClock", lastClock);

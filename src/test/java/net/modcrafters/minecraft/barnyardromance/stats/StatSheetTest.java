@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.stats;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.stats.api.AnimalFacts;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatLine;
 import net.modcrafters.minecraft.barnyardromance.stats.api.StatKind;
@@ -114,7 +115,7 @@ class StatSheetTest {
 
     @Test
     void anUnloadedCowSaysWhenItWasSeen() {
-        assertEquals("Seen 2d ago", english(cow().seenTicksAgo(2 * DAY)).getLast());
+        assertEquals("Seen 2d ago", Jdk.last(english(cow().seenTicksAgo(2 * DAY))));
     }
 
     @Test
@@ -220,7 +221,7 @@ class StatSheetTest {
                 .eggsToday(Text.plain("Eggs: 2/3 today"));
 
         assertEquals(List.of(SIZE, FAMILIARITY, FED, EGGS), kinds(hen));
-        assertEquals("Eggs: 2/3 today", english(hen).getLast());
+        assertEquals("Eggs: 2/3 today", Jdk.last(english(hen)));
     }
 
     @Test
@@ -229,7 +230,7 @@ class StatSheetTest {
                 .eggsToday(Text.plain("Rooster: Fertile, 3 eggs left"));
 
         assertEquals(List.of(SIZE, FAMILIARITY, FED, EGGS), kinds(rooster));
-        assertEquals("Rooster: Fertile, 3 eggs left", english(rooster).getLast());
+        assertEquals("Rooster: Fertile, 3 eggs left", Jdk.last(english(rooster)));
     }
 
     @Test
@@ -237,7 +238,7 @@ class StatSheetTest {
         AnimalFacts.Builder expecting = cow().father(StatText.father("L", "minecraft:cow"));
 
         assertEquals(List.of(SIZE, FAMILIARITY, FED, FERTILITY, PREGNANT, DETAIL), kinds(expecting));
-        assertEquals("Father L bull", english(expecting).getLast());
+        assertEquals("Father L bull", Jdk.last(english(expecting)));
     }
 
     @Test
@@ -246,7 +247,7 @@ class StatSheetTest {
                 .lastBirth(StatText.lastBirth("Calf", 0L, 3 * 60 * 20));
 
         assertEquals(List.of(SIZE, FAMILIARITY, NOT_FED, BREEDING, DETAIL), kinds(mother));
-        assertEquals("Last birth: Calf, 3m ago", english(mother).getLast());
+        assertEquals("Last birth: Calf, 3m ago", Jdk.last(english(mother)));
     }
 
     @Test

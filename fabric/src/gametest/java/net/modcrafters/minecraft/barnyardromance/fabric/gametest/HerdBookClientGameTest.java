@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.modcrafters.minecraft.barnyardromance.client.HerdBookScreen;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdBooks;
 import net.modcrafters.minecraft.barnyardromance.herd.HerdItems;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
@@ -60,7 +61,7 @@ public class HerdBookClientGameTest implements FabricClientGameTest {
             world.getConnection().waitForClientboundPackets();
 
             UUID daisy = world.getServer().computeOnServer(server -> {
-                ServerPlayer player = server.getPlayerList().getPlayers().getFirst();
+                ServerPlayer player = Jdk.first(server.getPlayerList().getPlayers());
                 ServerLevel level = player.level();
                 long now = level.getGameTime();
                 long clock = level.getOverworldClockTime();

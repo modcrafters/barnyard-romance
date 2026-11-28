@@ -4,6 +4,7 @@ import net.modcrafters.minecraft.barnyardromance.core.animal.SizeRanges;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.Constants;
 import net.modcrafters.minecraft.barnyardromance.core.config.BarnyardConfig;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.core.event.AnimalEvent;
 import net.modcrafters.minecraft.barnyardromance.core.event.Events;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -46,8 +47,8 @@ public final class ThrownEggs {
     }
 
     public static void land(ServerLevel level, Vec3 position, ItemStack thrown, RandomSource random) {
-        EggData data = thrown.get(EggsComponents.EGG_DATA);
-        WildEgg wild = thrown.get(EggsComponents.WILD_EGG);
+        EggData data = ItemData.get(thrown, EggsComponents.EGG_DATA);
+        WildEgg wild = ItemData.get(thrown, EggsComponents.WILD_EGG);
         String species = data != null ? data.species() : wild != null ? wild.species() : null;
         if (species == null) {
             return;

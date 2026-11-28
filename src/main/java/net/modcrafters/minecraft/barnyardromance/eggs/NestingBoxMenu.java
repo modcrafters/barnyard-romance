@@ -115,9 +115,24 @@ public class NestingBoxMenu extends AbstractContainerMenu {
             return NestingBoxBlockEntity.allowedByHand(stack) ? 1 : super.getMaxStackSize(stack);
         }
 
+        //? if <1.20.5 {
+        /*// 1.20.1's shift-click fills an empty slot up to this, not getMaxStackSize(stack): one egg to a nest there too.
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+        *///?}
+
+        //? if >=1.20.5 {
         @Override
         public void setByPlayer(ItemStack stack, ItemStack previous) {
             super.setByPlayer(WildEggs.taint(stack), previous);
         }
+        //?} else {
+        /*@Override
+        public void setByPlayer(ItemStack stack) {
+            super.setByPlayer(WildEggs.taint(stack));
+        }
+        *///?}
     }
 }

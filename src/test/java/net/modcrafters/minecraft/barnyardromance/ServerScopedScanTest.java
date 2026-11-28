@@ -22,6 +22,7 @@ class ServerScopedScanTest {
             Map.entry("client/HerdBookHeads.FRAMES", "client only, weak keys"),
             Map.entry("client/NestingBoxHen.COPIES", "client only, weak keys"),
             Map.entry("look/VanillaHornHider.HIDDEN", "client only: model cubes, which live as long as the models"),
+            Map.entry("compat/legacy/LegacyGui.SCALING", "client only, 1.20.1: each GUI sprite's scaling, cleared on resource reload"),
             Map.entry("core/config/ExcludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),
             Map.entry("core/config/IncludedTag.TYPES", "species id to entity type, from the built-in registry; tag contents are read fresh"),
             Map.entry("food/MinecraftItemFacts.MATCHERS", "item id or tag to matcher; tag contents are read fresh"),

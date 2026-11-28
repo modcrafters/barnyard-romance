@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 // The server's hay level selects a baked model on every client; no inventory packets or renderer needed.
 public final class MangerBlock extends FeederBlock {
     public static final IntegerProperty HAY_LEVEL = IntegerProperty.create("hay_level", 0, FeederFill.LEVELS);
-    //? if <1.21.2
+    //? if >=1.20.5 && <1.21.2
     //public static final MapCodec<MangerBlock> CODEC = simpleCodec(MangerBlock::new);
 
     public MangerBlock(Properties properties) {
@@ -26,7 +26,7 @@ public final class MangerBlock extends FeederBlock {
         builder.add(HAY_LEVEL);
     }
 
-    //? if <1.21.2 {
+    //? if >=1.20.5 && <1.21.2 {
     /*@Override
     protected MapCodec<MangerBlock> codec() {
         return CODEC;

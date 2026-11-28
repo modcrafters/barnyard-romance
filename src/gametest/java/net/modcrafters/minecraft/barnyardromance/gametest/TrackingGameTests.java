@@ -3,10 +3,10 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.modcrafters.minecraft.barnyardromance.api.Sex;
 import net.modcrafters.minecraft.barnyardromance.core.AnimalTicks;
+import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalSex;
 import net.modcrafters.minecraft.barnyardromance.core.animal.AnimalTraits;
 import net.modcrafters.minecraft.barnyardromance.core.animal.Tracked;
 import net.modcrafters.minecraft.barnyardromance.core.platform.Services;
@@ -174,7 +174,14 @@ public final class TrackingGameTests {
         });
         double sized = Services.DATA.get(fox).orElseThrow().scale();
         helper.assertTrue(Math.abs(sized - 1.0) > 0.01, "the fox wasn't sized, so this proves nothing");
+        // 1.20.1 has no scale attribute to keep a size until the fox joins again: there its size follows the switch at
+        // once, so it's checked with foxes on.
+        //? if >=1.20.5 {
         assertScale(helper, fox, sized);
+        //?} else
+        //UpkeepGameTests.withConfig(FOXES, () -> assertScale(helper, fox, sized));
+        // 1.20.1 has no scale attribute, so no other mod can scale a fox there.
+        //? if >=1.20.5
         scale(helper, scaledElsewhere).setBaseValue(0.5);
 
         AnimalTicks.joined(fox);
@@ -182,21 +189,26 @@ public final class TrackingGameTests {
 
         assertScale(helper, fox, 1.0);
         helper.assertTrue(Services.DATA.get(fox).isPresent(), "the untracked fox lost its traits");
+        //? if >=1.20.5
         assertScale(helper, scaledElsewhere, 0.5);
 
         UpkeepGameTests.withConfig(FOXES, () -> AnimalTicks.joined(fox));
+        //? if >=1.20.5 {
         assertScale(helper, fox, sized);
+        //?} else
+        //UpkeepGameTests.withConfig(FOXES, () -> assertScale(helper, fox, sized));
         helper.succeed();
     }
 
     private static AttributeInstance scale(GameTestHelper helper, Animal animal) {
-        AttributeInstance scale = animal.getAttribute(Attributes.SCALE);
+        AttributeInstance scale = GameTestCompat.scaleAttribute(animal);
         helper.assertTrue(scale != null, "a fox has no scale");
         return scale;
     }
 
+    // The scale attribute where there is one; 1.20.1 has none, and there it's the size the body would take.
     private static void assertScale(GameTestHelper helper, Animal animal, double expected) {
-        double actual = scale(helper, animal).getBaseValue();
+        double actual = AnimalSex.currentScale(animal);
         helper.assertTrue(Math.abs(actual - expected) < 1.0e-6, "the fox's scale is " + actual + ", not " + expected);
     }
 }

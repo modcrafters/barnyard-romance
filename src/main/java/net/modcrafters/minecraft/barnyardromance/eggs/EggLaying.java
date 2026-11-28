@@ -1,5 +1,6 @@
 package net.modcrafters.minecraft.barnyardromance.eggs;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import net.modcrafters.minecraft.barnyardromance.core.config.Tuning;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.modcrafters.minecraft.barnyardromance.core.path.Reach;
@@ -144,7 +145,7 @@ public final class EggLaying {
     // A box only needs room for her first egg; what doesn't fit is left in front of it when she comes out.
     public static boolean headForBox(Animal hen, ServerLevel level, List<ItemStack> eggs, Set<BlockPos> skip, boolean retried) {
         for (NestingBoxBlockEntity box : NestingBoxes.nearby(level, hen.blockPosition(), settings(hen).boxRange())) {
-            if (skip.contains(box.getBlockPos()) || box.occupied() || box.canPlaceEgg(eggs.getFirst()) < 0) {
+            if (skip.contains(box.getBlockPos()) || box.occupied() || box.canPlaceEgg(Jdk.first(eggs)) < 0) {
                 continue;
             }
             if (LayInNestGoal.headFor(hen, eggs, box.getBlockPos(), level.getGameTime(), retried)) {
@@ -291,7 +292,7 @@ public final class EggLaying {
             List<ItemStack> laid = new ArrayList<>();
             hen.dropFromGiftLootTable(level, BuiltInLootTables.CHICKEN_LAY, (dropLevel, stack) -> laid.add(stack));
             if (!laid.isEmpty()) {
-                return laid.getFirst();
+                return Jdk.first(laid);
             }
         }
         //?}

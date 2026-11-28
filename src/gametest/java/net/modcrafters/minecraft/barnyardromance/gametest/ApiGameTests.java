@@ -9,6 +9,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.modcrafters.minecraft.barnyardromance.api.BarnyardEvents;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.milk.Lactation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -369,7 +370,7 @@ public final class ApiGameTests {
     // An excluded species is left alone, by the creative herd stick too: no events, no familiarity, no taming.
     public static void theHerdStickLeavesAnExcludedWolfAlone(GameTestHelper helper) {
         TamableAnimal wolf = (TamableAnimal) CareGameTests.withFamiliarity(helper, female(helper, EntityTypes.WOLF), 0.2);
-        Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.CREATIVE);
+        Player player = GameTestCompat.mockPlayer(helper, net.minecraft.world.level.GameType.CREATIVE);
         AtomicInteger heard = new AtomicInteger();
         BarnyardConfig config = BarnyardConfig.current();
         FAMILIARITY_CHANGES.add(wolf.getUUID(), change -> heard.incrementAndGet());
@@ -428,7 +429,7 @@ public final class ApiGameTests {
         helper.succeedWhen(() -> {
             Born born = heard.get();
             helper.assertTrue(born != null, "no Born was heard");
-            List<UUID> piglets = helper.getEntities(EntityTypes.PIG).stream().filter(Animal::isBaby).map(Animal::getUUID).sorted().toList();
+            List<UUID> piglets = GameTestCompat.entities(helper, EntityTypes.PIG).stream().filter(Animal::isBaby).map(Animal::getUUID).sorted().toList();
             List<UUID> young = born.young().stream().map(Animal::getUUID).sorted().toList();
             helper.assertTrue(!young.isEmpty() && young.equals(piglets), "Born named " + young + ", the pen has " + piglets);
             BIRTHS.remove(mother.getUUID());
@@ -452,7 +453,7 @@ public final class ApiGameTests {
     public static void aWildEggHatchesWithNoParents(GameTestHelper helper) {
         NestingBoxBlockEntity box = EggGameTests.box(helper, EggGameTests.BOX);
         ItemStack wild = WildEggs.taint(FertilizedEggItem.create(EggGameTests.eggData(EggGameTests.largeHen(), 1.2, 1_000L)));
-        wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
+        ItemData.set(wild, EggsComponents.WILD_EGG, ItemData.get(wild, EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
         EggGameTests.onceHatched(helper, chick -> {

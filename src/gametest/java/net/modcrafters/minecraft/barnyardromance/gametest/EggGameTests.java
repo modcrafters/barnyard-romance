@@ -3,6 +3,8 @@ package net.modcrafters.minecraft.barnyardromance.gametest;
 import java.util.stream.IntStream;
 import net.modcrafters.minecraft.barnyardromance.core.animal.SizeClasses;
 import net.minecraft.world.inventory.ContainerInput;
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
+import net.modcrafters.minecraft.barnyardromance.core.data.ItemData;
 import net.modcrafters.minecraft.barnyardromance.core.text.Text;
 import net.modcrafters.minecraft.barnyardromance.core.config.Range;
 import net.modcrafters.minecraft.barnyardromance.eggs.WildEggs;
@@ -73,7 +75,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -200,7 +201,7 @@ public final class EggGameTests {
 
         Laying planned = tickAt(helper, hen, afterMidnight(10L));
         helper.assertTrue(planned.day() == 10L && planned.times().size() == 1, "an M hen planned " + planned);
-        Laying after = tickAt(helper, hen, at(10L, planned.times().getFirst()));
+        Laying after = tickAt(helper, hen, at(10L, Jdk.first(planned.times())));
 
         helper.assertTrue(after.next() == 1 && after.laid() == 1, "the egg wasn't counted: " + after);
         helper.assertTrue(eggsNear(helper, hen, Items.EGG) == 1, "an M hen laid " + eggsNear(helper, hen, Items.EGG) + " eggs");
@@ -339,7 +340,7 @@ public final class EggGameTests {
         hen.setVariant(helper.getLevel().registryAccess().lookupOrThrow(Registries.CHICKEN_VARIANT).getOrThrow(ChickenVariants.WARM));
 
         Laying planned = tickAt(helper, hen, afterMidnight(10L));
-        tickAt(helper, hen, at(10L, planned.times().getFirst()));
+        tickAt(helper, hen, at(10L, Jdk.first(planned.times())));
 
         helper.assertTrue(eggsNear(helper, hen, Items.BROWN_EGG) == 1, "a warm hen didn't lay a brown egg");
         helper.succeed();
@@ -367,8 +368,7 @@ public final class EggGameTests {
                 new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT), new ItemStack(Items.WHEAT)
         ));
 
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
 
         helper.assertTrue(egg.is(COMMON_EGGS), "a fertilized egg isn't in c:eggs");
         helper.assertTrue(recipe.isPresent(), "cake doesn't take a fertilized egg");
@@ -559,7 +559,10 @@ public final class EggGameTests {
                 1.2, Growth.wild(), 0.5, "", 1_000L, 1_000L);
         ItemStack third = WildEggs.taint(FertilizedEggItem.create(duck));
 
+        //? if >=1.20.5 {
         helper.assertTrue(ItemStack.isSameItemSameComponents(first, second), "two wild hen's eggs differ: " + first.getComponents() + " / " + second.getComponents());
+        //?} else
+        //helper.assertTrue(ItemStack.isSameItemSameComponents(first, second), "two wild hen's eggs differ: " + first.getTag() + " / " + second.getTag());
         helper.assertTrue(first.getMaxStackSize() == 16, "a wild egg stacks to " + first.getMaxStackSize());
         helper.assertTrue(!ItemStack.isSameItemSameComponents(first, third), "a wild duck egg stacks with a hen's");
         helper.assertTrue(first.is(COMMON_EGGS), "a wild egg isn't in c:eggs");
@@ -576,7 +579,7 @@ public final class EggGameTests {
         menu.getSlot(0).setByPlayer(wild);
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
 
-        WildEgg egg = box.getItem(0).get(EggsComponents.WILD_EGG);
+        WildEgg egg = ItemData.get(box.getItem(0), EggsComponents.WILD_EGG);
         Range range = BarnyardConfig.current().eggsFor("minecraft:chicken").hatchTicks();
         helper.assertTrue(egg != null && egg.started(), "the wild egg has no countdown in the box: " + egg);
         helper.assertTrue(egg.totalTicks() >= range.min() && egg.totalTicks() <= range.max(), "a wild egg's countdown is " + egg.totalTicks());
@@ -603,7 +606,7 @@ public final class EggGameTests {
     public static void aWildEggHatchesAChickWithNoParents(GameTestHelper helper) {
         NestingBoxBlockEntity box = box(helper, BOX);
         ItemStack wild = WildEggs.taint(FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L)));
-        wild.set(EggsComponents.WILD_EGG, wild.get(EggsComponents.WILD_EGG).withTicks(5L));
+        ItemData.set(wild, EggsComponents.WILD_EGG, ItemData.get(wild, EggsComponents.WILD_EGG).withTicks(5L));
         box.setItem(0, wild);
 
         onceHatched(helper, chick -> {
@@ -654,7 +657,7 @@ public final class EggGameTests {
         ItemStack inBox = FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L));
         ItemStack wild = WildEggs.taint(inBox.copy());
 
-        helper.assertTrue(FertilizedEggItem.lines(inBox).getFirst().equals(chicken), "a box egg's tooltip is " + FertilizedEggItem.lines(inBox));
+        helper.assertTrue(Jdk.first(FertilizedEggItem.lines(inBox)).equals(chicken), "a box egg's tooltip is " + FertilizedEggItem.lines(inBox));
         helper.assertTrue(FertilizedEggItem.lines(wild).equals(List.of(chicken, Text.of("item.barnyard_romance.fertilized_egg.parents_unknown"))),
                 "a wild egg's tooltip is " + FertilizedEggItem.lines(wild));
         helper.succeed();
@@ -663,7 +666,7 @@ public final class EggGameTests {
     static void assertWild(GameTestHelper helper, ItemStack egg, String what) {
         helper.assertTrue(egg.is(EggsItems.FERTILIZED_EGG), what + " is " + egg);
         helper.assertTrue(FertilizedEggItem.data(egg).isEmpty(), what + " still knows its parents");
-        WildEgg wild = egg.get(EggsComponents.WILD_EGG);
+        WildEgg wild = ItemData.get(egg, EggsComponents.WILD_EGG);
         helper.assertTrue(wild != null && !wild.started() && wild.species().equals("minecraft:chicken"), what + " isn't wild: " + wild);
     }
 
@@ -688,7 +691,7 @@ public final class EggGameTests {
         List<ItemStack> fertile = dropped.stream().map(ItemEntity::getItem).filter(item -> item.is(EggsItems.FERTILIZED_EGG)).toList();
         helper.assertTrue(plain == 3, "breaking the box dropped " + plain + " plain eggs");
         helper.assertTrue(fertile.size() == 1, "breaking the box dropped fertilized eggs " + fertile);
-        assertWild(helper, fertile.getFirst(), "an egg dropped from a broken box");
+        assertWild(helper, Jdk.first(fertile), "an egg dropped from a broken box");
         helper.succeed();
     }
 
@@ -700,8 +703,7 @@ public final class EggGameTests {
                 plank.copy(), plank.copy(), plank.copy()
         ));
 
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getServer().getRecipeManager()
-                .getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        Optional<RecipeHolder<CraftingRecipe>> recipe = GameTestCompat.craftingRecipe(helper, input);
 
         helper.assertTrue(recipe.isPresent(), "planks round wheat craft nothing");
         //? if >=1.21.2 {
@@ -744,7 +746,7 @@ public final class EggGameTests {
         Animal mother = hen(helper, largeHen(), 0.5);
         ItemStack book = new ItemStack(HerdItems.HERD_BOOK);
         HerdBooks.register(book, mother);
-        UUID bookId = book.get(HerdComponents.HERD_BOOK);
+        UUID bookId = ItemData.get(book, HerdComponents.HERD_BOOK);
         UUID motherId = mother.getUUID();
         mother.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
         NestingBoxBlockEntity box = box(helper, BOX);
@@ -847,11 +849,11 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         box.setItem(0, FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L)));
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
-        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        CompoundTag saved = GameTestCompat.saved(helper, box);
         saved.putLong("lastCounted", helper.getLevel().getGameTime() - 50_000L);
         helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) GameTestCompat.loaded(helper, helper.absolutePos(BOX), helper.getBlockState(BOX), saved);
         helper.getLevel().setBlockEntity(loaded);
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), loaded);
 
@@ -866,11 +868,11 @@ public final class EggGameTests {
         NestingBoxBlockEntity box = box(helper, BOX);
         box.setItem(0, FertilizedEggItem.create(eggData(largeHen(), 1.2, 1_000L)));
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), box);
-        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        CompoundTag saved = GameTestCompat.saved(helper, box);
         saved.putLong("lastCounted", helper.getLevel().getGameTime() - 5_000L);
         helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        NestingBoxBlockEntity loaded = (NestingBoxBlockEntity) GameTestCompat.loaded(helper, helper.absolutePos(BOX), helper.getBlockState(BOX), saved);
         helper.getLevel().setBlockEntity(loaded);
         NestingBoxBlockEntity.serverTick(helper.getLevel(), helper.absolutePos(BOX), helper.getBlockState(BOX), loaded);
 
@@ -1226,10 +1228,10 @@ public final class EggGameTests {
         Animal hen = hen(helper, mediumHen(), 0.5);
         UUID id = hen.getUUID();
         box.enter(hen, List.of(new ItemStack(Items.EGG)), helper.getLevel().getGameTime());
-        CompoundTag saved = box.saveWithFullMetadata(helper.getLevel().registryAccess());
+        CompoundTag saved = GameTestCompat.saved(helper, box);
         helper.getLevel().removeBlockEntity(helper.absolutePos(BOX));
 
-        BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(BOX), helper.getBlockState(BOX), saved, helper.getLevel().registryAccess());
+        BlockEntity loaded = GameTestCompat.loaded(helper, helper.absolutePos(BOX), helper.getBlockState(BOX), saved);
         helper.getLevel().setBlockEntity(loaded);
         ((NestingBoxBlockEntity) loaded).finishSitting();
 
@@ -1478,7 +1480,7 @@ public final class EggGameTests {
         List<HerdEntry>[] entries = new List[1];
         inPen(() -> {
             HerdBooks.register(book, animal);
-            entries[0] = HerdBooks.entries(helper.getLevel().getServer(), book.get(HerdComponents.HERD_BOOK), helper.getLevel().getGameTime());
+            entries[0] = HerdBooks.entries(helper.getLevel().getServer(), ItemData.get(book, HerdComponents.HERD_BOOK), helper.getLevel().getGameTime());
         });
         return entries[0].stream().filter(entry -> entry.id().equals(animal.getUUID())).findFirst()
                 .orElseThrow(() -> GameTestCompat.failure(helper, "the animal isn't in the book"));
@@ -1534,8 +1536,8 @@ public final class EggGameTests {
             List<Chicken> chicks = helper.getLevel().getEntitiesOfClass(Chicken.class, new AABB(helper.absolutePos(BOX.north())).expandTowards(0.0, -2.0, 0.0));
             if (!chicks.isEmpty() || helper.getTick() >= COUNT_AND_HATCH) {
                 done[0] = true;
-                helper.assertTrue(chicks.size() == 1 && chicks.getFirst().isBaby(), "in front of the hole: " + chicks);
-                then.accept(chicks.getFirst());
+                helper.assertTrue(chicks.size() == 1 && Jdk.first(chicks).isBaby(), "in front of the hole: " + chicks);
+                then.accept(Jdk.first(chicks));
             }
         });
     }
@@ -1555,7 +1557,7 @@ public final class EggGameTests {
         if (chicks.size() != 1) {
             throw GameTestCompat.failure(helper, "expected one chick at " + pos + ", found " + chicks.size());
         }
-        return chicks.getFirst();
+        return Jdk.first(chicks);
     }
 
     static NestingBoxBlockEntity box(GameTestHelper helper, BlockPos pos) {

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import net.modcrafters.minecraft.barnyardromance.core.compat.Jdk;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +38,7 @@ public final class HornJson {
                 string(required(object, "texture"), "texture"),
                 textureSize[0],
                 textureSize[1],
-                object.has("female_chance") ? Math.clamp(number(object.get("female_chance"), "female_chance"), 0.0, 1.0) : 0.0,
+                object.has("female_chance") ? Jdk.clamp(number(object.get("female_chance"), "female_chance"), 0.0, 1.0) : 0.0,
                 hide(object),
                 parts(object, "male"),
                 parts(object, "female")
