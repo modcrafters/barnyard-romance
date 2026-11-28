@@ -2,7 +2,7 @@
 
 ## Setup
 
-You need Java 25 for Minecraft 26.3, Java 21 for 1.21.1 and Java 17 for 1.20.1. In IntelliJ IDEA (2025.2 or newer), open the folder that contains `gradlew.bat`, set the Project SDK and the Gradle JVM to Java 25, and refresh the Gradle project. Then start the game with the **Fabric Client** or **NeoForge Client** run configuration.
+You need Java 25 for Minecraft 26.3, Java 21 for 1.21.1 and Java 17 for 1.20.1. In IntelliJ IDEA (2025.2 or newer), open the folder that contains `gradlew.bat`, set the Project SDK and the Gradle JVM to Java 25, and refresh the Gradle project. Then start the game with the **Fabric Client** or **NeoForge Client** run configuration. The **Forge** run configurations start on Gradle's Java 17 rather than the project SDK, since Forge 1.20.1 can't run on Java 25.
 
 `gradlew collectJars` builds every jar and copies them to `build/libs/<mod version>/`.
 

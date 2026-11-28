@@ -138,6 +138,27 @@ legacyForge.runs.gameTestServerFarmMods.taskBefore(farmModsInRun('gameTestServer
 legacyForge.runs.clientJade.taskBefore(jadeInRun('clientJade', 'runs/jade-client'))
 freshAnimationsInRun('clientFreshAnimations', 'runs/fresh-animations-client').each { legacyForge.runs.clientFreshAnimations.taskBefore(it) }
 
+// IntelliJ starts an Application run config on the project JDK (Java 25, see CONTRIBUTING), not on its module's JDK,
+// even when it hands the run to Gradle. Forge 1.20.1's Mixin can't read Java 25's classes and the game stops at start-up,
+// so each Forge run config names this build's Java 17 toolchain as its JRE. ModDevGradle has no setting for that, so the
+// key goes into the extra properties it sends to IntelliJ with each run config; IntelliJ's importer reads it.
+if (Boolean.getBoolean('idea.sync.active')) {
+    afterEvaluate {
+        def jdkHome = javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath.asFile.absolutePath
+        rootProject.idea.project.settings.runConfigurations
+                .matching { it.name.endsWith("(${project.path})") }
+                .configureEach { config ->
+                    def extra = config.class.declaredFields.find { it.name == 'extraProperties' }
+                    if (extra == null) {
+                        throw new GradleException("ModDevGradle's run config ${config.name} has no extraProperties any more, " +
+                                'so it would start on the project JDK instead of Java 17: see forge/build.gradle.')
+                    }
+                    extra.accessible = true
+                    extra.get(config).put('alternativeJrePath', jdkHome)
+                }
+    }
+}
+
 // The refmap the annotation processor writes for the common and Forge mixins, which the mod's main source set compiles.
 // The configs are named here for the dev runs, which load the mod from its folders rather than a jar with a manifest.
 mixin {
