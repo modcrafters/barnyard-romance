@@ -83,6 +83,25 @@ class ShippedHornFilesTest {
         assertFalse(wooly.female().isEmpty());
     }
 
+    // Meadow's head wears a wool box inflated by 0.2, so its top is at y -4.2 (y grows downward). A cow's nubs and the
+    // root of a bull's bar must reach into it, not float a sliver above it.
+    @Test
+    void woolyCowHornsSitInTheWool() throws IOException {
+        HornFile wooly = load("wooly_cow");
+        double woolTop = -4.2;
+
+        for (HornPart nub : wooly.female()) {
+            HornCube cube = nub.cubes().get(0);
+            double bottom = nub.pivot().y() + cube.from().y() + cube.size().y() + cube.inflate();
+            assertTrue(bottom >= woolTop - 1.0e-6, "a cow's nub floats above the wool, its bottom at " + bottom);
+        }
+        for (HornPart horn : wooly.male()) {
+            HornCube bar = horn.cubes().get(0);
+            double top = horn.pivot().y() + bar.from().y() - bar.inflate();
+            assertTrue(top >= woolTop - 1.0e-6, "a bull's bar stands proud of the wool at its root, its top at " + top);
+        }
+    }
+
     @Test
     void sheepHaveRamsAndSomeEwesWithHorns() throws IOException {
         HornFile sheep = load("sheep");
