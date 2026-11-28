@@ -74,6 +74,8 @@ stonecutter parameters {
             // A container that keeps its slots in a list, as 1.20.5's BaseContainerBlockEntity does.
             replace("$legacy.BaseContainerBlockEntity;", "net.minecraft.world.level.block.entity.BaseContainerBlockEntity;")
             // The game tests' own stand-ins (versions/1.20.1/src/gametest): a crafting grid, and a recipe with its id.
+            // These apply in src/main too: main code that imports them needs its own 1.20.1 copy, or it fails with a
+            // confusing "package ...gametest.legacy does not exist" error.
             val gametestLegacy = "net.modcrafters.minecraft.barnyardromance.gametest.legacy"
             replace("$gametestLegacy.CraftingInput;", "net.minecraft.world.item.crafting.CraftingInput;")
             replace("$gametestLegacy.RecipeHolder;", "net.minecraft.world.item.crafting.RecipeHolder;")
