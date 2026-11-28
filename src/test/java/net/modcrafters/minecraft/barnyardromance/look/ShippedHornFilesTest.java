@@ -66,6 +66,23 @@ class ShippedHornFilesTest {
         assertTrue(hide.contains(new HideRule(List.of("head"), new Xyz(1, 2, 1), null)));
     }
 
+    // Meadow's wooly cow: its own Highland horns, bigger on bulls and as small nubs on one cow in four, drawn from
+    // Meadow's skin, whose horn pixels are the same in every variant.
+    @Test
+    void woolyCowBullsHaveBigHornsAndSomeCowsNubs() throws IOException {
+        HornFile wooly = load("wooly_cow");
+
+        assertEquals(List.of("meadow:wooly_cow"), wooly.entities());
+        assertEquals("meadow:textures/entity/cow/highland_cattle.png", wooly.texture());
+        assertEquals(128, wooly.textureWidth());
+        assertEquals(128, wooly.textureHeight());
+        assertEquals(0.25, wooly.femaleChance(), 1.0e-9);
+        assertTrue(wooly.hide().contains(new HideRule(List.of("head", "horn_right_top_r1"), null, null)));
+        assertTrue(wooly.hide().contains(new HideRule(List.of("head", "horn_left_top_r1"), null, null)));
+        assertFalse(wooly.male().isEmpty());
+        assertFalse(wooly.female().isEmpty());
+    }
+
     @Test
     void sheepHaveRamsAndSomeEwesWithHorns() throws IOException {
         HornFile sheep = load("sheep");

@@ -16,7 +16,7 @@ These change only how animals are drawn, on the client. Nothing new is saved or 
 
 ### Horn files
 
-Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>.json`. The mod ships `cattle.json` (cows and mooshrooms), `sheep.json` and `goat.json`. To change one, put a file with the same namespace and name in a resource pack. To give a modded animal horns, add a new file that names it. The animal also needs to be tracked by the mod, so it must have a sex.
+Horn shapes are resource pack files at `assets/<namespace>/barnyard_horns/<name>.json`. The mod ships `cattle.json` (cows and mooshrooms), `sheep.json`, `goat.json` and `wooly_cow.json` (Meadow's wooly cow, drawn from Meadow's own skin, so it does nothing without Meadow). To change one, put a file with the same namespace and name in a resource pack. To give a modded animal horns, add a new file that names it. The animal also needs to be tracked by the mod, so it must have a sex.
 
 ```json
 {
@@ -202,7 +202,7 @@ Only these species are tracked by default:
 
 On 1.20.1 they're tested with Untitled Duck Mod 1.7.0-fix, Friends&Foes 5.0.5, Meadow 1.3.25, Autumnity 5.0.2 and Environmental 4.1.2.
 
-Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight and eat from a manger, and wooly cows and yaks are sheared by the usual rules. A pack that switches one of these animals off gets the mod's own behaviour back.
+Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight and eat from a manger, and wooly cows and yaks are sheared by the usual rules. Wooly bulls wear bigger Highland horns, most wooly cows none and one in four a pair of small nubs. A pack that switches one of these animals off gets the mod's own behaviour back.
 
 Wild animals such as foxes, ocelots, pandas, polar bears, bees and parrots, and every animal from another mod, stay vanilla unless a pack opts them in. A mod or data pack adds animals to the entity tag `barnyard_romance:included` to opt them in, and a pack can also give a species entry `"enabled": true`.
 

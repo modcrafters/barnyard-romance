@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Meadow's wooly bulls have bigger horns, and most wooly cows have none: one in four has a pair of small nubs.
 - Hovering a Bird Feeder, Trough, Feeder, Manger or Pet Bowl lists the animals it feeds, including other mods' animals.
 - Minecraft 1.20.1 on Forge (47.1 or newer). The same jar also loads on NeoForge 1.20.1.
 - On 1.20.1, animals don't look bigger or smaller, though their size still counts, the herd book has no head close-ups, and upgrading a world from 1.20.1 resets Barnyard Romance data. The README's "1.20.1 differences" lists the rest.
