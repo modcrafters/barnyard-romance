@@ -2,13 +2,13 @@
 
 A Minecraft Java mod for Fabric, NeoForge and Forge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla farm animals, working animals, dogs and cats, and for other animals a pack opts in (see [Which species are tracked](#which-species-are-tracked)).
 
-Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby; only the female falls in love, and the mod finds her a male (see [Rival males](#rival-males)). The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
+Animals get a saved sex and a sex-based `minecraft:scale` (not drawn on 1.20.1, see [1.20.1 differences](#1201-differences)). Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby; only the female falls in love, and the mod finds her a male (see [Rival males](#rival-males)). The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
 
 The sizes come from `femaleScale`, `maleScale` and `scaleVariation` in `config/barnyard_romance.json`, 0.87, 1.13 and 0.1 on a new install; an existing install keeps the numbers already in its file until you edit them. Changes need a restart. When the numbers change, every animal keeps its size band and grows or shrinks to match.
 
 ## Bellies and horns
 
-These change only how animals are drawn, on the client. Nothing new is saved or sent.
+These change only how animals are drawn, on the client. Nothing new is saved or sent. On 1.20.1, animals are not drawn bigger or smaller.
 
 - **Pregnant belly:** a pregnant female gets wider as her pregnancy goes on. Her height, length and hitbox stay the same. She starts to widen at `bellyStart` (default 0.4, so 40% of the way through) and ends `bellyMaxWiden` wider (default 0.15). Both keys go in `config/barnyard_romance.json`, either at the top level or in a species entry.
 - **Horns:** rams, bulls and billy goats have horns. Ewes, cows and nanny goats sometimes have small ones. Babies have none. Horns appear when an animal turns young and grow until it is an adult. Vanilla's own cow and goat horns are hidden on animals the mod draws horns for.
@@ -322,9 +322,9 @@ The 1.20.1 jar is for Forge 47.1 or newer, and it also loads on NeoForge 1.20.1.
 - Clearing a metal pail's name in an anvil gives the plain item name ("Copper Pail") instead of its material's ("Lead Pail"). On 1.20.1 the material name is the pail's custom name, which the anvil clears.
 - Herd sticks, wild eggs and superfoods look the same, but their names and tooltip lines come from the item, not from data on the stack, since 1.20.1 items have no components. Another mod that reads the stack's data doesn't see them.
 - Wild fertilized eggs still stack to 16, through a Forge hook, since vanilla 1.20.1 can't give one stack its own size. Forge 47 and NeoForge 1.20.1 both have the hook.
-- Naturalist needs 2.0.8 or newer (see [Naturalist](#naturalist)).
+- Naturalist needs 2.0.8 or newer, and 2.0.9 for servers (see [Naturalist](#naturalist)).
 
-The game tests that check something else on 1.20.1:
+Game tests that work differently on 1.20.1:
 
 - The creative tab: Forge 1.20.1 fills a tab only on the client, so the server test checks the list of items the tab is given, and the tab itself is checked by hand.
 - The herd book over the network: 1.20.1 sends text as chat JSON, which turns numbers in a translation into text. The book reads the same on screen, so the test checks that what comes back encodes to the same bytes instead of being equal.
@@ -366,7 +366,7 @@ There is also a jar with no loader in its name, `26.3-api`, `1.21.1-api` or `1.2
 - `BarnyardEvents` has the events. `Taming`, `Milking`, `DeathDrop`, `ShearYield` and `FamiliarityChange` come before Barnyard Romance acts and can be cancelled or changed. `Befriended`, `Born` and `Hatched` come after. They fire on the server, only for animals Barnyard Romance tracks. Register listeners while your mod starts.
 - `BarnyardApi.animals()` answers `tracked(animal)` and `info(animal)`: sex, size, age, familiarity and pregnancy, as the stat card shows them.
 - `BarnyardApi.pails()` reads and moves milk in pails, by the same rules as the pail's window and the fluid adapters: `isPail`, `capacity`, `fluid` and `amount` read a pail, `fill` and `drain` change it in place (or only report with `simulate`), all in millilitres. `fill` refuses a fluid outside `barnyard_romance:pail_fluids` and a second fluid in a pail that already holds one, and `drain` empties whatever the pail holds. A stack of more than one pail takes and gives nothing.
-- The `barnyard_romance:config_enabled` load condition lets a pack's data load only while a boolean config option is on: `{"key": "milkConversion"}` in `neoforge:conditions` (with `type`) or `fabric:load_conditions` (with `condition`). The milk conversion recipe uses it.
+- The `barnyard_romance:config_enabled` load condition lets a pack's data load only while a boolean config option is on: `{"key": "milkConversion"}` in `neoforge:conditions` (with `type`) or `fabric:load_conditions` (with `condition`). On Minecraft 1.20.1 (Forge and NeoForge), write it as an entry with `type` in a top-level `conditions` array: `"conditions": [{"type": "barnyard_romance:config_enabled", "key": "milkConversion"}]`. The milk conversion recipe uses it.
 - NeoForge mods can also listen on NeoForge's bus (`MilkingEvent` and the rest in `api.neoforge`, each with `apiEvent()`), Forge 1.20.1 mods on `MinecraftForge.EVENT_BUS` (the same events in `api.forge`), and Fabric mods to `BarnyardFabricEvents`. These run after the listeners on `BarnyardEvents`.
 
 ```java

@@ -13,6 +13,7 @@ One codebase builds four jars: Fabric and NeoForge for 26.3, NeoForge for 1.21.1
 - Common code is in `src/`, Fabric code in `fabric/src`, NeoForge code in `neoforge/src` and Forge code in `forge/src`. Shared code keeps to Java 17, for 1.20.1: no pattern matching in `switch`, and Java 21 library methods such as `Math.clamp` and `List.getFirst` go through `core.compat.Jdk`.
 - The public API other mods compile against is its own source set, `src/api`. Each loader's `src/api` holds that loader's native events (`api/neoforge`, `api/fabric`). The mod jars include all of it; `apiJar` builds the separate API jars.
 - Code that differs between versions is marked with comments such as `//? if >=1.21.6 {`. The optional **Stonecutter Dev** plugin highlights them.
+- Some files exist as a copy per version under `versions/<mc>/src`, and the 1.20.1 copies are mostly the same as the 1.21.1 ones. A fix to a `versions/1.21.1` copy usually needs the same fix in its `versions/1.20.1` copy.
 - To work on another version, run the Gradle task `Set active project to <mc>`. Run `Reset active project` before you commit: git must always hold the 26.3 state. The one exception is `forge/src`: Forge only has 1.20.1, so its code is written for 1.20.1 and stays that way.
 
 ## How the code is split
@@ -40,7 +41,7 @@ The common code is split into core, features and hooks.
 
 Game tests live in `src/gametest` (shared), `fabric/src/gametest`, `neoforge/src/gametest` and `forge/src/gametest`, with overrides under `versions/1.21.1/src/gametest` and `versions/1.20.1/src/gametest`. They build a small second mod, `barnyard_romance_gametest`, that only the game test runs load, so none of them ship in the mod's jars and main code can't depend on them.
 
-A new shared game test also needs a `@GameTest` wrapper in `fabric/src/gametest/.../fabric/gametest/`. Without one, it's silently skipped on Fabric.
+A new shared game test also needs a `@GameTest` wrapper in `fabric/src/gametest/.../fabric/gametest/`. Without one, it's silently skipped on Fabric. It also goes in the hand-kept lists in `ForgeSharedGameTests` (forge) and `NeoForgeBreedingGameTests` (neoforge), or it's skipped there.
 
 ### With Naturalist
 
