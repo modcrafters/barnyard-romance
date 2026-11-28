@@ -8,6 +8,7 @@ After publishing, the action prepares the next development version and archives 
 
 ## Unreleased
 
+- Hovering a Bird Feeder, Trough, Feeder, Manger or Pet Bowl lists the animals it feeds, including other mods' animals.
 - Minecraft 1.20.1 on Forge (47.1 or newer). The same jar also loads on NeoForge 1.20.1.
 - On 1.20.1, animals don't look bigger or smaller, though their size still counts, the herd book has no head close-ups, and upgrading a world from 1.20.1 resets Barnyard Romance data. The README's "1.20.1 differences" lists the rest.
 - Naturalist, Untitled Duck Mod, Friends&Foes, Meadow, Autumnity, Environmental, Jade and Fresh Animations work on 1.20.1 too. Naturalist needs 2.0.8 or newer there (2.0.9 for servers).

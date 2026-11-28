@@ -64,6 +64,11 @@ public class FabricFeederGameTests {
         FeederGameTests.birdFeederTakesSeeds(helper);
     }
 
+    @GameTest(structure = PEN, maxTicks = 20)
+    public void feedingBlockItemsListTheirAnimals(GameTestHelper helper) {
+        FeederGameTests.feedingBlockItemsListTheirAnimals(helper);
+    }
+
     @GameTest(structure = PEN, maxTicks = 140)
     public void aHopperFillsAMangerAndKeepsWhatItRefuses(GameTestHelper helper) {
         FeederGameTests.aHopperFillsAMangerAndKeepsWhatItRefuses(helper);

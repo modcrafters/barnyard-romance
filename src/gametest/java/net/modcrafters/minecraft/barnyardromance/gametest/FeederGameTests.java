@@ -19,6 +19,13 @@ import net.modcrafters.minecraft.barnyardromance.familiarity.Origin;
 import net.modcrafters.minecraft.barnyardromance.familiarity.api.Upkeep;
 import net.modcrafters.minecraft.barnyardromance.feed.EatAtFeederGoal;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockEntity;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederBlockItem;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederKind;
+import net.modcrafters.minecraft.barnyardromance.feed.FeederTooltip;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederHerd;
 import net.modcrafters.minecraft.barnyardromance.feed.FeederMenu;
 import net.modcrafters.minecraft.barnyardromance.feed.MorningFeeding;
@@ -122,6 +129,7 @@ public final class FeederGameTests {
             new BreedingGameTests.Case("feeder_takes_wheat_but_not_beef", 20, FeederGameTests::feederTakesWheatButNotBeef),
             new BreedingGameTests.Case("feeder_refuses_superfoods", 20, FeederGameTests::feederRefusesSuperfoods),
             new BreedingGameTests.Case("bird_feeder_takes_seeds", 20, FeederGameTests::birdFeederTakesSeeds),
+            new BreedingGameTests.Case("feeding_block_items_list_their_animals", 20, FeederGameTests::feedingBlockItemsListTheirAnimals),
             new BreedingGameTests.Case("a_hopper_fills_a_manger_and_keeps_what_it_refuses", HOPPER_TICKS + 40,
                     FeederGameTests::aHopperFillsAMangerAndKeepsWhatItRefuses),
             new BreedingGameTests.Case("a_hopper_cannot_empty_a_manger", HOPPER_TICKS + 40, FeederGameTests::aHopperCannotEmptyAManger),
@@ -324,6 +332,38 @@ public final class FeederGameTests {
 
         helper.assertTrue(birds.canPlaceItem(0, new ItemStack(Items.WHEAT_SEEDS)), "the Bird Feeder refuses seeds");
         helper.assertTrue(!birds.canPlaceItem(0, new ItemStack(Items.BEEF)), "the Bird Feeder takes beef");
+        helper.succeed();
+    }
+
+    // Each block item's tooltip names the animals in its feeds_from tag, in order: other mods' animals only when they're
+    // installed. The server has no mod lang, so the names are read from the lines' parts, not their text.
+    public static void feedingBlockItemsListTheirAnimals(GameTestHelper helper) {
+        for (FeederKind kind : FeederKind.values()) {
+            Item item = FeedBlocks.item(kind);
+            helper.assertTrue(item instanceof FeederBlockItem block && block.kind() == kind, kind + "'s item is not a FeederBlockItem of its kind");
+            List<String> expected = new ArrayList<>();
+            for (Holder<EntityType<?>> holder : BuiltInRegistries.ENTITY_TYPE.getTagOrEmpty(kind.animals())) {
+                expected.add(holder.value().getDescription().getString());
+            }
+            List<Component> lines = FeederTooltip.lines(kind);
+            helper.assertTrue(!lines.isEmpty(), kind + " has no Feeds line");
+            helper.assertTrue(lines.get(0).getContents() instanceof TranslatableContents contents && contents.getKey().equals(FeederTooltip.KEY),
+                    kind + "'s first line is not Feeds: %s");
+            List<String> rows = new ArrayList<>();
+            rows.add(((Component) ((TranslatableContents) lines.get(0).getContents()).getArgs()[0]).getString());
+            for (int i = 1; i < lines.size(); i++) {
+                rows.add(lines.get(i).getString());
+            }
+            List<String> names = new ArrayList<>();
+            for (String row : rows) {
+                String trimmed = row.endsWith(",") ? row.substring(0, row.length() - 1) : row;
+                names.addAll(List.of(trimmed.split(", ")));
+            }
+            helper.assertTrue(names.equals(expected), kind + " lists " + names + ", its tag holds " + expected);
+            if (kind == FeederKind.TROUGH) {
+                helper.assertTrue(names.equals(List.of(EntityTypes.RABBIT.getDescription().getString())), "the Trough lists " + names);
+            }
+        }
         helper.succeed();
     }
 

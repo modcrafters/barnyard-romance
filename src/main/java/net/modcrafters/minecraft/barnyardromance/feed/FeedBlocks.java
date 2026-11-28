@@ -3,7 +3,6 @@ package net.modcrafters.minecraft.barnyardromance.feed;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -23,11 +22,11 @@ public final class FeedBlocks {
     public static final Block FEEDER = feeder(FeederKind.FEEDER);
     public static final Block MANGER = feeder(FeederKind.MANGER);
     public static final Block PET_BOWL = feeder(FeederKind.PET_BOWL);
-    public static final Item BIRD_FEEDER_ITEM = new BlockItem(BIRD_FEEDER, BlockProperties.item(id(FeederKind.BIRD_FEEDER)));
-    public static final Item TROUGH_ITEM = new BlockItem(TROUGH, BlockProperties.item(id(FeederKind.TROUGH)));
-    public static final Item FEEDER_ITEM = new BlockItem(FEEDER, BlockProperties.item(id(FeederKind.FEEDER)));
-    public static final Item MANGER_ITEM = new BlockItem(MANGER, BlockProperties.item(id(FeederKind.MANGER)));
-    public static final Item PET_BOWL_ITEM = new BlockItem(PET_BOWL, BlockProperties.item(id(FeederKind.PET_BOWL)));
+    public static final Item BIRD_FEEDER_ITEM = new FeederBlockItem(BIRD_FEEDER, FeederKind.BIRD_FEEDER, BlockProperties.item(id(FeederKind.BIRD_FEEDER)));
+    public static final Item TROUGH_ITEM = new FeederBlockItem(TROUGH, FeederKind.TROUGH, BlockProperties.item(id(FeederKind.TROUGH)));
+    public static final Item FEEDER_ITEM = new FeederBlockItem(FEEDER, FeederKind.FEEDER, BlockProperties.item(id(FeederKind.FEEDER)));
+    public static final Item MANGER_ITEM = new FeederBlockItem(MANGER, FeederKind.MANGER, BlockProperties.item(id(FeederKind.MANGER)));
+    public static final Item PET_BOWL_ITEM = new FeederBlockItem(PET_BOWL, FeederKind.PET_BOWL, BlockProperties.item(id(FeederKind.PET_BOWL)));
     // All five share one block entity and one window; the block says which kind it is.
     public static final Identifier FEEDING_BLOCK_ID = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "feeding_block");
     public static final BlockEntityType<FeederBlockEntity> FEEDER_ENTITY = Services.PLATFORM.blockEntityType(FeederBlockEntity::new,

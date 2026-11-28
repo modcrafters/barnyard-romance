@@ -141,6 +141,8 @@ Five blocks feed your animals when you can't:
 | **Manger** | cows, mooshrooms, sheep, the horse family, llamas and camels, and Naturalist's deer and ostriches | slabs and planks around a hay bale |
 | **Pet Bowl** | wolves, cats and ocelots | bricks |
 
+Each block's tooltip lists the animals it feeds, from its `barnyard_romance:feeds_from/<block>` entity tag, so other mods' animals show up when those mods are installed and a data pack that moves animals between blocks changes it too.
+
 Each takes any ordinary food one of its animals eats, by hand, from a hopper or from pipes; superfoods are for feeding by hand. Its herd is the familiar animals of its kinds within 16 blocks (`feederRange`) that can walk to it. Each morning from sunrise they come over a few at a time, nearest first, and each eats one item: it stands a few seconds with its head down, crumbs at its mouth, then wanders off to make room. A pet told to sit within two blocks of its bowl eats where it sits.
 
 A meal from a block is the animal's meal for the day. It heals, keeps hunger away and keeps milk, eggs and Vigour coming, but it never wins familiarity, puts an animal in love or does what a superfood does: that takes your hand. The herd book says which block fed an animal today, with a half drumstick in its list.
