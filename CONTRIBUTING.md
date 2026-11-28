@@ -2,15 +2,15 @@
 
 ## Setup
 
-You need Java 25 for Minecraft 26.3 and Java 21 for 1.21.1. In IntelliJ IDEA (2025.2 or newer), open the folder that contains `gradlew.bat`, set the Project SDK and the Gradle JVM to Java 25, and refresh the Gradle project. Then start the game with the **Fabric Client** or **NeoForge Client** run configuration.
+You need Java 25 for Minecraft 26.3, Java 21 for 1.21.1 and Java 17 for 1.20.1. In IntelliJ IDEA (2025.2 or newer), open the folder that contains `gradlew.bat`, set the Project SDK and the Gradle JVM to Java 25, and refresh the Gradle project. Then start the game with the **Fabric Client** or **NeoForge Client** run configuration.
 
 `gradlew collectJars` builds every jar and copies them to `build/libs/<mod version>/`.
 
 ## How the code is laid out
 
-One codebase builds three jars: Fabric and NeoForge for 26.3, and NeoForge for 1.21.1. The build uses [Stonecutter](https://stonecutter.kikugie.dev).
+One codebase builds four jars: Fabric and NeoForge for 26.3, NeoForge for 1.21.1, and Forge for 1.20.1. The build uses [Stonecutter](https://stonecutter.kikugie.dev).
 
-- Common code is in `src/`, Fabric code in `fabric/src` and NeoForge code in `neoforge/src`. Shared code keeps to Java 21.
+- Common code is in `src/`, Fabric code in `fabric/src`, NeoForge code in `neoforge/src` and Forge code in `forge/src`. Shared code keeps to Java 17, for 1.20.1: no pattern matching in `switch`, and Java 21 library methods such as `Math.clamp` and `List.getFirst` go through `core.compat.Jdk`.
 - The public API other mods compile against is its own source set, `src/api`. Each loader's `src/api` holds that loader's native events (`api/neoforge`, `api/fabric`). The mod jars include all of it; `apiJar` builds the separate API jars.
 - Code that differs between versions is marked with comments such as `//? if >=1.21.6 {`. The optional **Stonecutter Dev** plugin highlights them.
 - To work on another version, run the Gradle task `Set active project to <mc>`. Run `Reset active project` before you commit: git must always hold the 26.3 state. The one exception is `forge/src`: Forge only has 1.20.1, so its code is written for 1.20.1 and stays that way.
@@ -32,12 +32,13 @@ The common code is split into core, features and hooks.
 
 | Command | What it runs |
 | --- | --- |
-| `gradlew :26.3:test`, `gradlew :1.21.1:test` | Unit tests for the pure rules |
+| `gradlew :26.3:test`, `gradlew :1.21.1:test`, `gradlew :1.20.1:test` | Unit tests for the pure rules |
 | `gradlew :fabric:26.3:runGametest` | Game tests on Fabric |
 | `gradlew :neoforge:26.3:runGameTestServer`, `gradlew :neoforge:1.21.1:runGameTestServer` | Game tests on NeoForge |
+| `gradlew :forge:1.20.1:runGameTestServer` | Game tests on Forge |
 | `gradlew :fabric:26.3:runClientGametest` | Client tests, which open a real game window |
 
-Game tests live in `src/gametest` (shared), `fabric/src/gametest` and `neoforge/src/gametest`, with 1.21.1 overrides under `versions/1.21.1/src/gametest`. They build a small second mod, `barnyard_romance_gametest`, that only the game test runs load, so none of them ship in the mod's jars and main code can't depend on them.
+Game tests live in `src/gametest` (shared), `fabric/src/gametest`, `neoforge/src/gametest` and `forge/src/gametest`, with overrides under `versions/1.21.1/src/gametest` and `versions/1.20.1/src/gametest`. They build a small second mod, `barnyard_romance_gametest`, that only the game test runs load, so none of them ship in the mod's jars and main code can't depend on them.
 
 A new shared game test also needs a `@GameTest` wrapper in `fabric/src/gametest/.../fabric/gametest/`. Without one, it's silently skipped on Fabric.
 
@@ -69,7 +70,7 @@ Untitled Duck Mod needs a newer NeoForge on 26.3 than the mod builds against, so
 
 `gradlew :fabric:26.3:runClientFreshAnimations`, `gradlew :neoforge:26.3:runClientFreshAnimations`, `gradlew :neoforge:1.21.1:runClientFreshAnimations` or `gradlew :forge:1.20.1:runClientFreshAnimations` starts the game with [Fresh Animations](https://modrinth.com/resourcepack/fresh-animations) and the two mods it needs, Entity Texture Features and Entity Model Features. The run has its own game folder, `runs/fresh-animations-client`. Gradle copies the two jars into its `mods` and the pack into its `resourcepacks`, and switches the pack on in its `options.txt`. On NeoForge and Forge the IntelliJ run config does the same after a Gradle sync.
 
-Forge 1.20.1's mods are published with Minecraft's SRG names, and its dev game runs on Mojang's, so on Forge every one of these runs remaps its jars first (`runModsSource` in `gradle/modrinth-maven.gradle`). A dev run can't show whether a mixin into another mod's class finds its target in a real game: the mod's compat mixins name such a method by both names on 1.20.1. `SrgMixinNamesTest` (in `gradlew :1.20.1:test`) fails when a mixin in the release jar names a Minecraft method without its SRG alias or targets one without a refmap entry; a real Forge server is the check that the hooks apply (see the 1.20.1 manual check list).
+Forge 1.20.1's mods are published with Minecraft's SRG names, and its dev game runs on Mojang's, so on Forge every one of these runs remaps its jars first (`runModsSource` in `gradle/modrinth-maven.gradle`). A dev run can't show whether a mixin into another mod's class finds its target in a real game: the mod's compat mixins name such a method by both names on 1.20.1. `SrgMixinNamesTest` (in `gradlew :1.20.1:test`) fails when a mixin in the release jar names a Minecraft method without its SRG alias or targets one without a refmap entry; a real Forge server is the check that the hooks apply (see [Before a release](#before-a-release)).
 
 ## Before a release
 
@@ -80,6 +81,15 @@ CI runs client tests only on Fabric 26.3. NeoForge 1.21.1 has its own copy of th
 - Roosters have a comb and wattles, and hens have none.
 - A hen sitting in a nesting box is drawn inside it.
 - Sneaking while looking at an animal shows its stat card, and the herd book opens, pages and shows heads.
+
+Forge 1.20.1 has its own copies of the screens, the hover card and the renderer mixins, so check it the same way with `gradlew :forge:1.20.1:runClient`. Big and small animals are drawn the same size there; that's the known gap, not a bug.
+
+- The herd book opens with its bookmark tabs, turns pages with the mouse wheel and Page Up and Page Down, and its icons show their tooltips.
+- The feeder, nesting box and pail windows show their sprites, and a pail shows its milk.
+- A pregnant cow widens sideways, and horns, combs and wattles look as they do on 1.21.1, on cattle, goats, sheep and chickens.
+- Looking at an animal shows its card, sneaking shows the stat card, and both show the same after a relog on a dedicated server (`gradlew :forge:1.20.1:runServer`).
+- The compat hooks apply in a real game, not only in the dev runs, which use Mojang's names: put the release jar (from `forge/versions/1.20.1/build/libs`) and the compat mods' own jars on a real Forge 1.20.1 server started with `-Dmixin.debug.export=true`, summon each compat animal and thrown egg, and check with `javap -c` that the classes in `.mixin.out` call the mod's `barnyardromance$` handlers.
+- The same jar loads on NeoForge 1.20.1 (the `net.neoforged:forge:1.20.1-47.1.106` installer from maven.neoforged.net): the world loads, the log has no mixin failures, and a summoned cow has a `sex` in `barnyard_romance:animal_data` (`data get entity`).
 
 ## Pull requests
 

@@ -1,6 +1,6 @@
 # Barnyard Romance
 
-A Minecraft Java mod for Fabric and NeoForge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla farm animals, working animals, dogs and cats, and for other animals a pack opts in (see [Which species are tracked](#which-species-are-tracked)).
+A Minecraft Java mod for Fabric, NeoForge and Forge that adds male/female animals, sex-based size and visuals, realistic breeding rules, pregnancy, and food-driven pregnancy progress, inspired by classic TerraFirmaCraft, working for vanilla farm animals, working animals, dogs and cats, and for other animals a pack opts in (see [Which species are tracked](#which-species-are-tracked)).
 
 Animals get a saved sex and a sex-based `minecraft:scale`. Wild animals are only S or M. A baby takes the average of its parents and has a chance to come out one band larger, so L and XL come from breeding. The tooltip shows S, M, L, or XL. A small animal drops 2–3 meat and a large one drops 8–9. A wolf bites and lasts by its size: the smallest female bites for 1 with half a vanilla wolf's health, a wolf halfway between the sizes is a vanilla wolf, and the largest male bites for 8 with half again the health; damage taken is unchanged. Looking at an animal also shows the tooltip above it. A male and a female breed into a pregnancy instead of an instant baby; only the female falls in love, and the mod finds her a male (see [Rival males](#rival-males)). The default lasts one Minecraft day (20 real minutes) and the litter size is 1; both are set in `config/barnyard_romance.json`. Time skipped by sleeping or with `/time add` counts towards a pregnancy too, even for an animal that was unloaded at the time. Food-driven progress is not in yet.
 
@@ -176,6 +176,8 @@ With [Naturalist](https://modrinth.com/mod/naturalist) installed, four of its cr
 
 Ducks and ostriches tame through familiarity, like wolves and cats, instead of Naturalist's chance when feeding their young. Food doesn't breed ducks or turkeys. To raise more, you need a Nesting Box and a male nearby, as with chickens. Ducks lay duck eggs and turkeys lay ordinary eggs. A thrown duck egg doesn't hatch a duckling, as a thrown chicken egg doesn't; a pack that switches ducks off gets Naturalist's hatching back.
 
+On Minecraft 1.20.1, use Naturalist 2.0.8 or newer: 2.0.7 crashes the game at start. Barnyard Romance is tested with 2.0.9 there, which also fixes joining a server.
+
 Naturalist's other creatures, deer included, are left alone, along with any it adds later. To include one, give it a species entry with `"enabled": true`, or add it to the `barnyard_romance:included` tag. To leave one of the four out, list it in `exclude`.
 
 ## Which species are tracked
@@ -190,11 +192,13 @@ Only these species are tracked by default:
 
 | Mod | Animals | Loaders |
 | --- | --- | --- |
-| [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod) | Duck, goose | NeoForge 1.21.1, NeoForge and Fabric 26.3 |
-| [Friends&Foes](https://modrinth.com/mod/friends-and-foes) | Moobloom (crab and penguin stay untracked) | NeoForge 1.21.1, NeoForge and Fabric 26.3 |
-| [Let's Do] [Meadow](https://modrinth.com/mod/lets-do-meadow) | Water buffalo, wooly cow (highland, umbra and warped) | NeoForge 1.21.1 |
-| [Autumnity](https://modrinth.com/mod/autumnity) | Turkey | NeoForge 1.21.1 |
-| [Environmental](https://modrinth.com/mod/environmental) | Duck, yak | NeoForge 1.21.1 |
+| [Untitled Duck Mod](https://modrinth.com/mod/untitled-duck-mod) | Duck, goose | Forge 1.20.1, NeoForge 1.21.1, NeoForge and Fabric 26.3 |
+| [Friends&Foes](https://modrinth.com/mod/friends-and-foes) | Moobloom (crab and penguin stay untracked) | Forge 1.20.1, NeoForge 1.21.1, NeoForge and Fabric 26.3 |
+| [Let's Do] [Meadow](https://modrinth.com/mod/lets-do-meadow) | Water buffalo, wooly cow (highland, umbra and warped) | Forge 1.20.1, NeoForge 1.21.1 |
+| [Autumnity](https://modrinth.com/mod/autumnity) | Turkey | Forge 1.20.1, NeoForge 1.21.1 |
+| [Environmental](https://modrinth.com/mod/environmental) | Duck, yak | Forge 1.20.1, NeoForge 1.21.1 |
+
+On 1.20.1 they're tested with Untitled Duck Mod 1.7.0-fix, Friends&Foes 5.0.5, Meadow 1.3.25, Autumnity 5.0.2 and Environmental 4.1.2.
 
 Birds lay in a Nesting Box like chickens, and the mods' own egg timers, breeding foods and thrown-egg hatching give way to Barnyard Romance's. Cattle-like animals (moobloom, water buffalo, wooly cows, yak) give milk, fight and eat from a manger, and wooly cows and yaks are sheared by the usual rules. A pack that switches one of these animals off gets the mod's own behaviour back.
 
@@ -297,6 +301,7 @@ All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To transl
 | --- | --- |
 | **26.3** | Fabric (needs Fabric API) or NeoForge |
 | **1.21.1** | NeoForge |
+| **1.20.1** | Forge 47.1+ (also NeoForge 1.20.1) |
 
 ### 1.21.1 differences
 
@@ -304,9 +309,36 @@ All of the mod's text is in `assets/barnyard_romance/lang/en_us.json`. To transl
 - The card above an animal is placed with the FOV setting and the camera, so it doesn't follow view bobbing or zoom mods.
 - The herd book has no head close-ups.
 
+### 1.20.1 differences
+
+The 1.20.1 jar is for Forge 47.1 or newer, and it also loads on NeoForge 1.20.1. It differs from the newer versions in these ways:
+
+- Animals don't look bigger or smaller: Minecraft 1.20.1 has no scale attribute, which came in 1.20.5. Size still counts, though: meat drops, a wolf's bite and health, babies' sizes and the size on the card work as on the newer versions.
+- The herd book has no head close-ups, as on 1.21.1.
+- Upgrading a world from 1.20.1 to a newer Minecraft resets Barnyard Romance data: animals' sex, size, familiarity and pregnancy, plus herd book, pail and egg data. 1.20.1 saves it in its own way, and nothing carries it over.
+- Pigs eat silently, and the card above an animal doesn't follow view bobbing or zoom mods, as on 1.21.1.
+- A tamed wolf gets 1.20.1's 20 health, not the 40 it has from 1.20.5, so the biggest male tops out at 30 instead of 60.
+- A hurt tamed wolf is back at full health after the world reloads. Vanilla 1.20.1 does that to every tamed wolf it loads, and the mod then fills a big wolf to its larger maximum.
+- Clearing a metal pail's name in an anvil gives the plain item name ("Copper Pail") instead of its material's ("Lead Pail"). On 1.20.1 the material name is the pail's custom name, which the anvil clears.
+- Herd sticks, wild eggs and superfoods look the same, but their names and tooltip lines come from the item, not from data on the stack, since 1.20.1 items have no components. Another mod that reads the stack's data doesn't see them.
+- Wild fertilized eggs still stack to 16, through a Forge hook, since vanilla 1.20.1 can't give one stack its own size. Forge 47 and NeoForge 1.20.1 both have the hook.
+- Naturalist needs 2.0.8 or newer (see [Naturalist](#naturalist)).
+
+The game tests that check something else on 1.20.1:
+
+- The creative tab: Forge 1.20.1 fills a tab only on the client, so the server test checks the list of items the tab is given, and the tab itself is checked by hand.
+- The herd book over the network: 1.20.1 sends text as chat JSON, which turns numbers in a translation into text. The book reads the same on screen, so the test checks that what comes back encodes to the same bytes instead of being equal.
+- An untracked fox's size: with no scale attribute, no other mod can scale an animal, so the test skips the fox another mod scaled.
+
 ## For mod developers
 
-Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. The jars are on the maven at `https://maven.moddev.zone/releases`. Add the one jar for your loader and Minecraft version as a compile-only dependency. It holds the whole API, your loader's own events included.
+Barnyard Romance has a public API in separate jars: events your mod can listen to, stop or change, and questions it can ask about an animal. The jars are on the maven at `https://maven.moddev.zone/releases`, under `net.modcrafters.minecraft.barnyardromance`. Add the one jar for your loader and Minecraft version as a compile-only dependency. It holds the whole API, your loader's own events included.
+
+| Minecraft | API | Mod, for dev runs |
+| --- | --- | --- |
+| 26.3 | `fabric-26.3-api`, `neoforge-26.3-api` | `fabric-26.3`, `neoforge-26.3` |
+| 1.21.1 | `neoforge-1.21.1-api` | `neoforge-1.21.1` |
+| 1.20.1 | `forge-1.20.1-api` | `forge-1.20.1` |
 
 ```groovy
 repositories {
@@ -318,20 +350,24 @@ dependencies {
     compileOnly "net.modcrafters.minecraft.barnyardromance:neoforge-26.3-api:<version>"
     // Fabric: fabric-26.3-api
     compileOnly "net.modcrafters.minecraft.barnyardromance:fabric-26.3-api:<version>"
+    // Forge: forge-1.20.1-api
+    compileOnly "net.modcrafters.minecraft.barnyardromance:forge-1.20.1-api:<version>"
 
     // Optional: the mod itself in your dev runs, to test against: neoforge-26.3, neoforge-1.21.1 or fabric-26.3
     runtimeOnly "net.modcrafters.minecraft.barnyardromance:neoforge-26.3:<version>"
 }
 ```
 
-There is also a jar with no loader in its name, `26.3-api` or `1.21.1-api`, for a mod that builds for several loaders from one codebase. That mod's common code can't depend on any one loader, so it compiles against this jar instead: the same API without the loader events. Each loader's code then takes its loader's jar as usual.
+The `forge-1.20.1` mod jar has Minecraft's SRG names, like every Forge 1.20.1 mod, so a dev run needs it remapped: add it with `modRuntimeOnly` on ModDevGradle's legacy plugin, or through `fg.deobf` on ForgeGradle. The API jars need no remapping.
+
+There is also a jar with no loader in its name, `26.3-api`, `1.21.1-api` or `1.20.1-api`, for a mod that builds for several loaders from one codebase. That mod's common code can't depend on any one loader, so it compiles against this jar instead: the same API without the loader events. Each loader's code then takes its loader's jar as usual.
 
 - Only touch the API when the mod `barnyard_romance` is loaded. Never shade the API or nest it in your jar: Barnyard Romance already carries it, and two copies clash.
 - `BarnyardEvents` has the events. `Taming`, `Milking`, `DeathDrop`, `ShearYield` and `FamiliarityChange` come before Barnyard Romance acts and can be cancelled or changed. `Befriended`, `Born` and `Hatched` come after. They fire on the server, only for animals Barnyard Romance tracks. Register listeners while your mod starts.
 - `BarnyardApi.animals()` answers `tracked(animal)` and `info(animal)`: sex, size, age, familiarity and pregnancy, as the stat card shows them.
 - `BarnyardApi.pails()` reads and moves milk in pails, by the same rules as the pail's window and the fluid adapters: `isPail`, `capacity`, `fluid` and `amount` read a pail, `fill` and `drain` change it in place (or only report with `simulate`), all in millilitres. `fill` refuses a fluid outside `barnyard_romance:pail_fluids` and a second fluid in a pail that already holds one, and `drain` empties whatever the pail holds. A stack of more than one pail takes and gives nothing.
 - The `barnyard_romance:config_enabled` load condition lets a pack's data load only while a boolean config option is on: `{"key": "milkConversion"}` in `neoforge:conditions` (with `type`) or `fabric:load_conditions` (with `condition`). The milk conversion recipe uses it.
-- NeoForge mods can also listen on NeoForge's bus (`MilkingEvent` and the rest in `api.neoforge`, each with `apiEvent()`), and Fabric mods to `BarnyardFabricEvents`. These run after the listeners on `BarnyardEvents`.
+- NeoForge mods can also listen on NeoForge's bus (`MilkingEvent` and the rest in `api.neoforge`, each with `apiEvent()`), Forge 1.20.1 mods on `MinecraftForge.EVENT_BUS` (the same events in `api.forge`), and Fabric mods to `BarnyardFabricEvents`. These run after the listeners on `BarnyardEvents`.
 
 ```java
 BarnyardEvents.DEATH_DROP.register(drop -> {
